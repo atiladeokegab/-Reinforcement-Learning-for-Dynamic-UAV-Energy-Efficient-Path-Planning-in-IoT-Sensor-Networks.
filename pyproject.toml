@@ -5,15 +5,23 @@ description = "To develop and evaluate a reinforcement learning algorithm for en
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "box2d>=2.3.10",
     "diagrams>=0.24.4",
     "graphviz>=0.20.3",
     "gym>=0.26.2",
+    "gymnasium>=1.2.1",
+    "h5py>=3.15.0",
     "logging>=0.4.9.6",
     "matplotlib>=3.10.7",
+    "numpy>=2.3.3",
     "openai>=2.3.0",
+    "pandas>=2.3.3",
     "pathlib>=1.0.1",
     "plotly>=6.3.1",
+    "pyyaml>=6.0.3",
+    "scipy>=1.16.2",
     "seaborn>=0.13.2",
     "stable-baselines3>=2.7.0",
     "thread>=2.0.5",
+    "tqdm>=4.67.1",
 ]
