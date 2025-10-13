@@ -106,6 +106,13 @@ A weighted combination of:
 | Final Report & Presentation | Apr – May 2026 | Submit final report and demo |
 
 ---
+### Run on linux
+```bash
+sudo apt-get update
+sudo apt-get install graphviz
+```
 
-## 🧩 Directory Structure
+## system design phase 1 - Q learing 
+
+## system design phase 2 - ppo learing
 
