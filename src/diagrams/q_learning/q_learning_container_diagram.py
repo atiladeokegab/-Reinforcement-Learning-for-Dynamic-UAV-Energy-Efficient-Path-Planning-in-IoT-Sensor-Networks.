@@ -10,7 +10,7 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning Container diagram...")
+    logger.info("Creating UAV Q-Learning Simulation Container diagram...")
 
     # Set output directory
     output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
@@ -26,7 +26,7 @@ def create_diagram():
 
     try:
         with Diagram(
-                "Container Diagram - UAV Q-Learning IoT Data Collection",
+                "Container Diagram - UAV Q-Learning Simulation (Simulation-Based)",
                 direction="TB",
                 graph_attr=graph_attr,
                 show=False,
@@ -34,117 +34,127 @@ def create_diagram():
                 outformat="png"
         ):
             # External Actors
-            mission_operator = Person(
-                name="Mission Operator",
-                description="Plans and monitors missions"
-            )
-
-            data_analyst = Person(
-                name="Data Analyst",
-                description="Analyzes results"
+            researcher = Person(
+                name="Researcher",
+                description="Runs experiments and analyzes results"
             )
 
             # External Systems
-            iot_sensors = System(
-                name="IoT Sensor Network",
-                description="LoRa sensor nodes",
+            visualization = System(
+                name="Visualization Tools",
+                description="Matplotlib, Seaborn, Plotly",
                 external=True
             )
 
-            lorawan_gateway = System(
-                name="LoRaWAN Gateway",
-                description="Network gateway",
-                external=True
-            )
-
-            cloud_platform = System(
-                name="Cloud Platform",
-                description="Data storage and analytics",
+            file_system = System(
+                name="File System Storage",
+                description="Logs, models, results",
                 external=True
             )
 
             # Main System Containers
-            with SystemBoundary("UAV Q-Learning Data Collection System"):
-                # Flight Control Container
-                flight_controller = Container(
-                    name="Flight Controller",
-                    technology="Python, DroneKit/MAVLink",
-                    description="Controls UAV movement, position, and navigation"
+            with SystemBoundary("UAV Q-Learning Simulation System"):
+                # Training Controller
+                training_controller = Container(
+                    name="Training Controller",
+                    technology="Python",
+                    description="Orchestrates training episodes, manages hyperparameters, tracks convergence"
                 )
 
                 # Q-Learning Agent Container
                 q_learning_agent = Container(
                     name="Q-Learning Agent",
-                    technology="Python, NumPy, Gymnasium",
-                    description="Reinforcement learning agent that learns optimal data collection policy"
+                    technology="Python, NumPy",
+                    description="Implements Q-Learning algorithm: state-action selection, Q-table updates, epsilon-greedy policy"
                 )
 
                 # Environment Simulation Container
                 environment = Container(
-                    name="Environment Simulator",
-                    technology="Python, Gymnasium",
-                    description="Simulates IoT network, UAV state space, and reward calculation"
+                    name="Simulated Environment",
+                    technology="Python, Gymnasium/OpenAI Gym",
+                    description="Simulates 2D/3D grid world with IoT sensors, UAV physics, communication ranges"
                 )
 
-                # LoRa Communication Container
-                lora_module = Container(
-                    name="LoRa Communication Module",
-                    technology="Python, PySerial, LoRa Radio",
-                    description="Handles LoRa communication with IoT sensors"
-                )
-
-                # Data Collection Container
-                data_collector = Container(
-                    name="Data Collection Manager",
+                # Simulated UAV
+                simulated_uav = Container(
+                    name="Simulated UAV",
                     technology="Python",
-                    description="Manages data reception, storage, and validation from sensors"
+                    description="Virtual UAV with position, battery level, movement constraints, LoRa range simulation"
                 )
 
-                # Mission Planner Container
-                mission_planner = Container(
-                    name="Mission Planner",
-                    technology="Python, Flask/FastAPI",
-                    description="Web interface for mission configuration and monitoring"
+                # Simulated IoT Network
+                simulated_iot = Container(
+                    name="Simulated IoT Network",
+                    technology="Python",
+                    description="Virtual sensor nodes with positions, data generation, coverage tracking"
                 )
 
-                # Local Database
-                local_db = Database(
-                    name="Local Database",
-                    technology="SQLite/PostgreSQL",
-                    description="Stores Q-table, mission logs, collected sensor data, trajectories"
+                # Reward Calculator
+                reward_calculator = Container(
+                    name="Reward Calculator",
+                    technology="Python",
+                    description="Computes rewards based on data collected, coverage, battery usage, path efficiency"
+                )
+
+                # Metrics & Logger
+                metrics_logger = Container(
+                    name="Metrics & Logger",
+                    technology="Python, Pandas",
+                    description="Logs episode rewards, Q-values, trajectories, coverage statistics"
+                )
+
+                # Configuration Manager
+                config_manager = Container(
+                    name="Configuration Manager",
+                    technology="Python, YAML/JSON",
+                    description="Manages simulation parameters, Q-Learning hyperparameters, experiment configs"
+                )
+
+                # Results Database
+                results_db = Database(
+                    name="Results Storage",
+                    technology="SQLite / CSV / HDF5",
+                    description="Stores Q-tables, episode history, training metrics, experiment results"
                 )
 
             # External Relationships
-            mission_operator >> Relationship("Configures mission via web UI [HTTPS]") >> mission_planner
-            mission_operator >> Relationship("Views dashboard") >> cloud_platform
+            researcher >> Relationship("Configures experiments [Config files]") >> config_manager
+            researcher >> Relationship("Starts training runs") >> training_controller
+            researcher >> Relationship("Views plots, analyzes results") >> visualization
 
-            iot_sensors >> Relationship("Transmits data [LoRa 868/915MHz]") >> lora_module
+            file_system >> Relationship("Loads saved Q-tables, checkpoints") >> results_db
+            results_db >> Relationship("Saves models, logs") >> file_system
 
-            lorawan_gateway >> Relationship("Network relay [Optional]") >> lora_module
-
-            data_analyst >> Relationship("Analyzes results") >> cloud_platform
+            visualization >> Relationship("Reads metrics for plotting") >> results_db
 
             # Internal Container Relationships
-            mission_planner >> Relationship("Sends mission config") >> q_learning_agent
+            config_manager >> Relationship("Provides hyperparameters (alpha, gamma, epsilon)") >> q_learning_agent
+            config_manager >> Relationship("Provides environment config (grid, sensors)") >> environment
 
-            q_learning_agent >> Relationship("Reads/writes Q-values, policy") >> local_db
-            q_learning_agent >> Relationship("Gets state, receives reward") >> environment
-            q_learning_agent >> Relationship("Selects action (move direction)") >> flight_controller
+            training_controller >> Relationship("Initializes episodes") >> environment
+            training_controller >> Relationship("Controls training loop") >> q_learning_agent
+            training_controller >> Relationship("Monitors convergence") >> metrics_logger
 
-            environment >> Relationship("Simulates sensor positions, calculates coverage") >> data_collector
-            environment >> Relationship("Reads sensor data for reward calculation") >> local_db
+            q_learning_agent >> Relationship("Reads/updates Q-values") >> results_db
+            q_learning_agent >> Relationship("Observes state") >> environment
+            q_learning_agent >> Relationship("Selects action") >> simulated_uav
 
-            flight_controller >> Relationship("Executes movement commands") >> q_learning_agent
-            flight_controller >> Relationship("Logs position, battery, telemetry") >> local_db
+            environment >> Relationship("Contains UAV state") >> simulated_uav
+            environment >> Relationship("Contains sensor network") >> simulated_iot
+            environment >> Relationship("Requests reward") >> reward_calculator
 
-            lora_module >> Relationship("Forwards received data") >> data_collector
+            simulated_uav >> Relationship("Executes movement") >> environment
+            simulated_uav >> Relationship("Checks sensor range") >> simulated_iot
 
-            data_collector >> Relationship("Stores collected sensor data") >> local_db
-            data_collector >> Relationship("Updates coverage metrics") >> environment
+            simulated_iot >> Relationship("Provides data availability") >> simulated_uav
+            simulated_iot >> Relationship("Reports coverage status") >> reward_calculator
 
-            mission_planner >> Relationship("Reads mission status, metrics") >> local_db
+            reward_calculator >> Relationship("Returns reward value") >> q_learning_agent
+            reward_calculator >> Relationship("Evaluates coverage, efficiency") >> simulated_iot
 
-            local_db >> Relationship("Uploads aggregated data, Q-table snapshots [HTTPS/MQTT]") >> cloud_platform
+            metrics_logger >> Relationship("Logs episode data") >> results_db
+            metrics_logger >> Relationship("Tracks Q-value changes") >> q_learning_agent
+            metrics_logger >> Relationship("Records trajectories") >> simulated_uav
 
             logger.info("✓ Diagram components created")
 
@@ -172,6 +182,6 @@ if __name__ == "__main__":
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
-    logger.info("Running Q-Learning container diagram script...")
+    logger.info("Running Q-Learning simulation container diagram script...")
     create_diagram()
     logger.info("Script finished!")

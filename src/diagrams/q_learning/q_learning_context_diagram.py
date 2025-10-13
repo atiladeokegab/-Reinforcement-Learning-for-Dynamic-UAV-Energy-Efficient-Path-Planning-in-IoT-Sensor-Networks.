@@ -10,7 +10,7 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning System Context diagram...")
+    logger.info("Creating UAV Q-Learning Simulation Context diagram...")
 
     # Set output directory
     output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
@@ -26,7 +26,7 @@ def create_diagram():
 
     try:
         with Diagram(
-                "System Context - UAV Q-Learning IoT Data Collection",
+                "System Context - UAV Q-Learning Simulation (Simulation-Based)",
                 direction="TB",
                 graph_attr=graph_attr,
                 show=False,
@@ -34,54 +34,43 @@ def create_diagram():
                 outformat="png"
         ):
             # External Actors
-            mission_operator = Person(
-                name="Mission Operator",
-                description="Plans UAV missions and configures Q-Learning parameters"
+            researcher = Person(
+                name="Researcher",
+                description="Configures simulation parameters, Q-Learning hyperparameters, and analyzes results"
             )
 
-            data_analyst = Person(
-                name="Data Analyst",
-                description="Analyzes collected IoT data and system performance"
-            )
-
-            # External Systems
-            iot_sensor_network = System(
-                name="IoT Sensor Network",
-                description="LoRa-enabled sensor nodes deployed in the field",
+            # External Systems (for data export/visualization)
+            visualization_tools = System(
+                name="Visualization & Analysis Tools",
+                description="Matplotlib, Pandas for plotting trajectories, rewards, Q-values",
                 external=True
             )
 
-            lorawan_gateway = System(
-                name="LoRaWAN Gateway",
-                description="Network gateway for LoRa communication",
-                external=True
-            )
-
-            cloud_storage = System(
-                name="Cloud Storage & Analytics",
-                description="Stores mission data, logs, and provides analytics dashboard",
+            results_storage = System(
+                name="Results Repository",
+                description="File system or cloud storage for simulation logs and trained models",
                 external=True
             )
 
             # Main System
-            with SystemBoundary("UAV Q-Learning Data Collection System"):
-                uav_system = System(
-                    name="UAV Q-Learning Agent",
-                    description="Autonomous UAV with Q-Learning algorithm for optimal IoT data collection"
+            with SystemBoundary("UAV Q-Learning Simulation System"):
+                simulation_system = System(
+                    name="Q-Learning UAV Simulation",
+                    description="Simulated environment for training Q-Learning agent to optimize IoT data collection paths"
                 )
 
             # Relationships
-            mission_operator >> Relationship("Configures mission parameters, Q-Learning settings") >> uav_system
-            mission_operator >> Relationship("Monitors mission status, views dashboard") >> cloud_storage
+            researcher >> Relationship(
+                "Configures: grid size, sensor positions, Q-Learning params (alpha, gamma, epsilon)") >> simulation_system
+            researcher >> Relationship("Monitors: training progress, episode rewards, convergence") >> simulation_system
 
-            iot_sensor_network >> Relationship("Transmits sensor data [LoRa]") >> uav_system
-            uav_system >> Relationship("Collects data from sensors in range") >> iot_sensor_network
+            simulation_system >> Relationship("Exports: Q-table, training metrics, episode logs") >> results_storage
+            simulation_system >> Relationship(
+                "Sends: trajectory data, reward curves, coverage maps") >> visualization_tools
 
-            lorawan_gateway >> Relationship("Provides network connectivity") >> uav_system
-
-            uav_system >> Relationship("Uploads trajectories, collected data, Q-values, rewards") >> cloud_storage
-
-            data_analyst >> Relationship("Analyzes performance metrics, data coverage") >> cloud_storage
+            researcher >> Relationship(
+                "Analyzes: performance metrics, learning curves, policy effectiveness") >> visualization_tools
+            researcher >> Relationship("Reviews: saved models, experiment logs") >> results_storage
 
             logger.info("✓ Diagram components created")
 
@@ -109,6 +98,6 @@ if __name__ == "__main__":
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
-    logger.info("Running Q-Learning context diagram script...")
+    logger.info("Running Q-Learning simulation context diagram script...")
     create_diagram()
     logger.info("Script finished!")
