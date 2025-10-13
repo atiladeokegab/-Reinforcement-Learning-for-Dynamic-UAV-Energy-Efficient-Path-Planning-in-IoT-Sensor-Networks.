@@ -114,14 +114,14 @@ sudo apt-get install graphviz
 ## 🧱 C4 Architecture Diagrams
 
 ### 1. System Context Diagram
-![System Context](asset\diagrams\q_learning\q_learning_system_context.png)
+![System Context](asset/diagrams/q_learning/q_learning_system_context.png)
 
 ### 2. Container Diagram
-![Container Diagram](asset\diagrams\q_learning\q_learning_container_diagram.png)
+![Container Diagram](asset/diagrams/q_learning/q_learning_container_diagram.png)
 
 ### 3. Component Diagram
 ![Component Diagram](asset/diagrams/q_learning/q_learning_component_diagram.png))
 
 ### 4. Code Diagram
-![Code Diagram](\asset\diagrams\q_learning\q_learning_code_diagram.png)
+![Code Diagram](\asset/diagrams/q_learning/q_learning_code_diagram.png)
 
