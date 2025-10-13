@@ -1,6 +1,4 @@
 import logging
-from src.diagrams.q_learning.q_learning_context_diagram import create_diagram
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
