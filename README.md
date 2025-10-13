@@ -111,8 +111,17 @@ A weighted combination of:
 sudo apt-get update
 sudo apt-get install graphviz
 ```
+## 🧱 C4 Architecture Diagrams
 
-## system design phase 1 - Q learing 
+### 1. System Context Diagram
+![System Context](asset\diagrams\q_learning\q_learning_system_context.png)
 
-## system design phase 2 - ppo learing
+### 2. Container Diagram
+![Container Diagram](asset\diagrams\q_learning\q_learning_container_diagram.png)
+
+### 3. Component Diagram
+![Component Diagram](asset/diagrams/q_learning/q_learning_component_diagram.png))
+
+### 4. Code Diagram
+![Code Diagram](\asset\diagrams\q_learning\q_learning_code_diagram.png)
 
