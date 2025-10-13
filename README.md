@@ -123,5 +123,5 @@ sudo apt-get install graphviz
 ![Component Diagram](asset/diagrams/q_learning/q_learning_component_diagram.png))
 
 ### 4. Code Diagram
-![Code Diagram](\asset/diagrams/q_learning/q_learning_code_diagram.png)
+![Code Diagram](asset/diagrams/q_learning/q_learning_code_diagram.png)
 
