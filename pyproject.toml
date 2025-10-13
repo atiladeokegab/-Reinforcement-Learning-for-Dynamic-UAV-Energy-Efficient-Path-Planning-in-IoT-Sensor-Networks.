@@ -1,7 +1,19 @@
 [project]
 name = "final-year"
 version = "0.1.0"
-description = "Add your description here"
+description = "To develop and evaluate a reinforcement learning algorithm for energy-efficient UAV path planning in IoT sensor networks, focusing on minimizing energy consumption during data collection missions in a two-dimensional environment with fixed sensor locations."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "diagrams>=0.24.4",
+    "graphviz>=0.20.3",
+    "gym>=0.26.2",
+    "logging>=0.4.9.6",
+    "matplotlib>=3.10.7",
+    "openai>=2.3.0",
+    "pathlib>=1.0.1",
+    "plotly>=6.3.1",
+    "seaborn>=0.13.2",
+    "stable-baselines3>=2.7.0",
+    "thread>=2.0.5",
+]

@@ -1,6 +1,18 @@
-def main():
-    print("Hello from final-year!")
+import logging
+from src.diagrams.q_learning.q_learning_context_diagram import create_diagram
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),  # Log to file
+        logging.StreamHandler()           # Log to console
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    main()
+    logger.info("Starting RL...")
+    create_diagram()
+    logger.info("RL finished!")
