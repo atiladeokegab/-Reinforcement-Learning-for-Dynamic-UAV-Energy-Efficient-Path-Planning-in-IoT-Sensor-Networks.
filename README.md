@@ -1,6 +1,6 @@
 # UAV-IoT Data Collection Optimization using Reinforcement Learning
 
-## 📘 Overview
+## Overview
 
 This project focuses on **optimizing the flight trajectory of an Unmanned Aerial Vehicle (UAV)** for efficient **IoT data collection** using **Reinforcement Learning (RL)**.  
 The UAV must collect data from multiple spatially distributed IoT sensors while **minimizing energy consumption** and **maximizing data freshness**, measured via **Age of Information (AoI)**.
@@ -9,7 +9,7 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 
 ---
 
-## 🎯 Objectives
+## Objectives
 
 1. Develop a simulation environment modeling UAV movement and LoRa-based IoT communication.  
 2. Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**.  
@@ -20,7 +20,7 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 
 ---
 
-## 🧭 Problem Statement
+## Problem Statement
 
 The goal is to optimize the path of a single UAV for IoT data collection in a network of spatially distributed sensors while minimizing energy consumption and ensuring timely updates of sensor data.
 
@@ -32,7 +32,7 @@ The goal is to optimize the path of a single UAV for IoT data collection in a ne
 
 ---
 
-## ⚙️ System Design
+## System Design
 
 ### Environment
 - 2D discrete grid representing UAV operating area.
@@ -59,7 +59,7 @@ A weighted combination of:
 
 ---
 
-## 🧠 Reinforcement Learning Workflow
+## Reinforcement Learning Workflow
 
 1. Initialize UAV and IoT environment  
 2. Choose and execute an action  
@@ -70,7 +70,7 @@ A weighted combination of:
 
 ---
 
-## 💻 Technical Stack
+## Technical Stack
 
 | Component | Technology |
 |------------|-------------|
@@ -83,7 +83,7 @@ A weighted combination of:
 
 ---
 
-## 📈 Key Performance Metrics
+## Key Performance Metrics
 
 | Metric | Description |
 |--------|-------------|
@@ -95,7 +95,7 @@ A weighted combination of:
 
 ---
 
-## 📅 Project Milestones
+## Project Milestones
 
 | Phase | Timeline | Goal |
 |--------|-----------|------|
@@ -111,7 +111,7 @@ A weighted combination of:
 sudo apt-get update
 sudo apt-get install graphviz
 ```
-## 🧱 C4 Architecture Diagrams
+## C4 Architecture Diagrams
 
 ### 1. System Context Diagram
 ![System Context](asset/diagrams/q_learning/q_learning_system_context.png)
