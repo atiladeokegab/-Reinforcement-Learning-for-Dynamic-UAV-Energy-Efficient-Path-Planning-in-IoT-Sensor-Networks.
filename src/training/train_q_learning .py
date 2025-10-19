@@ -74,7 +74,7 @@ class QLearningAgent:
         self.episodes_trained = 0
 
     def discretize_state(self, observation: np.ndarray,
-                        grid_size: Tuple[int, int] = (10, 10)) -> Tuple:
+                         grid_size: Tuple[int, int] = (10, 10)) -> Tuple:
         """
         Discretize continuous observation into discrete state.
 

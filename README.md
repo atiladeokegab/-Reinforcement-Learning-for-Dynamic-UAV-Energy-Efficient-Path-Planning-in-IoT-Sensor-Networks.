@@ -72,14 +72,14 @@ A weighted combination of:
 
 ## Technical Stack
 
-| Component | Technology |
-|------------|-------------|
-| **Language** | Python 3.11 |
-| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium |
+| Component | Technology                                     |
+|------------|------------------------------------------------|
+| **Language** | Python 3.13                                    |
+| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium   |
 | **Simulation** | Custom UAV Environment (OpenAI Gym Compatible) |
-| **Visualization** | Matplotlib, Seaborn |
-| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti |
-| **Report Writing** | LaTeX / Overleaf |
+| **Visualization** | Matplotlib, Seaborn                            |
+| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti          |
+| **Report Writing** | LaTeX / Overleaf                               |
 
 ---
 
