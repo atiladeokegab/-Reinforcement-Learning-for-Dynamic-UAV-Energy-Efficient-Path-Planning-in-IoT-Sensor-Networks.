@@ -1,0 +1,18 @@
+{
+  "state_bins": [
+    10,
+    10,
+    10,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "n_actions": 5,
+  "learning_rate": 0.1,
+  "discount_factor": 0.95,
+  "epsilon": 0.0494138221100385,
+  "epsilon_decay": 0.995,
+  "epsilon_min": 0.01
+}
