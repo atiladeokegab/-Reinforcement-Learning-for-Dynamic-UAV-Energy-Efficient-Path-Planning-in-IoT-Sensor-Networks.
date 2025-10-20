@@ -20,6 +20,9 @@ Project: Reinforcement Learning for Dynamic UAV Energy-Efficient Path Planning
 
 from typing import Tuple, Optional, List
 import numpy as np
+import logging
+
+from triton.experimental.gluon.language.nvidia.hopper.mbarrier import expect
 
 
 class IoTSensor:
@@ -66,7 +69,7 @@ class IoTSensor:
                  # LoRa communication parameters
                  rssi_reference: float = -60.0,  # dBm at 1m
                  path_loss_exponent: float = 2.0,  # d^-2 for free space
-                 reference_distance: float = 1.0,  # meters
+                 reference_distance: float = 1,  # meters
                  rssi_threshold: float = -120.0,  # dBm
                  spreading_factor: int = 7):  # SF7-SF12
         """
@@ -295,7 +298,7 @@ class IoTSensor:
         """Check if sensor has data waiting to be collected."""
         return self.data_buffer > 0
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """String representation of the sensor."""
         return (f"IoTSensor(id={self.sensor_id}, "
                 f"position={Tuple(self.position)}, "

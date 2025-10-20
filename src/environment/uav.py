@@ -247,41 +247,6 @@ class UAV:
         self.position = self.start_position.copy()
         self.battery = self.max_battery
 
-    def _generate_random_sensor_positions(self, num_sensors: int) -> List[Tuple[float, float]]:
-        """Generate uniformly distributed sensor positions across the grid."""
-        positions = []
-
-        # Calculate grid layout for uniform distribution
-        # For 20 sensors in 10x10 grid: 4x5 or 5x4 layout works well
-        rows = int(np.sqrt(num_sensors))
-        cols = int(np.ceil(num_sensors / rows))
-
-        # Add some margin from edges
-        margin = 1.0
-        x_spacing = (self.grid_size[0] - 2 * margin) / (cols - 1) if cols > 1 else 0
-        y_spacing = (self.grid_size[1] - 2 * margin) / (rows - 1) if rows > 1 else 0
-
-        sensor_count = 0
-        for row in range(rows):
-            for col in range(cols):
-                if sensor_count >= num_sensors:
-                    break
-
-                x = margin + col * x_spacing
-                y = margin + row * y_spacing
-
-                # Add small random jitter to avoid perfect grid (optional, remove if you want perfect grid)
-                jitter = 0.2
-                x += np.random.uniform(-jitter, jitter)
-                y += np.random.uniform(-jitter, jitter)
-
-                positions.append((float(x), float(y)))
-                sensor_count += 1
-
-            if sensor_count >= num_sensors:
-                break
-
-        return positions
 
     @property
     def battery_drain_hover(self) -> float:

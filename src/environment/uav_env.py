@@ -42,7 +42,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Absolute imports
 from environment.iot_sensors import IoTSensor
-from environment.uav import UAV
+from environment.uav import UAV # TODO: fix imports
 from rewards.reward_function import RewardFunction
 
 
@@ -68,11 +68,7 @@ class UAVEnvironment(gym.Env):
         -0.1: Battery drain penalty
         -0.05: Step penalty (encourages efficiency)
 
-    Example:
-        >>> env = UAVEnvironment(grid_size=(10, 10), num_sensors=20)
-        >>> obs, info = env.reset()
-        >>> action = env.action_space.sample()
-        >>> obs, reward, terminated, truncated, info = env.step(action)
+
     """
 
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 4}
@@ -92,7 +88,7 @@ class UAVEnvironment(gym.Env):
                  max_battery: float = 274.0,
                  collection_duration: float = 1.0,
                  # Episode parameters
-                 max_steps: int = 20000,
+                 max_steps: int = 300,
                  render_mode: Optional[str] = None):
         """
         Initialize UAV environment.
@@ -502,10 +498,10 @@ if __name__ == "__main__":
 
     # Create environment WITH RENDERING
     env = UAVEnvironment(
-        grid_size=(10, 10),
-        num_sensors=10,
-        max_steps=20000,
-        rssi_threshold=-90.0,
+        grid_size=(20, 20),
+        num_sensors=20,
+        max_steps=300,
+        rssi_threshold=-80.0,
         render_mode='human'  # Enable rendering
     )
 
@@ -525,11 +521,9 @@ if __name__ == "__main__":
     print(f"  Battery: {info['battery']:.2f} Wh ({info['battery_percent']:.1f}%)")
     print()
 
-    # RENDER INITIAL STATE
-    env.render()
 
     # Run random episode
-    print("🎮 Running sample episode with random actions...")
+    print("Running sample episode with random actions...")
     print("   (Watch the visualization window - it will update live!)")
     print()
 
@@ -540,23 +534,22 @@ if __name__ == "__main__":
             action = env.action_space.sample()
             obs, reward, terminated, truncated, info = env.step(action)
 
-            # RENDER EVERY STEP - THIS MAKES IT MOVE!
-            env.render()
+
 
             # OPTIONAL: Add delay to slow down and watch
             time.sleep(0.1)  # Adjust: 0.01 (fast) to 0.5 (slow)
 
             # Print some steps
-            if step < 10 or step % 10 == 0 or terminated or truncated:
+            if terminated or truncated:
                 print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
                       f"Pos: ({info['uav_position'][0]:.1f}, {info['uav_position'][1]:.1f}) | "
                       f"Battery: {info['battery']:6.1f}Wh | "
                       f"Collected: {info['sensors_collected']:2d}/{info['total_sensors']:2d} | "
                       f"Reward: {reward:+7.2f}")
+            env.render()
 
             if terminated:
                 print("\n🎉 Mission complete! All sensors collected.")
-                env.render()
                 time.sleep(3)  # Show final state for 3 seconds
                 break
             elif truncated:
@@ -564,7 +557,6 @@ if __name__ == "__main__":
                     print("\n⚠️  Battery depleted!")
                 else:
                     print("\n⏱️  Timeout reached.")
-                env.render()
                 time.sleep(3)
                 break
 
