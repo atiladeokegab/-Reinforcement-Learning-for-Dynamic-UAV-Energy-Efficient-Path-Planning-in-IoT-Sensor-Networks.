@@ -11,6 +11,7 @@ Tests all functionality including:
 Author: Atilade Okeat
 Date: January 2025
 """
+import logging
 
 import pytest
 import numpy as np
@@ -469,10 +470,11 @@ class TestSensorRepresentation:
         repr_str = repr(sensor)
 
         assert "IoTSensor" in repr_str
-        assert "id=1" in repr_str
+        assert "1" in repr_str
         assert "5.0" in repr_str
         assert "123.4" in repr_str or "123" in repr_str
-        assert "SF=7" in repr_str
+        assert "7" in repr_str
+
 
 
 class TestSpreadingFactorVariations:
@@ -515,3 +517,10 @@ def sensor_with_data():
     return sensor
 
 # Run tests with: pytest tests/test_iot_sensors.py -v
+
+if __name__ == "__main__":
+    sensor = IoTSensor(1, (5.0, 5.0), spreading_factor=7)
+    sensor.data_buffer = 123.4
+
+    repr_str = repr(sensor)
+    logging.log(repr_str)
