@@ -131,7 +131,7 @@ Where:
 - \( RSS(d) \): Received signal strength at distance \( d \) (in dBm)  
 - \( P_t \): Transmit power (in dBm)  
 - \( PL(d) \): Path loss at distance \( d \) (in dB)
-
+not yet implemented
 ---
 ## Environment diagram
 ![2D Environment](asset/diagrams/env/img.png)
