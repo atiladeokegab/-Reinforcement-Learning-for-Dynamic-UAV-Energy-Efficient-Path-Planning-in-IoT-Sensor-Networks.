@@ -111,6 +111,8 @@ A weighted combination of:
 sudo apt-get update
 sudo apt-get install graphviz
 ```
+## Environment diagram
+![2D Environment](asset/diagrams/env/img.png)
 ## C4 Architecture Diagrams
 
 ### 1. System Context Diagram

@@ -5,4 +5,11 @@
     <orderEntry type="jdk" jdkName="Python 3.13.5 WSL (Ubuntu): (/home/okeat/final_year/.venv/bin/python3.13)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
+  </component>
 </module>
