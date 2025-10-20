@@ -72,14 +72,14 @@ A weighted combination of:
 
 ## Technical Stack
 
-| Component | Technology                                     |
-|------------|------------------------------------------------|
-| **Language** | Python 3.13                                    |
-| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium   |
-| **Simulation** | Custom UAV Environment (OpenAI Gym Compatible) |
-| **Visualization** | Matplotlib, Seaborn                            |
-| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti          |
-| **Report Writing** | LaTeX / Overleaf                               |
+| Component | Technology                                                                             |
+|------------|----------------------------------------------------------------------------------------|
+| **Language** | Python 3.13                                                                            |
+| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium                                           |
+| **Simulation** | Custom UAV Environment (OpenAI Gym Compatible)                                         |
+| **Visualization** | Matplotlib, Seaborn                                                                    |
+| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti switched back to windows got stock in linux hell |
+| **Report Writing** | LaTeX / Overleaf                                                                       |
 
 ---
 
@@ -111,6 +111,28 @@ A weighted combination of:
 sudo apt-get update
 sudo apt-get install graphviz
 ```
+### Path Loss Formula
+
+The path loss is given by:
+
+$$
+PL(d) = 10 \, n \, \log_{10}\left(\frac{d}{d_0}\right)
+$$
+
+#### **Relationship Between RSS and Path Loss**
+
+The RSS is related to the transmitted power and path loss as:
+
+$$
+RSS(d) = P_t - PL(d)
+$$
+
+Where:
+- \( RSS(d) \): Received signal strength at distance \( d \) (in dBm)  
+- \( P_t \): Transmit power (in dBm)  
+- \( PL(d) \): Path loss at distance \( d \) (in dB)
+
+---
 ## Environment diagram
 ![2D Environment](asset/diagrams/env/img.png)
 ## C4 Architecture Diagrams

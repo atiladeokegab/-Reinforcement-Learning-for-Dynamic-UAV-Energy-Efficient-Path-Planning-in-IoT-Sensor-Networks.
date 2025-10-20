@@ -244,6 +244,7 @@ class UAV:
             >>> print(f"Position: {uav.position}, Battery: {uav.battery}")
             Position: [5. 5.], Battery: 100.0
         """
+
         self.position = self.start_position.copy()
         self.battery = self.max_battery
 
