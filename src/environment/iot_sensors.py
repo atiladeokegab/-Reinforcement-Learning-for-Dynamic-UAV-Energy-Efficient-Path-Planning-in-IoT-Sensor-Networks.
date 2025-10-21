@@ -22,8 +22,6 @@ from typing import Tuple, Optional, List
 import numpy as np
 import logging
 
-from triton.experimental.gluon.language.nvidia.hopper.mbarrier import expect
-
 
 class IoTSensor:
     """
@@ -262,6 +260,18 @@ class IoTSensor:
             self.data_collected = True
 
         return bytes_collected, True
+
+    # def update_data_rate(self, uav_position: Tuple[float, float]):
+    #     rssi = self.calculate_rssi(uav_position)
+    #
+    #     if rssi > -110:
+    #         self.spreading_factor = 7
+    #     elif rssi > -120:
+    #         self.spreading_factor = 9
+    #     else:
+    #         self.spreading_factor = 12
+    #
+    #     self.data_rate = self.LORA_DATA_RATES[self.spreading_factor]
 
     def get_buffer_status(self) -> dict:
         """
