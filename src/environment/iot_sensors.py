@@ -67,7 +67,7 @@ class IoTSensor:
                  # LoRa communication parameters
                  rssi_reference: float = -60.0,  # dBm at 1m
                  path_loss_exponent: float = 2.0,  # d^-2 for free space
-                 reference_distance: float = 1,  # meters
+                 reference_distance: float = 0.2,  # same as the uav_env
                  rssi_threshold: float = -120.0,  # dBm
                  spreading_factor: int = 7):  # SF7-SF12
         """

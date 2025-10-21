@@ -33,18 +33,237 @@ import numpy as np
 from typing import Dict, List, Tuple, Optional
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Circle, Wedge
 import sys
 from pathlib import Path
 import time
+from enum import IntEnum
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Absolute imports
 from environment.iot_sensors import IoTSensor
-from environment.uav import UAV # TODO: fix imports
+from environment.uav import UAV
 from rewards.reward_function import RewardFunction
+
+
+class SensorState(IntEnum):
+    """Visual states for sensors based on buffer level"""
+    EMPTY = 0           # 0% buffer
+    LOW = 1             # 1-33% buffer
+    MEDIUM = 2          # 34-66% buffer
+    HIGH = 3            # 67-99% buffer
+    FULL = 4            # 100% buffer
+    COLLECTING = 5      # UAV actively collecting
+    COLLECTED = 6       # Recently emptied
+
+
+def get_sensor_visual_state(sensor,
+                            uav_position,
+                            communication_range=0.2,
+                            current_action=None,
+                            steps_since_collection=10) -> SensorState:
+    """
+    Determine visual state of sensor based on buffer level and UAV interaction.
+
+    Args:
+        sensor: IoTSensor object
+        uav_position: Current UAV position
+        communication_range: Distance for UAV to collect data
+        current_action: Current action (0-4, where 4=COLLECT)
+        steps_since_collection: How long ago sensor was collected
+
+    Returns:
+        SensorState enum value
+    """
+    # Check if UAV is currently collecting from this sensor
+    distance = np.linalg.norm(sensor.position - np.array(uav_position))
+    is_in_range = distance <= communication_range
+
+    # Determine state based on buffer percentage
+    buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
+
+    # Priority 1: COLLECTING - UAV actively collecting (action=4, in range, has data)
+    if current_action == 4 and is_in_range:
+        return SensorState.COLLECTING
+
+    # Priority 2: COLLECTED - Recently emptied (empty buffer, in range, was collected)
+    if sensor.data_buffer <= 10 and sensor.data_collected and is_in_range:
+        return SensorState.COLLECTED
+
+    # Priority 3: States based on buffer level
+    if buffer_pct == 0:
+        return SensorState.EMPTY
+    elif buffer_pct <= 33:
+        return SensorState.LOW
+    elif buffer_pct <= 66:
+        return SensorState.MEDIUM
+    elif buffer_pct < 100:
+        return SensorState.HIGH
+    else:
+        return SensorState.FULL
+
+
+def render_sensor_enhanced(ax, sensor, current_step, uav_position,
+                          communication_range=0.2, current_action=None):
+    """
+    Render a single sensor with enhanced visual states.
+
+    Args:
+        ax: Matplotlib axis
+        sensor: IoTSensor object
+        current_step: Current simulation step (for animations)
+        uav_position: UAV position tuple (x, y)
+        communication_range: Distance for communication
+        current_action: Current action (0-4)
+    """
+    x, y = sensor.position
+
+    # Get sensor state
+    state = get_sensor_visual_state(sensor, uav_position, communication_range, current_action)
+
+    # Define visual properties for each state
+    if state == SensorState.EMPTY:
+        color = 'lightblue'
+        marker_size = 80
+        alpha = 0.5
+        marker = 'o'
+    elif state == SensorState.LOW:
+        color = 'yellow'
+        marker_size = 120
+        alpha = 0.7
+        marker = 'o'
+    elif state == SensorState.MEDIUM:
+        color = 'yellow'
+        marker_size = 160
+        alpha = 0.8
+        marker = 'o'
+    elif state == SensorState.HIGH:
+        color = 'yellow'
+        marker_size = 200
+        alpha = 0.9
+        marker = 'o'
+    elif state == SensorState.FULL:
+        color = 'blue'
+        # Pulsing effect for full sensors
+        pulse = 0.5 + 0.5 * np.sin(current_step * 0.3)
+        marker_size = 250 * (0.9 + 0.2 * pulse)
+        alpha = 0.7 + 0.2 * pulse
+        marker = 'o'
+    elif state == SensorState.COLLECTING:
+        color = 'purple'
+        marker_size = 300
+        alpha = 1.0
+        marker = '*'
+    elif state == SensorState.COLLECTED:
+        color = 'green'
+        marker_size = 100
+        alpha = 0.5
+        marker = 'o'
+    else:
+        color = 'gray'
+        marker_size = 80
+        alpha = 0.5
+        marker = 'o'
+
+    # Draw sensor
+    ax.scatter(x, y,
+               c=color,
+               marker=marker,
+               s=marker_size,
+               alpha=alpha,
+               edgecolors='black',
+               linewidths=2,
+               zorder=5)
+
+    # Add buffer percentage text
+    buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
+    text_color = 'white' if state in [SensorState.FULL, SensorState.COLLECTING] else 'black'
+
+    ax.text(x, y - 0.4,
+            f'{int(buffer_pct)}%',
+            ha='center',
+            va='top',
+            fontsize=7,
+            fontweight='bold',
+            color=text_color,
+            bbox=dict(boxstyle='round,pad=0.2',
+                      facecolor='white',
+                      edgecolor='black',
+                      alpha=0.7))
+
+    # Add sensor ID above
+    ax.text(x, y + 0.4,
+            f'S{sensor.sensor_id}',
+            ha='center',
+            va='bottom',
+            fontsize=6,
+            color='gray')
+
+    # Show collection progress animation for COLLECTING state
+    if state == SensorState.COLLECTING:
+        # Draw a small circle around sensor to show it's being collected
+        collection_circle = Circle((x, y), 0.4,
+                                   facecolor='none',
+                                   edgecolor='purple',
+                                   linewidth=3,
+                                   linestyle='--',
+                                   alpha=0.6,
+                                   zorder=4)
+        ax.add_patch(collection_circle)
+
+
+def render_uav_enhanced(ax, uav):
+    """
+    Render the UAV with battery indicator.
+
+    Args:
+        ax: Matplotlib axis
+        uav: UAV object
+    """
+    uav_x, uav_y = uav.position
+
+    # Draw UAV body
+    uav_marker = patches.FancyBboxPatch(
+        (uav_x - 0.25, uav_y - 0.25), 0.5, 0.5,
+        boxstyle="round,pad=0.05",
+        edgecolor='red',
+        facecolor='orange',
+        linewidth=2.5,
+        zorder=10
+    )
+    ax.add_patch(uav_marker)
+
+    # UAV symbol
+    ax.text(uav_x, uav_y, '✈',
+            ha='center', va='center',
+            fontweight='bold', fontsize=14,
+            color='white',
+            zorder=11)
+
+    # Battery indicator below UAV
+    battery_pct = uav.get_battery_percentage()
+    if battery_pct > 50:
+        battery_color = 'green'
+    elif battery_pct > 25:
+        battery_color = 'orange'
+    else:
+        battery_color = 'red'
+
+    ax.text(uav_x, uav_y - 0.8,
+            f'⚡{battery_pct:.0f}%',
+            ha='center',
+            va='top',
+            fontsize=8,
+            fontweight='bold',
+            color=battery_color,
+            bbox=dict(boxstyle='round,pad=0.3',
+                      facecolor='white',
+                      edgecolor=battery_color,
+                      linewidth=2,
+                      alpha=0.9),
+            zorder=11)
 
 
 class UAVEnvironment(gym.Env):
@@ -68,8 +287,6 @@ class UAVEnvironment(gym.Env):
         -5.0: Boundary collision
         -0.1: Battery drain penalty
         -0.05: Step penalty (encourages efficiency)
-
-
     """
 
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 4}
@@ -79,7 +296,7 @@ class UAVEnvironment(gym.Env):
                  sensor_positions: Optional[List[Tuple[float, float]]] = None,
                  num_sensors: int = 20,
                  # Sensor parameters
-                 data_generation_rate: float = 22.0 / 300,
+                 data_generation_rate: float = 22.0/10,
                  max_buffer_size: float = 1000.0,
                  lora_spreading_factor: int = 7,
                  path_loss_exponent: float = 2.0,
@@ -114,6 +331,7 @@ class UAVEnvironment(gym.Env):
         self.max_steps = max_steps
         self.render_mode = render_mode
         self.collection_duration = collection_duration
+        self.last_action = None
 
         # Create sensors
         if sensor_positions is None:
@@ -133,7 +351,7 @@ class UAVEnvironment(gym.Env):
                 max_buffer_size=max_buffer_size,
                 spreading_factor=lora_spreading_factor,
                 path_loss_exponent=path_loss_exponent,
-                rssi_threshold = rssi_threshold
+                rssi_threshold=rssi_threshold
             )
             self.sensors.append(sensor)
 
@@ -247,6 +465,7 @@ class UAVEnvironment(gym.Env):
         self.total_reward = 0.0
         self.total_data_collected = 0.0
         self.sensors_visited = set()
+        self.last_action = None
 
         observation = self._get_observation()
         info = self._get_info()
@@ -268,6 +487,7 @@ class UAVEnvironment(gym.Env):
             info: Additional information dictionary
         """
         self.current_step += 1
+        self.last_action = action
 
         # IMPORTANT: All sensors generate data each step
         for sensor in self.sensors:
@@ -406,73 +626,80 @@ class UAVEnvironment(gym.Env):
             plt.pause(0.05)  # Update display
 
     def _render_frame(self):
-        """Render a single frame."""
+        """Enhanced render frame method for UAVEnvironment."""
         if self.ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(10, 10))
+            self.fig, self.ax = plt.subplots(figsize=(12, 10))
+
+        self.ax.clear()
 
         # Draw grid
         for i in range(self.grid_size[0] + 1):
             self.ax.axhline(i, color='gray', linewidth=0.5, alpha=0.3)
             self.ax.axvline(i, color='gray', linewidth=0.5, alpha=0.3)
 
-        # Draw sensors (smaller for 20 sensors)
+        # Draw communication range
+        comm_range = 2.0  # Adjust based on your RSSI settings
+        range_circle = Circle(self.uav.position, comm_range,
+                             facecolor='none', edgecolor='cyan',
+                             linewidth=2, linestyle='--', alpha=0.4)
+        self.ax.add_patch(range_circle)
+
+        # Draw all sensors with enhanced visuals
         for sensor in self.sensors:
-            x, y = sensor.position
+            render_sensor_enhanced(self.ax, sensor, self.current_step,
+                                   self.uav.position, communication_range=2.0,
+                                   current_action=self.last_action)
 
-            # Color based on buffer status
-            if sensor.data_buffer <= 0:
-                color = 'green'  # Empty (collected)
-                alpha = 0.5
-            elif sensor.data_buffer < sensor.max_buffer_size * 0.5:
-                color = 'yellow'  # Partially full
-                alpha = 0.7
-            else:
-                color = 'blue'  # Full/filling
-                alpha = 0.9
+        # Draw UAV
+        render_uav_enhanced(self.ax, self.uav)
 
-            # Smaller sensors for 20-sensor layout
-            circle = patches.Circle((x, y), 0.2, color=color, alpha=alpha,
-                                   linewidth=1.5, edgecolor='black')
-            self.ax.add_patch(circle)
-
-            # Show sensor ID
-            self.ax.text(x, y, f'{sensor.sensor_id}',
-                        ha='center', va='center', fontsize=7,
-                        fontweight='bold', color='white')
-
-        # Draw UAV (SMALL)
-        uav_x, uav_y = self.uav.position
-        uav_marker = patches.FancyBboxPatch((uav_x-0.15, uav_y-0.15), 0.3, 0.3,
-                                           boxstyle="round,pad=0.05",
-                                           edgecolor='red', facecolor='orange', linewidth=2.5)
-        self.ax.add_patch(uav_marker)
-
-        # Use aircraft symbol
-        self.ax.text(uav_x, uav_y, '✈', ha='center', va='center',
-                    fontweight='bold', fontsize=12, color='white')
-
-        # Settings
+        # Set axis properties
         self.ax.set_xlim(-0.5, self.grid_size[0] - 0.5)
         self.ax.set_ylim(-0.5, self.grid_size[1] - 0.5)
         self.ax.set_aspect('equal')
         self.ax.set_xlabel('X Coordinate', fontsize=12)
         self.ax.set_ylabel('Y Coordinate', fontsize=12)
 
-        # Title with status
-        title = f'Step: {self.current_step}/{self.max_steps} | '
-        title += f'Battery: {self.uav.battery:.1f}Wh ({self.uav.get_battery_percentage():.0f}%) | '
-        title += f'Collected: {len(self.sensors_visited)}/{self.num_sensors} | '
-        title += f'Reward: {self.total_reward:.1f}'
-        self.ax.set_title(title, fontsize=11, fontweight='bold')
+        # Enhanced title with more info
+        title = (f'Step: {self.current_step}/{self.max_steps} | '
+                 f'Battery: {self.uav.battery:.1f}Wh ({self.uav.get_battery_percentage():.0f}%) | '
+                 f'Collected: {len(self.sensors_visited)}/{self.num_sensors} | '
+                 f'Reward: {self.total_reward:.1f}')
+        self.ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
 
-        # Add legend
+        # Add statistics panel
+        stats_text = (
+            f'Data Collected: {self.total_data_collected:.1f} bytes\n'
+            f'Coverage: {(len(self.sensors_visited) / self.num_sensors) * 100:.0f}%\n'
+            f'Battery Used: {self.uav.max_battery - self.uav.battery:.1f}Wh'
+        )
+        self.ax.text(0.02, 0.98, stats_text,
+                     transform=self.ax.transAxes,
+                     fontsize=9,
+                     verticalalignment='top',
+                     bbox=dict(boxstyle='round',
+                               facecolor='wheat',
+                               alpha=0.8))
+
+        # Legend
         legend_elements = [
-            Patch(facecolor='blue', alpha=0.9, label='Sensor: Full Buffer'),
-            Patch(facecolor='yellow', alpha=0.7, label='Sensor: Partial'),
-            Patch(facecolor='green', alpha=0.5, label='Sensor: Collected'),
-            Patch(facecolor='orange', edgecolor='red', label='UAV')
+            Patch(facecolor='blue', alpha=0.9, edgecolor='black',
+                  label='Sensor: Full Buffer (100%)'),
+            Patch(facecolor='yellow', alpha=0.7, edgecolor='black',
+                  label='Sensor: Partial (1-99%)'),
+            Patch(facecolor='green', alpha=0.5, edgecolor='black',
+                  label='Sensor: Collected (empty)'),
+            Patch(facecolor='purple', alpha=1.0, edgecolor='black',
+                  label='Sensor: Collecting'),
+            Patch(facecolor='lightblue', alpha=0.5, edgecolor='black',
+                  label='Sensor: Empty'),
+            Patch(facecolor='orange', edgecolor='red', linewidth=2,
+                  label='UAV')
         ]
-        self.ax.legend(handles=legend_elements, loc='upper right', fontsize=9)
+        self.ax.legend(handles=legend_elements,
+                       loc='upper right',
+                       fontsize=8,
+                       framealpha=0.9)
 
         if self.render_mode == "rgb_array":
             self.fig.canvas.draw()
@@ -500,9 +727,9 @@ if __name__ == "__main__":
     env = UAVEnvironment(
         grid_size=(20, 20),
         num_sensors=20,
-        max_steps=300,
+        max_steps=500,
         rssi_threshold=-80.0,
-        render_mode='human'  # Enable rendering
+        render_mode='human'
     )
 
     print(f"✓ Environment created")
@@ -529,15 +756,14 @@ if __name__ == "__main__":
     action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
 
     try:
-        for step in range(400):  # Run for 100 steps
-            # Random action
+        for step in range(500):
+            # Sample random action
             action = env.action_space.sample()
 
             # Take step
             obs, reward, terminated, truncated, info = env.step(action)
-
-            # RENDER - this updates the window
             env.render()
+
             # Print every 20 steps or at end
             if step % 20 == 0 or terminated or truncated:
                 print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
@@ -548,17 +774,17 @@ if __name__ == "__main__":
 
             # Check if done
             if terminated:
-                print("\n Mission complete! All sensors collected.")
-                env.render()  # Show final state
-                time.sleep(3)
+                print("\n✓ Mission complete! All sensors collected.")
+                env.render()
+                time.sleep(5)
                 break
             elif truncated:
                 if not info['is_alive']:
-                    print("\n Battery depleted!")
+                    print("\n✗ Battery depleted!")
                 else:
-                    print("\n Timeout reached.")
-                env.render()  # Show final state
-                time.sleep(3)
+                    print("\n✗ Timeout reached.")
+                env.render()
+                time.sleep(5)
                 break
 
     except KeyboardInterrupt:
@@ -579,5 +805,5 @@ if __name__ == "__main__":
 
     # Keep window open at the end
     print("\n✓ Test complete! Close the matplotlib window to exit.")
-    plt.ioff()  # Turn off interactive mode
-    plt.show()  # Keep window open until you close it manually
+    plt.ioff()
+    plt.show()
