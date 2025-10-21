@@ -36,6 +36,7 @@ import matplotlib.patches as patches
 from matplotlib.patches import Patch
 import sys
 from pathlib import Path
+import time
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -489,7 +490,6 @@ class UAVEnvironment(gym.Env):
 
 # Testing
 if __name__ == "__main__":
-    import time
 
     print("=" * 70)
     print("Testing UAV Environment")
@@ -521,59 +521,63 @@ if __name__ == "__main__":
     print(f"  Battery: {info['battery']:.2f} Wh ({info['battery_percent']:.1f}%)")
     print()
 
-
     # Run random episode
-    print("Running sample episode with random actions...")
-    print("   (Watch the visualization window - it will update live!)")
+    print("   Running random episode...")
+    print("   Watch the window - UAV will move randomly!")
     print()
 
     action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
 
     try:
-        for step in range(100):  # Run for 100 steps
+        for step in range(400):  # Run for 100 steps
+            # Random action
             action = env.action_space.sample()
+
+            # Take step
             obs, reward, terminated, truncated, info = env.step(action)
 
-
-
-            # OPTIONAL: Add delay to slow down and watch
-            time.sleep(0.1)  # Adjust: 0.01 (fast) to 0.5 (slow)
-
-            # Print some steps
-            if terminated or truncated:
+            # RENDER - this updates the window
+            env.render()
+            # Print every 20 steps or at end
+            if step % 20 == 0 or terminated or truncated:
                 print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
                       f"Pos: ({info['uav_position'][0]:.1f}, {info['uav_position'][1]:.1f}) | "
                       f"Battery: {info['battery']:6.1f}Wh | "
                       f"Collected: {info['sensors_collected']:2d}/{info['total_sensors']:2d} | "
                       f"Reward: {reward:+7.2f}")
-            env.render()
 
+            # Check if done
             if terminated:
-                print("\n🎉 Mission complete! All sensors collected.")
-                time.sleep(3)  # Show final state for 3 seconds
+                print("\n Mission complete! All sensors collected.")
+                env.render()  # Show final state
+                time.sleep(3)
                 break
             elif truncated:
                 if not info['is_alive']:
-                    print("\n⚠️  Battery depleted!")
+                    print("\n Battery depleted!")
                 else:
-                    print("\n⏱️  Timeout reached.")
+                    print("\n Timeout reached.")
+                env.render()  # Show final state
                 time.sleep(3)
                 break
 
     except KeyboardInterrupt:
-        print("\n\n⏸️  Episode interrupted by user")
+        print("\n\n⏸️ Stopped by user (Ctrl+C)")
 
+    # Summary
     print()
-    print(f"Episode Summary:")
+    print("=" * 70)
+    print("Episode Summary:")
+    print("=" * 70)
     print(f"  Total Steps: {info['current_step']}")
     print(f"  Total Reward: {info['total_reward']:.2f}")
     print(f"  Coverage: {info['coverage_percentage']:.1f}%")
     print(f"  Data Collected: {info['total_data_collected']:.2f} bytes")
+    print(f"  Battery Used: {274.0 - info['battery']:.2f} Wh")
     print(f"  Battery Remaining: {info['battery']:.2f} Wh ({info['battery_percent']:.1f}%)")
-
-    env.close()
-
-    print()
     print("=" * 70)
-    print("✓ Environment test complete!")
-    print("=" * 70)
+
+    # Keep window open at the end
+    print("\n✓ Test complete! Close the matplotlib window to exit.")
+    plt.ioff()  # Turn off interactive mode
+    plt.show()  # Keep window open until you close it manually
