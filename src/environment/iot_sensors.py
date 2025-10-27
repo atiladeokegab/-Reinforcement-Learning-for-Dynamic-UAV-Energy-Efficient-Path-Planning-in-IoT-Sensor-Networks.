@@ -6,6 +6,7 @@ Models realistic sensor behavior including:
 - Data buffer management
 - LoRa communication with d^-2 path loss
 - Transmission time calculation
+-continuous
 
 Key equations implementation:
         >>> Path loss: PL(d) = 10*n*log10(d/d_0)
