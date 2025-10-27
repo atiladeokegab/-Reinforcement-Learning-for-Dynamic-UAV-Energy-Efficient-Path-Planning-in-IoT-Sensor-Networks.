@@ -133,6 +133,8 @@ Where:
 - \( PL(d) \): Path loss at distance \( d \) (in dB)
 not yet implemented
 ---
+## Demo Video of Environment
+[![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/Cb4rHDsgCUA)
 ## Environment diagram
 ![2D Environment](asset/diagrams/env/img.png)
 ## C4 Architecture Diagrams
@@ -148,4 +150,6 @@ not yet implemented
 
 ### 4. Code Diagram
 ![Code Diagram](asset/diagrams/q_learning/q_learning_code_diagram.png)
+
+
 
