@@ -38,6 +38,8 @@ import sys
 from pathlib import Path
 import time
 from enum import IntEnum
+import numpy as np
+from typing import List, Tuple
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -389,53 +391,33 @@ class UAVEnvironment(gym.Env):
         self.fig = None
         self.ax = None
 
+
     def _generate_uniform_sensor_positions(self, num_sensors: int) -> List[Tuple[float, float]]:
         """
-        Generate uniformly distributed sensor positions across the grid.
-
-        Creates a near-uniform grid layout with optional small jitter
-        to avoid perfectly aligned sensors.
+        Generate PURE uniformly distributed sensor positions across the grid defined by self.grid_size.
 
         Args:
-            num_sensors: Number of sensors to place
+            num_sensors: Number of sensors to place.
 
         Returns:
-            List of (x, y) positions
+            List of (x, y) positions.
         """
-        positions = []
+        # 1. Define the boundaries using self.grid_size (assuming grid starts at 0,0)
+        # self.grid_size[0] is the width (Max X)
+        # self.grid_size[1] is the height (Max Y)
+        x_min, y_min = 0.0, 0.0
+        x_max, y_max = float(self.grid_size[0]), float(self.grid_size[1])
 
-        # Calculate grid layout for uniform distribution
-        rows = int(np.sqrt(num_sensors))
-        cols = int(np.ceil(num_sensors / rows))
+        # Define the low and high bounds for np.random.uniform
+        # NumPy uses broadcasting to apply [x_min, y_min] limits across the (num_sensors, 2) array
+        low_bounds = [x_min, y_min]
+        high_bounds = [x_max, y_max]
 
-        # Add some margin from edges
-        margin = 1.0
-        x_spacing = (self.grid_size[0] - 2 * margin) / (cols - 1) if cols > 1 else 0
-        y_spacing = (self.grid_size[1] - 2 * margin) / (rows - 1) if rows > 1 else 0
+        # 2. Generate all coordinates in a single call (shape: num_sensors x 2)
+        coordinates = np.random.uniform(low=low_bounds, high=high_bounds, size=(num_sensors, 2))
 
-        sensor_count = 0
-        for row in range(rows):
-            for col in range(cols):
-                if sensor_count >= num_sensors:
-                    break
-
-                x = margin + col * x_spacing
-                y = margin + row * y_spacing
-
-                # Add small random jitter (optional - remove for perfect grid)
-                jitter = 0.2
-                x += np.random.uniform(-jitter, jitter)
-                y += np.random.uniform(-jitter, jitter)
-
-                # Ensure within bounds
-                x = np.clip(x, 0.5, self.grid_size[0] - 0.5)
-                y = np.clip(y, 0.5, self.grid_size[1] - 0.5)
-
-                positions.append((float(x), float(y)))
-                sensor_count += 1
-
-            if sensor_count >= num_sensors:
-                break
+        # 3. Convert the NumPy array of (x, y) pairs to the required List[Tuple[float, float]]
+        positions = [(float(x), float(y)) for x, y in coordinates]
 
         return positions
 
