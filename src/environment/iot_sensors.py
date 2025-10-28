@@ -17,6 +17,14 @@ Author: ATILADE GABRIEL OKE
 Date: October 2025
 Project: Reinforcement Learning for Dynamic UAV Energy-Efficient Path Planning
          in IoT Sensor Networks
+
+(a) Passive (Broadcast) Mode
+
+Each sensor transmits periodically (unsynchronized).
+
+The UAV simply listens for packets while flying overhead.
+
+It collects whatever packets it hears successfully.
 """
 
 from typing import Tuple, Optional, List
@@ -87,14 +95,6 @@ class IoTSensor:
             rssi_threshold: Minimum RSSI for communication (dBm)
             spreading_factor: LoRa SF (7=fast/short, 12=slow/long)
 
-        Example:
-            >>> # Environmental sensor: 22 bytes every 5 minutes
-            >>> sensor = IoTSensor(
-            ...     sensor_id=1,
-            ...     position=(5.0, 5.0),
-            ...     data_generation_rate=22.0 / 300,  # 22 bytes per 300 steps
-            ...     spreading_factor=7
-            ... )
         """
         self.sensor_id = sensor_id
         self.position = np.array(position, dtype=np.float32)
@@ -254,7 +254,7 @@ class IoTSensor:
         bytes_collected = min(self.data_buffer, max_transferable)
 
         # Remove from buffer
-        self.data_buffer -= bytes_collected
+        self.data_buffer -= bytes_collected#TODO:CHANGE
 
         # Mark as collected if buffer is now empty
         if self.data_buffer <= 0:
@@ -317,3 +317,7 @@ class IoTSensor:
                 f"SF={self.spreading_factor}, "
                 f"data_rate={self.data_rate:.1f}B/s)")
 
+"""
+📋 Required Changes for IoTSensor ClassThese changes will introduce the critical concepts of scheduled broadcast events
+ and minimum hover time for the UAV to complete data collection.1. New Initialization Parameters (in __init__)
+ Add the parameters necessary to define the sensor's intermittent broadcast schedule:transmission_interval: float: The fixed time (in seconds/time steps) between each broadcast event. This models the power-saving duty cycle constraint.Suggested Default: 300.0 (e.g., 5 minutes).2. New Instance AttributesThese attributes are essential for managing the broadcast state:transmission_interval: float: Stores the time between broadcasts.time_until_next_broadcast: float: A countdown timer that determines when the next data broadcast event occurs. Should be initialized randomly (e.g., np.random.uniform(0.0, transmission_interval)) to model unsynchronized nodes.data_for_transmission: float: The amount of data (bytes) that the sensor has packaged and is actively broadcasting during the current event. This buffer is what the UAV drains. Should be initialized to 0.0.3. Updates to step() MethodModify step() to handle the timer countdown and trigger the broadcast event:Countdown: Decrement self.time_until_next_broadcast by time_step.Event Trigger: If self.time_until_next_broadcast <= 0:Set self.data_for_transmission to the current contents of self.data_buffer (all available data is packaged for broadcast).Reset the countdown: self.time_until_next_broadcast = self.transmission_interval.4. New Property: transmission_time_requiredCreate a new @property to tell the RL Agent the cost of a successful collection:@property transmission_time_required(self) -> float:Calculates the minimum time (in seconds/time steps) the UAV must hover over the sensor to collect the entire self.data_for_transmission buffer at the current self.data_rate.Formula: self.data_for_transmission / self.data_rate (if greater than zero).5. Updates to collect_data() MethodThe core collection logic needs to be revised to respect the broadcast event:Broadcast Check: Add a check to ensure self.data_for_transmission > 0. If it's zero, the node is currently in its silent (power-saving) period, and collection fails immediately (return 0.0, False), even if the UAV is in range.Data Draining: The collection logic must drain data from self.data_for_transmission.Buffer Update: The collected amount must also be subtracted from the main self.data_buffer.Event Completion: If self.data_for_transmission drops to $\leq 0$, the broadcast event is complete. Set self.data_for_transmission = 0.0 and set self.data_collected = True.6. Updates to reset() MethodEnsure the new attributes are correctly reset for a new episode:Reset self.data_for_transmission = 0.0.(Optional but recommended) Reset self.time_until_next_broadcast to a random uniform value between $0$ and self.transmission_interval.These six points ensure your sensor model accurately simulates a scheduled, intermittent, and energy-constrained passive LoRa node, providing a much more complex and realistic challenge for your Reinforcement Learning path planner."""
