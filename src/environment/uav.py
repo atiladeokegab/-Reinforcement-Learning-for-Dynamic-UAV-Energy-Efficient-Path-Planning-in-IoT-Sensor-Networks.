@@ -236,13 +236,6 @@ class UAV:
         Resets position to start position and battery to maximum capacity.
         Used at the beginning of each training episode.
 
-        Example:
-            >>> uav = UAV(start_position=(5.0, 5.0), max_battery=100.0)
-            >>> uav.move('UP', grid_size=(10, 10))
-            >>> uav.hover(5.0)
-            >>> uav.reset()
-            >>> print(f"Position: {uav.position}, Battery: {uav.battery}")
-            Position: [5. 5.], Battery: 100.0
         """
 
         self.position = self.start_position.copy()
@@ -253,9 +246,3 @@ class UAV:
     def battery_drain_hover(self) -> float:
         """Calculate hover battery drain per second in Wh."""
         return self.power_hover / 3600  # Convert W to Wh/s
-
-    def __repr__(self) -> str:
-        """String representation of UAV state."""
-        return (f"UAV(position={tuple(self.position)}, "
-                f"battery={self.battery:.2f}Wh/{self.max_battery}Wh, "
-                f"charge={self.get_battery_percentage():.1f}%)")
