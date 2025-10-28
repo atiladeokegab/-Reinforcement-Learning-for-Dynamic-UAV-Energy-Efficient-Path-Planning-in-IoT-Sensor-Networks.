@@ -241,7 +241,6 @@ class UAV:
         self.position = self.start_position.copy()
         self.battery = self.max_battery
 
-dsbcjjkjkdb
     @property
     def battery_drain_hover(self) -> float:
         """Calculate hover battery drain per second in Wh."""
