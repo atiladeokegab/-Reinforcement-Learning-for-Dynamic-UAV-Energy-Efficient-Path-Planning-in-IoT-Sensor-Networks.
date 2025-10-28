@@ -27,6 +27,7 @@ The goal is to optimize the path of a single UAV for IoT data collection in a ne
 ### Constraints
 - The UAV must visit each IoT node at least once per mission.
 - Data transfer occurs only when the UAV is within the **effective LoRa range**.
+- IOT sensor come on and off at duty cycle time the uav must master the patterns and timing and ensure it maximizes data transfer during iot duty cycle period.
 - UAV energy and hovering time are limited.
 - IoT nodes continuously generate new data; UAV must balance waiting vs. traveling to reduce AoI.
 
@@ -78,7 +79,7 @@ A weighted combination of:
 | **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium                                           |
 | **Simulation** | Custom UAV Environment (OpenAI Gym Compatible)                                         |
 | **Visualization** | Matplotlib, Seaborn                                                                    |
-| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti switched back to windows got stock in linux hell |
+| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti switched back to windows got stuck in linux hell |
 | **Report Writing** | LaTeX / Overleaf                                                                       |
 
 ---
@@ -131,7 +132,7 @@ Where:
 - \( RSS(d) \): Received signal strength at distance \( d \) (in dBm)  
 - \( P_t \): Transmit power (in dBm)  
 - \( PL(d) \): Path loss at distance \( d \) (in dB)
-not yet implemented
+
 ---
 ## Demo Video of Environment
 [![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/Cb4rHDsgCUA)
