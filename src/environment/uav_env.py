@@ -308,7 +308,7 @@ class UAVEnvironment(gym.Env):
                  max_battery: float = 274.0,
                  collection_duration: float = 1.0,
                  # Episode parameters
-                 max_steps: int = 300,
+                 max_steps: int = 500,
                  render_mode: Optional[str] = None):
         """
         Initialize UAV environment.
@@ -334,6 +334,8 @@ class UAVEnvironment(gym.Env):
         self.render_mode = render_mode
         self.collection_duration = collection_duration
         self.last_action = None
+        self.paused = False
+        self.step_mode = False
 
         # Create sensors
         if sensor_positions is None:
@@ -402,21 +404,13 @@ class UAVEnvironment(gym.Env):
         Returns:
             List of (x, y) positions.
         """
-        # 1. Define the boundaries using self.grid_size (assuming grid starts at 0,0)
-        # self.grid_size[0] is the width (Max X)
-        # self.grid_size[1] is the height (Max Y)
         x_min, y_min = 0.0, 0.0
         x_max, y_max = float(self.grid_size[0]), float(self.grid_size[1])
-
-        # Define the low and high bounds for np.random.uniform
-        # NumPy uses broadcasting to apply [x_min, y_min] limits across the (num_sensors, 2) array
         low_bounds = [x_min, y_min]
         high_bounds = [x_max, y_max]
 
-        # 2. Generate all coordinates in a single call (shape: num_sensors x 2)
         coordinates = np.random.uniform(low=low_bounds, high=high_bounds, size=(num_sensors, 2))
 
-        # 3. Convert the NumPy array of (x, y) pairs to the required List[Tuple[float, float]]
         positions = [(float(x), float(y)) for x, y in coordinates]
 
         return positions
@@ -700,17 +694,13 @@ class UAVEnvironment(gym.Env):
 # Testing
 if __name__ == "__main__":
 
-    print("=" * 70)
-    print("Testing UAV Environment")
-    print("=" * 70)
-    print()
-
     # Create environment WITH RENDERING
     env = UAVEnvironment(
         grid_size=(20, 20),
         num_sensors=20,
         max_steps=500,
         rssi_threshold=-80.0,
+        uav_start_position=None,
         render_mode='human'
     )
 
@@ -739,44 +729,26 @@ if __name__ == "__main__":
 
     try:
         for step in range(500):
+
+            # Step mode: wait for 's' press
+            if env.step_mode:
+                env.paused = True  # Pause again after this step
+
             # Sample random action
             action = env.action_space.sample()
-
-            # Take step
             obs, reward, terminated, truncated, info = env.step(action)
             env.render()
 
-            # Print every 20 steps or at end
-            if step % 20 == 0 or terminated or truncated:
-                print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
-                      f"Pos: ({info['uav_position'][0]:.1f}, {info['uav_position'][1]:.1f}) | "
-                      f"Battery: {info['battery']:6.1f}Wh | "
-                      f"Collected: {info['sensors_collected']:2d}/{info['total_sensors']:2d} | "
-                      f"Reward: {reward:+7.2f}")
-
             # Check if done
-            if terminated:
-                print("\n✓ Mission complete! All sensors collected.")
-                env.render()
-                time.sleep(5)
-                break
-            elif truncated:
-                if not info['is_alive']:
-                    print("\n✗ Battery depleted!")
-                else:
-                    print("\n✗ Timeout reached.")
-                env.render()
-                time.sleep(5)
+            if terminated or truncated:
                 break
 
     except KeyboardInterrupt:
-        print("\n\n⏸️ Stopped by user (Ctrl+C)")
+        print("\n\n Stopped by user (Ctrl+C)")
 
     # Summary
-    print()
     print("=" * 70)
     print("Episode Summary:")
-    print("=" * 70)
     print(f"  Total Steps: {info['current_step']}")
     print(f"  Total Reward: {info['total_reward']:.2f}")
     print(f"  Coverage: {info['coverage_percentage']:.1f}%")
@@ -785,7 +757,6 @@ if __name__ == "__main__":
     print(f"  Battery Remaining: {info['battery']:.2f} Wh ({info['battery_percent']:.1f}%)")
     print("=" * 70)
 
-    # Keep window open at the end
-    print("\n✓ Test complete! Close the matplotlib window to exit.")
+    print("\n✓ Closing the matplotlib window to exit.")
     plt.ioff()
     plt.show()
