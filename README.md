@@ -3,33 +3,72 @@
 ## Overview
 
 This project focuses on **optimizing the flight trajectory of an Unmanned Aerial Vehicle (UAV)** for efficient **IoT data collection** using **Reinforcement Learning (RL)**.  
-The UAV must collect data from multiple spatially distributed IoT sensors while **minimizing energy consumption** and **maximizing data freshness**, measured via **Age of Information (AoI)**.
+The UAV must collect data from multiple spatially distributed LoRa IoT sensors while **minimizing energy consumption**, **maximizing multi-sensor collection efficiency**, and respecting **realistic LoRa communication constraints** including duty cycle regulations.
 
-The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **timely data collection** through autonomous decision-making.
+The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
+
+---
+
+## Key Features
+
+### Advanced LoRa Communication Modeling
+- **Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
+- **Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
+- **Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
+- **Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
+- **Capture Effect**: Collision resolution where closest sensor wins per spreading factor
+
+### Energy-Aware System Design
+- **UAV Battery Constraints**: Realistic battery drain for movement and hovering
+- **Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
+- **Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
+
+### Multi-Sensor Collection Strategy
+- **Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
+- **SF-Based Concurrency**: Different spreading factors enable parallel transmissions
+- **Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
+- **Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
+
+###  Enhanced Visualization
+- **Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
+- **Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
+- **Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
+- **Communication Range Visualization**: Dotted lines showing sensors in range
+- **Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
 
 ---
 
 ## Objectives
 
-1. Develop a simulation environment modeling UAV movement and LoRa-based IoT communication.  
-2. Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**.  
-3. Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based) algorithms.  
-4. Design reward functions balancing **energy consumption**, **AoI**, and **data collection**.  
-5. Analyze the performance of trained UAV policies in terms of energy, AoI, and trajectory efficiency.  
-6. Demonstrate the UAV’s learned path planning behavior using trajectory visualizations.
+1. ✅ Develop a simulation environment modeling UAV movement and LoRa-based IoT communication  
+2. ✅ Implement realistic LoRa physics including SF orthogonality, duty cycles, and path loss  
+3. ✅ Enable multi-sensor concurrent collection with collision resolution  
+4. Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
+5. Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based)  
+6. Design reward functions balancing **energy consumption**, **data collection**, and **multi-sensor efficiency**  
+7. Analyze trained UAV policies and demonstrate learned path planning behavior
 
 ---
 
 ## Problem Statement
 
-The goal is to optimize the path of a single UAV for IoT data collection in a network of spatially distributed sensors while minimizing energy consumption and ensuring timely updates of sensor data.
+The goal is to optimize the path of a single UAV for IoT data collection in a network of spatially distributed LoRa sensors with realistic wireless constraints.
+
+### Key Challenges
+- **Duty Cycle Constraints**: IoT sensors are only active 1-10% of the time; UAV must learn sensor wake patterns
+- **Multi-Sensor Coordination**: Optimize positioning to collect from multiple sensors simultaneously
+- **SF Collision Management**: Handle concurrent transmissions on the same spreading factor
+- **Energy-Data Tradeoff**: Balance hovering time for collection vs. movement for coverage
+- **Asynchronous Sensors**: Each sensor operates on independent duty cycle timing
 
 ### Constraints
-- The UAV must visit each IoT node at least once per mission.
-- Data transfer occurs only when the UAV is within the **effective LoRa range**.
-- IOT sensor come on and off at duty cycle time the uav must master the patterns and timing and ensure it maximizes data transfer during iot duty cycle period.
-- UAV energy and hovering time are limited.
-- IoT nodes continuously generate new data; UAV must balance waiting vs. traveling to reduce AoI.
+- UAV must collect data from all sensors while respecting battery limits
+- Data transfer occurs only when:
+  - UAV is within effective LoRa range (RSSI > threshold)
+  - Sensor is active in its duty cycle window
+  - Probabilistic transmission success (based on link quality)
+- Up to 6 concurrent collections per action (one per SF7-SF12)
+- Collision resolution via capture effect (closest sensor wins)
 
 ---
 
