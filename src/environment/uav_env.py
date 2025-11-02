@@ -659,15 +659,19 @@ class UAVEnvironment(gym.Env):
 
         # Check if all sensors now have empty buffers
         all_sensors_collected = all(sensor.data_buffer <= 0 for sensor in self.sensors)
+        total_data_loss = sum(sensor.total_data_lost for sensor in self.sensors)
 
         # STEP 4: Calculate reward
         reward = self.reward_fn.calculate_collection_reward(
-            bytes_collected=total_bytes_collected,
-            was_new_sensor=len(new_sensors_collected) > 0,
-            was_empty=attempted_empty,
-            all_sensors_collected=all_sensors_collected,
-            battery_used=battery_used
-        )
+                bytes_collected=total_bytes_collected,
+                was_new_sensor=len(new_sensors_collected) > 0,
+                was_empty=attempted_empty,
+                all_sensors_collected=all_sensors_collected,
+                battery_used=battery_used,
+                num_sensors_collected=len(successful_sf_slots),  # NEW
+                collision_count=collision_count,  # NEW
+                data_loss=total_data_loss  # NEW
+            )
 
         return reward
 
@@ -717,28 +721,27 @@ class UAVEnvironment(gym.Env):
     def _render_frame(self):
         """Enhanced render frame method for UAVEnvironment."""
         if self.ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(12, 10))
+            self.fig, self.ax = plt.subplots(figsize=(14, 10))  # Wider to accommodate legend i think dont change please
 
         self.ax.clear()
 
-        # Draw grid
+        # Draw grid lines
         for i in range(self.grid_size[0] + 1):
             self.ax.axhline(i, color='gray', linewidth=0.5, alpha=0.3)
+        for i in range(self.grid_size[1] + 1):
             self.ax.axvline(i, color='gray', linewidth=0.5, alpha=0.3)
 
         # Calculate which sensors are in communication range (based on RSSI)
         sensors_in_range = []
 
         for sensor in self.sensors:
-            # Use actual LoRa physics to determine if in range
             in_range = sensor.is_in_range(self.uav.position)
-
             if in_range:
                 sensors_in_range.append(sensor)
 
-        # NEW: Get ACTUAL collecting sensors from last successful collections
+        # Get ACTUAL collecting sensors from last successful collections
         collecting_sensors = []
-        collecting_sensors_sf = {}  # Map sensor to its SF
+        collecting_sensors_sf = {}
 
         if self.last_action == 4 and hasattr(self, 'last_successful_collections'):
             for sensor, sf in self.last_successful_collections:
@@ -748,7 +751,6 @@ class UAVEnvironment(gym.Env):
         # Draw connection lines for sensors in range (but not actively collecting)
         for sensor in sensors_in_range:
             if sensor not in collecting_sensors:
-                # Light dotted line showing "in range but not collecting"
                 self.ax.plot([sensor.position[0], self.uav.position[0]],
                              [sensor.position[1], self.uav.position[1]],
                              color='lightblue',
@@ -759,7 +761,6 @@ class UAVEnvironment(gym.Env):
 
         # Draw all sensors with enhanced visuals
         for sensor in self.sensors:
-            # Pass whether this sensor is actually collecting
             is_collecting = sensor in collecting_sensors
             render_sensor_enhanced(self.ax, sensor, self.current_step,
                                    self.uav.position,
@@ -767,7 +768,6 @@ class UAVEnvironment(gym.Env):
 
         # Draw active collection lines (ONLY for actual winners)
         for sensor in collecting_sensors:
-            # Thick purple dashed line for active collection
             self.ax.plot([sensor.position[0], self.uav.position[0]],
                          [sensor.position[1], self.uav.position[1]],
                          color='purple',
@@ -776,11 +776,8 @@ class UAVEnvironment(gym.Env):
                          alpha=0.7,
                          zorder=8)
 
-            # Add SF label on the connection line
             mid_x = (sensor.position[0] + self.uav.position[0]) / 2
             mid_y = (sensor.position[1] + self.uav.position[1]) / 2
-
-            # Get the actual SF used for this collection
             sf = collecting_sensors_sf.get(sensor.sensor_id, sensor.spreading_factor)
 
             self.ax.text(mid_x, mid_y, f'SF{sf}',
@@ -799,12 +796,14 @@ class UAVEnvironment(gym.Env):
         # Draw UAV
         render_uav_enhanced(self.ax, self.uav)
 
-        # Set axis properties
-        self.ax.set_xlim(-0.5, self.grid_size[0] - 0.5)
-        self.ax.set_ylim(-0.5, self.grid_size[1] - 0.5)
+        # Set axis properties - START AT (0, 0)
+        self.ax.set_xlim(0, self.grid_size[0])  # Start at 0
+        self.ax.set_ylim(0, self.grid_size[1])  # Start at 0
         self.ax.set_aspect('equal')
         self.ax.set_xlabel('X Coordinate', fontsize=12)
         self.ax.set_ylabel('Y Coordinate', fontsize=12)
+        self.ax.axhline(0, color='black', linewidth=1.5, alpha=0.7, zorder=1)
+        self.ax.axvline(0, color='black', linewidth=1.5, alpha=0.7, zorder=1)
 
         # Enhanced title with more info
         title = (f'Step: {self.current_step}/{self.max_steps} | '
@@ -825,13 +824,10 @@ class UAVEnvironment(gym.Env):
             f'Avg Buffer: {avg_buffer:.1f} bytes'
         )
 
-        # Add multi-sensor collection info
         if len(collecting_sensors) > 0:
             stats_text += f'\n\n📡 Collecting: {len(collecting_sensors)} sensor(s)'
             if len(collecting_sensors) > 1:
                 stats_text += '\n🔗 Multi-sensor collection!'
-
-            # Show which SFs are being used
             sf_list = sorted(set(collecting_sensors_sf.values()))
             stats_text += f'\n📶 SFs: {sf_list}'
 
@@ -846,37 +842,47 @@ class UAVEnvironment(gym.Env):
                                facecolor='wheat',
                                alpha=0.8))
 
-        # Updated Legend with duty cycle indicators
+        # Updated Legend - OUTSIDE plot area on the right
         legend_elements = [
             Patch(facecolor='blue', alpha=0.9, edgecolor='black',
-                  label='Sensor: Full Buffer (100%)'),
+                  label='Full Buffer (100%)'),
             Patch(facecolor='yellow', alpha=0.7, edgecolor='black',
-                  label='Sensor: Partial (1-99%)'),
+                  label='Partial Buffer (1-99%)'),
             Patch(facecolor='green', alpha=0.5, edgecolor='black',
-                  label='Sensor: Collected (empty)'),
+                  label='Collected (empty)'),
             Patch(facecolor='purple', alpha=1.0, edgecolor='black',
-                  label='Sensor: Collecting'),
+                  label='Currently Collecting'),
             Patch(facecolor='lightblue', alpha=0.5, edgecolor='black',
-                  label='Sensor: Empty'),
+                  label='Empty Buffer'),
             Patch(facecolor='orange', edgecolor='red', linewidth=2,
-                  label='UAV'),
+                  label='UAV Position'),
             plt.Line2D([0], [0], color='purple', linewidth=2.5, linestyle='--',
-                       label='Active Collection'),
+                       label='Active Collection Link'),
             plt.Line2D([0], [0], color='lightblue', linewidth=1, linestyle=':',
-                       label='In Range'),
+                       label='In Communication Range'),
             plt.Line2D([0], [0], marker='o', color='w',
                        markerfacecolor='limegreen', markeredgecolor='limegreen',
                        markersize=10, markeredgewidth=2,
-                       label='Sensor Active (generating data)'),
+                       label='🟢 Active (Generating Data)'),
             plt.Line2D([0], [0], marker='o', color='w',
                        markerfacecolor='w', markeredgecolor='red',
                        markersize=10, markeredgewidth=2, linestyle=':',
-                       label='Sensor Sleeping'),
+                       label='🔴 Sleeping (Duty Cycle)'),
         ]
+
+        # Place legend OUTSIDE on the right
         self.ax.legend(handles=legend_elements,
-                       loc='upper right',
+                       loc='center left',
+                       bbox_to_anchor=(1.02, 0.5),  # Outside right edge
                        fontsize=8,
-                       framealpha=0.9)
+                       framealpha=0.9,
+                       title='Legend',
+                       title_fontsize=9,
+                       borderaxespad=0)
+
+        # Make room for the legend
+        plt.tight_layout()
+        plt.subplots_adjust(right=0.82)  # Leave 18% space on right
 
         if self.render_mode == "rgb_array":
             self.fig.canvas.draw()
