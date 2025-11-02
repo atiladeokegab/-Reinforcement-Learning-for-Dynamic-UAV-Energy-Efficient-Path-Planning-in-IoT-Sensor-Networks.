@@ -107,11 +107,6 @@ A weighted combination of:
 | Final Report & Presentation | Apr – May 2026 | Submit final report and demo |
 
 ---
-### Run on linux
-```bash
-sudo apt-get update
-sudo apt-get install graphviz
-```
 ### Path Loss Formula
 
 The path loss is given by:
@@ -120,20 +115,34 @@ $$
 PL(d) = 10 \, n \, \log_{10}\left(\frac{d}{d_0}\right)
 $$
 
-#### **Relationship Between RSS and Path Loss**
+#### Relationship Between RSS and Path Loss
 
-The RSS is related to the transmitted power and path loss as:
+The received signal strength (RSS) is related to the transmitted power and path loss as:
 
 $$
 RSS(d) = P_t - PL(d)
 $$
 
 Where:
-- \( RSS(d) \): Received signal strength at distance \( d \) (in dBm)  
-- \( P_t \): Transmit power (in dBm)  
-- \( PL(d) \): Path loss at distance \( d \) (in dB)
+- $RSS(d)$: Received signal strength at distance $d$ (in dBm)
+- $P_t$: Transmit power (in dBm)
+- $PL(d)$: Path loss at distance $d$ (in dB)
 
 ---
+
+### LoRa Data Rates
+
+| Spreading Factor | Data Rate (bytes/sec) | Characteristics |
+|---|---|---|
+| 7 | ~684 | Highest speed, shortest range |
+| 8 | ~390 | — |
+| 9 | ~220 | — |
+| 10 | ~122 | — |
+| 11 | ~55 | — |
+| 12 | ~31 | Maximum range, lowest speed |
+
+---
+
 ## Demo Video of Environment
 [![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/Cb4rHDsgCUA)
 ## Environment diagram
