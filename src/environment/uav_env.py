@@ -63,31 +63,26 @@ class SensorState(IntEnum):
 
 def get_sensor_visual_state(sensor,
                             uav_position,
-                            communication_range=0.2,
-                            current_action=None,
-                            steps_since_collection=10) -> SensorState:
+                            current_action=None) -> SensorState:  # Removed communication_range
     """
     Determine visual state of sensor based on buffer level and UAV interaction.
 
     Args:
         sensor: IoTSensor object
         uav_position: Current UAV position
-        communication_range: Distance for UAV to collect data
         current_action: Current action (0-4, where 4=COLLECT)
-        steps_since_collection: How long ago sensor was collected
 
     Returns:
         SensorState enum value
     """
-    # Check if UAV is currently collecting from this sensor
-    distance = np.linalg.norm(sensor.position - np.array(uav_position))
-    is_in_range = distance <= communication_range
+    # Use sensor's own range calculation (RSSI-based)
+    is_in_range = sensor.is_in_range(uav_position)
 
     # Determine state based on buffer percentage
     buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
 
     # Priority 1: COLLECTING - UAV actively collecting (action=4, in range, has data)
-    if current_action == 4 and is_in_range:
+    if current_action == 4 and is_in_range and sensor.data_buffer > 0:
         return SensorState.COLLECTING
 
     # Priority 2: COLLECTED - Recently emptied (empty buffer, in range, was collected)
@@ -106,9 +101,8 @@ def get_sensor_visual_state(sensor,
     else:
         return SensorState.FULL
 
-
 def render_sensor_enhanced(ax, sensor, current_step, uav_position,
-                          communication_range=0.2, current_action=None):
+                          current_action=None):  # Removed communication_range parameter
     """
     Render a single sensor with enhanced visual states.
 
@@ -117,13 +111,12 @@ def render_sensor_enhanced(ax, sensor, current_step, uav_position,
         sensor: IoTSensor object
         current_step: Current simulation step (for animations)
         uav_position: UAV position tuple (x, y)
-        communication_range: Distance for communication
         current_action: Current action (0-4)
     """
     x, y = sensor.position
 
-    # Get sensor state
-    state = get_sensor_visual_state(sensor, uav_position, communication_range, current_action)
+    # Get sensor state (now uses sensor's own range calculation)
+    state = get_sensor_visual_state(sensor, uav_position, current_action)
 
     # Define visual properties for each state
     if state == SensorState.EMPTY:
@@ -169,6 +162,27 @@ def render_sensor_enhanced(ax, sensor, current_step, uav_position,
         alpha = 0.5
         marker = 'o'
 
+    # NEW: Add duty cycle status ring around sensor BEFORE drawing sensor
+    if sensor.is_active:
+        # Green ring for active sensor
+        duty_ring = Circle((x, y), 0.35,
+                          facecolor='none',
+                          edgecolor='limegreen',
+                          linewidth=2.5,
+                          alpha=0.8,
+                          zorder=4)
+        ax.add_patch(duty_ring)
+    else:
+        # Red ring for sleeping sensor (optional, more subtle)
+        duty_ring = Circle((x, y), 0.35,
+                          facecolor='none',
+                          edgecolor='red',
+                          linewidth=1.5,
+                          linestyle=':',
+                          alpha=0.3,
+                          zorder=4)
+        ax.add_patch(duty_ring)
+
     # Draw sensor
     ax.scatter(x, y,
                c=color,
@@ -195,26 +209,27 @@ def render_sensor_enhanced(ax, sensor, current_step, uav_position,
                       edgecolor='black',
                       alpha=0.7))
 
-    # Add sensor ID above
-    ax.text(x, y + 0.4,
+    # Add sensor ID above with duty cycle status color
+    id_color = 'green' if sensor.is_active else 'gray'
+    ax.text(x, y + 0.5,
             f'S{sensor.sensor_id}',
             ha='center',
             va='bottom',
-            fontsize=6,
-            color='gray')
+            fontsize=7,
+            fontweight='bold' if sensor.is_active else 'normal',
+            color=id_color)
 
     # Show collection progress animation for COLLECTING state
     if state == SensorState.COLLECTING:
         # Draw a small circle around sensor to show it's being collected
-        collection_circle = Circle((x, y), 0.4,
+        collection_circle = Circle((x, y), 0.5,
                                    facecolor='none',
                                    edgecolor='purple',
                                    linewidth=3,
                                    linestyle='--',
                                    alpha=0.6,
-                                   zorder=4)
+                                   zorder=6)
         ax.add_patch(collection_circle)
-
 
 def render_uav_enhanced(ax, uav):
     """
@@ -298,11 +313,12 @@ class UAVEnvironment(gym.Env):
                  sensor_positions: Optional[List[Tuple[float, float]]] = None,
                  num_sensors: int = 20,
                  # Sensor parameters
-                 data_generation_rate: float = 22.0/10,
+                 data_generation_rate: float = 22.0 / 10,
                  max_buffer_size: float = 1000.0,
                  lora_spreading_factor: int = 7,
                  path_loss_exponent: float = 2.0,
                  rssi_threshold: float = -90.0,
+                 sensor_duty_cycle: float = 10.0,
                  # UAV parameters
                  uav_start_position: Optional[Tuple[float, float]] = None,
                  max_battery: float = 274.0,
@@ -321,6 +337,11 @@ class UAVEnvironment(gym.Env):
             max_buffer_size: Maximum sensor buffer capacity (bytes)
             lora_spreading_factor: LoRa SF (7-12)
             path_loss_exponent: n in d^-n model (2.0 for free space)
+            rssi_threshold: Minimum RSSI for communication (dBm)
+            sensor_duty_cycle: Sensor duty cycle percentage (1-100)
+                              1.0 = EU regulation (1%)
+                              10.0 = 10% (recommended for testing)
+                              100.0 = always active
             uav_start_position: UAV starting position (or None for center)
             max_battery: UAV battery capacity (Wh)
             collection_duration: Time UAV hovers to collect data (seconds)
@@ -333,6 +354,7 @@ class UAVEnvironment(gym.Env):
         self.max_steps = max_steps
         self.render_mode = render_mode
         self.collection_duration = collection_duration
+        self.last_successful_collections = []
         self.last_action = None
 
         # Create sensors
@@ -353,13 +375,20 @@ class UAVEnvironment(gym.Env):
                 max_buffer_size=max_buffer_size,
                 spreading_factor=lora_spreading_factor,
                 path_loss_exponent=path_loss_exponent,
-                rssi_threshold=rssi_threshold
+                rssi_threshold=rssi_threshold,
+                duty_cycle=sensor_duty_cycle  # ⭐ USE THE PARAMETER HERE
             )
+
+            # CRITICAL: Randomize initial duty cycle position
+            # This prevents all sensors from being synchronized
+            sensor.current_cycle_step = np.random.randint(0, sensor.cycle_length)
+            sensor.update_duty_cycle()  # Update is_active flag based on random position
+
             self.sensors.append(sensor)
 
         # Initialize UAV
         if uav_start_position is None:
-            uav_start_position = (grid_size[0] / 2, grid_size[1] / 2)
+            uav_start_position = (0, 0)
 
         self.uav = UAV(
             start_position=uav_start_position,
@@ -369,13 +398,13 @@ class UAVEnvironment(gym.Env):
         # Initialize reward function
         self.reward_fn = RewardFunction()
 
-        # Action space: UP, DOWN, LEFT, RIGHT, COLLECT
+        # Action space: UP, DOWN, LEFT, RIGHT
         self.action_space = spaces.Discrete(5)
 
         # Observation space: [x, y, battery, sensor1_buffer, ..., sensorN_buffer]
         obs_low = np.array([0, 0, 0] + [0] * self.num_sensors, dtype=np.float32)
         obs_high = np.array(
-            [grid_size[0]-1, grid_size[1]-1, max_battery] +
+            [grid_size[0] - 1, grid_size[1] - 1, max_battery] +
             [max_buffer_size] * self.num_sensors,
             dtype=np.float32
         )
@@ -390,7 +419,6 @@ class UAVEnvironment(gym.Env):
         # Rendering
         self.fig = None
         self.ax = None
-
 
     def _generate_uniform_sensor_positions(self, num_sensors: int) -> List[Tuple[float, float]]:
         """
@@ -438,9 +466,14 @@ class UAVEnvironment(gym.Env):
         # Reset UAV
         self.uav.reset()
 
-        # Reset all sensors
+        # Reset all sensors with randomized duty cycle positions
         for sensor in self.sensors:
             sensor.reset()
+
+            # ⭐ CRITICAL: Randomize duty cycle position on reset
+            # This creates varied sensor wake/sleep patterns each episode
+            sensor.current_cycle_step = np.random.randint(0, sensor.cycle_length)
+            sensor.update_duty_cycle()
 
         # Reset episode tracking
         self.current_step = 0
@@ -471,6 +504,10 @@ class UAVEnvironment(gym.Env):
         self.current_step += 1
         self.last_action = action
 
+        # Dictionary to track successful collections by Spreading Factor
+        # Key: Spreading Factor (7-12), Value: Sensor ID that won the slot
+        successful_sf_slots = {}
+
         # IMPORTANT: All sensors generate data each step
         for sensor in self.sensors:
             sensor.step(time_step=1.0)
@@ -491,9 +528,6 @@ class UAVEnvironment(gym.Env):
         terminated = False
         truncated = False
 
-        # Success: All sensors have empty buffers
-        if all(sensor.data_buffer <= 0 for sensor in self.sensors):
-            terminated = True
 
         # Failure: Battery depleted
         if not self.uav.is_alive():
@@ -519,6 +553,9 @@ class UAVEnvironment(gym.Env):
         move_success = self.uav.move(direction, self.grid_size)
         battery_used = battery_before - self.uav.battery
 
+        # NEW: Clear last successful collections (not collecting anymore)
+        self.last_successful_collections = []
+
         reward = self.reward_fn.calculate_movement_reward(
             move_success=move_success,
             battery_used=battery_used
@@ -527,18 +564,83 @@ class UAVEnvironment(gym.Env):
         return reward
 
     def _execute_collect_action(self) -> float:
-        """Execute data collection action and return reward."""
+        """
+        Execute data collection action with probabilistic LoRa transmission
+        and SF-based concurrency handling.
+        """
         # UAV hovers while collecting
         self.uav.hover(duration=self.collection_duration)
         battery_used = self.uav.battery_drain_hover * self.collection_duration
 
+        # Dictionary to track successful collections by Spreading Factor
+        successful_sf_slots = {}
+
         total_bytes_collected = 0.0
         new_sensors_collected = []
         attempted_empty = False
+        collision_count = 0
 
-        # Try to collect from all sensors in range
+        # STEP 1: Probabilistic transmission attempt for all sensors
         for sensor in self.sensors:
-            bytes_collected, success = sensor.collect_data(
+            # Skip if buffer is empty
+            if sensor.data_buffer <= 0:
+                attempted_empty = True
+                continue
+
+            # Calculate distance to UAV
+            distance = np.linalg.norm(sensor.position - self.uav.position)
+
+            # Update Spreading Factor based on distance (ADR)
+            sensor.update_spreading_factor(self.uav.position)
+
+            # Calculate P_overall = P_link * P_cycle
+            P_link = sensor.get_success_probability(self.uav.position, use_advanced_model=True)
+            P_cycle = sensor.duty_cycle / 100.0
+
+            # Check if sensor is currently active in its duty cycle
+            if not sensor.is_active:
+                continue
+
+            P_overall = P_link * P_cycle
+
+            # Probabilistic transmission attempt
+            if np.random.rand() < P_overall:
+                current_sf = sensor.spreading_factor
+
+                # STEP 2: Handle SF-based concurrency (Capture Effect)
+                if current_sf not in successful_sf_slots:
+                    # First sensor to transmit on this SF - wins the slot
+                    successful_sf_slots[current_sf] = {
+                        'sensor_id': sensor.sensor_id,
+                        'distance': distance,
+                        'sensor': sensor,
+                        'data_to_collect': min(sensor.data_buffer, sensor.packet_size)
+                    }
+                else:
+                    # Collision detected! Multiple sensors on same SF
+                    collision_count += 1
+
+                    # Capture effect: Closer sensor wins (stronger RSSI)
+                    existing_distance = successful_sf_slots[current_sf]['distance']
+
+                    if distance < existing_distance:
+                        # Current sensor is closer - it wins, replace existing
+                        successful_sf_slots[current_sf] = {
+                            'sensor_id': sensor.sensor_id,
+                            'distance': distance,
+                            'sensor': sensor,
+                            'data_to_collect': min(sensor.data_buffer, sensor.packet_size)
+                        }
+
+        # NEW: Store successful collections for visualization
+        self.last_successful_collections = []
+
+        # STEP 3: Process successful transmissions
+        for sf, slot_info in successful_sf_slots.items():
+            winning_sensor = slot_info['sensor']
+
+            # Collect data from winning sensor
+            bytes_collected, success = winning_sensor.collect_data(
                 uav_position=tuple(self.uav.position),
                 collection_duration=self.collection_duration
             )
@@ -548,17 +650,17 @@ class UAVEnvironment(gym.Env):
                 self.total_data_collected += bytes_collected
 
                 # Track if this is first time collecting from this sensor
-                if sensor.sensor_id not in self.sensors_visited:
-                    new_sensors_collected.append(sensor.sensor_id)
-                    self.sensors_visited.add(sensor.sensor_id)
-            elif success and bytes_collected == 0:
-                # In range but no data (empty buffer)
-                attempted_empty = True
+                if winning_sensor.sensor_id not in self.sensors_visited:
+                    new_sensors_collected.append(winning_sensor.sensor_id)
+                    self.sensors_visited.add(winning_sensor.sensor_id)
+
+                # NEW: Add to visualization list
+                self.last_successful_collections.append((winning_sensor, sf))
 
         # Check if all sensors now have empty buffers
         all_sensors_collected = all(sensor.data_buffer <= 0 for sensor in self.sensors)
 
-        # Calculate reward
+        # STEP 4: Calculate reward
         reward = self.reward_fn.calculate_collection_reward(
             bytes_collected=total_bytes_collected,
             was_new_sensor=len(new_sensors_collected) > 0,
@@ -574,7 +676,8 @@ class UAVEnvironment(gym.Env):
         obs = np.concatenate([
             self.uav.position,
             [self.uav.battery],
-            [sensor.data_buffer for sensor in self.sensors]
+            [sensor.data_buffer for sensor in self.sensors],
+            [float(sensor.is_active) for sensor in self.sensors],  # Add duty cycle state
         ]).astype(np.float32)
 
         return obs
@@ -596,16 +699,20 @@ class UAVEnvironment(gym.Env):
 
     def render(self):
         """Render the environment."""
+        if self.render_mode is None:
+            return None
+
         if self.render_mode == "rgb_array":
             return self._render_frame()
         elif self.render_mode == "human":
             if self.fig is None:
                 plt.ion()  # Enable interactive mode
-                self.fig, self.ax = plt.subplots(figsize=(10, 10))
+                self.fig, self.ax = plt.subplots(figsize=(12, 10))
 
-            self.ax.clear()
             self._render_frame()
-            plt.pause(0.05)  # Update display
+            plt.pause(0.01)  # Small pause to update display
+
+            return None  # Important: return None for 'human' mode
 
     def _render_frame(self):
         """Enhanced render frame method for UAVEnvironment."""
@@ -619,18 +726,75 @@ class UAVEnvironment(gym.Env):
             self.ax.axhline(i, color='gray', linewidth=0.5, alpha=0.3)
             self.ax.axvline(i, color='gray', linewidth=0.5, alpha=0.3)
 
-        # Draw communication range
-        comm_range = 2.0  # Adjust based on your RSSI settings
-        range_circle = Circle(self.uav.position, comm_range,
-                             facecolor='none', edgecolor='cyan',
-                             linewidth=2, linestyle='--', alpha=0.4)
-        self.ax.add_patch(range_circle)
+        # Calculate which sensors are in communication range (based on RSSI)
+        sensors_in_range = []
+
+        for sensor in self.sensors:
+            # Use actual LoRa physics to determine if in range
+            in_range = sensor.is_in_range(self.uav.position)
+
+            if in_range:
+                sensors_in_range.append(sensor)
+
+        # NEW: Get ACTUAL collecting sensors from last successful collections
+        collecting_sensors = []
+        collecting_sensors_sf = {}  # Map sensor to its SF
+
+        if self.last_action == 4 and hasattr(self, 'last_successful_collections'):
+            for sensor, sf in self.last_successful_collections:
+                collecting_sensors.append(sensor)
+                collecting_sensors_sf[sensor.sensor_id] = sf
+
+        # Draw connection lines for sensors in range (but not actively collecting)
+        for sensor in sensors_in_range:
+            if sensor not in collecting_sensors:
+                # Light dotted line showing "in range but not collecting"
+                self.ax.plot([sensor.position[0], self.uav.position[0]],
+                             [sensor.position[1], self.uav.position[1]],
+                             color='lightblue',
+                             linewidth=1,
+                             linestyle=':',
+                             alpha=0.3,
+                             zorder=2)
 
         # Draw all sensors with enhanced visuals
         for sensor in self.sensors:
+            # Pass whether this sensor is actually collecting
+            is_collecting = sensor in collecting_sensors
             render_sensor_enhanced(self.ax, sensor, self.current_step,
-                                   self.uav.position, communication_range=2.0,
-                                   current_action=self.last_action)
+                                   self.uav.position,
+                                   current_action=self.last_action if is_collecting else None)
+
+        # Draw active collection lines (ONLY for actual winners)
+        for sensor in collecting_sensors:
+            # Thick purple dashed line for active collection
+            self.ax.plot([sensor.position[0], self.uav.position[0]],
+                         [sensor.position[1], self.uav.position[1]],
+                         color='purple',
+                         linewidth=2.5,
+                         linestyle='--',
+                         alpha=0.7,
+                         zorder=8)
+
+            # Add SF label on the connection line
+            mid_x = (sensor.position[0] + self.uav.position[0]) / 2
+            mid_y = (sensor.position[1] + self.uav.position[1]) / 2
+
+            # Get the actual SF used for this collection
+            sf = collecting_sensors_sf.get(sensor.sensor_id, sensor.spreading_factor)
+
+            self.ax.text(mid_x, mid_y, f'SF{sf}',
+                         fontsize=8,
+                         color='white',
+                         fontweight='bold',
+                         ha='center',
+                         va='center',
+                         bbox=dict(boxstyle='round,pad=0.3',
+                                   facecolor='purple',
+                                   edgecolor='white',
+                                   linewidth=1.5,
+                                   alpha=0.9),
+                         zorder=9)
 
         # Draw UAV
         render_uav_enhanced(self.ax, self.uav)
@@ -650,11 +814,30 @@ class UAVEnvironment(gym.Env):
         self.ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
 
         # Add statistics panel
+        active_sensors = sum(1 for s in self.sensors if s.is_active)
+        avg_buffer = np.mean([s.data_buffer for s in self.sensors])
+
         stats_text = (
             f'Data Collected: {self.total_data_collected:.1f} bytes\n'
             f'Coverage: {(len(self.sensors_visited) / self.num_sensors) * 100:.0f}%\n'
-            f'Battery Used: {self.uav.max_battery - self.uav.battery:.1f}Wh'
+            f'Battery Used: {self.uav.max_battery - self.uav.battery:.1f}Wh\n'
+            f'\nActive Sensors: {active_sensors}/{self.num_sensors}\n'
+            f'Avg Buffer: {avg_buffer:.1f} bytes'
         )
+
+        # Add multi-sensor collection info
+        if len(collecting_sensors) > 0:
+            stats_text += f'\n\n📡 Collecting: {len(collecting_sensors)} sensor(s)'
+            if len(collecting_sensors) > 1:
+                stats_text += '\n🔗 Multi-sensor collection!'
+
+            # Show which SFs are being used
+            sf_list = sorted(set(collecting_sensors_sf.values()))
+            stats_text += f'\n📶 SFs: {sf_list}'
+
+        if len(sensors_in_range) > 0:
+            stats_text += f'\n📡 In Range: {len(sensors_in_range)} sensor(s)'
+
         self.ax.text(0.02, 0.98, stats_text,
                      transform=self.ax.transAxes,
                      fontsize=9,
@@ -663,7 +846,7 @@ class UAVEnvironment(gym.Env):
                                facecolor='wheat',
                                alpha=0.8))
 
-        # Legend
+        # Updated Legend with duty cycle indicators
         legend_elements = [
             Patch(facecolor='blue', alpha=0.9, edgecolor='black',
                   label='Sensor: Full Buffer (100%)'),
@@ -676,7 +859,19 @@ class UAVEnvironment(gym.Env):
             Patch(facecolor='lightblue', alpha=0.5, edgecolor='black',
                   label='Sensor: Empty'),
             Patch(facecolor='orange', edgecolor='red', linewidth=2,
-                  label='UAV')
+                  label='UAV'),
+            plt.Line2D([0], [0], color='purple', linewidth=2.5, linestyle='--',
+                       label='Active Collection'),
+            plt.Line2D([0], [0], color='lightblue', linewidth=1, linestyle=':',
+                       label='In Range'),
+            plt.Line2D([0], [0], marker='o', color='w',
+                       markerfacecolor='limegreen', markeredgecolor='limegreen',
+                       markersize=10, markeredgewidth=2,
+                       label='Sensor Active (generating data)'),
+            plt.Line2D([0], [0], marker='o', color='w',
+                       markerfacecolor='w', markeredgecolor='red',
+                       markersize=10, markeredgewidth=2, linestyle=':',
+                       label='Sensor Sleeping'),
         ]
         self.ax.legend(handles=legend_elements,
                        loc='upper right',
@@ -709,8 +904,9 @@ if __name__ == "__main__":
     env = UAVEnvironment(
         grid_size=(20, 20),
         num_sensors=20,
-        max_steps=500,
+        max_steps=10000,
         rssi_threshold=-80.0,
+        sensor_duty_cycle=10.0,
         render_mode='human'
     )
 
@@ -738,7 +934,7 @@ if __name__ == "__main__":
     action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
 
     try:
-        for step in range(500):
+        for step in range(10000):
             # Sample random action
             action = env.action_space.sample()
 
