@@ -360,7 +360,7 @@ class UAVEnvironment(gym.Env):
 
         # Initialize UAV
         if uav_start_position is None:
-            uav_start_position = (25, 25)
+            uav_start_position = (0,0)
 
         self.uav = UAV(
             start_position=uav_start_position,
