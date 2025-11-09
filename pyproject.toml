@@ -3,7 +3,7 @@ name = "final-year"
 version = "0.1.0"
 description = "To develop and evaluate a reinforcement learning algorithm for energy-efficient UAV path planning in IoT sensor networks, focusing on minimizing energy consumption during data collection missions in a two-dimensional environment with fixed sensor locations."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "box2d>=2.3.10",
     "diagrams>=0.24.4",
@@ -11,12 +11,10 @@ dependencies = [
     "gym>=0.26.2",
     "gymnasium>=1.2.1",
     "h5py>=3.15.0",
-    "logging>=0.4.9.6",
     "matplotlib>=3.10.7",
     "numpy>=2.3.3",
     "openai>=2.3.0",
     "pandas>=2.3.3",
-    "pathlib>=1.0.1",
     "plotly>=6.3.1",
     "pygame>=2.6.1",
     "pytest>=8.4.2",
@@ -24,6 +22,14 @@ dependencies = [
     "scipy>=1.16.2",
     "seaborn>=0.13.2",
     "stable-baselines3>=2.7.0",
-    "thread>=2.0.5",
     "tqdm>=4.67.1",
+    "torch>=2.7.1",
 ]
+
+[tool.uv]
+index-strategy = "unsafe-best-match"
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+priority = "default"

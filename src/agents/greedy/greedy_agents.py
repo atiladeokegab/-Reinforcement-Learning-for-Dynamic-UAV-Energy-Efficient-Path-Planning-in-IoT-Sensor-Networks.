@@ -992,7 +992,7 @@ def print_per_sensor_analysis(results_dict: Dict[str, dict], env: UAVEnvironment
 
 
 # Update the main comparison function
-def compare_all_greedy_agents(num_episodes: int = 5, render: bool = False):
+def compare_all_greedy_agents(num_episodes: int = 1, render: bool = False):
     """
     Compare all greedy agents with comprehensive metrics.
 
@@ -1010,9 +1010,10 @@ def compare_all_greedy_agents(num_episodes: int = 5, render: bool = False):
     env = UAVEnvironment(
         grid_size=(50, 50),
         num_sensors=20,
+        max_steps=500,
         sensor_duty_cycle=10.0,
-        max_steps=2000,
-        rssi_threshold=-80.0,
+        penalty_data_loss=-500.0,
+        reward_urgency_reduction=20.0,
         render_mode='human' if render else None
     )
 
@@ -1071,8 +1072,10 @@ if __name__ == "__main__":
     env = UAVEnvironment(
         grid_size=(50, 50),
         num_sensors=20,
-        sensor_duty_cycle=10.0,
         max_steps=500,
+        sensor_duty_cycle=10.0,
+        penalty_data_loss=-500.0,
+        reward_urgency_reduction=20.0,
         render_mode='human'
     )
 
@@ -1081,11 +1084,11 @@ if __name__ == "__main__":
     results = test_greedy_agent(
         agent,
         env,
-        num_episodes=1,
-        render=True,
+        num_episodes=10,
+        render=False,
         agent_name="SF-Aware V2"
     )
-    test_greedy_agent(agent, env, num_episodes=1, render=True, agent_name="SF-Aware V2")
+    #test_greedy_agent(agent, env, num_episodes=5, render=False, agent_name="SF-Aware V2")
     # Full comparison
-    #print("\n\nRunning full comparison (5 episodes)...")
-    #compare_all_greedy_agents(num_episodes=5, render=False)
+    print("\n\nRunning full comparison (5 episodes)...")
+    compare_all_greedy_agents(num_episodes=1, render=False)
