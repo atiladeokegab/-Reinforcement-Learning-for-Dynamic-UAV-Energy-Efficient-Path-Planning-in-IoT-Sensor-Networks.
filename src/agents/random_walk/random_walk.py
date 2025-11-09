@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
     # Create environment
     env = UAVEnvironment(
-        grid_size=(50, 50),
+        grid_size=(100, 100),
         num_sensors=20,
         sensor_duty_cycle=10.0,
         uav_start_position=(0,0),
@@ -270,8 +270,8 @@ if __name__ == "__main__":
     results = test_random_walk_agent(
         agent,
         env,
-        num_episodes=1,
-        render=True
+        num_episodes=10,
+        render=False
     )
 
     # Summary across episodes
