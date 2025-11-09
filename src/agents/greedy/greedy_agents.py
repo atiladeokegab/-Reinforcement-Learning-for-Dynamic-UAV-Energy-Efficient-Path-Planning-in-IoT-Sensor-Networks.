@@ -1012,8 +1012,8 @@ def compare_all_greedy_agents(num_episodes: int = 1, render: bool = False):
         num_sensors=20,
         max_steps=500,
         sensor_duty_cycle=10.0,
-        penalty_data_loss=-500.0,
-        reward_urgency_reduction=20.0,
+        penalty_data_loss=-1000.0,
+        reward_urgency_reduction=500.0,
         render_mode='human' if render else None
     )
 

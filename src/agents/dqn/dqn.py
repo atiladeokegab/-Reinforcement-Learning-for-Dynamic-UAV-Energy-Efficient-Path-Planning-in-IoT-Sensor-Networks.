@@ -127,7 +127,7 @@ ENV_CONFIG = {
     'num_sensors': 20,  #  Full problem
     'max_steps': 500,  #  Reasonable episode length
     'sensor_duty_cycle': 10.0,  #  10% duty cycle
-    'penalty_data_loss': -500.0,  #  FAIRNESS CONSTRAINT
+    'penalty_data_loss': -5000.0,  #  FAIRNESS CONSTRAINT
     'reward_urgency_reduction': 20.0,  #  FAIRNESS BONUS
     'render_mode': None,  # No rendering during training
 }
@@ -143,12 +143,12 @@ HYPERPARAMS = {
     'train_freq': 4,  #  Train every 4 steps
     'target_update_interval': 1000,  #  Update target network
     'exploration_initial_eps': 1.0,  #  Start with full exploration
-    'exploration_fraction': 0.3,  #  Decay over 30% of training
+    'exploration_fraction': 0.6,  #  Decay over 30% of training
     'exploration_final_eps': 0.01,  #  Minimum exploration
     'tau': 1.0,  # Hard target updates
     'gradient_steps': 1,  #  One gradient step per train
     'policy_kwargs': {
-        'net_arch': [256, 256]  #  Neural network: 2 hidden layers, 256 units each
+        'net_arch': [512, 256, 128] #  Neural network: 2 hidden layers, 256 units each
     },
 }
 
