@@ -21,17 +21,17 @@ class RewardFunction:
     """
 
     def __init__(self,
-                 reward_per_byte: float = 0.1,
-                 reward_new_sensor: float = 10.0,
-                 reward_multi_sensor: float = 5.0,
-                 reward_completion: float = 50.0,
-                 reward_urgency_reduction: float = 20.0,  # NEW
+                 reward_per_byte: float = 10.0,
+                 reward_new_sensor: float = 50.0,
+                 reward_multi_sensor: float = 200.0,  # INCREASED: Incentivizes strategic hub movement
+                 reward_completion: float = 100.0,
+                 reward_urgency_reduction: float = 100.0,  # Adjusted for new scale
                  penalty_revisit: float = -2.0,
-                 penalty_boundary: float = -5.0,
-                 penalty_collision: float = -1.0,
-                 penalty_battery: float = -0.1,
-                 penalty_step: float = -0.05,
-                 penalty_data_loss: float = -500.0):
+                 penalty_boundary: float = -50.0,  # INCREASED: Punishes out-of-bounds flight severely
+                 penalty_collision: float = -10.0,
+                 penalty_battery: float = -5.0,  # INCREASED: Heavily penalizes wasteful energy consumption
+                 penalty_step: float = -500.0,  # MASSIVELY INCREASED: Forces high-speed collection (SF7)
+                 penalty_data_loss: float = -5000.0):
         """
         Initialize fairness-constrained reward function.
 
