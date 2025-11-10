@@ -102,7 +102,7 @@ def create_max_throughput_flowchart():
 
     # Start
     dot.node('START',
-             'START\nselect_action()\n✅ SF-AWARE MODE',
+             'START\nselect_action()\n SF-AWARE MODE',
              **start_end_attrs)
 
     # Get UAV position
@@ -141,7 +141,7 @@ def create_max_throughput_flowchart():
 
     # Sort by SF globally
     dot.node('SORT_GLOBALLY',
-             'Sort by:\n1️⃣ LOWEST spreading_factor\n2️⃣ HIGHEST data_buffer',
+             'Sort by:\nLOWEST spreading_factor\n HIGHEST data_buffer',
              **sf_check_attrs)
 
     # Select best sensor globally
@@ -272,24 +272,24 @@ def create_max_throughput_flowchart():
         png_file = output_file.with_suffix('.png')
         if png_file.exists():
             file_size = png_file.stat().st_size
-            print(f"✅ Flowchart created successfully!")
-            print(f"📊 File: {png_file}")
-            print(f"📈 Size: {file_size / 1024:.1f} KB")
-            print(f"\n✨ Flowchart ready to view!")
+            print(f" Flowchart created successfully!")
+            print(f" File: {png_file}")
+            print(f" Size: {file_size / 1024:.1f} KB")
+            print(f"\n Flowchart ready to view!")
             return str(png_file)
         else:
-            print("❌ PNG file was not created")
+            print(" PNG file was not created")
             return None
 
     except Exception as e:
-        print(f"❌ Error creating flowchart: {e}")
+        print(f" Error creating flowchart: {e}")
         raise
 
 
 if __name__ == "__main__":
     print("=" * 80)
     print("MaxThroughputGreedy Algorithm - Flowchart Generator")
-    print("✅ SF-AWARE (Spreading Factor Aware)")
+    print("SF-AWARE (Spreading Factor Aware)")
     print("=" * 80)
     print()
     print("Creating flowchart for MaxThroughputGreedy algorithm...")
