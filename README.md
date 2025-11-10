@@ -8,33 +8,34 @@ The UAV must collect data from multiple spatially distributed LoRa IoT sensors w
 The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
 
 ---
-
+## Demo Video of Environment
+[![two_ray_model_3d](src/diagrams/environment/two_ray_model_3d.png)
 ## Key Features
 
 ### Advanced LoRa Communication Modeling
-- **Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
-- **Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
-- **Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
-- **Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
-- **Capture Effect**: Collision resolution where closest sensor wins per spreading factor
+- **✅Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
+- **✅Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
+- **✅Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
+- **✅Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
+- **✅Capture Effect**: Collision resolution where closest sensor wins per spreading factor
 
 ### Energy-Aware System Design
-- **UAV Battery Constraints**: Realistic battery drain for movement and hovering
-- **Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
-- **Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
+- **✅UAV Battery Constraints**: Realistic battery drain for movement and hovering
+- **✅Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
+- **✅Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
 
 ### Multi-Sensor Collection Strategy
-- **Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
-- **SF-Based Concurrency**: Different spreading factors enable parallel transmissions
-- **Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
-- **Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
+- **✅Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
+- **✅SF-Based Concurrency**: Different spreading factors enable parallel transmissions
+- **✅Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
+- **✅Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
 
 ###  Enhanced Visualization
-- **Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
-- **Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
-- **Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
-- **Communication Range Visualization**: Dotted lines showing sensors in range
-- **Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
+- **✅Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
+- **✅Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
+- **✅Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
+- **✅Communication Range Visualization**: Dotted lines showing sensors in range
+- **✅Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
 
 ---
 
@@ -97,7 +98,7 @@ A weighted combination of:
 
 ### Algorithms
 - **Phase 1:** 4 types of Greedy (Baseline)  
-- **Phase 2:** DQN ( Deep RL)  
+- **Phase 2:** DQN (Deep RL)  
 
 ---
 
