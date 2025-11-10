@@ -43,7 +43,7 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 1. ✅ Develop a simulation environment modeling UAV movement and LoRa-based IoT communication  
 2. ✅ Implement realistic LoRa physics including SF orthogonality, duty cycles, and path loss  
 3. ✅ Enable multi-sensor concurrent collection with collision resolution  
-4. Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
+4. ✅ Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
 5. Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based)  
 6. Design reward functions balancing **energy consumption**, **data collection**, and **multi-sensor efficiency**  
 7. Analyze trained UAV policies and demonstrate learned path planning behavior
@@ -52,7 +52,9 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 
 ## Problem Statement
 
-The goal is to optimize the path of a single UAV for IoT data collection in a network of spatially distributed LoRa sensors with realistic wireless constraints.
+This dissertation addresses the problem of energy-efficient, dynamic path planning for Unmanned Aerial Vehicles ($\text{UAVs}$) 
+tasked with data collection in dense, unsynchronized $\text{LoRaWAN}$ $\text{IoT}$ networks. We identify that standard path planning heuristics are suboptimal,
+as they fail to account for the $\text{LoRa}$ protocol's physics, leading to a "$\text{Spreading Factor}$ ($\text{SF}$) monoculture" bottleneck that wastes concurrent channel capacity.
 
 ### Key Challenges
 - **Duty Cycle Constraints**: IoT sensors are only active 1-10% of the time; UAV must learn sensor wake patterns
@@ -94,17 +96,17 @@ A weighted combination of:
 - AoI penalty  
 
 ### Algorithms
-- **Phase 1:** Q-Learning (Baseline)  
-- **Phase 2:** PPO (Policy-Based, Deep RL)  
+- **Phase 1:** 4 types of Greedy (Baseline)  
+- **Phase 2:** DQN ( Deep RL)  
 
 ---
 
 ## Reinforcement Learning Workflow
 
-1. Initialize UAV and IoT environment  
-2. Choose and execute an action  
-3. Receive reward based on energy, AoI, and data freshness  
-4. Update policy or Q-table  
+1. ✅Initialize UAV and IoT environment  
+2. ✅Choose and execute an action  
+3. ✅Receive reward based on energy, AoI, and data freshness  
+4. ✅Update policy or Q-table  
 5. Repeat until convergence  
 6. Evaluate trained policy performance  
 
@@ -112,14 +114,14 @@ A weighted combination of:
 
 ## Technical Stack
 
-| Component | Technology                                                                             |
-|------------|----------------------------------------------------------------------------------------|
-| **Language** | Python 3.13                                                                            |
-| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium                                           |
-| **Simulation** | Custom UAV Environment (OpenAI Gym Compatible)                                         |
-| **Visualization** | Matplotlib, Seaborn                                                                    |
-| **Backend/Compute** | WSL2 (Ubuntu) with NVIDIA RTX 3050 Ti switched back to windows got stuck in linux hell |
-| **Report Writing** | LaTeX / Overleaf                                                                       |
+| Component | Technology                                                                              |
+|------------|-----------------------------------------------------------------------------------------|
+| **Language** | Python 3.11 ($\text{better support for torch}$)                                         |
+| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium                                            |
+| **Simulation** | Custom UAV Environment (OpenAI Gym Compatible)                                          |
+| **Visualization** | Matplotlib, Seaborn                                                                     |
+| **Backend/Compute** | WSL2 (Ubuntu) with NVIDI A RTX 3050 Ti switched back to Windows got stuck in linux hell |
+| **Report Writing** | LaTeX / Overleaf                                                                        |
 
 ---
 
@@ -167,9 +169,30 @@ Where:
 - $P_t$: Transmit power (in dBm)
 - $PL(d)$: Path loss at distance $d$ (in dB)
 
+#### Addition of Gaussian random variable
+Since we cannot model all the trees and objects which will be interfering with signal we introduce a disturbance of 4 db
+but a zero mean gaussian random variable
+
+where y = random disturbance between the -4bd to +4db
+$$
+RSSI = RSS(d) + y
+$$
+---
+
+#### Example Spreading Factor Calibration For A 50m By 50m Environment
+```
+    RSSI_SF_MAPPING = [
+        (-39, 7),            # SF7: RSSI > -39 dBm (very close, 0-1m)
+        (-44, 9),            # SF9: RSSI > -44 dBm (close, 1-2m)
+        (-50, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
+        (-100, 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
+    ]
+
+```
 ---
 
 ### LoRa Data Rates
+for the modeling of Lora we apperciate that the ADR does not change immediately, so we take the average RSSI over N steps
 
 | Spreading Factor | Data Rate (bytes/sec) | Characteristics |
 |---|---|---|
