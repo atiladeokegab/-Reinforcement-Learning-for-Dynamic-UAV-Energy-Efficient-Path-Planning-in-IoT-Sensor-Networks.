@@ -5,7 +5,7 @@ Trains DQN agent for UAV data collection with SF-aware optimization
 and fairness constraints.
 
 Author: ATILADE GABRIEL OKE
-Date: November 2025
+Date: 09 November 2025
 """
 
 import sys
@@ -45,6 +45,8 @@ class FairnessMetricsCallback(BaseCallback):
         self.episode_data_losses = []
         self.episode_max_urgencies = []
         self.episode_fairness_stds = []
+        self.episode_battery_efficiency = []  #Battery efficiency (B/Wh)
+        self.episode_steps = []  #Steps per episode
         self.n_episodes = 0
 
     def _on_step(self) -> bool:
@@ -62,7 +64,10 @@ class FairnessMetricsCallback(BaseCallback):
 
             # Basic metrics
             if 'episode' in info:
-                self.episode_rewards.append(info['episode']['r'])
+                episode_reward = info['episode']['r']
+                episode_length = info['episode']['l']
+                self.episode_rewards.append(episode_reward)
+                self.episode_steps.append(episode_length)
 
             self.episode_coverages.append(info.get('coverage_percentage', 0))
 
@@ -71,6 +76,11 @@ class FairnessMetricsCallback(BaseCallback):
             total_collected = sum(s.total_data_transmitted for s in env.sensors)
             efficiency = (total_collected / total_generated * 100) if total_generated > 0 else 0
             self.episode_efficiencies.append(efficiency)
+
+            # NEW: Calculate battery efficiency (bytes/Wh)
+            battery_used = 274.0 - info.get('battery', 274.0)  # Wh consumed
+            battery_efficiency = (total_collected / battery_used) if battery_used > 0 else 0
+            self.episode_battery_efficiency.append(battery_efficiency)
 
             # Fairness metrics
             total_data_loss = sum(s.total_data_lost for s in env.sensors)
@@ -89,21 +99,24 @@ class FairnessMetricsCallback(BaseCallback):
                 fairness_std = np.std(sensor_collection_rates)
                 self.episode_fairness_stds.append(fairness_std)
 
-            # Print progress every 10 episodes
+            # ENHANCED: Print progress every 10 episodes with battery efficiency
             if self.n_episodes % 10 == 0:
                 recent_rewards = self.episode_rewards[-10:] if len(self.episode_rewards) >= 10 else self.episode_rewards
                 recent_efficiency = self.episode_efficiencies[-10:] if len(
                     self.episode_efficiencies) >= 10 else self.episode_efficiencies
                 recent_coverage = self.episode_coverages[-10:] if len(
                     self.episode_coverages) >= 10 else self.episode_coverages
-                recent_loss = self.episode_data_losses[-10:] if len(
-                    self.episode_data_losses) >= 10 else self.episode_data_losses
+                recent_batt_eff = self.episode_battery_efficiency[-10:] if len(
+                    self.episode_battery_efficiency) >= 10 else self.episode_battery_efficiency
+                recent_steps = self.episode_steps[-10:] if len(
+                    self.episode_steps) >= 10 else self.episode_steps
 
-                print(f"\n📊 Episode {self.n_episodes} | "
+                print(f"\nEpisode {self.n_episodes} | "
                       f"Reward: {np.mean(recent_rewards):.1f} | "
                       f"Coverage: {np.mean(recent_coverage):.1f}% | "
                       f"Efficiency: {np.mean(recent_efficiency):.1f}% | "
-                      f"Loss: {np.mean(recent_loss):.1f}B")
+                      f"Batt Eff: {np.mean(recent_batt_eff):.1f} B/Wh | "
+                      f"Steps: {np.mean(recent_steps):.0f}")
 
         return True
 
@@ -116,6 +129,8 @@ class FairnessMetricsCallback(BaseCallback):
             'data_losses': self.episode_data_losses,
             'max_urgencies': self.episode_max_urgencies,
             'fairness_stds': self.episode_fairness_stds,
+            'battery_efficiency': self.episode_battery_efficiency,  # testing
+            'steps': self.episode_steps,  # testing
         }
 
 
@@ -125,10 +140,10 @@ class FairnessMetricsCallback(BaseCallback):
 ENV_CONFIG = {
     'grid_size': (50, 50),  #  Manageable for RTX 3050 Ti
     'num_sensors': 20,  #  Full problem
-    'max_steps': 500,  #  Reasonable episode length
+    'max_steps': 800,  #  Reasonable episode length
     'sensor_duty_cycle': 10.0,  #  10% duty cycle
     'penalty_data_loss': -5000.0,  #  FAIRNESS CONSTRAINT
-    'reward_urgency_reduction': 20.0,  #  FAIRNESS BONUS
+    'reward_urgency_reduction': 100.0,  #  FAIRNESS BONUS
     'render_mode': None,  # No rendering during training
 }
 
@@ -138,17 +153,17 @@ HYPERPARAMS = {
     'learning_rate': 1e-4,  #  Good starting point
     'buffer_size': 50_000,  #  Fits in 4GB VRAM
     'batch_size': 32,  #  Optimal for RTX 3050 Ti
-    'gamma': 0.99,  #  Balance short/long-term
+    'gamma': 0.95,  #  Balance short/long-term
     'learning_starts': 1000,  #  Collect data before learning
     'train_freq': 4,  #  Train every 4 steps
     'target_update_interval': 1000,  #  Update target network
     'exploration_initial_eps': 1.0,  #  Start with full exploration
-    'exploration_fraction': 0.6,  #  Decay over 30% of training
+    'exploration_fraction': 0.65,  #  Decay over 30% of training
     'exploration_final_eps': 0.01,  #  Minimum exploration
     'tau': 1.0,  # Hard target updates
     'gradient_steps': 1,  #  One gradient step per train
     'policy_kwargs': {
-        'net_arch': [512, 256, 128] #  Neural network: 2 hidden layers, 256 units each
+        'net_arch': [512,256] #  Neural network: 3 hidden layers, 512 units first two , 256 unit
     },
 }
 
@@ -342,17 +357,29 @@ def main():
     print(f"  Episodes completed: {len(metrics['rewards'])}")
     print(f"  Timesteps: {TRAINING_CONFIG['total_timesteps']:,}")
 
-    if len(metrics['rewards']) > 0:
-        print(f"\nPerformance Metrics (Last 50 episodes):")
+    if True:
+        print(f"\n📊 Performance Metrics (Last 50 episodes):")
         last_n = min(50, len(metrics['rewards']))
-        print(f"  Average Reward: {np.mean(metrics['rewards'][-last_n:]):.2f}")
-        print(f"  Average Coverage: {np.mean(metrics['coverages'][-last_n:]):.2f}%")
-        print(f"  Average Efficiency: {np.mean(metrics['efficiencies'][-last_n:]):.2f}%")
-        print(f"  Average Data Loss: {np.mean(metrics['data_losses'][-last_n:]):.2f} bytes")
+
+        avg_reward = np.mean(metrics['rewards'][-last_n:])
+        total_reward = np.sum(metrics['rewards'])
+        avg_coverage = np.mean(metrics['coverages'][-last_n:])
+        avg_efficiency = np.mean(metrics['efficiencies'][-last_n:])
+        avg_batt_eff = np.mean(metrics['battery_efficiency'][-last_n:])
+        avg_steps = np.mean(metrics['steps'][-last_n:])
+        avg_data_loss = np.mean(metrics['data_losses'][-last_n:])
+
+        print(f"  Average Reward (last 50):    {avg_reward:>10.2f}")
+        print(f"  Total Reward (all episodes): {total_reward:>10.2f}")
+        print(f"  Average Coverage:            {avg_coverage:>10.2f}%")
+        print(f"  Average Efficiency:          {avg_efficiency:>10.2f}%")
+        print(f"  Average Battery Efficiency:  {avg_batt_eff:>10.2f} B/Wh")
+        print(f"  Average Steps per Episode:   {avg_steps:>10.0f}")
+        print(f"  Average Data Loss:           {avg_data_loss:>10.2f} bytes")
 
         if len(metrics['fairness_stds']) > 0:
-            print(f"  Fairness (σ): {np.mean(metrics['fairness_stds'][-last_n:]):.2f}% (lower = fairer)")
-
+            avg_fairness = np.mean(metrics['fairness_stds'][-last_n:])
+            print(f"  Fairness (σ):                {avg_fairness:>10.2f}% (lower = fairer)")
     print(f"\nSaved Files:")
     print(f"  Best model: {SAVE_DIR}/best_model.zip")
     print(f"  Final model: {final_model_path}.zip")
@@ -366,7 +393,6 @@ def main():
     print("ALL DONE!")
     print("=" * 100)
 
-    print(f"\n Next Steps:")
     print(f"  1. View logs: tensorboard --logdir {LOG_DIR}")
     print(f"  2. Load model: model = DQN.load('{final_model_path}.zip')")
     print(f"  3. Evaluate model: python evaluate_dqn.py")

@@ -321,7 +321,7 @@ def train_agent(args):
                 logger.save_metrics(f"logs/metrics_episode_{episode}.json")
 
     except KeyboardInterrupt:
-        print("\n\n⏸️  Training interrupted by user")
+        print("\n\n Training interrupted by user")
 
     # Close environment
     env.close()

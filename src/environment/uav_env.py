@@ -107,7 +107,7 @@ def get_sensor_visual_state(sensor,
 
 
 def render_sensor_enhanced(ax, sensor, current_step, uav_position,
-                          current_action=None, urgency=0.0):  # ✅ NEW: urgency parameter
+                          current_action=None, urgency=0.0):  #  NEW: urgency parameter
     """
     Render a single sensor with enhanced visual states and urgency indicator.
 
@@ -202,7 +202,7 @@ def render_sensor_enhanced(ax, sensor, current_step, uav_position,
             fontsize=7,
             fontweight='bold')
 
-    # ✅ NEW: Urgency indicator
+    #  NEW: Urgency indicator
     if urgency > 0.8:
         urgency_color = 'red'
         urgency_symbol = '🔴'
@@ -354,7 +354,7 @@ class UAVEnvironment(gym.Env):
                  # Episode parameters
                  max_steps: int = 300,
                  render_mode: Optional[str] = None,
-                 # ✅ NEW: Fairness parameters
+                 # Fairness parameters
                  penalty_data_loss: float = -500.0,
                  reward_urgency_reduction: float = 20.0):
         """
@@ -419,7 +419,7 @@ class UAVEnvironment(gym.Env):
             max_battery=max_battery
         )
 
-        # ✅ Initialize fairness-constrained reward function
+        # Initialize fairness-constrained reward function
         self.reward_fn = RewardFunction(
             penalty_data_loss=penalty_data_loss,
             reward_urgency_reduction=reward_urgency_reduction
@@ -428,7 +428,7 @@ class UAVEnvironment(gym.Env):
         # Action space: UP, DOWN, LEFT, RIGHT, COLLECT
         self.action_space = spaces.Discrete(5)
 
-        # ✅ NEW: Enhanced observation space with urgency metrics
+        # Enhanced observation space with urgency metrics
         # Format: [x, y, battery, sensor1_buffer, sensor1_urgency, sensor2_buffer, sensor2_urgency, ...]
         obs_low = np.array(
             [0, 0, 0] + [0, 0] * self.num_sensors,  # [buffer, urgency] per sensor
@@ -447,7 +447,7 @@ class UAVEnvironment(gym.Env):
         self.total_data_collected = 0.0
         self.sensors_visited = set()
 
-        # ✅ NEW: Track data loss for step-by-step penalties
+        # Track data loss for step-by-step penalties
         self.previous_data_loss = 0.0
 
         # Rendering
@@ -475,7 +475,7 @@ class UAVEnvironment(gym.Env):
 
         return positions
 
-    # ✅ NEW: Calculate urgency metrics
+    # Calculate urgency metrics
     def _calculate_urgency(self, sensor: IoTSensor) -> float:
         """
         Calculate urgency metric for a sensor.
@@ -548,7 +548,7 @@ class UAVEnvironment(gym.Env):
         self.sensors_visited = set()
         self.last_action = None
 
-        # ✅ Reset data loss tracking
+        # Reset data loss tracking
         self.previous_data_loss = 0.0
 
         observation = self._get_observation()
@@ -631,9 +631,9 @@ class UAVEnvironment(gym.Env):
         """
         Execute data collection action with fairness tracking.
 
-        ✅ NEW: Tracks urgency reduction and step-by-step data loss
+        Tracks urgency reduction and step-by-step data loss
         """
-        # ✅ Store urgency BEFORE collection
+        # Store urgency BEFORE collection
         urgencies_before = self._get_sensor_urgencies()
 
         # UAV hovers while collecting
@@ -723,13 +723,16 @@ class UAVEnvironment(gym.Env):
         # Check if all sensors now have empty buffers
         all_sensors_collected = all(sensor.data_buffer <= 0 for sensor in self.sensors)
 
-        # ✅ Calculate urgency AFTER collection
+        # Calculate urgency AFTER collection
         urgencies_after = self._get_sensor_urgencies()
 
-        # ✅ Calculate total urgency reduction
+        # Calculate total urgency reduction
         urgency_reduced = np.sum(np.maximum(0, urgencies_before - urgencies_after))
 
-        # ✅ Get current data loss (THIS STEP ONLY)
+        # calculate the total urgency after
+        urgency_after = np.sum(urgencies_after)
+
+        # Get current data loss (THIS STEP ONLY)
         current_data_loss = sum(sensor.total_data_lost for sensor in self.sensors)
         step_data_loss = current_data_loss - self.previous_data_loss
         self.previous_data_loss = current_data_loss
@@ -743,8 +746,8 @@ class UAVEnvironment(gym.Env):
             battery_used=battery_used,
             num_sensors_collected=len(successful_sf_slots),
             collision_count=collision_count,
-            data_loss=step_data_loss,  # ✅ Loss THIS step (not cumulative)
-            urgency_reduced=urgency_reduced  # ✅ NEW
+            data_loss=step_data_loss,  #  Loss THIS step (not cumulative)
+            urgency_reduced=urgency_reduced #  NEW
         )
 
         return reward
@@ -752,9 +755,7 @@ class UAVEnvironment(gym.Env):
     def _get_observation(self) -> np.ndarray:
         """
         Get current observation with urgency metrics.
-
-        ✅ NEW: Includes urgency for each sensor
-
+        Includes urgency for each sensor
         Format: [uav_x, uav_y, battery,
                  sensor1_buffer, sensor1_urgency,
                  sensor2_buffer, sensor2_urgency,
@@ -789,7 +790,7 @@ class UAVEnvironment(gym.Env):
             'total_data_collected': self.total_data_collected,
             'coverage_percentage': (len(self.sensors_visited) / self.num_sensors) * 100,
             'is_alive': self.uav.is_alive(),
-            # ✅ NEW: Urgency statistics
+            #  NEW: Urgency statistics
             'max_urgency': np.max(urgencies),
             'avg_urgency': np.mean(urgencies),
             'high_urgency_sensors': np.sum(urgencies > 0.8),
@@ -825,7 +826,7 @@ class UAVEnvironment(gym.Env):
         for i in range(self.grid_size[1] + 1):
             self.ax.axvline(i, color='gray', linewidth=0.5, alpha=0.3)
 
-        # ✅ Get urgencies for all sensors
+        #  Get urgencies for all sensors
         urgencies = self._get_sensor_urgencies()
 
         # Calculate which sensors are in communication range
@@ -861,7 +862,7 @@ class UAVEnvironment(gym.Env):
             render_sensor_enhanced(self.ax, sensor, self.current_step,
                                    self.uav.position,
                                    current_action=self.last_action if is_collecting else None,
-                                   urgency=urgencies[i])  # ✅ Pass urgency
+                                   urgency=urgencies[i])  #  Pass urgency
 
         # Draw active collection lines
         for sensor in collecting_sensors:
@@ -909,7 +910,7 @@ class UAVEnvironment(gym.Env):
                  f'Reward: {self.total_reward:.1f}')
         self.ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
 
-        # ✅ Enhanced statistics panel with urgency
+        #  Enhanced statistics panel with urgency
         avg_buffer = np.mean([s.data_buffer for s in self.sensors])
         max_urgency = np.max(urgencies)
         avg_urgency = np.mean(urgencies)
@@ -920,21 +921,21 @@ class UAVEnvironment(gym.Env):
             f'Coverage: {(len(self.sensors_visited) / self.num_sensors) * 100:.0f}%\n'
             f'Battery Used: {self.uav.max_battery - self.uav.battery:.1f}Wh\n'
             f'Avg Buffer: {avg_buffer:.1f} bytes\n'
-            f'\n🎯 URGENCY METRICS:\n'
+            f'\nURGENCY METRICS:\n'
             f'Max Urgency: {max_urgency:.2f}\n'
             f'Avg Urgency: {avg_urgency:.2f}\n'
             f'High Urgency (>0.8): {high_urgency_count}'
         )
 
         if len(collecting_sensors) > 0:
-            stats_text += f'\n\n📡 Collecting: {len(collecting_sensors)} sensor(s)'
+            stats_text += f'\n\n Collecting: {len(collecting_sensors)} sensor(s)'
             if len(collecting_sensors) > 1:
-                stats_text += '\n🔗 Multi-sensor collection!'
+                stats_text += '\n Multi-sensor collection!'
             sf_list = sorted(set(collecting_sensors_sf.values()))
-            stats_text += f'\n📶 SFs: {sf_list}'
+            stats_text += f'\n SFs: {sf_list}'
 
         if len(sensors_in_range) > 0:
-            stats_text += f'\n📡 In Range: {len(sensors_in_range)} sensor(s)'
+            stats_text += f'\n In Range: {len(sensors_in_range)} sensor(s)'
 
         self.ax.text(0.02, 0.98, stats_text,
                      transform=self.ax.transAxes,
@@ -1008,8 +1009,8 @@ if __name__ == "__main__":
         num_sensors=20,
         max_steps=500,
         sensor_duty_cycle=10.0,
-        penalty_data_loss=-500.0,  # ✅ MASSIVE PENALTY
-        reward_urgency_reduction=20.0,  # ✅ URGENCY BONUS
+        penalty_data_loss=-500.0,
+        reward_urgency_reduction=20.0,
         render_mode='human'
     )
 
@@ -1035,7 +1036,7 @@ if __name__ == "__main__":
 
     # Run random episode
     print("   Running random episode with fairness monitoring...")
-    print("   Watch urgency indicators: 🔴>0.8 🟠>0.5 🟡>0.2 🟢≤0.2")
+    print("   Watch urgency indicators: 🔴>0.8 🟠>0.5 🟡>0.2 🟢≤0.2")#chat added this i like it
     print()
 
     action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']

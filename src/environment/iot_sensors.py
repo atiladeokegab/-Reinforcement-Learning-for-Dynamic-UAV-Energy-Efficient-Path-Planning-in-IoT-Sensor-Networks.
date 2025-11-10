@@ -40,8 +40,8 @@ class IoTSensor:
     RSSI_SF_MAPPING = [
         (-39, 7),            # SF7: RSSI > -39 dBm (very close, 0-1m)
         (-44, 9),            # SF9: RSSI > -44 dBm (close, 1-2m)
-        (-51, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
-        (float('-inf'), 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
+        (-50, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
+        (-100, 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
     ]
 
     def __init__(
@@ -144,7 +144,7 @@ class IoTSensor:
         """
         # Generate new data
         new_data = self.data_generation_rate * time_step
-        self.total_data_generated += new_data  # ✅ Cumulative
+        self.total_data_generated += new_data  # Cumulative
 
         # Try to add to buffer
         potential_buffer = self.data_buffer + new_data
@@ -153,7 +153,7 @@ class IoTSensor:
         if potential_buffer > self.max_buffer_size:
             data_loss = potential_buffer - self.max_buffer_size
             self.data_buffer = self.max_buffer_size
-            self.total_data_lost += data_loss  # ✅ Cumulative
+            self.total_data_lost += data_loss  # Cumulative
         else:
             data_loss = 0.0
             self.data_buffer = potential_buffer
@@ -170,7 +170,7 @@ class IoTSensor:
         """
         Collect data from sensor buffer (only if in range and has data).
 
-        ✅ PROPERLY TRACKS CUMULATIVE DATA IN total_data_transmitted
+        PROPERLY TRACKS CUMULATIVE DATA IN total_data_transmitted
 
         Args:
             uav_position: UAV position (x, y)
@@ -196,7 +196,7 @@ class IoTSensor:
         # Remove from buffer
         self.data_buffer -= bytes_collected
 
-        # ✅ TRACK CUMULATIVE COLLECTED DATA
+        # TRACK CUMULATIVE COLLECTED DATA
         self.total_data_transmitted += bytes_collected
 
         # Update statistics
@@ -291,7 +291,7 @@ class IoTSensor:
 
         # Free Space Path Loss
         if distance_3d <= self.d0:
-            path_loss = 0.0
+            path_loss = 0.1
         else:
             path_loss = 20 * self.path_loss_exponent * np.log10(distance_3d / self.d0)
 
@@ -495,7 +495,7 @@ class IoTSensor:
         self.spreading_factor = 7
         self.data_rate = self.LORA_DATA_RATES[self.spreading_factor]
 
-        # ✅ RESET CUMULATIVE TRACKING
+        # RESET CUMULATIVE TRACKING
         self.total_data_generated = 0.0
         self.total_data_lost = 0.0
         self.total_data_transmitted = 0.0
@@ -598,9 +598,9 @@ if __name__ == "__main__":
     print(f"Error:        {accounting['error']:.3f} bytes ({accounting['error_pct']:.3f}%)")
 
     if accounting['error'] < 0.1:
-        print("✅ Data accounting: PERFECT")
+        print("Data accounting: PERFECT")
     else:
-        print("❌ Data accounting: ERROR")
+        print("Data accounting: ERROR")
 
     print()
 
@@ -620,5 +620,5 @@ if __name__ == "__main__":
     print()
 
     print("=" * 100)
-    print("✅ ALL TESTS PASSED")
+    print("ALL TESTS PASSED")
     print("=" * 100)
