@@ -87,7 +87,7 @@ class UAV:
     def __init__(self,
                  start_position: Tuple[float, float] = (5.0, 5.0),
                  max_battery: float = 274.0,  # Wh (TB60 capacity)
-                 speed: float = 10.0,  # m/s (cruising speed)
+                 speed: float = 5.0,  # m/s (cruising speed)
                  power_move: float = 600.0,  # W (cruise power)
                  power_hover: float = 400.0,  # W (hover power)
                  altitude: float = 100.0):  # m (constant altitude)
@@ -133,6 +133,7 @@ class UAV:
             direction: One of 'UP', 'DOWN', 'LEFT', 'RIGHT'
             grid_size: (width, height) of the grid for boundary checking
             time_step: Duration of movement in seconds (default: 1.0)
+            so uav = 10m per second on  50 by 50 enhance 500 by 500m
 
         Returns:
             True if move was successful, False if blocked by boundary
@@ -252,7 +253,7 @@ class UAV:
     @property
     def battery_drain_hover(self) -> float:
         """Calculate hover battery drain per second in Wh."""
-        return self.power_hover / 3600  # Convert W to Wh/s
+        return self.power_hover / (60 * 60)  # Convert W to Wh/s
 
     def __repr__(self) -> str:
         """String representation of UAV state."""

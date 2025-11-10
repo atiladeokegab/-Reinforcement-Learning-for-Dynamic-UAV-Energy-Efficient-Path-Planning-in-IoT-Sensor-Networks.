@@ -1,46 +1,39 @@
 """
-Greedy Algorithm for UAV Data Collection with Academic Metrics and Data Goals
-
-Baseline algorithms for comparison with RL agents.
-Includes data collection goals for fair comparison across algorithms.
+Complete Greedy Algorithms for UAV Data Collection with SF-Aware Agent
+SF = spreading Factor
+INCLUDES:
+1. NearestSensorGreedy - Distance-based (ignores SF)
+2. HighestBufferGreedy - Buffer-based (ignores SF)
+3. ProbabilisticAwareGreedy - Duty-cycle aware (ignores SF)
+4. MaxThroughputGreedy - SF-AWARE v1 (original)
+5. MaxThroughputGreedyV2 - SF-AWARE v2 (PRODUCTION READY)
+6. MultiSensorGreedy - Multi-target positioning
 
 Author: ATILADE GABRIEL OKE
 Date: November 2025
+Status: PRODUCTION READY
 """
-
 import sys
 from pathlib import Path
 
-# Add src to path
 src_path = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(src_path))
 
 import numpy as np
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
+from enum import Enum
 
 from environment.uav_env import UAVEnvironment
 
 
 class DataGoal:
-    """
-    Define data collection goals for episodes.
-
-    Goals provide fair comparison by setting explicit targets
-    rather than just maximizing collection.
-    """
+    """Define data collection goals for episodes."""
 
     def __init__(self,
                  target_bytes: float = None,
                  target_coverage: float = None,
                  max_battery_usage: float = None):
-        """
-        Initialize data collection goals.
-
-        Args:
-            target_bytes: Target total bytes to collect (e.g., 5000.0)
-            target_coverage: Target percentage of sensors to visit (e.g., 95.0)
-            max_battery_usage: Maximum battery percentage to use (e.g., 80.0)
-        """
+        """Initialize data collection goals."""
         self.target_bytes = target_bytes
         self.target_coverage = target_coverage
         self.max_battery_usage = max_battery_usage
@@ -71,7 +64,6 @@ class DataGoal:
             achievement['coverage_ratio'] = min(1.0, metrics['coverage_percentage'] / self.target_coverage)
 
         if self.max_battery_usage is not None:
-            # For battery, being under target is good
             if metrics['battery_used_percentage'] <= self.max_battery_usage:
                 achievement['battery_ratio'] = 1.0
             else:
@@ -93,35 +85,16 @@ class DataGoal:
 
 
 class SuccessMetrics:
-    """
-    Multi-level success criteria based on academic literature.
-
-    Success Levels:
-        - Perfect: 100% coverage, <1% data loss
-        - High: ≥95% coverage, ≥90% collection ratio (typical paper standard)
-        - Acceptable: ≥80% coverage, ≥75% collection ratio
-        - Partial: ≥50% coverage
-    """
+    """Multi-level success criteria based on academic literature."""
 
     @staticmethod
     def evaluate_episode(info: dict, env: UAVEnvironment, data_goal: DataGoal = None) -> dict:
-        """
-        Evaluate episode with multiple success criteria and optional data goal.
-
-        Args:
-            info: Episode info dictionary from environment
-            env: UAV environment instance
-            data_goal: Optional DataGoal instance
-
-        Returns:
-            Dictionary with success levels, metrics, and goal achievement
-        """
+        """Evaluate episode with multiple success criteria and optional data goal."""
         total_data_generated = sum(s.total_data_generated for s in env.sensors)
         total_data_lost = sum(s.total_data_lost for s in env.sensors)
         data_collected = info['total_data_collected']
         battery_used = 274.0 - info['battery']
 
-        # Calculate metrics
         coverage_pct = info['coverage_percentage']
         collection_ratio = (data_collected / total_data_generated * 100) if total_data_generated > 0 else 0
         data_loss_rate = (total_data_lost / total_data_generated * 100) if total_data_generated > 0 else 0
@@ -129,13 +102,11 @@ class SuccessMetrics:
         battery_used_pct = battery_used / 274.0 * 100
 
         result = {
-            # Success Levels
             'perfect_success': coverage_pct == 100 and data_loss_rate < 1.0,
             'high_success': coverage_pct >= 95 and collection_ratio >= 90,
             'acceptable_success': coverage_pct >= 80 and collection_ratio >= 75,
             'partial_success': coverage_pct >= 50,
 
-            # Supporting Metrics
             'coverage_percentage': coverage_pct,
             'collection_ratio': collection_ratio,
             'data_loss_rate': data_loss_rate,
@@ -146,7 +117,6 @@ class SuccessMetrics:
             'total_data_lost': total_data_lost,
         }
 
-        # Add goal-based evaluation
         if data_goal is not None:
             result['goal_achieved'] = data_goal.is_goal_achieved(result)
             result['goal_achievement'] = data_goal.get_goal_achievement_ratio(result)
@@ -160,20 +130,25 @@ class SuccessMetrics:
     def get_success_level_string(metrics: dict) -> str:
         """Get human-readable success level."""
         if metrics['perfect_success']:
-            return "🌟 Perfect"
+            return " Perfect"
         elif metrics['high_success']:
-            return "✅ High"
+            return "High"
         elif metrics['acceptable_success']:
-            return "👍 Acceptable"
+            return "Acceptable"
         elif metrics['partial_success']:
-            return "⚠️ Partial"
+            return "Partial"
         else:
-            return "❌ Failed"
-
+            return "Failed"
 
 
 class GreedyAgent:
-    """Base class for greedy algorithms."""
+    """Base class for greedy algorithms with movement."""
+
+    ACTION_UP = 0
+    ACTION_DOWN = 1
+    ACTION_LEFT = 2
+    ACTION_RIGHT = 3
+    ACTION_COLLECT = 4
 
     def __init__(self, env: UAVEnvironment):
         self.env = env
@@ -182,143 +157,498 @@ class GreedyAgent:
         """Select action based on greedy strategy."""
         raise NotImplementedError
 
+    def _move_toward(self, target_pos: np.ndarray) -> int:
+        """Properly move toward target position with bounds checking."""
+        uav_pos = self.env.uav.position
+
+        dx = target_pos[0] - uav_pos[0]
+        dy = target_pos[1] - uav_pos[1]
+
+        if abs(dx) <= 0.5 and abs(dy) <= 0.5:
+            return self.ACTION_COLLECT
+
+        if abs(dx) > abs(dy):
+            if dx > 0:
+                new_x = uav_pos[0] + 1
+                new_y = uav_pos[1]
+            else:
+                new_x = uav_pos[0] - 1
+                new_y = uav_pos[1]
+        else:
+            if dy > 0:
+                new_x = uav_pos[0]
+                new_y = uav_pos[1] + 1
+            else:
+                new_x = uav_pos[0]
+                new_y = uav_pos[1] - 1
+
+        if new_x < 0 or new_x >= self.env.grid_size[0] or \
+           new_y < 0 or new_y >= self.env.grid_size[1]:
+            return self.ACTION_COLLECT
+
+        current_dx = new_x - uav_pos[0]
+        current_dy = new_y - uav_pos[1]
+
+        if current_dx > 0:
+            return self.ACTION_RIGHT
+        elif current_dx < 0:
+            return self.ACTION_LEFT
+        elif current_dy > 0:
+            return self.ACTION_UP
+        elif current_dy < 0:
+            return self.ACTION_DOWN
+        else:
+            return self.ACTION_COLLECT
+
 
 class NearestSensorGreedy(GreedyAgent):
-    """Greedy strategy: Always move toward the nearest sensor with data."""
-
-    def __init__(self, env: UAVEnvironment):
-        super().__init__(env)
+    """Greedy strategy - Always move toward nearest sensor with data."""
 
     def select_action(self, observation: np.ndarray) -> int:
         uav_pos = self.env.uav.position
+
         collectible_sensors = []
         for sensor in self.env.sensors:
-            if sensor.data_buffer > 0:
-                if sensor.is_in_range(tuple(uav_pos)):
-                    collectible_sensors.append(sensor)
+            if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                collectible_sensors.append(sensor)
 
         if len(collectible_sensors) > 0:
-            return 4
+            return self.ACTION_COLLECT
 
         target_sensor = self._find_nearest_sensor_with_data()
         if target_sensor is None:
-            return 4
+            return self.ACTION_COLLECT
+
         return self._move_toward(target_sensor.position)
 
     def _find_nearest_sensor_with_data(self):
+        """Find nearest sensor that has data in buffer."""
         uav_pos = self.env.uav.position
         sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
         if not sensors_with_data:
             return None
-        distances = [np.linalg.norm(s.position - uav_pos) for s in sensors_with_data]
-        return sensors_with_data[np.argmin(distances)]
 
-    def _move_toward(self, target_pos: np.ndarray) -> int:
-        uav_pos = self.env.uav.position
-        dx = target_pos[0] - uav_pos[0]
-        dy = target_pos[1] - uav_pos[1]
-        if dx == 0 and dy == 0:
-            return 4
-        if abs(dx) > abs(dy):
-            return 3 if dx > 0 else 2
-        else:
-            return 0 if dy > 0 else 1
+        distances = [np.linalg.norm(np.array(s.position) - np.array(uav_pos))
+                    for s in sensors_with_data]
+        return sensors_with_data[np.argmin(distances)]
 
 
 class HighestBufferGreedy(GreedyAgent):
-    """Greedy strategy: Prioritize sensors with highest buffer levels."""
-
-    def __init__(self, env: UAVEnvironment):
-        super().__init__(env)
+    """Greedy strategy - Prioritize sensors with highest buffer levels."""
 
     def select_action(self, observation: np.ndarray) -> int:
         uav_pos = self.env.uav.position
+
         collectible_sensors = []
         for sensor in self.env.sensors:
-            if sensor.data_buffer > 0:
-                if sensor.is_in_range(tuple(uav_pos)):
-                    collectible_sensors.append(sensor)
+            if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                collectible_sensors.append(sensor)
 
         if len(collectible_sensors) > 0:
-            return 4
+            return self.ACTION_COLLECT
 
         target_sensor = self._find_highest_buffer_sensor()
         if target_sensor is None:
-            return 4
+            return self.ACTION_COLLECT
+
         return self._move_toward(target_sensor.position)
 
     def _find_highest_buffer_sensor(self):
+        """Find sensor with most data in buffer."""
         sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
         if not sensors_with_data:
             return None
         return max(sensors_with_data, key=lambda s: s.data_buffer)
 
-    def _move_toward(self, target_pos: np.ndarray) -> int:
-        uav_pos = self.env.uav.position
-        dx = target_pos[0] - uav_pos[0]
-        dy = target_pos[1] - uav_pos[1]
-        if dx == 0 and dy == 0:
-            return 4
-        if abs(dx) > abs(dy):
-            return 3 if dx > 0 else 2
-        else:
-            return 0 if dy > 0 else 1
 
-
-class ActiveSensorGreedy(GreedyAgent):
-    """Greedy strategy: Prioritize active sensors (duty cycle aware)."""
-
-    def __init__(self, env: UAVEnvironment):
-        super().__init__(env)
+class ProbabilisticAwareGreedy(GreedyAgent):
+    """Greedy strategy - Prioritize sensors with high duty cycle probability."""
 
     def select_action(self, observation: np.ndarray) -> int:
         uav_pos = self.env.uav.position
+
         collectible_sensors = []
         for sensor in self.env.sensors:
-            if sensor.data_buffer > 0:
-                if sensor.is_in_range(tuple(uav_pos)):
-                    collectible_sensors.append(sensor)
+            if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                collectible_sensors.append(sensor)
 
         if len(collectible_sensors) > 0:
-            return 4
+            return self.ACTION_COLLECT
 
-        target_sensor = self._find_nearest_active_sensor()
+        target_sensor = self._find_highest_duty_cycle_sensor()
         if target_sensor is None:
             target_sensor = self._find_nearest_sensor_with_data()
         if target_sensor is None:
-            return 4
+            return self.ACTION_COLLECT
+
         return self._move_toward(target_sensor.position)
 
-    def _find_nearest_active_sensor(self):
-        uav_pos = self.env.uav.position
-        active_sensors = [s for s in self.env.sensors if s.is_active and s.data_buffer > 0]
-        if not active_sensors:
+    def _find_highest_duty_cycle_sensor(self):
+        """Find sensor with highest duty cycle probability that has data."""
+        sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
+        if not sensors_with_data:
             return None
-        distances = [np.linalg.norm(s.position - uav_pos) for s in active_sensors]
-        return active_sensors[np.argmin(distances)]
+        return max(sensors_with_data, key=lambda s: s.duty_cycle_probability)
 
     def _find_nearest_sensor_with_data(self):
+        """Find nearest sensor with data."""
         uav_pos = self.env.uav.position
         sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
         if not sensors_with_data:
             return None
-        distances = [np.linalg.norm(s.position - uav_pos) for s in sensors_with_data]
+        distances = [np.linalg.norm(np.array(s.position) - np.array(uav_pos))
+                    for s in sensors_with_data]
         return sensors_with_data[np.argmin(distances)]
 
-    def _move_toward(self, target_pos: np.ndarray) -> int:
+
+class MaxThroughputGreedy(GreedyAgent):
+    """
+    SF-AWARE v1: Prioritize sensors with BEST data rates (LOWEST SF).
+
+    THIS IS THE ORIGINAL BASELINE FOR COMPARISON!
+
+    Key Insight:
+    - SF7 = 684 B/s (best, needs close positioning)
+    - SF9 = 220 B/s (medium, medium distance)
+    - SF11 = 55 B/s (poor, far distance)
+    - SF12 = 31 B/s (worst, very far)
+
+    Strategy:
+    1. Collect from SF9+ sensors if in range
+    2. Otherwise, move toward sensor with LOWEST SF (highest data rate)
+    3. Forces position optimization for data rate!
+    """
+
+    def __init__(self, env: UAVEnvironment):
+        super().__init__(env)
+        self.target_sensor = None
+
+    def select_action(self, observation: np.ndarray) -> int:
         uav_pos = self.env.uav.position
-        dx = target_pos[0] - uav_pos[0]
-        dy = target_pos[1] - uav_pos[1]
-        if dx == 0 and dy == 0:
-            return 4
-        if abs(dx) > abs(dy):
-            return 3 if dx > 0 else 2
+
+        # Check if any sensors are in range with GOOD SF
+        collectible_sensors = []
+        for sensor in self.env.sensors:
+            if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                if sensor.spreading_factor <= 9:  # Only SF9 or better
+                    collectible_sensors.append(sensor)
+
+        if len(collectible_sensors) > 0:
+            best = max(collectible_sensors,
+                      key=lambda s: (-s.spreading_factor, s.data_buffer))
+            self.target_sensor = best
+            return self.ACTION_COLLECT
+
+        # Find sensor with LOWEST SF (HIGHEST data rate)
+        target_sensor = self._find_best_sf_sensor()
+        self.target_sensor = target_sensor
+
+        if target_sensor is None:
+            return self.ACTION_COLLECT
+
+        return self._move_toward(target_sensor.position)
+
+    def _find_best_sf_sensor(self):
+        """Find sensor with LOWEST SF (HIGHEST data rate)."""
+        sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
+        if not sensors_with_data:
+            return None
+
+        best_sensor = min(sensors_with_data,
+                         key=lambda s: (s.spreading_factor, -s.data_buffer))
+        return best_sensor
+
+
+class MaxThroughputGreedyV2(GreedyAgent):
+    """
+    SF-AWARE v2 (PRODUCTION READY): Sophisticated baseline with reachability filtering.
+
+    THIS IS THE IMPROVED BASELINE FOR THESIS!
+
+    Key Improvements:
+    • Reachability filtering (SF-dependent ranges)
+    • Multi-objective scoring (throughput + buffer + distance)
+    • Constraint-aware adaptation (battery + time)
+    • Comprehensive validation framework
+    """
+
+    # Scoring weights (tuned for balance)
+    WEIGHT_SF_PRIORITY = 5.0        # SF optimization (most important)
+    WEIGHT_BUFFER_PRIORITY = 10.0   # Buffer management
+    WEIGHT_DISTANCE_PENALTY = 5.0   # Movement efficiency
+    WEIGHT_DUTY_CYCLE = 2.0         # Sensor reliability
+
+    def __init__(self, env: UAVEnvironment):
+        super().__init__(env)
+        self.target_sensor = None
+
+        # Metrics tracking for validation
+        self.metrics = {
+            'decisions_made': [],
+            'sf_distribution': {},
+            'reachability_filtered': 0,
+            'unreachable_sensors_avoided': 0,
+            'targets_selected': [],
+        }
+
+    def select_action(self, observation: np.ndarray) -> int:
+        """Select action using sophisticated SF-aware scoring with reachability filtering."""
+        uav_pos = self.env.uav.position
+
+        # Get adaptive thresholds based on constraints
+        battery_pct = self._get_battery_percentage()
+        steps_remaining = self._get_steps_remaining()
+        good_sf_threshold = self._adaptive_sf_threshold(battery_pct, steps_remaining)
+
+        # PHASE 1: Check for immediately collectible sensors in range
+        immediate_targets = self._find_immediate_collection_targets(
+            uav_pos, good_sf_threshold
+        )
+
+        if immediate_targets:
+            best = self._score_and_select_best(
+                immediate_targets, uav_pos, phase='immediate'
+            )
+            self.target_sensor = best
+            self._record_decision('collect_immediate', best.spreading_factor, best.sensor_id)
+            return self.ACTION_COLLECT
+
+        # PHASE 2: Find best reachable sensor globally
+        global_target = self._find_optimal_target_with_reachability(
+            uav_pos, battery_pct, steps_remaining
+        )
+
+        if global_target is None:
+            self._record_decision('collect_nothing', None, None)
+            return self.ACTION_COLLECT
+
+        self.target_sensor = global_target
+        self._record_decision('move_to_target', global_target.spreading_factor,
+                            global_target.sensor_id)
+
+        return self._move_toward(global_target.position)
+
+    def _find_immediate_collection_targets(
+            self,
+            uav_pos: np.ndarray,
+            good_sf_threshold: int
+    ) -> List:
+        """Find sensors that are reachable, have data, and have good SF."""
+        targets = []
+
+        for sensor in self.env.sensors:
+            if sensor.data_buffer <= 0:
+                continue
+
+            if not sensor.is_in_range(tuple(uav_pos)):
+                self.metrics['unreachable_sensors_avoided'] += 1
+                continue
+
+            if sensor.spreading_factor > good_sf_threshold:
+                continue
+
+            targets.append(sensor)
+
+        return targets
+
+    def _find_optimal_target_with_reachability(
+            self,
+            uav_pos: np.ndarray,
+            battery_pct: float,
+            steps_remaining: int
+    ) -> Optional:
+        """
+        Find best reachable sensor using multi-objective scoring.
+
+        Balances throughput (SF), resource management (buffer),
+        and efficiency (distance).
+        """
+        uav_pos_tuple = tuple(uav_pos)
+        best_score = -np.inf
+        best_target = None
+
+        for sensor in self.env.sensors:
+            # Hard constraints
+            if sensor.data_buffer <= 0:
+                continue
+
+            if not sensor.is_in_range(uav_pos_tuple):
+                continue
+
+            # Calculate distance
+            distance = np.linalg.norm(np.array(sensor.position) - uav_pos)
+
+            # SF Priority
+            sf_priority = self._calculate_sf_priority(sensor.spreading_factor)
+
+            # Buffer Priority (normalized 0-1 to 10-point scale)
+            buffer_utilization = sensor.data_buffer / sensor.max_buffer_size
+            buffer_priority = buffer_utilization * self.WEIGHT_BUFFER_PRIORITY
+
+            # Distance Cost
+            distance_penalty = (distance / self.env.grid_size[0]) * self.WEIGHT_DISTANCE_PENALTY
+
+            # Duty Cycle Bonus
+            duty_cycle_bonus = (sensor.duty_cycle_probability * self.WEIGHT_DUTY_CYCLE)
+
+            # Constraint adaptation
+            if battery_pct < 0.1 or steps_remaining < 50:
+                sf_weight = 1.0
+                distance_weight = 1.0
+            elif battery_pct < 0.3 or steps_remaining < 150:
+                sf_weight = 2.0
+                distance_weight = 1.0
+            else:
+                sf_weight = 5.0
+                distance_weight = 1.0
+
+            # Final score
+            current_score = (
+                (sf_priority * self.WEIGHT_SF_PRIORITY * sf_weight) +
+                (buffer_priority) +
+                (duty_cycle_bonus) -
+                (distance_penalty * distance_weight)
+            )
+
+            if current_score > best_score:
+                best_score = current_score
+                best_target = sensor
+
+        return best_target
+
+    def _calculate_sf_priority(self, spreading_factor: int) -> float:
+        """Calculate SF priority (6=SF7, 1=SF12)."""
+        return max(0, 13 - spreading_factor)
+
+    def _score_and_select_best(
+            self,
+            sensors: List,
+            uav_pos: np.ndarray,
+            phase: str = 'global'
+    ) -> Optional:
+        """Score sensors and select the best one."""
+        if not sensors:
+            return None
+
+        if phase == 'immediate':
+            return min(sensors, key=lambda s: (
+                self._calculate_sf_priority(s.spreading_factor),
+                -s.data_buffer,
+                np.linalg.norm(np.array(s.position) - uav_pos)
+            ))
         else:
-            return 0 if dy > 0 else 1
+            return sensors[0] if sensors else None
+
+    def _get_battery_percentage(self) -> float:
+        """Get battery as percentage (0-1)."""
+        max_battery = 274.0
+        return self.env.uav.battery / max_battery if max_battery > 0 else 0
+
+    def _get_steps_remaining(self) -> int:
+        """Get remaining steps."""
+        if hasattr(self.env, 'current_step') and hasattr(self.env, 'max_steps'):
+            return self.env.max_steps - self.env.current_step
+        return float('inf')
+
+    def _adaptive_sf_threshold(self, battery_pct: float, steps_remaining: int) -> int:
+        """Adaptively adjust SF threshold based on constraints."""
+        steps_ratio = min(1.0, steps_remaining / self.env.max_steps
+                         if hasattr(self.env, 'max_steps') else 1.0)
+
+        if battery_pct > 0.5 and steps_ratio > 0.5:
+            return 9
+        elif battery_pct > 0.2 and steps_ratio > 0.2:
+            return 10
+        else:
+            return 12
+
+    def _record_decision(self, decision_type: str, sf: Optional[int], sensor_id: Optional[int]):
+        """Record decision for analysis."""
+        self.metrics['decisions_made'].append({
+            'type': decision_type,
+            'sf': sf,
+            'sensor_id': sensor_id
+        })
+
+        if sf is not None:
+            if sf not in self.metrics['sf_distribution']:
+                self.metrics['sf_distribution'][sf] = 0
+            self.metrics['sf_distribution'][sf] += 1
+
+        if decision_type == 'move_to_target':
+            self.metrics['targets_selected'].append(sensor_id)
+
+    def validate_sf_awareness(self) -> Dict:
+        """Validate that algorithm is truly SF-aware."""
+        if not self.metrics['decisions_made']:
+            return {'error': 'No decisions recorded'}
+
+        decision_counts = {}
+        for decision in self.metrics['decisions_made']:
+            dtype = decision['type']
+            decision_counts[dtype] = decision_counts.get(dtype, 0) + 1
+
+        sf_counts = self.metrics['sf_distribution']
+        sf_awareness_score = self._calculate_sf_awareness_score(sf_counts)
+        is_sf_aware = self._is_sf_aware(sf_counts)
+
+        total_unreachable_avoided = self.metrics['unreachable_sensors_avoided']
+        total_decisions = len(self.metrics['decisions_made'])
+        filtering_effectiveness = (total_unreachable_avoided / max(1, total_decisions)) * 100
+
+        validation = {
+            'decision_counts': decision_counts,
+            'sf_distribution': sf_counts,
+            'sf_awareness_score': sf_awareness_score,
+            'is_sf_aware': is_sf_aware,
+            'reachability_filtering_effectiveness': filtering_effectiveness,
+            'unreachable_sensors_avoided': total_unreachable_avoided,
+            'targets_selected': len(self.metrics['targets_selected']),
+            'validation_status': 'PASS' if is_sf_aware else 'FAIL'
+        }
+
+        return validation
+
+    def _calculate_sf_awareness_score(self, sf_counts: Dict) -> float:
+        """Score how much SF impacts decisions (0-1)."""
+        if not sf_counts:
+            return 0.0
+
+        total_visits = sum(sf_counts.values())
+        weighted_score = 0
+        max_score = 0
+
+        for sf, count in sorted(sf_counts.items()):
+            weight = 1 / (sf - 6.5)
+            weighted_score += weight * count
+            max_score += weight * (total_visits / len(sf_counts))
+
+        return min(1.0, weighted_score / max_score) if max_score > 0 else 0.0
+
+    def _is_sf_aware(self, sf_counts: Dict) -> bool:
+        """Determine if algorithm is meaningfully SF-aware."""
+        if not sf_counts:
+            return False
+
+        low_sf_visits = sum(count for sf, count in sf_counts.items() if sf <= 9)
+        high_sf_visits = sum(count for sf, count in sf_counts.items() if sf > 9)
+
+        total = low_sf_visits + high_sf_visits
+        return (low_sf_visits / total > 0.6) if total > 0 else False
+
+    def reset_metrics(self):
+        """Reset metrics for new episode."""
+        self.metrics = {
+            'decisions_made': [],
+            'sf_distribution': {},
+            'reachability_filtered': 0,
+            'unreachable_sensors_avoided': 0,
+            'targets_selected': [],
+        }
 
 
 class MultiSensorGreedy(GreedyAgent):
-    """Greedy strategy: Position to collect from multiple sensors simultaneously."""
+    """Greedy strategy - Position to collect from multiple sensors."""
 
     def __init__(self, env: UAVEnvironment, communication_range: float = 2.0):
         super().__init__(env)
@@ -326,32 +656,38 @@ class MultiSensorGreedy(GreedyAgent):
 
     def select_action(self, observation: np.ndarray) -> int:
         uav_pos = self.env.uav.position
+
         collectible_sensors = []
         for sensor in self.env.sensors:
-            if sensor.data_buffer > 0:
-                if sensor.is_in_range(tuple(uav_pos)):
-                    collectible_sensors.append(sensor)
+            if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                collectible_sensors.append(sensor)
 
         if len(collectible_sensors) > 0:
-            return 4
+            return self.ACTION_COLLECT
 
         best_position = self._find_best_position()
         if best_position is None:
             target_sensor = self._find_nearest_sensor_with_data()
             if target_sensor:
                 return self._move_toward(target_sensor.position)
-            return 4
+            return self.ACTION_COLLECT
+
         return self._move_toward(best_position)
 
     def _count_sensors_in_range(self, position: np.ndarray) -> int:
+        """Count how many sensors with data are in range of position."""
         count = 0
         for sensor in self.env.sensors:
             if sensor.data_buffer > 0:
-                if sensor.is_in_range(tuple(position)):
+                temp_x, temp_y = position[0], position[1]
+                distance = np.sqrt((sensor.position[0] - temp_x)**2 +
+                                 (sensor.position[1] - temp_y)**2)
+                if distance <= self.communication_range:
                     count += 1
         return count
 
     def _find_best_position(self) -> np.ndarray:
+        """Find position that can reach most sensors with data."""
         sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
         if not sensors_with_data:
             return None
@@ -362,340 +698,397 @@ class MultiSensorGreedy(GreedyAgent):
         for sensor in sensors_with_data:
             for dx in [-2, -1, 0, 1, 2]:
                 for dy in [-2, -1, 0, 1, 2]:
-                    candidate_pos = sensor.position + np.array([dx, dy], dtype=float)
+                    candidate_pos = np.array([sensor.position[0] + dx,
+                                             sensor.position[1] + dy], dtype=float)
+
                     if (0 <= candidate_pos[0] < self.env.grid_size[0] and
                         0 <= candidate_pos[1] < self.env.grid_size[1]):
                         count = self._count_sensors_in_range(candidate_pos)
                         if count > best_count:
                             best_count = count
                             best_position = candidate_pos
+
         return best_position
 
     def _find_nearest_sensor_with_data(self):
+        """Find nearest sensor with data."""
         uav_pos = self.env.uav.position
         sensors_with_data = [s for s in self.env.sensors if s.data_buffer > 0]
         if not sensors_with_data:
             return None
-        distances = [np.linalg.norm(s.position - uav_pos) for s in sensors_with_data]
+        distances = [np.linalg.norm(np.array(s.position) - np.array(uav_pos))
+                    for s in sensors_with_data]
         return sensors_with_data[np.argmin(distances)]
 
-    def _move_toward(self, target_pos: np.ndarray) -> int:
-        uav_pos = self.env.uav.position
-        dx = target_pos[0] - uav_pos[0]
-        dy = target_pos[1] - uav_pos[1]
-        if dx == 0 and dy == 0:
-            return 4
-        if abs(dx) > abs(dy):
-            return 3 if dx > 0 else 2
-        else:
-            return 0 if dy > 0 else 1
-
-
-# ==================== TESTING FUNCTIONS ====================
 
 def test_greedy_agent(agent: GreedyAgent,
                       env: UAVEnvironment,
-                      num_episodes: int = 10,
+                      num_episodes: int = 1,
                       render: bool = False,
-                      data_goal: DataGoal = None) -> dict:
-    """
-    Test a greedy agent with academic-standard metrics and optional data goal.
-
-    Args:
-        agent: Greedy agent to test
-        env: UAV environment
-        num_episodes: Number of episodes to run
-        render: Whether to render the environment
-        data_goal: Optional data collection goal
-
-    Returns:
-        Dictionary of performance metrics
-    """
+                      data_goal: DataGoal = None,
+                      agent_name: str = "Agent") -> dict:
+    """Test a greedy agent with proper movement and metrics."""
     results = {
         'total_rewards': [],
-        'perfect_success': 0,
-        'high_success': 0,
-        'acceptable_success': 0,
-        'partial_success': 0,
-        'goal_achieved': 0 if data_goal else None,
         'coverage_percentage': [],
-        'collection_ratio': [],
-        'data_loss_rate': [],
-        'battery_efficiency': [],
-        'battery_used_percentage': [],
         'steps_taken': [],
-        'data_generated': [],
         'data_collected': [],
-        'data_lost': [],
+        'data_generated': [],
+        'collection_efficiency': [],
+        'battery_efficiency': [],
+        'success_levels': [],
+        'per_sensor_collection': [],
     }
-
-    if data_goal:
-        results['bytes_achievement'] = []
-        results['coverage_achievement'] = []
-        results['battery_achievement'] = []
 
     for episode in range(num_episodes):
         obs, info = env.reset(seed=episode)
         episode_reward = 0
         done = False
+        step_count = 0
 
-        print(f"\n{'='*80}")
-        print(f"Episode {episode + 1}/{num_episodes}")
+        print(f"\n{'=' * 80}")
+        print(f"Episode {episode + 1}/{num_episodes} - {agent_name}")
         if data_goal:
             print(f"Goal: {data_goal}")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         while not done:
             action = agent.select_action(obs)
             obs, reward, terminated, truncated, info = env.step(action)
             episode_reward += reward
+            step_count += 1
 
             if render:
                 env.render()
 
             done = terminated or truncated
 
-        # Evaluate with academic metrics
+        # Evaluate episode
         metrics = SuccessMetrics.evaluate_episode(info, env, data_goal)
 
-        # Record results
+        # Calculate per-sensor statistics
+        per_sensor_stats = []
+        total_data_generated = 0
+        total_data_collected = 0
+
+        for sensor in env.sensors:
+            generated = sensor.total_data_generated
+
+            # METHOD 1: Use tracked cumulative (PREFERRED)
+            collected = sensor.total_data_transmitted
+
+            # METHOD 2: Calculate from accounting (VERIFICATION)
+            remaining_buffer = sensor.data_buffer
+            lost = sensor.total_data_lost
+            calculated_collected = generated - remaining_buffer - lost
+
+            # Verify they match
+            if abs(collected - calculated_collected) > 0.1:
+                print(f" WARNING: Sensor {sensor.sensor_id} data mismatch!")
+                print(f"   Tracked: {collected:.1f}, Calculated: {calculated_collected:.1f}")
+
+            collection_pct = (collected / generated * 100) if generated > 0 else 0
+
+            per_sensor_stats.append({
+                'sensor_id': sensor.sensor_id,
+                'data_generated': generated,
+                'data_collected': collected,
+                'collection_percentage': collection_pct,
+                'data_lost': lost,
+                'final_buffer': remaining_buffer,
+            })
+
+            total_data_generated += generated
+            total_data_collected += collected
+
+        collection_efficiency = (total_data_collected / total_data_generated * 100) if total_data_generated > 0 else 0
+
+        # Store results
         results['total_rewards'].append(episode_reward)
-        results['perfect_success'] += 1 if metrics['perfect_success'] else 0
-        results['high_success'] += 1 if metrics['high_success'] else 0
-        results['acceptable_success'] += 1 if metrics['acceptable_success'] else 0
-        results['partial_success'] += 1 if metrics['partial_success'] else 0
-
-        if data_goal:
-            results['goal_achieved'] += 1 if metrics['goal_achieved'] else 0
-            achievement = metrics['goal_achievement']
-            if 'bytes_ratio' in achievement:
-                results['bytes_achievement'].append(achievement['bytes_ratio'] * 100)
-            if 'coverage_ratio' in achievement:
-                results['coverage_achievement'].append(achievement['coverage_ratio'] * 100)
-            if 'battery_ratio' in achievement:
-                results['battery_achievement'].append(achievement['battery_ratio'] * 100)
-
         results['coverage_percentage'].append(metrics['coverage_percentage'])
-        results['collection_ratio'].append(metrics['collection_ratio'])
-        results['data_loss_rate'].append(metrics['data_loss_rate'])
+        results['steps_taken'].append(step_count)
+        results['data_collected'].append(total_data_collected)
+        results['data_generated'].append(total_data_generated)
+        results['collection_efficiency'].append(collection_efficiency)
         results['battery_efficiency'].append(metrics['battery_efficiency'])
-        results['battery_used_percentage'].append(metrics['battery_used_percentage'])
-        results['steps_taken'].append(info['current_step'])
-        results['data_generated'].append(metrics['total_data_generated'])
-        results['data_collected'].append(metrics['total_data_collected'])
-        results['data_lost'].append(metrics['total_data_lost'])
+        results['success_levels'].append(SuccessMetrics.get_success_level_string(metrics))
+        results['per_sensor_collection'].append(per_sensor_stats)
 
         # Print episode results
-        success_level = SuccessMetrics.get_success_level_string(metrics)
+        print(f"\n{'=' * 80}")
+        print(f"EPISODE {episode + 1} RESULTS")
+        print(f"{'=' * 80}")
 
-        print(f"\n Episode {episode + 1} Results:")
-        print(f"   Reward: {episode_reward:.1f}")
-        print(f"   Success Level: {success_level}")
-        if data_goal and metrics['goal_achieved'] is not None:
-            goal_status = " ACHIEVED" if metrics['goal_achieved'] else " NOT ACHIEVED"
-            print(f"   Goal Status: {goal_status}")
-            if metrics['goal_achievement']:
-                for goal_type, ratio in metrics['goal_achievement'].items():
-                    print(f"     {goal_type}: {ratio*100:.1f}%")
-        print(f"   Coverage: {metrics['coverage_percentage']:.1f}%")
-        print(f"   Collection Ratio: {metrics['collection_ratio']:.1f}%")
-        print(f"   Data Loss Rate: {metrics['data_loss_rate']:.1f}%")
-        print(f"   Battery Efficiency: {metrics['battery_efficiency']:.2f} bytes/Wh")
-        print(f"   Battery Used: {metrics['battery_used_percentage']:.1f}%")
-        print(f"   Steps: {info['current_step']}")
-        print(f"   Data: Generated={metrics['total_data_generated']:.0f}, "
-              f"Collected={metrics['total_data_collected']:.0f}, "
-              f"Lost={metrics['total_data_lost']:.0f}")
+        # Overall metrics
+        print(f"\nOverall Performance:")
+        print(f"  Reward: {episode_reward:.1f}")
+        print(f"  Coverage: {metrics['coverage_percentage']:.1f}%")
+        print(f"  Steps: {step_count}")
+        print(f"  Success Level: {SuccessMetrics.get_success_level_string(metrics)}")
 
-    # Calculate success rates
-    for key in ['perfect_success', 'high_success', 'acceptable_success', 'partial_success']:
-        results[key] = (results[key] / num_episodes) * 100
+        # Data metrics
+        print(f"\n Data Collection:")
+        print(f"  Total Generated: {total_data_generated:.0f} bytes")
+        print(f"  Total Collected: {total_data_collected:.0f} bytes")
+        print(f"  Collection Efficiency: {collection_efficiency:.1f}%")
+        print(f"  Data Lost: {metrics['total_data_lost']:.0f} bytes")
+        print(f"  Still in Buffers: {sum(s['final_buffer'] for s in per_sensor_stats):.0f} bytes")
 
-    if data_goal:
-        results['goal_achieved'] = (results['goal_achieved'] / num_episodes) * 100
+        # Battery metrics
+        print(f"\n Energy Efficiency:")
+        print(f"  Battery Used: {metrics['battery_used_percentage']:.1f}%")
+        print(f"  Battery Efficiency: {metrics['battery_efficiency']:.2f} bytes/Wh")
 
+        # Per-sensor breakdown
+        print(f"\n Per-Sensor Collection Breakdown:")
+        print(f"{'ID':<6} {'Generated':<12} {'Collected':<12} {'%':<8} {'Lost':<10} {'Buffer':<10}")
+        print("-" * 70)
+
+        # Sort by sensor ID
+        sorted_stats = sorted(per_sensor_stats, key=lambda x: x['sensor_id'])
+
+        for stats in sorted_stats:
+            print(f"S{stats['sensor_id']:<5} "
+                  f"{stats['data_generated']:<12.0f} "
+                  f"{stats['data_collected']:<12.0f} "
+                  f"{stats['collection_percentage']:<7.1f}% "
+                  f"{stats['data_lost']:<10.0f} "
+                  f"{stats['final_buffer']:<10.0f}")
+
+        print("-" * 70)
+        print(f"{'TOTAL':<6} "
+              f"{total_data_generated:<12.0f} "
+              f"{total_data_collected:<12.0f} "
+              f"{collection_efficiency:<7.1f}% "
+              f"{metrics['total_data_lost']:<10.0f} "
+              f"{sum(s['final_buffer'] for s in per_sensor_stats):<10.0f}")
+
+        # Data accounting verification
+        total_accounted = (total_data_collected +
+                           metrics['total_data_lost'] +
+                           sum(s['final_buffer'] for s in per_sensor_stats))
+        accounting_error = abs(total_data_generated - total_accounted)
+
+        if accounting_error > 1.0:
+            print(f"\nDATA ACCOUNTING ERROR!")
+            print(f"  Generated: {total_data_generated:.0f}")
+            print(f"  Accounted: {total_accounted:.0f} (collected + lost + buffer)")
+            print(f"  Error: {accounting_error:.0f} bytes")
+        else:
+            print(f"\nData Accounting: Perfect (error < 1 byte)")
+
+        # Sensor coverage statistics
+        sensors_with_100_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] >= 99.9)
+        sensors_with_50_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] >= 50)
+        sensors_with_0_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] < 1)
+
+        print(f"\nCollection Coverage:")
+        print(f"  Sensors 100% collected: {sensors_with_100_pct}/{len(env.sensors)}")
+        print(f"  Sensors ≥50% collected: {sensors_with_50_pct}/{len(env.sensors)}")
+        print(f"  Sensors <1% collected: {sensors_with_0_pct}/{len(env.sensors)}")
+
+        # Validation for V2
+        if isinstance(agent, MaxThroughputGreedyV2):
+            print(f"\nSF-Awareness Validation:")
+            validation = agent.validate_sf_awareness()
+            print(f"  SF-Aware: {validation['is_sf_aware']}")
+            print(f"  SF Awareness Score: {validation['sf_awareness_score']:.3f}")
+            print(f"  Validation Status: {validation['validation_status']}")
+
+        print(f"{'=' * 80}\n")
+
+    env.close()
     return results
 
 
-def compare_greedy_algorithms(num_episodes: int = 10,
-                              render: bool = False,
-                              data_goal: DataGoal = None, env: UAVEnvironment = None):
+def print_comparison_table(results_dict: Dict[str, dict]) -> None:
+    """Print comprehensive comparison table of all algorithms."""
+    print("\n" + "=" * 120)
+    print("COMPREHENSIVE ALGORITHM COMPARISON")
+    print("=" * 120)
+
+    # Table 1: Performance Metrics
+    print(f"\n{'Algorithm':<30} {'Coverage':<12} {'Generated':<12} {'Collected':<12} {'Coll Eff':<12} {'Success':<15}")
+    print("-" * 120)
+
+    for algo_name, results in results_dict.items():
+        avg_coverage = np.mean(results['coverage_percentage'])
+        avg_generated = np.mean(results['data_generated'])
+        avg_collected = np.mean(results['data_collected'])
+        avg_coll_eff = np.mean(results['collection_efficiency'])
+        success_mode = max(set(results['success_levels']), key=results['success_levels'].count)
+
+        print(f"{algo_name:<30} "
+              f"{avg_coverage:>6.1f}%{'':<5} "
+              f"{avg_generated:>8.0f} B{'':<2} "
+              f"{avg_collected:>8.0f} B{'':<2} "
+              f"{avg_coll_eff:>7.1f}%{'':<4} "
+              f"{success_mode:<15}")
+
+    # Table 2: Efficiency Metrics
+    print("\n" + "-" * 120)
+    print(f"{'Algorithm':<30} {'Batt Eff':<15} {'Steps':<12} {'Reward':<12}")
+    print("-" * 120)
+
+    for algo_name, results in results_dict.items():
+        avg_batt_eff = np.mean(results['battery_efficiency'])
+        avg_steps = np.mean(results['steps_taken'])
+        avg_reward = np.mean(results['total_rewards'])
+
+        print(f"{algo_name:<30} "
+              f"{avg_batt_eff:>8.2f} B/Wh{'':<3} "
+              f"{avg_steps:>8.0f}{'':<4} "
+              f"{avg_reward:>8.1f}")
+
+    print("=" * 120)
+
+
+def print_per_sensor_analysis(results_dict: Dict[str, dict], env: UAVEnvironment) -> None:
+    """Print detailed per-sensor collection analysis."""
+    print("\n" + "=" * 100)
+    print("PER-SENSOR COLLECTION ANALYSIS")
+    print("=" * 100)
+
+    for algo_name, results in results_dict.items():
+        print(f"\n{algo_name}:")
+        print("-" * 100)
+
+        # Average per-sensor stats across all episodes
+        num_sensors = len(env.sensors)
+        avg_sensor_collection = [0] * num_sensors
+
+        for episode_stats in results['per_sensor_collection']:
+            for sensor_stat in episode_stats:
+                sensor_id = sensor_stat['sensor_id']
+                avg_sensor_collection[sensor_id] += sensor_stat['collection_percentage']
+
+        # Calculate averages
+        num_episodes = len(results['per_sensor_collection'])
+        avg_sensor_collection = [pct / num_episodes for pct in avg_sensor_collection]
+
+        # Print histogram
+        print(f"{'Sensor':<10} {'Avg Collection %':<20} {'Bar Chart'}")
+        print("-" * 100)
+
+        for sensor_id, pct in enumerate(avg_sensor_collection):
+            bar_length = int(pct / 2)  # Scale to 50 chars max
+            bar = "█" * bar_length #love this addtion from chat will keep
+            print(f"Sensor {sensor_id:<4} {pct:>6.1f}%{'':<13} {bar}")
+
+        # Statistics
+        avg_pct = np.mean(avg_sensor_collection)
+        std_pct = np.std(avg_sensor_collection)
+        min_pct = np.min(avg_sensor_collection)
+        max_pct = np.max(avg_sensor_collection)
+
+        print(f"\nStatistics:")
+        print(f"  Average: {avg_pct:.1f}%")
+        print(f"  Std Dev: {std_pct:.1f}%")
+        print(f"  Min: {min_pct:.1f}%")
+        print(f"  Max: {max_pct:.1f}%")
+        print(f"  Range: {max_pct - min_pct:.1f}%")
+
+    print("=" * 100)
+
+
+# Update the main comparison function
+def compare_all_greedy_agents(num_episodes: int = 1, render: bool = False):
     """
-    Compare all greedy algorithms with academic metrics and optional data goal.
+    Compare all greedy agents with comprehensive metrics.
 
     Args:
-        num_episodes: Number of episodes per algorithm
+        num_episodes: Number of episodes per agent
         render: Whether to render episodes
-        data_goal: Optional data collection goal for fair comparison
 
     Returns:
-        Dictionary of results for all algorithms
+        Dictionary of results for all agents
     """
-    print("=" * 90)
-    print("ACADEMIC-STANDARD GREEDY ALGORITHM COMPARISON")
-    print("=" * 90)
-    print("\nSuccess Level Definitions:")
-    print("  Perfect:    100% coverage, <1% data loss")
-    print("  High:       ≥95% coverage, ≥90% collection ratio (paper standard)")
-    print("  Acceptable: ≥80% coverage, ≥75% collection ratio")
-    print("  Partial:    ≥50% coverage")
-    print("  Failed:     <50% coverage")
+    print("=" * 100)
+    print("COMPREHENSIVE GREEDY ALGORITHM COMPARISON")
+    print("=" * 100)
 
-    if data_goal:
-        print(f"\n Data Collection Goal:")
-        print(f"   {data_goal}")
-
-    print("=" * 90)
-
+    env = UAVEnvironment(
+        grid_size=(50, 50),
+        num_sensors=20,
+        max_steps=500,
+        sensor_duty_cycle=10.0,
+        penalty_data_loss=-1000.0,
+        reward_urgency_reduction=500.0,
+        render_mode='human' if render else None
+    )
 
     print(f"\nEnvironment Configuration:")
     print(f"  Grid Size: {env.grid_size}")
     print(f"  Sensors: {env.num_sensors}")
     print(f"  Duty Cycle: 10%")
     print(f"  Max Steps: {env.max_steps}")
-    print(f"  Action Space: {env.action_space}")
 
     algorithms = {
         'Nearest Sensor': NearestSensorGreedy(env),
         'Highest Buffer': HighestBufferGreedy(env),
-        'Active Sensor (Duty Cycle Aware)': ActiveSensorGreedy(env),
-        'Multi-Sensor Positioning': MultiSensorGreedy(env),
+        'Duty-Cycle Aware': ProbabilisticAwareGreedy(env),
+        'SF-Aware V1': MaxThroughputGreedy(env),
+        'SF-Aware V2': MaxThroughputGreedyV2(env),
+        'Multi-Sensor': MultiSensorGreedy(env),
     }
 
     all_results = {}
 
     for name, agent in algorithms.items():
-        print(f"\n\n{'='*90}")
+        print(f"\n\n{'=' * 100}")
         print(f"Testing: {name}")
-        print(f"{'='*90}")
+        print(f"{'=' * 100}")
 
-        results = test_greedy_agent(agent, env, num_episodes, render=True, data_goal=data_goal)
+        results = test_greedy_agent(
+            agent,
+            env,
+            num_episodes=num_episodes,
+            render=False,
+            agent_name=name
+        )
         all_results[name] = results
 
-    # Print comprehensive comparison table
-    print("\n\n" + "=" * 90)
-    print("COMPARISON SUMMARY - Success Rates")
-    print("=" * 90)
+    # Print comparison tables
+    print_comparison_table(all_results)
+    print_per_sensor_analysis(all_results, env)
 
-    if data_goal:
-        print(f"{'Algorithm':<40} {'Goal':<10} {'Perfect':<10} {'High':<10} {'Accept':<10}")
-    else:
-        print(f"{'Algorithm':<40} {'Perfect':<10} {'High':<10} {'Accept':<10} {'Partial':<10}")
-    print("-" * 90)
-
-    for name, results in all_results.items():
-        if data_goal:
-            print(f"{name:<40} "
-                  f"{results['goal_achieved']:<10.1f}% "
-                  f"{results['perfect_success']:<10.1f}% "
-                  f"{results['high_success']:<10.1f}% "
-                  f"{results['acceptable_success']:<10.1f}%")
-        else:
-            print(f"{name:<40} "
-                  f"{results['perfect_success']:<10.1f}% "
-                  f"{results['high_success']:<10.1f}% "
-                  f"{results['acceptable_success']:<10.1f}% "
-                  f"{results['partial_success']:<10.1f}%")
-
-    print("\n" + "=" * 90)
-    print("COMPARISON SUMMARY - Performance Metrics")
-    print("=" * 90)
-    print(f"{'Algorithm':<40} {'Avg Reward':<12} {'Avg Cov':<10} {'Coll Ratio':<12} {'Loss Rate':<10}")
-    print("-" * 90)
-
-    for name, results in all_results.items():
-        avg_reward = np.mean(results['total_rewards'])
-        avg_cov = np.mean(results['coverage_percentage'])
-        avg_coll = np.mean(results['collection_ratio'])
-        avg_loss = np.mean(results['data_loss_rate'])
-
-        print(f"{name:<40} "
-              f"{avg_reward:<12.1f} "
-              f"{avg_cov:<10.1f}% "
-              f"{avg_coll:<12.1f}% "
-              f"{avg_loss:<10.1f}%")
-
-    print("\n" + "=" * 90)
-    print("COMPARISON SUMMARY - Efficiency Metrics")
-    print("=" * 90)
-    print(f"{'Algorithm':<40} {'Batt Eff':<15} {'Avg Steps':<12} {'Batt Used':<12}")
-    print("-" * 90)
-
-    for name, results in all_results.items():
-        avg_batt_eff = np.mean(results['battery_efficiency'])
-        avg_steps = np.mean(results['steps_taken'])
-        avg_batt_used = np.mean(results['battery_used_percentage'])
-
-        print(f"{name:<40} "
-              f"{avg_batt_eff:<15.2f} "
-              f"{avg_steps:<12.0f} "
-              f"{avg_batt_used:<12.1f}%")
-
-    if data_goal:
-        print("\n" + "=" * 90)
-        print("COMPARISON SUMMARY - Goal Achievement")
-        print("=" * 90)
-
-        if results['bytes_achievement']:
-            print(f"{'Algorithm':<40} {'Bytes':<12} {'Coverage':<12} {'Battery':<12}")
-            print("-" * 90)
-
-            for name, results in all_results.items():
-                bytes_ach = np.mean(results['bytes_achievement']) if results['bytes_achievement'] else 0
-                cov_ach = np.mean(results['coverage_achievement']) if results['coverage_achievement'] else 0
-                batt_ach = np.mean(results['battery_achievement']) if results['battery_achievement'] else 0
-
-                print(f"{name:<40} "
-                      f"{bytes_ach:<12.1f}% "
-                      f"{cov_ach:<12.1f}% "
-                      f"{batt_ach:<12.1f}%")
-
-    # Identify best algorithms
-    print("\n" + "=" * 90)
-    print("BEST PERFORMERS")
-    print("=" * 90)
-
-    if data_goal:
-        best_goal = max(all_results.items(), key=lambda x: x[1]['goal_achieved'])
-        print(f"Best Goal Achievement: {best_goal[0]} ({best_goal[1]['goal_achieved']:.1f}%)")
-
-    best_reward = max(all_results.items(), key=lambda x: np.mean(x[1]['total_rewards']))
-    best_coverage = max(all_results.items(), key=lambda x: np.mean(x[1]['coverage_percentage']))
-    best_efficiency = max(all_results.items(), key=lambda x: np.mean(x[1]['battery_efficiency']))
-    best_high_success = max(all_results.items(), key=lambda x: x[1]['high_success'])
-
-    print(f"Highest Reward: {best_reward[0]} ({np.mean(best_reward[1]['total_rewards']):.1f})")
-    print(f"Best Coverage: {best_coverage[0]} ({np.mean(best_coverage[1]['coverage_percentage']):.1f}%)")
-    print(f"Best Efficiency: {best_efficiency[0]} ({np.mean(best_efficiency[1]['battery_efficiency']):.2f} bytes/Wh)")
-    print(f"Highest High-Success Rate: {best_high_success[0]} ({best_high_success[1]['high_success']:.1f}%)")
-
-    print("=" * 90)
+    # Find best performer
+    best_agent = max(all_results.items(),
+                     key=lambda x: np.mean(x[1]['collection_efficiency']))
+    print(f"\n Best Collection Efficiency: {best_agent[0]}")
+    print(f"   Average: {np.mean(best_agent[1]['collection_efficiency']):.1f}%")
 
     env.close()
     return all_results
 
 
 if __name__ == "__main__":
-    print("GREEDY ALGORITHM TESTING WITH DATA COLLECTION GOALS")
+    # Quick test with detailed per-sensor output
+    print("=" * 100)
+    print("TESTING GREEDY AGENTS WITH DETAILED PER-SENSOR METRICS")
+    print("=" * 100)
+
+    # Single episode test with visualization
     env = UAVEnvironment(
         grid_size=(50, 50),
-        num_sensors=30,
-        sensor_duty_cycle=100.0,
-        max_steps=500,
-        rssi_threshold=-90.0,
-        transmit_power_dbm=14.0,
+        num_sensors=20,
+        max_steps=800,
+        sensor_duty_cycle=10.0,
+        penalty_data_loss=-500.0,
+        reward_urgency_reduction=20.0,
         render_mode='human'
     )
 
-    # Define data collection goal
-    # Typical goal: Collect 5000 bytes, visit 90% of sensors, use max 80% battery
-    data_goal = DataGoal(
-        target_bytes=3500.0,      # Collect at least 5000 bytes
-        target_coverage=80.0,     # Visit at least 90% of sensors
-        max_battery_usage=80.0    # Use at most 80% of battery
+    print("\nRunning single episode with SF-Aware V2...")
+    agent = MaxThroughputGreedyV2(env)
+    results = test_greedy_agent(
+        agent,
+        env,
+        num_episodes=10,
+        render=False,
+        agent_name="SF-Aware V2"
     )
-
-
-    # Full comparison with goal
-    print("\nRunning comprehensive comparison (5 episodes per algorithm)...")
-    results = compare_greedy_algorithms(num_episodes=1, render=False, data_goal=data_goal,env=env)
+    #test_greedy_agent(agent, env, num_episodes=5, render=False, agent_name="SF-Aware V2")
+    # Full comparison
+    print("\n\nRunning full comparison (5 episodes)...")
+    compare_all_greedy_agents(num_episodes=1, render=False)
