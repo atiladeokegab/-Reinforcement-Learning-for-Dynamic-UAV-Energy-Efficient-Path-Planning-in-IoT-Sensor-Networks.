@@ -1,12 +1,12 @@
 """
 Complete Greedy Algorithms for UAV Data Collection with SF-Aware Agent
-
+SF = spreading Factor
 INCLUDES:
 1. NearestSensorGreedy - Distance-based (ignores SF)
 2. HighestBufferGreedy - Buffer-based (ignores SF)
 3. ProbabilisticAwareGreedy - Duty-cycle aware (ignores SF)
 4. MaxThroughputGreedy - SF-AWARE v1 (original)
-5. MaxThroughputGreedyV2 - SF-AWARE v2 (PRODUCTION READY) ✅ NEW
+5. MaxThroughputGreedyV2 - SF-AWARE v2 (PRODUCTION READY)
 6. MultiSensorGreedy - Multi-target positioning
 
 Author: ATILADE GABRIEL OKE
@@ -130,15 +130,15 @@ class SuccessMetrics:
     def get_success_level_string(metrics: dict) -> str:
         """Get human-readable success level."""
         if metrics['perfect_success']:
-            return "🌟 Perfect"
+            return " Perfect"
         elif metrics['high_success']:
-            return "✅ High"
+            return "High"
         elif metrics['acceptable_success']:
-            return "👍 Acceptable"
+            return "Acceptable"
         elif metrics['partial_success']:
-            return "⚠️ Partial"
+            return "Partial"
         else:
-            return "❌ Failed"
+            return "Failed"
 
 
 class GreedyAgent:
@@ -303,7 +303,7 @@ class ProbabilisticAwareGreedy(GreedyAgent):
 
 class MaxThroughputGreedy(GreedyAgent):
     """
-    ✅ SF-AWARE v1: Prioritize sensors with BEST data rates (LOWEST SF).
+    SF-AWARE v1: Prioritize sensors with BEST data rates (LOWEST SF).
 
     THIS IS THE ORIGINAL BASELINE FOR COMPARISON!
 
@@ -361,7 +361,7 @@ class MaxThroughputGreedy(GreedyAgent):
 
 class MaxThroughputGreedyV2(GreedyAgent):
     """
-    ✅ SF-AWARE v2 (PRODUCTION READY): Sophisticated baseline with reachability filtering.
+    SF-AWARE v2 (PRODUCTION READY): Sophisticated baseline with reachability filtering.
 
     THIS IS THE IMPROVED BASELINE FOR THESIS!
 
@@ -784,7 +784,7 @@ def test_greedy_agent(agent: GreedyAgent,
 
             # Verify they match
             if abs(collected - calculated_collected) > 0.1:
-                print(f"⚠️ WARNING: Sensor {sensor.sensor_id} data mismatch!")
+                print(f" WARNING: Sensor {sensor.sensor_id} data mismatch!")
                 print(f"   Tracked: {collected:.1f}, Calculated: {calculated_collected:.1f}")
 
             collection_pct = (collected / generated * 100) if generated > 0 else 0
@@ -820,14 +820,14 @@ def test_greedy_agent(agent: GreedyAgent,
         print(f"{'=' * 80}")
 
         # Overall metrics
-        print(f"\n📊 Overall Performance:")
+        print(f"\nOverall Performance:")
         print(f"  Reward: {episode_reward:.1f}")
         print(f"  Coverage: {metrics['coverage_percentage']:.1f}%")
         print(f"  Steps: {step_count}")
         print(f"  Success Level: {SuccessMetrics.get_success_level_string(metrics)}")
 
         # Data metrics
-        print(f"\n📦 Data Collection:")
+        print(f"\n Data Collection:")
         print(f"  Total Generated: {total_data_generated:.0f} bytes")
         print(f"  Total Collected: {total_data_collected:.0f} bytes")
         print(f"  Collection Efficiency: {collection_efficiency:.1f}%")
@@ -835,12 +835,12 @@ def test_greedy_agent(agent: GreedyAgent,
         print(f"  Still in Buffers: {sum(s['final_buffer'] for s in per_sensor_stats):.0f} bytes")
 
         # Battery metrics
-        print(f"\n🔋 Energy Efficiency:")
+        print(f"\n Energy Efficiency:")
         print(f"  Battery Used: {metrics['battery_used_percentage']:.1f}%")
         print(f"  Battery Efficiency: {metrics['battery_efficiency']:.2f} bytes/Wh")
 
         # Per-sensor breakdown
-        print(f"\n📡 Per-Sensor Collection Breakdown:")
+        print(f"\n Per-Sensor Collection Breakdown:")
         print(f"{'ID':<6} {'Generated':<12} {'Collected':<12} {'%':<8} {'Lost':<10} {'Buffer':<10}")
         print("-" * 70)
 
@@ -870,26 +870,26 @@ def test_greedy_agent(agent: GreedyAgent,
         accounting_error = abs(total_data_generated - total_accounted)
 
         if accounting_error > 1.0:
-            print(f"\n⚠️ DATA ACCOUNTING ERROR!")
+            print(f"\nDATA ACCOUNTING ERROR!")
             print(f"  Generated: {total_data_generated:.0f}")
             print(f"  Accounted: {total_accounted:.0f} (collected + lost + buffer)")
             print(f"  Error: {accounting_error:.0f} bytes")
         else:
-            print(f"\n✅ Data Accounting: Perfect (error < 1 byte)")
+            print(f"\nData Accounting: Perfect (error < 1 byte)")
 
         # Sensor coverage statistics
         sensors_with_100_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] >= 99.9)
         sensors_with_50_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] >= 50)
         sensors_with_0_pct = sum(1 for s in per_sensor_stats if s['collection_percentage'] < 1)
 
-        print(f"\n📈 Collection Coverage:")
+        print(f"\nCollection Coverage:")
         print(f"  Sensors 100% collected: {sensors_with_100_pct}/{len(env.sensors)}")
         print(f"  Sensors ≥50% collected: {sensors_with_50_pct}/{len(env.sensors)}")
         print(f"  Sensors <1% collected: {sensors_with_0_pct}/{len(env.sensors)}")
 
         # Validation for V2
         if isinstance(agent, MaxThroughputGreedyV2):
-            print(f"\n🎯 SF-Awareness Validation:")
+            print(f"\nSF-Awareness Validation:")
             validation = agent.validate_sf_awareness()
             print(f"  SF-Aware: {validation['is_sf_aware']}")
             print(f"  SF Awareness Score: {validation['sf_awareness_score']:.3f}")
@@ -972,7 +972,7 @@ def print_per_sensor_analysis(results_dict: Dict[str, dict], env: UAVEnvironment
 
         for sensor_id, pct in enumerate(avg_sensor_collection):
             bar_length = int(pct / 2)  # Scale to 50 chars max
-            bar = "█" * bar_length
+            bar = "█" * bar_length #love this addtion from chat will keep
             print(f"Sensor {sensor_id:<4} {pct:>6.1f}%{'':<13} {bar}")
 
         # Statistics
@@ -1055,7 +1055,7 @@ def compare_all_greedy_agents(num_episodes: int = 1, render: bool = False):
     # Find best performer
     best_agent = max(all_results.items(),
                      key=lambda x: np.mean(x[1]['collection_efficiency']))
-    print(f"\n🏆 Best Collection Efficiency: {best_agent[0]}")
+    print(f"\n Best Collection Efficiency: {best_agent[0]}")
     print(f"   Average: {np.mean(best_agent[1]['collection_efficiency']):.1f}%")
 
     env.close()
@@ -1072,7 +1072,7 @@ if __name__ == "__main__":
     env = UAVEnvironment(
         grid_size=(50, 50),
         num_sensors=20,
-        max_steps=500,
+        max_steps=800,
         sensor_duty_cycle=10.0,
         penalty_data_loss=-500.0,
         reward_urgency_reduction=20.0,

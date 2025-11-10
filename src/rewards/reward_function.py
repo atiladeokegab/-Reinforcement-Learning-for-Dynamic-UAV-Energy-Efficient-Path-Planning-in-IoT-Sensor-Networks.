@@ -18,19 +18,21 @@ class RewardFunction:
     - Bonus for reducing urgency
     - Maintains throughput incentives
     - Ensures no sensor is neglected
+
+    TODO: ADD NEGATIVE REWARD TO THE SYSTEM TO PUNISH THE UAV FOR THE STARVATION OF OTHER SENSORS
     """
 
     def __init__(self,
-                 reward_per_byte: float = 10.0,
+                 reward_per_byte: float = 55.0,
                  reward_new_sensor: float = 50.0,
                  reward_multi_sensor: float = 200.0,  # INCREASED: Incentivizes strategic hub movement
                  reward_completion: float = 100.0,
-                 reward_urgency_reduction: float = 100.0,  # Adjusted for new scale
+                 reward_urgency_reduction: float = 1000.0,  # Adjusted for new scale
                  penalty_revisit: float = -2.0,
                  penalty_boundary: float = -50.0,  # INCREASED: Punishes out-of-bounds flight severely
                  penalty_collision: float = -10.0,
                  penalty_battery: float = -5.0,  # INCREASED: Heavily penalizes wasteful energy consumption
-                 penalty_step: float = -500.0,  # MASSIVELY INCREASED: Forces high-speed collection (SF7)
+                 penalty_step: float = -50.0,  # MASSIVELY INCREASED: Forces high-speed collection (SF7)
                  penalty_data_loss: float = -5000.0):
         """
         Initialize fairness-constrained reward function.
@@ -59,7 +61,7 @@ class RewardFunction:
         self.penalty_collision = penalty_collision
         self.penalty_battery = penalty_battery
         self.penalty_step = penalty_step
-        self.penalty_data_loss = penalty_data_loss  # ✅ CRITICAL
+        self.penalty_data_loss = penalty_data_loss  # CRITICAL
 
     def calculate_movement_reward(self,
                                   move_success: bool,
@@ -115,10 +117,11 @@ class RewardFunction:
                 multi_sensor_bonus = self.reward_multi_sensor * (num_sensors_collected - 1)
                 reward += multi_sensor_bonus
 
-        # ✅ NEW: Urgency reduction bonus
+        # Urgency reduction bonus
         # Reward for collecting from high-urgency sensors
         if urgency_reduced > 0:
             reward += self.reward_urgency_reduction * urgency_reduced
+
 
         # Penalty for attempting empty collection
         if was_empty and bytes_collected == 0:
@@ -131,7 +134,7 @@ class RewardFunction:
         if collision_count > 0:
             reward += self.penalty_collision * collision_count
 
-        # ✅ MASSIVE DATA LOSS PENALTY (Fairness Constraint)
+        #  MASSIVE DATA LOSS PENALTY (Fairness Constraint)
         # This is the key: make data loss so expensive that the agent
         # MUST prioritize high-urgency sensors regardless of SF
         if data_loss > 0:
@@ -168,7 +171,7 @@ class RewardFunction:
             'empty_penalty': self.penalty_revisit if was_empty and bytes_collected == 0 else 0.0,
             'battery_penalty': self.penalty_battery * battery_used,
             'collision_penalty': self.penalty_collision * collision_count if collision_count > 0 else 0.0,
-            'data_loss_penalty': self.penalty_data_loss * data_loss if data_loss > 0 else 0.0,  # ✅ CRITICAL
+            'data_loss_penalty': self.penalty_data_loss * data_loss if data_loss > 0 else 0.0,  # CRITICAL
             'completion_bonus': self.reward_completion if all_sensors_collected else 0.0,
         }
 
