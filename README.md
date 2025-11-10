@@ -9,7 +9,7 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 
 ---
 ## Demo Video of Environment
-[![two_ray_model_3d](src/diagrams/environment/two_ray_model_3d.png)
+[![two_ray_model_3d](asset/diagrams/env/two_ray_model_3d.png)
 ## Key Features
 
 ### Advanced LoRa Communication Modeling
