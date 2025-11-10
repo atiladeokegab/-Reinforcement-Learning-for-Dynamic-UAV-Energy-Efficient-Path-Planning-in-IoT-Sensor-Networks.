@@ -53,9 +53,9 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 
 ## Problem Statement
 
-This dissertation addresses the problem of energy-efficient, dynamic path planning for Unmanned Aerial Vehicles ($\text{UAVs}$) 
-tasked with data collection in dense, unsynchronized $\text{LoRaWAN}$ $\text{IoT}$ networks. We identify that standard path planning heuristics are suboptimal,
-as they fail to account for the $\text{LoRa}$ protocol's physics, leading to a "$\text{Spreading Factor}$ ($\text{SF}$) monoculture" bottleneck that wastes concurrent channel capacity.
+This dissertation addresses the problem of energy-efficient, dynamic path planning for Unmanned Aerial Vehicles UAVs 
+tasked with data collection in dense, unsynchronized LoRaWAN IoT networks. We identify that standard path planning heuristics are suboptimal,
+as they fail to account for the LoRa protocol's physics, leading to a Spreading Factor SF monoculture" bottleneck that wastes concurrent channel capacity.
 
 ### Key Challenges
 - **Duty Cycle Constraints**: IoT sensors are only active 1-10% of the time; UAV must learn sensor wake patterns
