@@ -207,7 +207,7 @@ for the modeling of Lora we apperciate that the ADR does not change immediately,
 ---
 
 ## Demo Video of Environment
-![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/QgQFRd8uP28)
+[![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/QgQFRd8uP28)
 ## Environment diagram
 ![2D Environment](asset/diagrams/env/uniform_distribution.png)
 ## C4 Architecture Diagrams
