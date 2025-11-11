@@ -8,7 +8,7 @@ The UAV must collect data from multiple spatially distributed LoRa IoT sensors w
 The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
 
 ---
-## Demo Video of Environment
+## two ray model 3d
 [![two_ray_model_3d](asset/diagrams/env/two_ray_model_3d.png)
 ## Key Features
 
