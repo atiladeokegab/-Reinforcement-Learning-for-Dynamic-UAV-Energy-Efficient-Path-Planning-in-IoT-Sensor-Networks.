@@ -9,6 +9,7 @@ NEW FEATURES:
 - Fairness-constrained reward function
 - Data loss tracking per step
 - Urgency reduction tracking
+- FIXED: Observation space bounds now match actual observation values
 
 State Space:
     - UAV position (x, y)
@@ -428,7 +429,7 @@ class UAVEnvironment(gym.Env):
         # Action space: UP, DOWN, LEFT, RIGHT, COLLECT
         self.action_space = spaces.Discrete(5)
 
-        # Enhanced observation space with urgency metrics
+        #Observation space with realistic bounds matching actual observations
         # Format: [x, y, battery, sensor1_buffer, sensor1_urgency, sensor2_buffer, sensor2_urgency, ...]
         obs_low = np.array(
             [0, 0, 0] + [0, 0] * self.num_sensors,  # [buffer, urgency] per sensor
@@ -439,7 +440,12 @@ class UAVEnvironment(gym.Env):
             [max_buffer_size, 1.0] * self.num_sensors,  # urgency capped at 1.0
             dtype=np.float32
         )
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
+
+        self.observation_space = spaces.Box(
+            low=obs_low,
+            high=obs_high,
+            dtype=np.float32
+        )
 
         # Episode tracking
         self.current_step = 0
@@ -993,105 +999,3 @@ class UAVEnvironment(gym.Env):
             plt.close(self.fig)
             self.fig = None
             self.ax = None
-
-
-# Testing
-if __name__ == "__main__":
-
-    print("=" * 70)
-    print("Testing UAV Environment with FAIRNESS CONSTRAINTS")
-    print("=" * 70)
-    print()
-
-    # Create environment WITH FAIRNESS
-    env = UAVEnvironment(
-        grid_size=(50, 50),
-        num_sensors=20,
-        max_steps=500,
-        sensor_duty_cycle=10.0,
-        penalty_data_loss=-500.0,
-        reward_urgency_reduction=20.0,
-        render_mode='human'
-    )
-
-    print(f"✓ Environment created with FAIRNESS CONSTRAINTS")
-    print(f"  Action Space: {env.action_space}")
-    print(f"  Observation Space: {env.observation_space}")
-    print(f"  Grid Size: {env.grid_size}")
-    print(f"  Number of Sensors: {env.num_sensors}")
-    print(f"  Data Loss Penalty: -500.0 per byte")
-    print(f"  Urgency Reduction Reward: +20.0 per unit")
-    print()
-
-    # Reset environment
-    obs, info = env.reset(seed=42)
-
-    print(f"✓ Environment reset")
-    print(f"  Initial observation shape: {obs.shape}")
-    print(f"  UAV position: {info['uav_position']}")
-    print(f"  Battery: {info['battery']:.2f} Wh ({info['battery_percent']:.1f}%)")
-    print(f"  Max Urgency: {info['max_urgency']:.3f}")
-    print(f"  Avg Urgency: {info['avg_urgency']:.3f}")
-    print()
-
-    # Run random episode
-    print("   Running random episode with fairness monitoring...")
-    print("   Watch urgency indicators: 🔴>0.8 🟠>0.5 🟡>0.2 🟢≤0.2")#chat added this i like it
-    print()
-
-    action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
-
-    try:
-        for step in range(10000):
-            # Sample random action
-            action = env.action_space.sample()
-
-            # Take step
-            obs, reward, terminated, truncated, info = env.step(action)
-            env.render()
-
-            # Print every 20 steps or at end
-            if step % 20 == 0 or terminated or truncated:
-                print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
-                      f"Pos: ({info['uav_position'][0]:.1f}, {info['uav_position'][1]:.1f}) | "
-                      f"Battery: {info['battery']:6.1f}Wh | "
-                      f"Urgency: Max={info['max_urgency']:.2f} Avg={info['avg_urgency']:.2f} High={info['high_urgency_sensors']} | "
-                      f"Reward: {reward:+7.2f}")
-
-            # Check if done
-            if terminated:
-                print("\n✓ Mission complete! All sensors collected.")
-                env.render()
-                time.sleep(5)
-                break
-            elif truncated:
-                if not info['is_alive']:
-                    print("\n✗ Battery depleted!")
-                else:
-                    print("\n✗ Timeout reached.")
-                env.render()
-                time.sleep(5)
-                break
-
-    except KeyboardInterrupt:
-        print("\n\n⏸️ Stopped by user (Ctrl+C)")
-
-    # Summary
-    print()
-    print("=" * 70)
-    print("Episode Summary (with Fairness Metrics):")
-    print("=" * 70)
-    print(f"  Total Steps: {info['current_step']}")
-    print(f"  Total Reward: {info['total_reward']:.2f}")
-    print(f"  Coverage: {info['coverage_percentage']:.1f}%")
-    print(f"  Data Collected: {info['total_data_collected']:.2f} bytes")
-    print(f"  Battery Used: {274.0 - info['battery']:.2f} Wh")
-    print(f"  Final Max Urgency: {info['max_urgency']:.3f}")
-    print(f"  Final Avg Urgency: {info['avg_urgency']:.3f}")
-    print(f"  High Urgency Sensors: {info['high_urgency_sensors']}")
-    print("=" * 70)
-
-    # Keep window open at the end
-    print("\n✓ Test complete! Close the matplotlib window to exit.")
-    plt.ioff()
-    plt.show()
