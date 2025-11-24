@@ -22,8 +22,9 @@ print(f"✓ Model loaded!")
 print(f"\n Creating environment...")
 env = UAVEnvironment(
     grid_size=(50, 50),
+    uav_start_position=(25,25),
     num_sensors=20,
-    max_steps=800,
+    max_steps=500,
     sensor_duty_cycle=10.0,
     penalty_data_loss=-500.0,
     reward_urgency_reduction=20.0,
