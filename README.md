@@ -17,40 +17,40 @@ The system models a UAV flying over an IoT network (e.g., smart agriculture, env
 ## Key Features
 
 ### Advanced LoRa Communication Modeling
-- **✅Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
-- **✅Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
-- **✅Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
-- **✅Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
-- **✅Capture Effect**: Collision resolution where closest sensor wins per spreading factor
+- **✔Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
+- **✔Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
+- **✔Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
+- **✔Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
+- **✔Capture Effect**: Collision resolution where closest sensor wins per spreading factor
 
 ### Energy-Aware System Design
-- **✅UAV Battery Constraints**: Realistic battery drain for movement and hovering
-- **✅Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
-- **✅Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
+- **✔UAV Battery Constraints**: Realistic battery drain for movement and hovering
+- **✔Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
+- **✔Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
 
 ### Multi-Sensor Collection Strategy
-- **✅Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
-- **✅SF-Based Concurrency**: Different spreading factors enable parallel transmissions
-- **✅Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
-- **✅Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
+- **✔Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
+- **✔SF-Based Concurrency**: Different spreading factors enable parallel transmissions
+- **✔Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
+- **Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
 
 ###  Enhanced Visualization
-- **✅Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
-- **✅Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
-- **✅Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
-- **✅Communication Range Visualization**: Dotted lines showing sensors in range
-- **✅Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
+- **✔Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
+- **✔Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
+- **✔Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
+- **✔Communication Range Visualization**: Dotted lines showing sensors in range
+- **✔Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
 
 ---
 
 ## Objectives
 
-1. ✅ Develop a simulation environment modeling UAV movement and LoRa-based IoT communication  
-2. ✅ Implement realistic LoRa physics including SF orthogonality, duty cycles, and path loss  
-3. ✅ Enable multi-sensor concurrent collection with collision resolution  
-4. ✅ Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
-5. Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based)  
-6. Design reward functions balancing **energy consumption**, **data collection**, and **multi-sensor efficiency**  
+1. ✔ Develop a simulation environment modeling UAV movement and LoRa-based IoT communication  
+2. ✔ Implement realistic LoRa physics including SF orthogonality, duty cycles, and path loss  
+3. ✔ Enable multi-sensor concurrent collection with collision resolution  
+4. ✔ Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
+5. ✔ Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based)  
+6. ✔ Design reward functions balancing **energy consumption**, **data collection**, and **multi-sensor efficiency**  
 7. Analyze trained UAV policies and demonstrate learned path planning behavior
 
 ---
@@ -108,10 +108,10 @@ A weighted combination of:
 
 ## Reinforcement Learning Workflow
 
-1. ✅Initialize UAV and IoT environment  
-2. ✅Choose and execute an action  
-3. ✅Receive reward based on energy, AoI, and data freshness  
-4. ✅Update policy or Q-table  
+1. ✔ Initialize UAV and IoT environment  
+2. ✔Choose and execute an action  
+3. ✔Receive reward based on energy, AoI, and data freshness  
+4. ✔Update policy or Q-table  
 5. Repeat until convergence  
 6. Evaluate trained policy performance  
 
