@@ -37,12 +37,21 @@ class IoTSensor:
     }
 
     # RSSI to SF mapping
+    # S7 , S8 , S9 , S10 , S11 , S12
     RSSI_SF_MAPPING = [
         (-39, 7),            # SF7: RSSI > -39 dBm (very close, 0-1m)
         (-44, 9),            # SF9: RSSI > -44 dBm (close, 1-2m)
         (-50, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
         (-100, 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
     ]
+
+    """
+    RSSI_SF_MAPPING = [
+        (-39, 7),            # SF7: RSSI > -39 dBm (very close, 0-1m)
+        (-44, 9),            # SF9: RSSI > -44 dBm (close, 1-2m)
+        (-50, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
+        (-100, 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
+    ] """
 
     def __init__(
             self,
