@@ -1,5 +1,5 @@
 """
-Gymnasium-Compatible UAV Environment with Fairness Constraints
+Gymnasium-Compatible UAV Environment with Fairness Constraints and battery Constraints
 
 Environment for training UAV to collect data from IoT sensors using RL
 with fairness constraints to prevent sensor neglect.
@@ -10,6 +10,26 @@ NEW FEATURES:
 - Data loss tracking per step
 - Urgency reduction tracking
 - FIXED: Observation space bounds now match actual observation values
+
+Main entities
+- UAV
+- SENSORS
+- 2D GRID
+
+UAV
+- BATTERY
+- ANTENNAS
+- MOVEMENTS
+
+SENSORS
+- SFs
+- DATA GENERATION
+- BUFFER
+- bytes_collected
+- battery
+- collision_count
+- data_loss
+- urgency_reduced
 
 State Space:
     - UAV position (x, y)
@@ -30,12 +50,11 @@ Episode Termination:
 
 Author: ATILADE GABRIEL OKE
 Date: November 2025
-Project: Reinforcement Learning for Dynamic UAV Energy-Efficient Path Planning
-         in IoT Sensor Networks
+Project: Energy-Efficient UAV Path Planning in IOT Networks: A Deep Reinforcement Learning Aided Approach
 """
 
-import gymnasium as gym
-from gymnasium import spaces
+import gymnasium as gym # new open ai gym
+from gymnasium import spaces # state spaces expression
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import matplotlib.pyplot as plt
@@ -320,9 +339,12 @@ class UAVEnvironment(gym.Env):
               sensor2_buffer, sensor2_urgency,
               ...,
               sensorN_buffer, sensorN_urgency]
+              usually 20
 
     Action Space:
         Discrete(5): [UP, DOWN, LEFT, RIGHT, COLLECT]
+        for the seek of simplification the we make it such that the uav must stop to collect data
+        the other movement are quite simple
 
     Reward Structure (Fairness-Constrained):
         +0.1 per byte: Data collection
@@ -380,7 +402,7 @@ class UAVEnvironment(gym.Env):
             reward_urgency_reduction: Reward per unit urgency reduced
         """
         super().__init__()
-
+        #attributes
         self.grid_size = grid_size
         self.max_steps = max_steps
         self.render_mode = render_mode
@@ -591,7 +613,7 @@ class UAVEnvironment(gym.Env):
         elif action == 4:  # COLLECT action
             reward = self._execute_collect_action()
         else:
-            raise ValueError(f"Invalid action: {action}")
+            raise ValueError(f"Invalid action: {action}") # NOT Need but why not
 
         battery_used = battery_before - self.uav.battery
 
@@ -616,7 +638,7 @@ class UAVEnvironment(gym.Env):
 
     def _execute_move_action(self, action: int) -> float:
         """Execute movement action and return reward."""
-        direction_map = {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT'}
+        direction_map = {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT'}# we dicretize the action so as to allow it fit in the state space of the agent
         direction = direction_map[action]
 
         battery_before = self.uav.battery
@@ -670,7 +692,7 @@ class UAVEnvironment(gym.Env):
             # Calculate P_overall = P_link * P_cycle
             P_link = sensor.get_success_probability(self.uav.position, use_advanced_model=True)
             P_cycle = sensor.duty_cycle_probability
-            P_overall = P_link * P_cycle
+            P_overall = P_link * P_cycle # addtion of some stochastic data collection
 
             # Probabilistic transmission attempt
             if np.random.rand() < P_overall:

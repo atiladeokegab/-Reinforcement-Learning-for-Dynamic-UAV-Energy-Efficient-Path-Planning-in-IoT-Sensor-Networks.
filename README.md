@@ -7,6 +7,22 @@ The UAV must collect data from multiple spatially distributed LoRa IoT sensors w
 
 The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
 
+# System Model
+We consider a remote IoT monitoring environment comprising a set N = {1, . . . ,N} of
+static sensor devices uniformly distributed over a rectangular Region of Interest (RoI) W ⊂
+R2. These devices continuously generate monitoring data, which accumulates in finite transmission
+buffers. Unlike simple deadline-based models, we assume data carries value only
+if it is collected before the buffer capacity Bmax is exceeded, after which packet loss occurs.
+The system model is characterized by a rotary-wing UAV acting as a mobile LoRaWAN
+gateway, dispatched to harvest data from the ground sensors. The mission duration is fixed
+to a finite horizon T and divided into discrete time steps t = 0, 1, . . . , T, each of duration Δt.
+We assume the UAV flies at a fixed altitude h to maintain a consistent ground-to-air channel
+geometry, updating its horizontal position pt = (xt, yt) at each step. Critically, the system
+employs the LoRaWAN protocol with orthogonal Spreading Factors (SF), allowing multiple
+sensors to upload data simultaneously provided they are assigned distinct SFs by the
+Adaptive Data Rate (ADR) mechanism. The UAV must therefore optimize its trajectory not
+merely to minimize distance, but to actively manage these spectral assignments to prevent
+network congestion.
 ---
 ## Demo Video of Environment
 [![two_ray_model_3d](asset/diagrams/env/two_ray_model_3d.png)
@@ -144,12 +160,12 @@ A weighted combination of:
 
 ## Project Milestones
 
-| Phase | Timeline | Goal |
-|--------|-----------|------|
-| Environment Setup | Oct 2025 | Create 2D UAV-IoT simulation |
-| Q-Learning Implementation | Nov 2025 | Baseline model training |
-| PPO Implementation | Dec 2025 – Jan 2026 | Policy-based deep RL model |
-| Evaluation & Visualization | Feb – Mar 2026 | Compare algorithms and tune rewards |
+| Phase                       | Timeline | Goal |
+|-----------------------------|-----------|------|
+| Environment Setup           | Oct 2025 | Create 2D UAV-IoT simulation |
+| Q-Learning Implementation   | Nov 2025 | Baseline model training |
+| DQN Implementation          | Dec 2025 – Jan 2026 |  deep RL model |
+| Evaluation & Visualization  | Feb – Mar 2026 | Compare algorithms and tune rewards |
 | Final Report & Presentation | Apr – May 2026 | Submit final report and demo |
 
 ---
@@ -158,7 +174,7 @@ A weighted combination of:
 The path loss is given by:
 
 $$
-PL(d) = 10 \, n \, \log_{10}\left(\frac{d}{d_0}\right)
+PL(d) = 20 \, n \, \log_{10}\left(\frac{d}{d_0}\right)
 $$
 
 #### Relationship Between RSS and Path Loss
