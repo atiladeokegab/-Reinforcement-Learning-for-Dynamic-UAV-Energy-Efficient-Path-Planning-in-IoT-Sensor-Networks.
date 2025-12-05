@@ -1,6 +1,6 @@
 [project]
 name = "final-year"
-version = "0.1.0"
+version = "0.2.0"
 description = "To develop and evaluate a reinforcement learning algorithm for energy-efficient UAV path planning in IoT sensor networks, focusing on minimizing energy consumption during data collection missions in a two-dimensional environment with fixed sensor locations."
 readme = "README.md"
 requires-python = ">=3.11"
