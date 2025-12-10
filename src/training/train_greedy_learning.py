@@ -1,4 +1,4 @@
-from src.agents.greedy.greedy_agents import ActiveSensorGreedy, test_greedy_agent
+from src.agents.baselines.greedy_agents import ActiveSensorGreedy, test_greedy_agent
 from src.environment.uav_env import UAVEnvironment
 
 env = UAVEnvironment(
