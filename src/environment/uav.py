@@ -43,7 +43,7 @@ Example UAV:
     - TB60 Intelligent
     - Capacity: 5935mAh, 52.8V, 274W
     - Typical Range: 5 m/s - 15 m/s
-    - Max speed 10m/s
+    - Speed:  10m/s
     - Flight power 600 W - 800 W (depending on speed)
     - Hovering at a location for data collection (lower drain rate)
     - Hover power 400 W
@@ -87,9 +87,9 @@ class UAV:
     def __init__(self,
                  start_position: Tuple[float, float] = (5.0, 5.0),
                  max_battery: float = 274.0,  # Wh (TB60 capacity)
-                 speed: float = 5.0,  # m/s (cruising speed)
-                 power_move: float = 600.0,  # W (cruise power)
-                 power_hover: float = 400.0,  # W (hover power)
+                 speed: float = 10.0,  # m/s (cruising speed)
+                 power_move: float = 500.0,  # W (cruise power)
+                 power_hover: float = 700.0,  # W (hover power)
                  altitude: float = 100.0):  # m (constant altitude)
         """
         Initialize UAV with position and battery parameters.
@@ -134,6 +134,8 @@ class UAV:
             grid_size: (width, height) of the grid for boundary checking
             time_step: Duration of movement in seconds (default: 1.0)
             so uav = 10m per second on  50 by 50 enhance 500 by 500m
+            so uav = 10m per second on  100 by 100 enhance 1000 by 1000m
+            so uav = 10m per second on  200 by 200 enhance 2000 by 2000m
 
         Returns:
             True if move was successful, False if blocked by boundary
@@ -213,7 +215,7 @@ class UAV:
             >>> uav.is_alive()
             False
         """
-        return self.battery > 0
+        return self.battery > (0.02 * self.max_battery)
 
     def get_battery_percentage(self) -> float:
         """

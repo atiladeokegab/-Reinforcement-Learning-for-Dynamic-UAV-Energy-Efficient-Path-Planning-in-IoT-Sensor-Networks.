@@ -1,24 +1,18 @@
 """
-Complete DQN Training Script with Fairness Constraints
+Complete DQN Training Script with Data Persistence Fix
 
-Trains DQN agent for UAV data collection with SF-aware optimization
-and fairness constraints.
-
-Author: ATILADE GABRIEL OKE
-Date: 09 November 2025
+Solves the issue where metrics are lost when the environment auto-resets.
 """
 
 import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 import numpy as np
 import torch
+import json
 from datetime import datetime
 
 from stable_baselines3 import DQN
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import (
     CheckpointCallback,
@@ -27,381 +21,211 @@ from stable_baselines3.common.callbacks import (
     BaseCallback
 )
 
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from environment.uav_env import UAVEnvironment
 
+# ==================== 1. THE SMART WRAPPER (FIX) ====================
 
-# ==================== CUSTOM CALLBACK ====================
+class AnalysisUAVEnv(UAVEnvironment):
+    """
+    Smart Wrapper: Saves the final state of the simulation
+    the instant before the environment resets.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Persistent storage for the last finished episode
+        self.last_episode_stats = None
+
+    def reset(self, **kwargs):
+        # 1. SNAPSHOT: If we have run a simulation (step > 0), save the data now!
+        # This runs BEFORE the super().reset() wipes everything.
+        if hasattr(self, 'sensors') and self.current_step > 0:
+
+            # Calculate metrics on the 'finished' environment
+            total_generated = sum(s.total_data_generated for s in self.sensors)
+            total_collected = sum(s.total_data_transmitted for s in self.sensors)
+            total_lost = sum(s.total_data_lost for s in self.sensors)
+
+            sensor_rates = []
+            for s in self.sensors:
+                if s.total_data_generated > 0:
+                    rate = (s.total_data_transmitted / s.total_data_generated) * 100
+                    sensor_rates.append(rate)
+
+            # Save to persistent variable
+            self.last_episode_stats = {
+                'total_generated': total_generated,
+                'total_collected': total_collected,
+                'total_lost': total_lost,
+                'battery_remaining': self.uav.battery,
+                'coverage': (len(self.sensors_visited) / self.num_sensors) * 100,
+                'fairness_std': np.std(sensor_rates) if sensor_rates else 0.0
+            }
+
+        # 2. PROCEED: Now allow the standard reset to wipe everything
+        return super().reset(**kwargs)
+
+# ==================== 2. THE CALLBACK (READS SNAPSHOT) ====================
 
 class FairnessMetricsCallback(BaseCallback):
-    """
-    Custom callback to track fairness and SF-awareness metrics during training.
-    """
-
     def __init__(self, verbose=0):
         super().__init__(verbose)
         self.episode_rewards = []
         self.episode_coverages = []
         self.episode_efficiencies = []
         self.episode_data_losses = []
-        self.episode_max_urgencies = []
         self.episode_fairness_stds = []
-        self.episode_battery_efficiency = []  #Battery efficiency (B/Wh)
-        self.episode_steps = []  #Steps per episode
+        self.episode_battery_efficiency = []
         self.n_episodes = 0
 
     def _on_step(self) -> bool:
-        # Check if episode ended
         if self.locals.get('dones')[0]:
             self.n_episodes += 1
 
-            # Get environment
+            # Get the underlying environment
             env = self.training_env.envs[0]
             if hasattr(env, 'unwrapped'):
                 env = env.unwrapped
 
-            # Get info
+            # === CRITICAL: Use the SNAPSHOT data, not live sensors ===
+            if not hasattr(env, 'last_episode_stats') or env.last_episode_stats is None:
+                return True
+
+            stats = env.last_episode_stats
             info = self.locals.get('infos')[0]
 
-            # Basic metrics
+            # 1. Record Metrics
             if 'episode' in info:
-                episode_reward = info['episode']['r']
-                episode_length = info['episode']['l']
-                self.episode_rewards.append(episode_reward)
-                self.episode_steps.append(episode_length)
+                self.episode_rewards.append(info['episode']['r'])
 
-            self.episode_coverages.append(info.get('coverage_percentage', 0))
+            self.episode_coverages.append(stats['coverage'])
 
-            # Calculate collection efficiency
-            total_generated = sum(s.total_data_generated for s in env.sensors)
-            total_collected = sum(s.total_data_transmitted for s in env.sensors)
-            efficiency = (total_collected / total_generated * 100) if total_generated > 0 else 0
+            efficiency = (stats['total_collected'] / stats['total_generated'] * 100) if stats['total_generated'] > 0 else 0
             self.episode_efficiencies.append(efficiency)
 
-            # NEW: Calculate battery efficiency (bytes/Wh)
-            battery_used = 274.0 - info.get('battery', 274.0)  # Wh consumed
-            battery_efficiency = (total_collected / battery_used) if battery_used > 0 else 0
-            self.episode_battery_efficiency.append(battery_efficiency)
+            battery_used = 274.0 - stats['battery_remaining']
+            batt_eff = (stats['total_collected'] / battery_used) if battery_used > 0 else 0
+            self.episode_battery_efficiency.append(batt_eff)
 
-            # Fairness metrics
-            total_data_loss = sum(s.total_data_lost for s in env.sensors)
-            self.episode_data_losses.append(total_data_loss)
+            self.episode_data_losses.append(stats['total_lost'])
+            self.episode_fairness_stds.append(stats['fairness_std'])
 
-            self.episode_max_urgencies.append(info.get('max_urgency', 0))
-
-            # Calculate fairness (std of per-sensor collection rates)
-            sensor_collection_rates = []
-            for s in env.sensors:
-                if s.total_data_generated > 0:
-                    rate = (s.total_data_transmitted / s.total_data_generated) * 100
-                    sensor_collection_rates.append(rate)
-
-            if sensor_collection_rates:
-                fairness_std = np.std(sensor_collection_rates)
-                self.episode_fairness_stds.append(fairness_std)
-
-            # ENHANCED: Print progress every 10 episodes with battery efficiency
+            # 2. Print Progress (Every 10 episodes)
             if self.n_episodes % 10 == 0:
-                recent_rewards = self.episode_rewards[-10:] if len(self.episode_rewards) >= 10 else self.episode_rewards
-                recent_efficiency = self.episode_efficiencies[-10:] if len(
-                    self.episode_efficiencies) >= 10 else self.episode_efficiencies
-                recent_coverage = self.episode_coverages[-10:] if len(
-                    self.episode_coverages) >= 10 else self.episode_coverages
-                recent_batt_eff = self.episode_battery_efficiency[-10:] if len(
-                    self.episode_battery_efficiency) >= 10 else self.episode_battery_efficiency
-                recent_steps = self.episode_steps[-10:] if len(
-                    self.episode_steps) >= 10 else self.episode_steps
+                recent_rewards = self.episode_rewards[-10:]
+                recent_cov = self.episode_coverages[-10:]
+                recent_eff = self.episode_efficiencies[-10:]
 
-                print(f"\nEpisode {self.n_episodes} | "
-                      f"Reward: {np.mean(recent_rewards):.1f} | "
-                      f"Coverage: {np.mean(recent_coverage):.1f}% | "
-                      f"Efficiency: {np.mean(recent_efficiency):.1f}% | "
-                      f"Batt Eff: {np.mean(recent_batt_eff):.1f} B/Wh | "
-                      f"Steps: {np.mean(recent_steps):.0f}")
+                print(f"Episode {self.n_episodes} | "
+                      f"Rew: {np.mean(recent_rewards):.0f} | "
+                      f"Cov: {np.mean(recent_cov):.1f}% | "
+                      f"Eff: {np.mean(recent_eff):.1f}% | "
+                      f"Fairness(std): {stats['fairness_std']:.1f}%")
 
         return True
 
     def get_metrics(self):
-        """Return collected metrics."""
         return {
             'rewards': self.episode_rewards,
             'coverages': self.episode_coverages,
             'efficiencies': self.episode_efficiencies,
             'data_losses': self.episode_data_losses,
-            'max_urgencies': self.episode_max_urgencies,
             'fairness_stds': self.episode_fairness_stds,
-            'battery_efficiency': self.episode_battery_efficiency,  # testing
-            'steps': self.episode_steps,  # testing
+            'battery_efficiency': self.episode_battery_efficiency
         }
-
 
 # ==================== CONFIGURATION ====================
 
-# A. Environment Configuration
 ENV_CONFIG = {
-    'grid_size': (50, 50),  #  Manageable for RTX 3050 Ti
-    'num_sensors': 20,  #  Full problem
-    'max_steps': 800,  #  Reasonable episode length
-    'sensor_duty_cycle': 10.0,  #  10% duty cycle
-    'penalty_data_loss': -5000.0,  #  FAIRNESS CONSTRAINT
-    'reward_urgency_reduction': 100.0,  #  FAIRNESS BONUS
-    'render_mode': None,  # No rendering during training
+    'grid_size': (100, 100),
+    'num_sensors': 20,
+    'max_steps': 2100,
+    'sensor_duty_cycle': 10.0,
+    'penalty_data_loss': -500.0,
+    'reward_urgency_reduction': 20.0,
+    'render_mode': None,
 }
 
-# B. DQN Hyperparameters (Optimized for RTX 3050 Ti)
+FRAME_STACKING_CONFIG = {'use_frame_stacking': True, 'n_stack': 4}
+
 HYPERPARAMS = {
     'policy': 'MlpPolicy',
-    'learning_rate': 1e-4,  #  Good starting point
-    'buffer_size': 50_000,  #  Fits in 4GB VRAM
-    'batch_size': 32,  #  Optimal for RTX 3050 Ti
-    'gamma': 0.95,  #  Balance short/long-term
-    'learning_starts': 1000,  #  Collect data before learning
-    'train_freq': 4,  #  Train every 4 steps
-    'target_update_interval': 1000,  #  Update target network
-    'exploration_initial_eps': 1.0,  #  Start with full exploration
-    'exploration_fraction': 0.65,  #  Decay over 30% of training
-    'exploration_final_eps': 0.01,  #  Minimum exploration
-    'tau': 1.0,  # Hard target updates
-    'gradient_steps': 1,  #  One gradient step per train
-    'policy_kwargs': {
-        'net_arch': [512,256] #  Neural network: 3 hidden layers, 512 units first two , 256 unit
-    },
+    'learning_rate': 1e-4,
+    'buffer_size': 50_000,
+    'batch_size': 32,
+    'gamma': 0.95,
+    'learning_starts': 1000,
+    'train_freq': 4,
+    'target_update_interval': 1000,
+    'exploration_fraction': 0.95,
+    'gradient_steps': 1,
+    'policy_kwargs': {'net_arch': [512, 512, 256]},
 }
 
-# C. Training Parameters
 TRAINING_CONFIG = {
-    'total_timesteps': 100_000,  # Start with 100K (5-10 min on GPU)
-    'eval_freq': 5000,  # Evaluate every 5K steps
-    'n_eval_episodes': 5,  # 5 episodes for evaluation
-    'save_freq': 10_000,  #  Save checkpoint every 10K
-    'log_interval': 10,  # Log every 10 updates
+    'total_timesteps': 1_000_000,
+    'eval_freq': 5000,
+    'save_freq': 10_000,
+    'log_interval': 10,
 }
 
-# D. Paths
-SAVE_DIR = Path("models/dqn_fairness")
-LOG_DIR = Path("logs/dqn_fairness")
+SAVE_DIR = Path("models/dqn_fairness_framestack")
+LOG_DIR = Path("logs/dqn_fairness_framestack")
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
-LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ==================== MAIN TRAINING ====================
 
 def main():
-    print("DQN TRAINING WITH FAIRNESS CONSTRAINTS")
+    print("STARTING TRAINING (WITH PERSISTENCE FIX)")
 
-    # Check GPU
-    print("\nHardware Configuration:")
-    print(f"  PyTorch version: {torch.__version__}")
-    print(f"  CUDA available: {torch.cuda.is_available()}")
-    if torch.cuda.is_available():
-        print(f"  GPU: {torch.cuda.get_device_name(0)}")
-        print(f"  GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
-
-    # Print configuration
-    print("\nEnvironment Configuration:")
-    for key, value in ENV_CONFIG.items():
-        print(f"  {key}: {value}")
-
-    print("\nDQN Hyperparameters:")
-    for key, value in HYPERPARAMS.items():
-        if key != 'policy_kwargs':
-            print(f"  {key}: {value}")
-    print(f"  Neural Network: {HYPERPARAMS['policy_kwargs']['net_arch']}")
-
-    print("\nTraining Configuration:")
-    for key, value in TRAINING_CONFIG.items():
-        if isinstance(value, int):
-            print(f"  {key}: {value:,}")
-        else:
-            print(f"  {key}: {value}")
-
-    print("\nSave Paths:")
-    print(f"  Models: {SAVE_DIR}")
-    print(f"  Logs: {LOG_DIR}")
-
-    # ==================== CREATE ENVIRONMENTS ====================
-
-    print("\n" + "=" * 100)
-    print("CREATING ENVIRONMENTS")
-    print("=" * 100)
-
+    # 1. Environment Factory (Uses Wrapper)
     def make_env():
-        """Factory function to create environment."""
-        env = UAVEnvironment(**ENV_CONFIG)
-        env = Monitor(env)  # Wrap for monitoring
+        # Use AnalysisUAVEnv here!
+        env = AnalysisUAVEnv(**ENV_CONFIG)
+        env = Monitor(env)
         return env
 
-    # Training environment
+    # 2. Vectorize & Stack
     train_env = DummyVecEnv([make_env])
-    print("✓ Training environment created")
+    train_env = VecFrameStack(train_env, n_stack=4)
 
-    # Evaluation environment
     eval_env = DummyVecEnv([make_env])
-    print("✓ Evaluation environment created")
+    eval_env = VecFrameStack(eval_env, n_stack=4)
 
-    # ==================== CREATE DQN MODEL ====================
-
-    print("\n" + "=" * 100)
-    print("CREATING DQN MODEL")
-    print("=" * 100)
-
+    # 3. Model
     model = DQN(
         HYPERPARAMS['policy'],
         train_env,
-        learning_rate=HYPERPARAMS['learning_rate'],
-        buffer_size=HYPERPARAMS['buffer_size'],
-        batch_size=HYPERPARAMS['batch_size'],
-        gamma=HYPERPARAMS['gamma'],
-        learning_starts=HYPERPARAMS['learning_starts'],
-        train_freq=HYPERPARAMS['train_freq'],
-        target_update_interval=HYPERPARAMS['target_update_interval'],
-        exploration_initial_eps=HYPERPARAMS['exploration_initial_eps'],
-        exploration_fraction=HYPERPARAMS['exploration_fraction'],
-        exploration_final_eps=HYPERPARAMS['exploration_final_eps'],
-        tau=HYPERPARAMS['tau'],
-        gradient_steps=HYPERPARAMS['gradient_steps'],
-        policy_kwargs=HYPERPARAMS['policy_kwargs'],
-        verbose=1,
         tensorboard_log=str(LOG_DIR),
-        device='auto',  #  Automatically use GPU if available
+        **{k:v for k,v in HYPERPARAMS.items() if k != 'policy'}
     )
 
-    print(f"✓ DQN model created")
-    print(f"  Device: {model.device}")
-    print(f"  Policy: {model.policy}")
-
-    # ==================== SETUP CALLBACKS ====================
-
-    print("\n" + "=" * 100)
-    print("SETTING UP CALLBACKS")
-    print("=" * 100)
-
-    # Checkpoint callback
-    checkpoint_callback = CheckpointCallback(
-        save_freq=TRAINING_CONFIG['save_freq'],
-        save_path=str(SAVE_DIR),
-        name_prefix="dqn_checkpoint",
-        save_replay_buffer=True,
-        save_vecnormalize=True,
-    )
-    print("✓ Checkpoint callback configured")
-
-    # Evaluation callback
-    eval_callback = EvalCallback(
-        eval_env,
-        best_model_save_path=str(SAVE_DIR),
-        log_path=str(LOG_DIR),
-        eval_freq=TRAINING_CONFIG['eval_freq'],
-        n_eval_episodes=TRAINING_CONFIG['n_eval_episodes'],
-        deterministic=True,
-        render=False,
-    )
-    print("✓ Evaluation callback configured")
-
-    # Fairness metrics callback
+    # 4. Callbacks
+    checkpoint_callback = CheckpointCallback(save_freq=10000, save_path=str(SAVE_DIR), name_prefix="dqn")
     fairness_callback = FairnessMetricsCallback()
-    print("✓ Fairness metrics callback configured")
 
-    # Combine callbacks
-    callback = CallbackList([checkpoint_callback, eval_callback, fairness_callback])
+    # 5. Train
+    model.learn(
+        total_timesteps=TRAINING_CONFIG['total_timesteps'],
+        callback=CallbackList([checkpoint_callback, fairness_callback]),
+        progress_bar=True
+    )
 
-    # ==================== TRAIN ====================
+    # 6. Save & Finish
+    model.save(str(SAVE_DIR / "dqn_final"))
 
-    print("\n" + "=" * 100)
-    print("STARTING TRAINING")
-    print("=" * 100)
-    print(f"\ Monitor training in real-time:")
-    print(f"   tensorboard --logdir {LOG_DIR}")
-    print(f"\nTraining for {TRAINING_CONFIG['total_timesteps']:,} timesteps...")
-    print(f"   Estimated time: ~5-10 minutes on RTX 3050 Ti")
-    print("=" * 100)
-
-    start_time = datetime.now()
-
-    try:
-        model.learn(
-            total_timesteps=TRAINING_CONFIG['total_timesteps'],
-            callback=callback,
-            log_interval=TRAINING_CONFIG['log_interval'],
-            progress_bar=True
-        )
-    except KeyboardInterrupt:
-        print("\n\n Training interrupted by user!")
-
-    training_time = (datetime.now() - start_time).total_seconds()
-
-    # ==================== SAVE FINAL MODEL ====================
-
-    print("\n" + "=" * 100)
-    print("SAVING FINAL MODEL")
-    print("=" * 100)
-
-    final_model_path = SAVE_DIR / "dqn_final"
-    model.save(str(final_model_path))
-    print(f"✓ Final model saved: {final_model_path}.zip")
-
-    # Save metrics
+    # Save Metrics
     metrics = fairness_callback.get_metrics()
-    import json
-    metrics_path = SAVE_DIR / "training_metrics.json"
-    with open(metrics_path, 'w') as f:
-        json.dump({k: [float(v) for v in vals] for k, vals in metrics.items()}, f, indent=2)
-    print(f"✓ Training metrics saved: {metrics_path}")
+    with open(SAVE_DIR / "training_metrics.json", 'w') as f:
+        json.dump({k: [float(v) for v in vals] for k, vals in metrics.items()}, f)
 
-    # ==================== TRAINING SUMMARY ====================
+    with open(SAVE_DIR / "frame_stacking_config.json", 'w') as f:
+        json.dump(FRAME_STACKING_CONFIG, f)
 
-    print("\n" + "=" * 100)
-    print("TRAINING COMPLETE")
-    print("=" * 100)
-    print(f"\nTraining Statistics:")
-    print(f"  Total time: {training_time / 60:.1f} minutes")
-    print(f"  Episodes completed: {len(metrics['rewards'])}")
-    print(f"  Timesteps: {TRAINING_CONFIG['total_timesteps']:,}")
-
-    if True:
-        print(f"\n📊 Performance Metrics (Last 50 episodes):")
-        last_n = min(50, len(metrics['rewards']))
-
-        avg_reward = np.mean(metrics['rewards'][-last_n:])
-        total_reward = np.sum(metrics['rewards'])
-        avg_coverage = np.mean(metrics['coverages'][-last_n:])
-        avg_efficiency = np.mean(metrics['efficiencies'][-last_n:])
-        avg_batt_eff = np.mean(metrics['battery_efficiency'][-last_n:])
-        avg_steps = np.mean(metrics['steps'][-last_n:])
-        avg_data_loss = np.mean(metrics['data_losses'][-last_n:])
-
-        print(f"  Average Reward (last 50):    {avg_reward:>10.2f}")
-        print(f"  Total Reward (all episodes): {total_reward:>10.2f}")
-        print(f"  Average Coverage:            {avg_coverage:>10.2f}%")
-        print(f"  Average Efficiency:          {avg_efficiency:>10.2f}%")
-        print(f"  Average Battery Efficiency:  {avg_batt_eff:>10.2f} B/Wh")
-        print(f"  Average Steps per Episode:   {avg_steps:>10.0f}")
-        print(f"  Average Data Loss:           {avg_data_loss:>10.2f} bytes")
-
-        if len(metrics['fairness_stds']) > 0:
-            avg_fairness = np.mean(metrics['fairness_stds'][-last_n:])
-            print(f"  Fairness (σ):                {avg_fairness:>10.2f}% (lower = fairer)")
-    print(f"\nSaved Files:")
-    print(f"  Best model: {SAVE_DIR}/best_model.zip")
-    print(f"  Final model: {final_model_path}.zip")
-    print(f"  Checkpoints: {SAVE_DIR}/dqn_checkpoint_*.zip")
-    print(f"  Metrics: {metrics_path}")
-
-    print(f"\nTensorBoard Logs:")
-    print(f"  {LOG_DIR}")
-
-    print("\n" + "=" * 100)
-    print("ALL DONE!")
-    print("=" * 100)
-
-    print(f"  1. View logs: tensorboard --logdir {LOG_DIR}")
-    print(f"  2. Load model: model = DQN.load('{final_model_path}.zip')")
-    print(f"  3. Evaluate model: python evaluate_dqn.py")
-    print(f"  4. Compare with baselines")
-
-    # Close environments
-    train_env.close()
-    eval_env.close()
-
+    print("DONE! Metrics Saved.")
 
 if __name__ == "__main__":
     main()

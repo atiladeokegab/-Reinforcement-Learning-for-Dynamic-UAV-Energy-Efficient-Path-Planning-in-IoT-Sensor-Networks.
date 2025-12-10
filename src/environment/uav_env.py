@@ -1,5 +1,5 @@
 """
-Gymnasium-Compatible UAV Environment with Fairness Constraints and battery Constraints
+Gymnasium-Compatible UAV Environment with Fairness Constraints and Battery Constraints
 
 Environment for training UAV to collect data from IoT sensors using RL
 with fairness constraints to prevent sensor neglect.
@@ -7,54 +7,21 @@ with fairness constraints to prevent sensor neglect.
 NEW FEATURES:
 - Urgency metrics in observation space
 - Fairness-constrained reward function
-- Data loss tracking per step
+- Data loss tracking per step (GLOBAL for all actions)
 - Urgency reduction tracking
-- FIXED: Observation space bounds now match actual observation values
+- Observation space bounds match actual observation values
 
-Main entities
-- UAV
-- SENSORS
-- 2D GRID
-
-UAV
-- BATTERY
-- ANTENNAS
-- MOVEMENTS
-
-SENSORS
-- SFs
-- DATA GENERATION
-- BUFFER
-- bytes_collected
-- battery
-- collision_count
-- data_loss
-- urgency_reduced
-
-State Space:
-    - UAV position (x, y)
-    - Battery level
-    - For each sensor: buffer level AND urgency metric
-
-Action Space:
-    0: UP
-    1: DOWN
-    2: LEFT
-    3: RIGHT
-    4: COLLECT (hover and collect data from nearby sensors)
-
-Episode Termination:
-    - Success: All sensors have empty buffers (data collected)
-    - Failure: Battery depleted (battery <= 0)
-    - Timeout: Maximum steps reached
+CRITICAL FIX:
+- Data loss penalty applies to ALL actions (movement AND collection)
+- Prevents agent from learning to ignore buffer overflows while moving
 
 Author: ATILADE GABRIEL OKE
 Date: November 2025
 Project: Energy-Efficient UAV Path Planning in IOT Networks: A Deep Reinforcement Learning Aided Approach
 """
 
-import gymnasium as gym # new open ai gym
-from gymnasium import spaces # state spaces expression
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import matplotlib.pyplot as plt
@@ -76,44 +43,26 @@ from rewards.reward_function import RewardFunction
 
 class SensorState(IntEnum):
     """Visual states for sensors based on buffer level"""
-    EMPTY = 0           # 0% buffer
-    LOW = 1             # 1-33% buffer
-    MEDIUM = 2          # 34-66% buffer
-    HIGH = 3            # 67-99% buffer
-    FULL = 4            # 100% buffer
-    COLLECTING = 5      # UAV actively collecting
-    COLLECTED = 6       # Recently emptied
+    EMPTY = 0
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    FULL = 4
+    COLLECTING = 5
+    COLLECTED = 6
 
 
-def get_sensor_visual_state(sensor,
-                            uav_position,
-                            current_action=None) -> SensorState:
-    """
-    Determine visual state of sensor based on buffer level and UAV interaction.
-
-    Args:
-        sensor: IoTSensor object
-        uav_position: Current UAV position
-        current_action: Current action (0-4, where 4=COLLECT)
-
-    Returns:
-        SensorState enum value
-    """
-    # Use sensor's own range calculation (RSSI-based)
+def get_sensor_visual_state(sensor, uav_position, current_action=None) -> SensorState:
+    """Determine visual state of sensor based on buffer level and UAV interaction."""
     is_in_range = sensor.is_in_range(uav_position)
-
-    # Determine state based on buffer percentage
     buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
 
-    # Priority 1: COLLECTING - UAV actively collecting (action=4, in range, has data)
     if current_action == 4 and is_in_range and sensor.data_buffer > 0:
         return SensorState.COLLECTING
 
-    # Priority 2: COLLECTED - Recently emptied (empty buffer, in range, was collected)
     if sensor.data_buffer <= 10 and sensor.data_collected and is_in_range:
         return SensorState.COLLECTED
 
-    # Priority 3: States based on buffer level
     if buffer_pct == 0:
         return SensorState.EMPTY
     elif buffer_pct <= 33:
@@ -126,231 +75,107 @@ def get_sensor_visual_state(sensor,
         return SensorState.FULL
 
 
-def render_sensor_enhanced(ax, sensor, current_step, uav_position,
-                          current_action=None, urgency=0.0):  #  NEW: urgency parameter
-    """
-    Render a single sensor with enhanced visual states and urgency indicator.
-
-    Args:
-        ax: Matplotlib axis
-        sensor: IoTSensor object
-        current_step: Current simulation step (for animations)
-        uav_position: UAV position tuple (x, y)
-        current_action: Current action (0-4)
-        urgency: Urgency metric (0-1)
-    """
+def render_sensor_enhanced(ax, sensor, current_step, uav_position, current_action=None, urgency=0.0, is_visited=True):
+    """Render a single sensor with enhanced visual states and urgency indicator."""
     x, y = sensor.position
-
-    # Get sensor state
     state = get_sensor_visual_state(sensor, uav_position, current_action)
 
-    # Define visual properties for each state
     if state == SensorState.EMPTY:
-        color = 'lightblue'
-        marker_size = 80
-        alpha = 0.5
-        marker = 'o'
+        color, marker_size, alpha, marker = 'lightblue', 80, 0.5, 'o'
     elif state == SensorState.LOW:
-        color = 'yellow'
-        marker_size = 120
-        alpha = 0.7
-        marker = 'o'
+        color, marker_size, alpha, marker = 'yellow', 120, 0.7, 'o'
     elif state == SensorState.MEDIUM:
-        color = 'yellow'
-        marker_size = 160
-        alpha = 0.8
-        marker = 'o'
+        color, marker_size, alpha, marker = 'yellow', 160, 0.8, 'o'
     elif state == SensorState.HIGH:
-        color = 'yellow'
-        marker_size = 200
-        alpha = 0.9
-        marker = 'o'
+        color, marker_size, alpha, marker = 'yellow', 200, 0.9, 'o'
     elif state == SensorState.FULL:
-        color = 'blue'
-        # Pulsing effect for full sensors
         pulse = 0.5 + 0.5 * np.sin(current_step * 0.3)
-        marker_size = 250 * (0.9 + 0.2 * pulse)
-        alpha = 0.7 + 0.2 * pulse
-        marker = 'o'
+        color, marker_size, alpha, marker = 'blue', 250 * (0.9 + 0.2 * pulse), 0.7 + 0.2 * pulse, 'o'
     elif state == SensorState.COLLECTING:
-        color = 'purple'
-        marker_size = 300
-        alpha = 1.0
-        marker = '*'
+        color, marker_size, alpha, marker = 'purple', 300, 1.0, '*'
     elif state == SensorState.COLLECTED:
-        color = 'green'
-        marker_size = 100
-        alpha = 0.5
-        marker = 'o'
+        color, marker_size, alpha, marker = 'green', 100, 0.5, 'o'
     else:
-        color = 'gray'
-        marker_size = 80
-        alpha = 0.5
-        marker = 'o'
+        color, marker_size, alpha, marker = 'gray', 80, 0.5, 'o'
 
-    # Draw sensor
-    ax.scatter(x, y,
-               c=color,
-               marker=marker,
-               s=marker_size,
-               alpha=alpha,
-               edgecolors='black',
-               linewidths=2,
-               zorder=5)
+    ax.scatter(x, y, c=color, marker=marker, s=marker_size, alpha=alpha, edgecolors='black', linewidths=2, zorder=5)
+    if sensor.data_buffer > 0:
+        # Create a Green Ring
+        # Radius 0.8 ensures it circles the sensor dot nicely on a 50x50 grid
+        ready_ring = Circle((x, y), 0.8, fill=False, edgecolor='lime',
+                            linewidth=1.5, linestyle='-', alpha=0.8, zorder=4)
+        ax.add_patch(ready_ring)
 
-    # Add buffer percentage text
     buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
     text_color = 'white' if state in [SensorState.FULL, SensorState.COLLECTING] else 'black'
 
-    ax.text(x, y - 0.4,
-            f'{int(buffer_pct)}%',
-            ha='center',
-            va='top',
-            fontsize=7,
-            fontweight='bold',
-            color=text_color,
-            bbox=dict(boxstyle='round,pad=0.2',
-                      facecolor='white',
-                      edgecolor='black',
-                      alpha=0.7))
+    ax.text(x, y - 0.4, f'{int(buffer_pct)}%', ha='center', va='top', fontsize=7, fontweight='bold',
+            color=text_color, bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='black', alpha=0.7))
 
-    # Add sensor ID
-    ax.text(x, y + 0.5,
-            f'S{sensor.sensor_id}',
-            ha='center',
-            va='bottom',
-            fontsize=7,
-            fontweight='bold')
+    ax.text(x, y + 0.5, f'S{sensor.sensor_id}', ha='center', va='bottom', fontsize=7, fontweight='bold')
 
-    #  NEW: Urgency indicator
     if urgency > 0.8:
-        urgency_color = 'red'
         urgency_symbol = '🔴'
     elif urgency > 0.5:
-        urgency_color = 'orange'
         urgency_symbol = '🟠'
     elif urgency > 0.2:
-        urgency_color = 'yellow'
         urgency_symbol = '🟡'
     else:
-        urgency_color = 'green'
         urgency_symbol = '🟢'
 
-    # Draw urgency indicator
-    ax.text(x + 0.5, y + 0.5, urgency_symbol,
-            fontsize=8,
-            ha='center',
-            va='center',
-            zorder=12)
+    ax.text(x + 0.5, y + 0.5, urgency_symbol, fontsize=8, ha='center', va='center', zorder=12)
 
-    # Show urgency value if high
     if urgency > 0.3:
-        ax.text(x, y - 0.8, f'U:{urgency:.2f}',
-                fontsize=6,
-                ha='center',
-                va='top',
-                color=urgency_color,
-                fontweight='bold',
-                bbox=dict(boxstyle='round,pad=0.2',
-                         facecolor='white',
-                         alpha=0.7))
+        ax.text(x, y - 0.8, f'U:{urgency:.2f}', fontsize=6, ha='center', va='top',
+                color='red' if urgency > 0.8 else 'orange', fontweight='bold',
+                bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.7))
 
-    # Show collection progress animation for COLLECTING state
+    if is_visited:
+        # Draw a bold green checkmark at Top-Left (x - 0.6)
+        # to distinguish it from the urgency symbol at Top-Right
+        ax.text(x - 0.6, y + 0.5, '✓', fontsize=12, fontweight='bold',
+                color='darkgreen', ha='center', va='center', zorder=20,
+                bbox=dict(boxstyle='circle,pad=0.1', facecolor='white', edgecolor='green', alpha=0.8))
+
     if state == SensorState.COLLECTING:
-        # Draw a small circle around sensor to show it's being collected
-        collection_circle = Circle((x, y), 0.5,
-                                   facecolor='none',
-                                   edgecolor='purple',
-                                   linewidth=3,
-                                   linestyle='--',
-                                   alpha=0.6,
-                                   zorder=6)
+        collection_circle = Circle((x, y), 0.5, facecolor='none', edgecolor='purple', linewidth=3, linestyle='--', alpha=0.6, zorder=6)
         ax.add_patch(collection_circle)
 
 
 def render_uav_enhanced(ax, uav):
-    """
-    Render the UAV with battery indicator.
-
-    Args:
-        ax: Matplotlib axis
-        uav: UAV object
-    """
+    """Render the UAV with battery indicator."""
     uav_x, uav_y = uav.position
 
-    # Draw UAV body
     uav_marker = patches.FancyBboxPatch(
         (uav_x - 0.25, uav_y - 0.25), 0.5, 0.5,
-        boxstyle="round,pad=0.05",
-        edgecolor='red',
-        facecolor='orange',
-        linewidth=2.5,
-        zorder=10
+        boxstyle="round,pad=0.05", edgecolor='red', facecolor='orange', linewidth=2.5, zorder=10
     )
     ax.add_patch(uav_marker)
 
-    # UAV symbol
-    ax.text(uav_x, uav_y, '✈',
-            ha='center', va='center',
-            fontweight='bold', fontsize=14,
-            color='white',
-            zorder=11)
+    ax.text(uav_x, uav_y, '✈', ha='center', va='center', fontweight='bold', fontsize=14, color='white', zorder=11)
 
-    # Battery indicator below UAV
     battery_pct = uav.get_battery_percentage()
-    if battery_pct > 50:
-        battery_color = 'green'
-    elif battery_pct > 25:
-        battery_color = 'orange'
-    else:
-        battery_color = 'red'
+    battery_color = 'green' if battery_pct > 50 else ('orange' if battery_pct > 25 else 'red')
 
-    ax.text(uav_x, uav_y - 0.8,
-            f'⚡{battery_pct:.0f}%',
-            ha='center',
-            va='top',
-            fontsize=8,
-            fontweight='bold',
-            color=battery_color,
-            bbox=dict(boxstyle='round,pad=0.3',
-                      facecolor='white',
-                      edgecolor=battery_color,
-                      linewidth=2,
-                      alpha=0.9),
-            zorder=11)
+    ax.text(uav_x, uav_y - 0.8, f'⚡{battery_pct:.0f}%', ha='center', va='top', fontsize=8, fontweight='bold',
+            color=battery_color, bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=battery_color, linewidth=2, alpha=0.9), zorder=11)
 
 
 class UAVEnvironment(gym.Env):
     """
     Custom Gymnasium Environment for UAV IoT Data Collection with Fairness Constraints.
 
-    The UAV must navigate a grid to collect data from IoT sensors while maintaining
-    network health. Sensors continuously generate data that must be collected before
-    buffers overflow.
-
-    NEW: Fairness constraints prevent sensor neglect through:
-    - Urgency metrics in observation space
-    - Massive penalties for data loss
-    - Rewards for urgency reduction
-
     Observation Space:
-        Box: [uav_x, uav_y, battery,
-              sensor1_buffer, sensor1_urgency,
-              sensor2_buffer, sensor2_urgency,
-              ...,
-              sensorN_buffer, sensorN_urgency]
-              usually 20
+        Box: [uav_x, uav_y, battery, sensor1_buffer, sensor1_urgency, ..., sensorN_buffer, sensorN_urgency]
 
     Action Space:
         Discrete(5): [UP, DOWN, LEFT, RIGHT, COLLECT]
-        for the seek of simplification the we make it such that the uav must stop to collect data
-        the other movement are quite simple
 
     Reward Structure (Fairness-Constrained):
         +0.1 per byte: Data collection
         +10.0: New sensor collected
         +20.0 per unit: Urgency reduction
-        -500.0 per byte: Data loss (MASSIVE PENALTY)
+        -500.0 per byte: Data loss (MASSIVE PENALTY - applies to ALL actions)
         -2.0: Attempted collection from empty sensor
         -5.0: Boundary collision
         -0.1 per Wh: Battery drain
@@ -363,46 +188,23 @@ class UAVEnvironment(gym.Env):
                  grid_size: Tuple[int, int] = (10, 10),
                  sensor_positions: Optional[List[Tuple[float, float]]] = None,
                  num_sensors: int = 20,
-                 # Sensor parameters
                  data_generation_rate: float = 22.0 / 10,
                  max_buffer_size: float = 1000.0,
                  lora_spreading_factor: int = 7,
                  path_loss_exponent: float = 2.0,
                  rssi_threshold: float = -90.0,
                  sensor_duty_cycle: float = 10.0,
-                 # UAV parameters
                  uav_start_position: Optional[Tuple[float, float]] = None,
                  max_battery: float = 274.0,
                  collection_duration: float = 1.0,
-                 # Episode parameters
-                 max_steps: int = 300,
+                 max_steps: int = 2100,
                  render_mode: Optional[str] = None,
-                 # Fairness parameters
                  penalty_data_loss: float = -500.0,
                  reward_urgency_reduction: float = 20.0):
-        """
-        Initialize UAV environment with fairness constraints.
 
-        Args:
-            grid_size: (width, height) of grid world
-            sensor_positions: List of (x, y) for sensors (or None for random)
-            num_sensors: Number of sensors (if positions not specified)
-            data_generation_rate: Sensor data generation (bytes/step)
-            max_buffer_size: Maximum sensor buffer capacity (bytes)
-            lora_spreading_factor: LoRa SF (7-12)
-            path_loss_exponent: n in d^-n model (2.0 for free space)
-            rssi_threshold: Minimum RSSI for communication (dBm)
-            sensor_duty_cycle: Sensor duty cycle percentage (1-100)
-            uav_start_position: UAV starting position (or None for (0,0))
-            max_battery: UAV battery capacity (Wh)
-            collection_duration: Time UAV hovers to collect data (seconds)
-            max_steps: Maximum steps per episode
-            render_mode: 'human' or 'rgb_array'
-            penalty_data_loss: Penalty per byte lost (fairness constraint)
-            reward_urgency_reduction: Reward per unit urgency reduced
-        """
+        """Initialize UAV environment with fairness constraints."""
+
         super().__init__()
-        #attributes
         self.grid_size = grid_size
         self.max_steps = max_steps
         self.render_mode = render_mode
@@ -410,7 +212,6 @@ class UAVEnvironment(gym.Env):
         self.last_successful_collections = []
         self.last_action = None
 
-        # Create sensors
         if sensor_positions is None:
             self.sensor_positions = self._generate_uniform_sensor_positions(num_sensors)
         else:
@@ -418,319 +219,295 @@ class UAVEnvironment(gym.Env):
 
         self.num_sensors = len(self.sensor_positions)
 
-        # Initialize sensors
         self.sensors: List[IoTSensor] = []
         for i, pos in enumerate(self.sensor_positions):
             sensor = IoTSensor(
-                sensor_id=i,
-                position=pos,
-                data_generation_rate=data_generation_rate,
-                max_buffer_size=max_buffer_size,
-                spreading_factor=lora_spreading_factor,
-                path_loss_exponent=path_loss_exponent,
-                rssi_threshold=rssi_threshold,
+                sensor_id=i, position=pos, data_generation_rate=data_generation_rate,
+                max_buffer_size=max_buffer_size, spreading_factor=lora_spreading_factor,
+                path_loss_exponent=path_loss_exponent, rssi_threshold=rssi_threshold,
                 duty_cycle=sensor_duty_cycle
             )
             self.sensors.append(sensor)
 
-        # Initialize UAV
         if uav_start_position is None:
             uav_start_position = (0, 0)
 
-        self.uav = UAV(
-            start_position=uav_start_position,
-            max_battery=max_battery
-        )
+        self.uav = UAV(start_position=uav_start_position, max_battery=max_battery)
+        self.reward_fn = RewardFunction(penalty_data_loss=penalty_data_loss, reward_urgency_reduction=reward_urgency_reduction)
 
-        # Initialize fairness-constrained reward function
-        self.reward_fn = RewardFunction(
-            penalty_data_loss=penalty_data_loss,
-            reward_urgency_reduction=reward_urgency_reduction
-        )
-
-        # Action space: UP, DOWN, LEFT, RIGHT, COLLECT
         self.action_space = spaces.Discrete(5)
 
-        #Observation space with realistic bounds matching actual observations
-        # Format: [x, y, battery, sensor1_buffer, sensor1_urgency, sensor2_buffer, sensor2_urgency, ...]
-        obs_low = np.array(
-            [0, 0, 0] + [0, 0] * self.num_sensors,  # [buffer, urgency] per sensor
-            dtype=np.float32
-        )
-        obs_high = np.array(
-            [grid_size[0], grid_size[1], max_battery] +
-            [max_buffer_size, 1.0] * self.num_sensors,  # urgency capped at 1.0
-            dtype=np.float32
-        )
+        obs_low = np.array([0, 0, 0] + [0, 0] * self.num_sensors, dtype=np.float32)
+        obs_high = np.array([grid_size[0], grid_size[1], max_battery] + [max_buffer_size, 1.0] * self.num_sensors, dtype=np.float32)
+        self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
-        self.observation_space = spaces.Box(
-            low=obs_low,
-            high=obs_high,
-            dtype=np.float32
-        )
-
-        # Episode tracking
         self.current_step = 0
         self.total_reward = 0.0
         self.total_data_collected = 0.0
         self.sensors_visited = set()
-
-        # Track data loss for step-by-step penalties
         self.previous_data_loss = 0.0
 
-        # Rendering
         self.fig = None
         self.ax = None
 
     def _generate_uniform_sensor_positions(self, num_sensors: int) -> List[Tuple[float, float]]:
-        """
-        Generate uniformly distributed sensor positions across the grid.
-
-        Args:
-            num_sensors: Number of sensors to place.
-
-        Returns:
-            List of (x, y) positions.
-        """
+        """Generate uniformly distributed sensor positions across the grid."""
         x_min, y_min = 0.0, 0.0
         x_max, y_max = float(self.grid_size[0]), float(self.grid_size[1])
+        coordinates = np.random.uniform(low=[x_min, y_min], high=[x_max, y_max], size=(num_sensors, 2))
+        return [(float(x), float(y)) for x, y in coordinates]
 
-        low_bounds = [x_min, y_min]
-        high_bounds = [x_max, y_max]
-
-        coordinates = np.random.uniform(low=low_bounds, high=high_bounds, size=(num_sensors, 2))
-        positions = [(float(x), float(y)) for x, y in coordinates]
-
-        return positions
-
-    # Calculate urgency metrics
     def _calculate_urgency(self, sensor: IoTSensor) -> float:
-        """
-        Calculate urgency metric for a sensor.
-
-        Urgency = Buffer Utilization × (1 + Data Loss Rate × 10)
-
-        High urgency means:
-        - Sensor buffer is full
-        - Sensor has history of data loss
-
-        Args:
-            sensor: IoTSensor object
-
-        Returns:
-            Urgency value (0-1)
-        """
+        """Calculate urgency metric for a sensor."""
         buffer_utilization = sensor.data_buffer / sensor.max_buffer_size
-
-        if sensor.total_data_generated > 0:
-            data_loss_rate = sensor.total_data_lost / sensor.total_data_generated
-        else:
-            data_loss_rate = 0.0
-
-        # Urgency = Buffer × (1 + Loss History)
-        # Amplify loss history by 10x to make it significant
+        data_loss_rate = (sensor.total_data_lost / sensor.total_data_generated) if sensor.total_data_generated > 0 else 0.0
         urgency = buffer_utilization * (1.0 + data_loss_rate * 10.0)
-        urgency = np.clip(urgency, 0.0, 1.0)
-
-        return urgency
+        return np.clip(urgency, 0.0, 1.0)
 
     def _get_sensor_urgencies(self) -> np.ndarray:
-        """
-        Calculate urgency for all sensors.
-
-        Returns:
-            Array of urgency values for each sensor
-        """
-        urgencies = []
-        for sensor in self.sensors:
-            urgency = self._calculate_urgency(sensor)
-            urgencies.append(urgency)
-
-        return np.array(urgencies)
+        """Calculate urgency for all sensors."""
+        return np.array([self._calculate_urgency(sensor) for sensor in self.sensors])
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, dict]:
-        """
-        Reset environment to initial state.
-
-        Args:
-            seed: Random seed for reproducibility
-            options: Additional options (unused)
-
-        Returns:
-            observation: Initial observation with urgency metrics
-            info: Additional information dictionary
-        """
+        """Reset environment to initial state."""
         super().reset(seed=seed)
-
-        # Reset UAV
         self.uav.reset()
-
-        # Reset all sensors
         for sensor in self.sensors:
             sensor.reset()
-
-        # Reset episode tracking
         self.current_step = 0
         self.total_reward = 0.0
         self.total_data_collected = 0.0
         self.sensors_visited = set()
         self.last_action = None
-
-        # Reset data loss tracking
         self.previous_data_loss = 0.0
-
-        observation = self._get_observation()
-        info = self._get_info()
-
-        return observation, info
+        return self._get_observation(), self._get_info()
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute one step in environment.
 
+        Time synchronization fix: Step duration is now dynamic based on action type.
+        - Move actions (0-3): 1.0 second
+        - Collect action (4): self.collection_duration seconds
+
+        This ensures sensors age realistically during collection, preventing the agent
+        from "cheating" by collecting for extended periods while time is artificially frozen.
+
         Args:
-            action: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT, 4=COLLECT
+            action: Integer in [0, 1, 2, 3, 4] representing UAV action
+                    0: Move North, 1: Move South, 2: Move East, 3: Move West, 4: Collect
 
         Returns:
-            observation: Current observation with urgency
-            reward: Fairness-constrained reward
-            terminated: True if episode ended naturally
-            truncated: True if episode was cut short
-            info: Additional information dictionary
+            Tuple of (observation, reward, terminated, truncated, info)
         """
         self.current_step += 1
         self.last_action = action
 
-        # IMPORTANT: All sensors generate data each step
-        for sensor in self.sensors:
-            sensor.step(time_step=1.0)
+        # ===== CRITICAL FIX: CALCULATE DYNAMIC STEP DURATION =====
+        # If Moving (0-3): Takes 1.0 second (fixed grid step time)
+        # If Collecting (4): Takes self.collection_duration seconds (realistic)
+        if action == 4:
+            step_duration = self.collection_duration
+        else:
+            step_duration = 1.0
 
-        # Execute action
+        # ===== CRITICAL FIX: SYNC SENSORS TO REAL TIME =====
+        # Sensors now age exactly as much time as the UAV action takes
+        # This prevents the agent from exploiting artificial time freezing during collection
+        for sensor in self.sensors:
+            sensor.step(time_step=step_duration)
+
+        # STEP 2: CALCULATE DATA LOSS (Global for this step)
+        # ===== CRITICAL: This applies to BOTH Move and Collect actions =====
+        current_data_loss = sum(sensor.total_data_lost for sensor in self.sensors)
+        step_data_loss = current_data_loss - self.previous_data_loss
+        self.previous_data_loss = current_data_loss
+
+        # STEP 3: EXECUTE ACTION (with data loss passed as parameter)
         battery_before = self.uav.battery
 
         if action in [0, 1, 2, 3]:  # Movement actions
-            reward = self._execute_move_action(action)
+            reward = self._execute_move_action(action, step_data_loss)
         elif action == 4:  # COLLECT action
-            reward = self._execute_collect_action()
+            reward = self._execute_collect_action(step_data_loss)
         else:
-            raise ValueError(f"Invalid action: {action}") # NOT Need but why not
+            raise ValueError(f"Invalid action: {action}")
 
         battery_used = battery_before - self.uav.battery
 
-        # Check termination conditions
+        # STEP 4: CHECK TERMINATION CONDITIONS
         terminated = False
         truncated = False
 
-        # Failure: Battery depleted
         if not self.uav.is_alive():
             truncated = True
 
-        # Timeout: Max steps reached
         if self.current_step >= self.max_steps:
             truncated = True
 
+        # STEP 5: ACCUMULATE REWARD AND PREPARE OUTPUT
         self.total_reward += reward
-
         observation = self._get_observation()
         info = self._get_info()
 
         return observation, reward, terminated, truncated, info
 
-    def _execute_move_action(self, action: int) -> float:
-        """Execute movement action and return reward."""
-        direction_map = {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT'}# we dicretize the action so as to allow it fit in the state space of the agent
+    def _execute_move_action(self, action: int, step_data_loss: float) -> float:
+        """
+        Execute movement action and return reward.
+
+        ===== CRITICAL FIX =====
+        Data loss penalty applies to movement actions too.
+        This prevents agent from learning to ignore overflows while moving.
+        """
+        direction_map = {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT'}
         direction = direction_map[action]
 
         battery_before = self.uav.battery
-        move_success = self.uav.move(direction, self.grid_size, time_step=5)
+        move_success = self.uav.move(direction, self.grid_size, time_step=1)
         battery_used = battery_before - self.uav.battery
 
-        # Clear last successful collections (not collecting anymore)
         self.last_successful_collections = []
 
+        # Call reward function WITHOUT data_loss parameter
         reward = self.reward_fn.calculate_movement_reward(
             move_success=move_success,
             battery_used=battery_used
         )
 
+        # ===== APPLY DATA LOSS PENALTY SEPARATELY =====
+        data_loss_penalty = self.reward_fn.penalty_data_loss * step_data_loss
+        reward += data_loss_penalty
+
         return reward
 
-    def _execute_collect_action(self) -> float:
+    def _get_sensor_urgencies(self) -> np.ndarray:
         """
-        Execute data collection action with fairness tracking.
+        Calculate urgency metric for each sensor (Age of Information).
 
-        Tracks urgency reduction and step-by-step data loss
+        Used to track fairness: How much are we reducing the staleness
+        of the network by collecting from certain sensors?
+
+        Returns:
+            Array of urgency values (one per sensor)
         """
-        # Store urgency BEFORE collection
+        urgencies = np.zeros(len(self.sensors))
+        for i, sensor in enumerate(self.sensors):
+            # Simple AoI: how old is the data in the buffer?
+            # Approximation: buffer_level / generation_rate
+            if sensor.data_generation_rate > 0:
+                urgencies[i] = sensor.data_buffer / sensor.data_generation_rate
+            else:
+                urgencies[i] = 0.0
+        return urgencies
+
+
+    def _execute_collect_action(self, step_data_loss: float) -> float:
+        """
+        Execute data collection action with Capture Effect collision handling.
+
+        ===== IMPLEMENTS EQUATION 11 FROM DISSERTATION =====
+        Capture Effect: Gateway successfully decodes signal from sensor i if:
+            P_r,i / (sum(P_r,j for j in co-channel) + N0) >= tau_cap (6 dB)
+
+        Key improvements:
+        1. RSSI-based collision resolution (physics)
+        2. Destructive interference when neither sensor dominates
+        3. Fairness tracking via urgency reduction
+        4. Pre-calculated data loss passed as parameter (consistency)
+
+        Args:
+            step_data_loss: Data loss from this step (pre-calculated in step())
+                           Passed to maintain consistency across action types
+
+        Returns:
+            float: Reward value calculated by reward function
+        """
+        # ===== PHASE 0: TRACK URGENCY BEFORE COLLECTION =====
         urgencies_before = self._get_sensor_urgencies()
 
-        # UAV hovers while collecting
+        # ===== PHASE 1: UAV HOVER/COLLECTION SETUP =====
         self.uav.hover(duration=self.collection_duration)
         battery_used = self.uav.battery_drain_hover * self.collection_duration
 
-        # Dictionary to track successful collections by Spreading Factor
-        successful_sf_slots = {}
+        # ===== PHASE 2: PROBABILISTIC TRANSMISSION ATTEMPT =====
+        # All sensors decide whether to transmit based on duty cycle and link quality
+        transmission_attempts = {}  # SF -> list of sensors attempting to transmit
 
-        total_bytes_collected = 0.0
-        new_sensors_collected = []
-        attempted_empty = False
-        collision_count = 0
-
-        # STEP 1: Probabilistic transmission attempt for all sensors
         for sensor in self.sensors:
-            # Skip if buffer is empty
             if sensor.data_buffer <= 0:
-                attempted_empty = True
                 continue
 
-            # Calculate distance to UAV
-            distance = np.linalg.norm(sensor.position - self.uav.position)
+            # Update ADR based on current RSSI (Equation 18)
+            sensor.update_spreading_factor(tuple(self.uav.position), current_step=self.current_step)
 
-            # Update Spreading Factor based on distance (ADR)
-            sensor.update_spreading_factor(self.uav.position)
-
-            # Calculate P_overall = P_link * P_cycle
-            P_link = sensor.get_success_probability(self.uav.position, use_advanced_model=True)
+            # Calculate transmission probability
+            P_link = sensor.get_success_probability(tuple(self.uav.position), use_advanced_model=True)
             P_cycle = sensor.duty_cycle_probability
-            P_overall = P_link * P_cycle # addtion of some stochastic data collection
+            P_overall = P_link * P_cycle
 
             # Probabilistic transmission attempt
             if np.random.rand() < P_overall:
                 current_sf = sensor.spreading_factor
 
-                # STEP 2: Handle SF-based concurrency (Capture Effect)
-                if current_sf not in successful_sf_slots:
-                    # First sensor to transmit on this SF - wins the slot
-                    successful_sf_slots[current_sf] = {
-                        'sensor_id': sensor.sensor_id,
-                        'distance': distance,
-                        'sensor': sensor,
-                        'data_to_collect': min(sensor.data_buffer, sensor.packet_size)
-                    }
+                if current_sf not in transmission_attempts:
+                    transmission_attempts[current_sf] = []
+
+                transmission_attempts[current_sf].append(sensor)
+
+        # ===== PHASE 3: COLLISION RESOLUTION VIA CAPTURE EFFECT =====
+        # For each SF, resolve collisions using RSSI power comparison
+        successful_sf_slots = {}  # SF -> winning sensor
+        collision_count = 0
+
+        for current_sf, attempting_sensors in transmission_attempts.items():
+
+            if len(attempting_sensors) == 1:
+                # No collision: Single sensor on this SF
+                sensor = attempting_sensors[0]
+                successful_sf_slots[current_sf] = sensor
+
+            else:
+                # ===== COLLISION DETECTED: Multiple sensors on same SF =====
+                collision_count += len(attempting_sensors) - 1
+
+                # Sort by RSSI (strongest first)
+                sorted_by_rssi = sorted(
+                    attempting_sensors,
+                    key=lambda s: s.current_rssi,
+                    reverse=True
+                )
+
+                strongest_sensor = sorted_by_rssi[0]
+                second_strongest_sensor = sorted_by_rssi[1]
+
+                rssi_strongest = strongest_sensor.current_rssi
+                rssi_second = second_strongest_sensor.current_rssi
+
+                # ===== CAPTURE EFFECT CRITERION (Equation 11) =====
+                # Threshold is typically 6 dB for LoRa
+                capture_threshold_db = 6.0
+
+                if rssi_strongest > (rssi_second + capture_threshold_db):
+                    # Strongest sensor is >6 dB above interference
+                    # Gateway successfully decodes strongest signal
+                    successful_sf_slots[current_sf] = strongest_sensor
+
                 else:
-                    # Collision detected! Multiple sensors on same SF
-                    collision_count += 1
+                    # Destructive interference: Neither signal dominates
+                    # Both packets corrupted, none are received
+                    # Don't add this SF to successful_sf_slots
+                    pass
 
-                    # Capture effect: Closer sensor wins (stronger RSSI)
-                    existing_distance = successful_sf_slots[current_sf]['distance']
+        # ===== PHASE 4: COLLECT DATA FROM SUCCESSFUL TRANSMISSIONS =====
+        total_bytes_collected = 0.0
+        new_sensors_collected = []
+        attempted_empty = False
 
-                    if distance < existing_distance:
-                        # Current sensor is closer - it wins, replace existing
-                        successful_sf_slots[current_sf] = {
-                            'sensor_id': sensor.sensor_id,
-                            'distance': distance,
-                            'sensor': sensor,
-                            'data_to_collect': min(sensor.data_buffer, sensor.packet_size)
-                        }
-
-        # Store successful collections for visualization
         self.last_successful_collections = []
 
-        # STEP 3: Process successful transmissions
-        for sf, slot_info in successful_sf_slots.items():
-            winning_sensor = slot_info['sensor']
-
-            # Collect data from winning sensor
+        for sf, winning_sensor in successful_sf_slots.items():
+            # Attempt to collect from the winning sensor
             bytes_collected, success = winning_sensor.collect_data(
                 uav_position=tuple(self.uav.position),
                 collection_duration=self.collection_duration
@@ -740,32 +517,26 @@ class UAVEnvironment(gym.Env):
                 total_bytes_collected += bytes_collected
                 self.total_data_collected += bytes_collected
 
-                # Track if this is first time collecting from this sensor
+                # Track new sensor visitation
                 if winning_sensor.sensor_id not in self.sensors_visited:
                     new_sensors_collected.append(winning_sensor.sensor_id)
                     self.sensors_visited.add(winning_sensor.sensor_id)
 
-                # Add to visualization list
                 self.last_successful_collections.append((winning_sensor, sf))
 
-        # Check if all sensors now have empty buffers
-        all_sensors_collected = all(sensor.data_buffer <= 0 for sensor in self.sensors)
+        # Check if any sensor has empty buffer (attempted collection from empty)
+        attempted_empty = any(s.data_buffer <= 0 for s in self.sensors)
 
-        # Calculate urgency AFTER collection
+        # ===== PHASE 5: FAIRNESS METRICS =====
+        # Track urgency reduction (how much we helped stale sensors)
         urgencies_after = self._get_sensor_urgencies()
-
-        # Calculate total urgency reduction
         urgency_reduced = np.sum(np.maximum(0, urgencies_before - urgencies_after))
 
-        # calculate the total urgency after
-        urgency_after = np.sum(urgencies_after)
+        # Check if mission complete (all sensors have empty buffers)
+        all_sensors_collected = all(sensor.data_buffer <= 0 for sensor in self.sensors)
 
-        # Get current data loss (THIS STEP ONLY)
-        current_data_loss = sum(sensor.total_data_lost for sensor in self.sensors)
-        step_data_loss = current_data_loss - self.previous_data_loss
-        self.previous_data_loss = current_data_loss
-
-        # STEP 4: Calculate fairness-constrained reward
+        # ===== PHASE 6: CALCULATE REWARD =====
+        # ===== CRITICAL: Use pre-calculated data loss (passed as parameter) =====
         reward = self.reward_fn.calculate_collection_reward(
             bytes_collected=total_bytes_collected,
             was_new_sensor=len(new_sensors_collected) > 0,
@@ -774,39 +545,23 @@ class UAVEnvironment(gym.Env):
             battery_used=battery_used,
             num_sensors_collected=len(successful_sf_slots),
             collision_count=collision_count,
-            data_loss=step_data_loss,  #  Loss THIS step (not cumulative)
-            urgency_reduced=urgency_reduced #  NEW
+            data_loss=step_data_loss,  # ===== USE PASSED VALUE (Consistency) =====
+            urgency_reduced=urgency_reduced
         )
 
         return reward
 
     def _get_observation(self) -> np.ndarray:
-        """
-        Get current observation with urgency metrics.
-        Includes urgency for each sensor
-        Format: [uav_x, uav_y, battery,
-                 sensor1_buffer, sensor1_urgency,
-                 sensor2_buffer, sensor2_urgency,
-                 ...,
-                 sensorN_buffer, sensorN_urgency]
-        """
-        obs_list = [
-            self.uav.position[0],
-            self.uav.position[1],
-            self.uav.battery
-        ]
-
-        # Add buffer and urgency for each sensor
+        """Get current observation with urgency metrics."""
+        obs_list = [self.uav.position[0], self.uav.position[1], self.uav.battery]
         for sensor in self.sensors:
             urgency = self._calculate_urgency(sensor)
             obs_list.extend([sensor.data_buffer, urgency])
-
         return np.array(obs_list, dtype=np.float32)
 
     def _get_info(self) -> dict:
         """Get additional information including urgency stats."""
         urgencies = self._get_sensor_urgencies()
-
         return {
             'uav_position': self.uav.position.copy(),
             'battery': self.uav.battery,
@@ -818,7 +573,6 @@ class UAVEnvironment(gym.Env):
             'total_data_collected': self.total_data_collected,
             'coverage_percentage': (len(self.sensors_visited) / self.num_sensors) * 100,
             'is_alive': self.uav.is_alive(),
-            #  NEW: Urgency statistics
             'max_urgency': np.max(urgencies),
             'avg_urgency': np.mean(urgencies),
             'high_urgency_sensors': np.sum(urgencies > 0.8),
@@ -833,12 +587,11 @@ class UAVEnvironment(gym.Env):
             return self._render_frame()
         elif self.render_mode == "human":
             if self.fig is None:
-                plt.ion()  # Enable interactive mode
+                plt.ion()
                 self.fig, self.ax = plt.subplots(figsize=(12, 10))
 
             self._render_frame()
-            plt.pause(0.01)  # Small pause to update display
-
+            plt.pause(0.01)
             return None
 
     def _render_frame(self):
@@ -848,23 +601,15 @@ class UAVEnvironment(gym.Env):
 
         self.ax.clear()
 
-        # Draw grid lines
         for i in range(self.grid_size[0] + 1):
             self.ax.axhline(i, color='gray', linewidth=0.5, alpha=0.3)
         for i in range(self.grid_size[1] + 1):
             self.ax.axvline(i, color='gray', linewidth=0.5, alpha=0.3)
 
-        #  Get urgencies for all sensors
         urgencies = self._get_sensor_urgencies()
 
-        # Calculate which sensors are in communication range
-        sensors_in_range = []
-        for sensor in self.sensors:
-            in_range = sensor.is_in_range(self.uav.position)
-            if in_range:
-                sensors_in_range.append(sensor)
+        sensors_in_range = [sensor for sensor in self.sensors if sensor.is_in_range(self.uav.position)]
 
-        # Get collecting sensors
         collecting_sensors = []
         collecting_sensors_sf = {}
 
@@ -873,56 +618,34 @@ class UAVEnvironment(gym.Env):
                 collecting_sensors.append(sensor)
                 collecting_sensors_sf[sensor.sensor_id] = sf
 
-        # Draw connection lines for sensors in range
         for sensor in sensors_in_range:
             if sensor not in collecting_sensors:
                 self.ax.plot([sensor.position[0], self.uav.position[0]],
                              [sensor.position[1], self.uav.position[1]],
-                             color='lightblue',
-                             linewidth=1,
-                             linestyle=':',
-                             alpha=0.3,
-                             zorder=2)
+                             color='lightblue', linewidth=1, linestyle=':', alpha=0.3, zorder=2)
 
-        # Draw all sensors with urgency indicators
         for i, sensor in enumerate(self.sensors):
             is_collecting = sensor in collecting_sensors
-            render_sensor_enhanced(self.ax, sensor, self.current_step,
-                                   self.uav.position,
+            has_been_visited = sensor.sensor_id in self.sensors_visited
+            render_sensor_enhanced(self.ax, sensor, self.current_step, self.uav.position,
                                    current_action=self.last_action if is_collecting else None,
-                                   urgency=urgencies[i])  #  Pass urgency
+                                   urgency=urgencies[i], is_visited=has_been_visited)
 
-        # Draw active collection lines
         for sensor in collecting_sensors:
             self.ax.plot([sensor.position[0], self.uav.position[0]],
                          [sensor.position[1], self.uav.position[1]],
-                         color='purple',
-                         linewidth=2.5,
-                         linestyle='--',
-                         alpha=0.7,
-                         zorder=8)
+                         color='purple', linewidth=2.5, linestyle='--', alpha=0.7, zorder=8)
 
             mid_x = (sensor.position[0] + self.uav.position[0]) / 2
             mid_y = (sensor.position[1] + self.uav.position[1]) / 2
             sf = collecting_sensors_sf.get(sensor.sensor_id, sensor.spreading_factor)
 
-            self.ax.text(mid_x, mid_y, f'SF{sf}',
-                         fontsize=8,
-                         color='white',
-                         fontweight='bold',
-                         ha='center',
-                         va='center',
-                         bbox=dict(boxstyle='round,pad=0.3',
-                                   facecolor='purple',
-                                   edgecolor='white',
-                                   linewidth=1.5,
-                                   alpha=0.9),
-                         zorder=9)
+            self.ax.text(mid_x, mid_y, f'SF{sf}', fontsize=8, color='white', fontweight='bold',
+                         ha='center', va='center', bbox=dict(boxstyle='round,pad=0.3',
+                         facecolor='purple', edgecolor='white', linewidth=1.5, alpha=0.9), zorder=9)
 
-        # Draw UAV
         render_uav_enhanced(self.ax, self.uav)
 
-        # Set axis properties
         self.ax.set_xlim(0, self.grid_size[0])
         self.ax.set_ylim(0, self.grid_size[1])
         self.ax.set_aspect('equal')
@@ -931,14 +654,12 @@ class UAVEnvironment(gym.Env):
         self.ax.axhline(0, color='black', linewidth=1.5, alpha=0.7, zorder=1)
         self.ax.axvline(0, color='black', linewidth=1.5, alpha=0.7, zorder=1)
 
-        # Enhanced title
         title = (f'Step: {self.current_step}/{self.max_steps} | '
                  f'Battery: {self.uav.battery:.1f}Wh ({self.uav.get_battery_percentage():.0f}%) | '
                  f'Collected: {len(self.sensors_visited)}/{self.num_sensors} | '
                  f'Reward: {self.total_reward:.1f}')
         self.ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
 
-        #  Enhanced statistics panel with urgency
         avg_buffer = np.mean([s.data_buffer for s in self.sensors])
         max_urgency = np.max(urgencies)
         avg_urgency = np.mean(urgencies)
@@ -956,56 +677,36 @@ class UAVEnvironment(gym.Env):
         )
 
         if len(collecting_sensors) > 0:
-            stats_text += f'\n\n Collecting: {len(collecting_sensors)} sensor(s)'
+            stats_text += f'\n\nCollecting: {len(collecting_sensors)} sensor(s)'
             if len(collecting_sensors) > 1:
-                stats_text += '\n Multi-sensor collection!'
+                stats_text += '\nMulti-sensor collection!'
             sf_list = sorted(set(collecting_sensors_sf.values()))
-            stats_text += f'\n SFs: {sf_list}'
+            stats_text += f'\nSFs: {sf_list}'
 
         if len(sensors_in_range) > 0:
-            stats_text += f'\n In Range: {len(sensors_in_range)} sensor(s)'
+            stats_text += f'\nIn Range: {len(sensors_in_range)} sensor(s)'
 
-        self.ax.text(0.02, 0.98, stats_text,
-                     transform=self.ax.transAxes,
-                     fontsize=9,
-                     verticalalignment='top',
-                     bbox=dict(boxstyle='round',
-                               facecolor='wheat',
-                               alpha=0.8))
+        self.ax.text(0.02, 0.98, stats_text, transform=self.ax.transAxes, fontsize=9,
+                     verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
 
-        # Updated Legend with urgency
         legend_elements = [
-            Patch(facecolor='blue', alpha=0.9, edgecolor='black',
-                  label='Full Buffer (100%)'),
-            Patch(facecolor='yellow', alpha=0.7, edgecolor='black',
-                  label='Partial Buffer (1-99%)'),
-            Patch(facecolor='green', alpha=0.5, edgecolor='black',
-                  label='Collected (empty)'),
-            Patch(facecolor='purple', alpha=1.0, edgecolor='black',
-                  label='Currently Collecting'),
-            Patch(facecolor='lightblue', alpha=0.5, edgecolor='black',
-                  label='Empty Buffer'),
-            Patch(facecolor='orange', edgecolor='red', linewidth=2,
-                  label='UAV Position'),
-            plt.Line2D([0], [0], color='purple', linewidth=2.5, linestyle='--',
-                       label='Active Collection Link'),
-            plt.Line2D([0], [0], color='lightblue', linewidth=1, linestyle=':',
-                       label='In Communication Range'),
-            plt.Line2D([0], [0], marker='o', color='w', label='Urgency: 🔴>0.8 🟠>0.5 🟡>0.2 🟢≤0.2',
-                       markersize=0, linestyle='None'),
+            Patch(facecolor='blue', alpha=0.9, edgecolor='black', label='Full Buffer (100%)'),
+            Patch(facecolor='yellow', alpha=0.7, edgecolor='black', label='Partial Buffer (1-99%)'),
+            Patch(facecolor='green', alpha=0.5, edgecolor='black', label='Collected (empty)'),
+            Patch(facecolor='purple', alpha=1.0, edgecolor='black', label='Currently Collecting'),
+            Patch(facecolor='lightblue', alpha=0.5, edgecolor='black', label='Empty Buffer'),
+            Patch(facecolor='orange', edgecolor='red', linewidth=2, label='UAV Position'),
+            # Add this line:
+            plt.Line2D([0], [0], marker='$✓$', color='w', markeredgecolor='green', markersize=10,
+                       label='Visited Sensor'),
+            plt.Line2D([0], [0], color='purple', linewidth=2.5, linestyle='--', label='Active Collection Link'),
+            plt.Line2D([0], [0], color='lightblue', linewidth=1, linestyle=':', label='In Communication Range'),
+            plt.Line2D([0], [0], marker='o', color='w', label='Urgency: 🔴>0.8 🟠>0.5 🟡>0.2 🟢≤0.2', markersize=0, linestyle='None'),
         ]
 
-        # Place legend OUTSIDE on the right
-        self.ax.legend(handles=legend_elements,
-                       loc='center left',
-                       bbox_to_anchor=(1.02, 0.5),
-                       fontsize=8,
-                       framealpha=0.9,
-                       title='Legend',
-                       title_fontsize=9,
-                       borderaxespad=0)
+        self.ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5),
+                       fontsize=8, framealpha=0.9, title='Legend', title_fontsize=9, borderaxespad=0)
 
-        # Make room for the legend
         plt.tight_layout()
         plt.subplots_adjust(right=0.82)
 
@@ -1021,3 +722,83 @@ class UAVEnvironment(gym.Env):
             plt.close(self.fig)
             self.fig = None
             self.ax = None
+
+# Testing
+if __name__ == "__main__":
+
+    print("=" * 70)
+    print("Testing UAV Environment with FAIRNESS CONSTRAINTS")
+    print("=" * 70)
+    print()
+
+    # Create environment WITH FAIRNESS
+    env = UAVEnvironment(
+        grid_size=(100, 100),
+        uav_start_position=(50, 50),
+        num_sensors=20,
+        max_steps=2100,
+        sensor_duty_cycle=10.0,
+        penalty_data_loss=-500.0,
+        reward_urgency_reduction=20.0,
+        render_mode='human'
+    )
+
+    # Reset environment
+    obs, info = env.reset(seed=42)
+
+    action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
+
+    try:
+        for step in range(10000):
+            # Sample random action
+            action = env.action_space.sample()
+
+            # Take step
+            obs, reward, terminated, truncated, info = env.step(action)
+            env.render()
+
+            # Print every 20 steps or at end
+            if step % 20 == 0 or terminated or truncated:
+                print(f"Step {step + 1:3d}: {action_names[action]:7s} | "
+                      f"Pos: ({info['uav_position'][0]:.1f}, {info['uav_position'][1]:.1f}) | "
+                      f"Battery: {info['battery']:6.1f}Wh | "
+                      f"Urgency: Max={info['max_urgency']:.2f} Avg={info['avg_urgency']:.2f} High={info['high_urgency_sensors']} | "
+                      f"Reward: {reward:+7.2f}")
+
+            # Check if done
+            if terminated:
+                print("\n✓ Mission complete! All sensors collected.")
+                env.render()
+                time.sleep(5)
+                break
+            elif truncated:
+                if not info['is_alive']:
+                    print("\n✗ Battery depleted!")
+                else:
+                    print("\n✗ Timeout reached.")
+                env.render()
+                time.sleep(5)
+                break
+
+    except KeyboardInterrupt:
+        print("\n\n⏸Stopped by user (Ctrl+C)")
+
+    # Summary
+    print()
+    print("=" * 70)
+    print("Episode Summary (with Fairness Metrics):")
+    print("=" * 70)
+    print(f"  Total Steps: {info['current_step']}")
+    print(f"  Total Reward: {info['total_reward']:.2f}")
+    print(f"  Coverage: {info['coverage_percentage']:.1f}%")
+    print(f"  Data Collected: {info['total_data_collected']:.2f} bytes")
+    print(f"  Battery Used: {274.0 - info['battery']:.2f} Wh")
+    print(f"  Final Max Urgency: {info['max_urgency']:.3f}")
+    print(f"  Final Avg Urgency: {info['avg_urgency']:.3f}")
+    print(f"  High Urgency Sensors: {info['high_urgency_sensors']}")
+    print("=" * 70)
+
+    # Keep window open at the end
+    print("\n✓ Test complete! Close the matplotlib window to exit.")
+    plt.ioff()
+    plt.show()
