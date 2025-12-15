@@ -1,0 +1,21 @@
+{
+    "total_reward": -10443364.494186401,
+    "steps": 1382,
+    "elapsed_time_seconds": 75.39017963409424,
+    "coverage_percentage": 55.00000000000001,
+    "collection_efficiency_percent": 37.704989475069695,
+    "data_loss_rate_percent": 39.01846796474323,
+    "battery_used_wh": 268.61111111111967,
+    "bytes_per_watt": 85.35629782833232,
+    "total_data_generated": 60807.999999998974,
+    "total_data_transmitted": 22927.649999999994,
+    "total_data_lost": 23726.350000000664,
+    "fairness_metrics": {
+        "mean": 37.70498947506972,
+        "std": 43.63843195147732,
+        "min": 0.0,
+        "max": 99.92764109985697,
+        "range": 99.92764109985697
+    },
+    "fairness_level": "POOR"
+}

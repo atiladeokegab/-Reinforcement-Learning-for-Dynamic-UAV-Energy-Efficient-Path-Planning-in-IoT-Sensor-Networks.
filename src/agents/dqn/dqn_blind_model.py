@@ -5,7 +5,7 @@ Evaluates trained DQN agent with detailed fairness analysis.
 Automatically handles frame-stacked environments and PERSISTS data after reset.
 Saves detailed CSV file for comparison with greedy baselines.
 
-Output: src/agents/dqn/dqn_evaluation_results
+Output Directory: src/agents/baselines/dqn_blind_results
 
 Author: ATILADE GABRIEL OKE
 Date: 09 November 2025
@@ -32,9 +32,13 @@ from environment.uav_env import UAVEnvironment
 
 # ==================== CONFIGURATION ====================
 
-MODEL_PATH = script_dir / "models/dqn_full_observability/dqn_final.zip"
-CONFIG_PATH = script_dir / "models/dqn_full_observability/frame_stacking_config.json"
-OUTPUT_DIR = script_dir / "dqn_evaluation_results"
+# Model path: src/agents/dqn/models/
+MODEL_PATH = script_dir / "models/dqn_fairness_framestack/dqn_final.zip"
+CONFIG_PATH = script_dir / "models/dqn_fairness_framestack/frame_stacking_config.json"
+
+# Output directory: src/agents/baselines (no subdirectory)
+baselines_dir = src_dir / "agents" / "baselines"
+OUTPUT_DIR = baselines_dir  # Save directly in baselines, no subfolder
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print(f"Script location: {script_dir}")
@@ -43,15 +47,15 @@ print(f"Model path: {MODEL_PATH}")
 print()
 
 EVAL_CONFIG = {
-    'grid_size': (500, 500),
-    'uav_start_position': (50, 50),
+    'grid_size': (100, 100),
+    'uav_start_position': (100, 100),
     'num_sensors': 20,
     'max_battery': 274.0,
     'max_steps': 2100,
     'sensor_duty_cycle': 10.0,
     'penalty_data_loss': -500.0,
     'reward_urgency_reduction': 20.0,
-    'render_mode': None,
+    'render_mode': "human",
 }
 
 VIZ_CONFIG = {
@@ -118,7 +122,11 @@ def create_eval_env(config, frame_stacking_config):
 
     vec_env = DummyVecEnv([lambda: base_env])
 
-    if frame_stacking_config.get('use_frame_stacking', False):
+    # CRITICAL: Disable frame stacking if observation shape mismatch
+    # The model was trained with frame stacking, but we need to match the training setup exactly
+    use_frame_stacking = frame_stacking_config.get('use_frame_stacking', True)
+
+    if use_frame_stacking:
         n_stack = frame_stacking_config.get('n_stack', 4)
         vec_env = VecFrameStack(vec_env, n_stack=n_stack)
         print(f"✓ Frame stacking enabled (n_stack={n_stack})")
@@ -150,7 +158,7 @@ def get_fairness_level(std_dev):
     else:
         return "POOR", "x"
 
-def save_detailed_csv(history_data, output_dir, filename="dqn_results.csv"):
+def save_detailed_csv(history_data, output_dir, filename="dqn_blind_results.csv"):
     """Save detailed step-by-step metrics to CSV."""
     df = pd.DataFrame(history_data)
     filepath = output_dir / filename
@@ -158,7 +166,7 @@ def save_detailed_csv(history_data, output_dir, filename="dqn_results.csv"):
     print(f"✓ Saved detailed metrics to {filepath}")
     return filepath
 
-def save_sensor_fairness_analysis(sensor_data, output_dir, filename="dqn_sensor_fairness.csv"):
+def save_sensor_fairness_analysis(sensor_data, output_dir, filename="dqn_blind_sensor_fairness.csv"):
     """Save per-sensor fairness analysis to CSV."""
     df = pd.DataFrame(sensor_data)
     filepath = output_dir / filename
@@ -166,7 +174,7 @@ def save_sensor_fairness_analysis(sensor_data, output_dir, filename="dqn_sensor_
     print(f"✓ Saved sensor fairness analysis to {filepath}")
     return filepath
 
-def save_summary_json(summary, output_dir, filename="dqn_summary.json"):
+def save_summary_json(summary, output_dir, filename="dqn_blind_summary.json"):
     """Save overall summary statistics as JSON."""
     filepath = output_dir / filename
     with open(filepath, 'w') as f:
@@ -179,17 +187,39 @@ def save_summary_json(summary, output_dir, filename="dqn_summary.json"):
 
 def main():
     print("=" * 100)
-    print("DQN AGENT EVALUATION (PERSISTENT DATA MODE WITH CSV EXPORT)")
+    print("DQN AGENT EVALUATION - BLIND MODEL (PERSISTENT DATA MODE WITH CSV EXPORT)")
     print("=" * 100)
     print(f"Output Directory: {OUTPUT_DIR.absolute()}\n")
 
     frame_stacking_config = load_frame_stacking_config(CONFIG_PATH)
 
+    # If config not found, check what observation shape the model expects
+    # and disable frame stacking if there's a mismatch
+    if not CONFIG_PATH.exists():
+        print("⚠ Frame stacking config not found, using frame stacking=True (will auto-disable if shape mismatch)")
+        frame_stacking_config = {'use_frame_stacking': True, 'n_stack': 4}
+
     try:
         print(f"Loading model from: {MODEL_PATH}")
         model = DQN.load(MODEL_PATH)
         print("✓ Model loaded successfully")
+
+        # Check model's observation space
+        model_obs_shape = model.observation_space.shape
+        print(f"Model observation space shape: {model_obs_shape}")
+
+        # Create env and check if frame stacking matches
         eval_env, base_env = create_eval_env(EVAL_CONFIG, frame_stacking_config)
+
+        # Test observation shape
+        test_obs = eval_env.reset()
+        if test_obs.shape != model_obs_shape:
+            print(f"⚠ Shape mismatch: env gives {test_obs.shape}, model expects {model_obs_shape}")
+            print(f"⚠ Disabling frame stacking to match training...")
+            eval_env.close()
+            frame_stacking_config['use_frame_stacking'] = False
+            eval_env, base_env = create_eval_env(EVAL_CONFIG, frame_stacking_config)
+
         print("✓ Environment created\n")
     except Exception as e:
         print(f"✗ Error: {e}")
@@ -268,6 +298,11 @@ def main():
 
     elapsed_time = time.time() - start_time
 
+    # =========================================================================
+    # CRITICAL FIX: RECOVER DATA FROM THE SNAPSHOT (NOT THE RESET ENV)
+    # =========================================================================
+
+    # Check if we have the snapshot data
     if base_env.last_episode_sensor_data:
         print("\n✓ Successfully recovered pre-reset simulation data!")
         saved_sensor_data = base_env.last_episode_sensor_data
@@ -355,8 +390,8 @@ def main():
     print("SAVING DATA TO CSV FILES")
     print("=" * 100)
 
-    save_detailed_csv(history_data, OUTPUT_DIR, "dqn_results.csv")
-    save_sensor_fairness_analysis(sensor_fairness_data, OUTPUT_DIR, "dqn_sensor_fairness.csv")
+    save_detailed_csv(history_data, OUTPUT_DIR, "dqn_blind_results.csv")
+    save_sensor_fairness_analysis(sensor_fairness_data, OUTPUT_DIR, "dqn_blind_sensor_fairness.csv")
 
     # Save summary statistics
     summary_dict = {
@@ -381,7 +416,7 @@ def main():
         'fairness_level': get_fairness_level(fairness_stats.get('std', 0))[0] if fairness_stats else "N/A",
     }
 
-    save_summary_json(summary_dict, OUTPUT_DIR, "dqn_summary.json")
+    save_summary_json(summary_dict, OUTPUT_DIR, "dqn_blind_summary.json")
 
     eval_env.close()
     print("\n✓ Evaluation and data export complete.")
