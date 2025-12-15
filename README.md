@@ -226,6 +226,13 @@ for the modeling of Lora we apperciate that the ADR does not change immediately,
 
 ---
 
+
+## Results for the cummulative results
+![Results](src/agents/dqn/dqn_evaluation_results/baseline_results/final_comparison_graph.png)
+
+## Results for the cummulative results
+![Results](src/agents/dqn/dqn_evaluation_results/baseline_results/agent_trajectories.png)
+
 ## Demo Video of Environment
 [![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/QgQFRd8uP28)
 ## Environment diagram
