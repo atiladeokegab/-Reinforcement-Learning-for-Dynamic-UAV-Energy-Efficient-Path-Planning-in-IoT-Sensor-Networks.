@@ -139,11 +139,11 @@ class FairnessMetricsCallback(BaseCallback):
 # ==================== CONFIGURATION ====================
 
 ENV_CONFIG = {
-    'grid_size': (100, 100),
+    'grid_size': (500, 500),
     'num_sensors': 20,
     'max_steps': 2100,
     'sensor_duty_cycle': 10.0,
-    'penalty_data_loss': -500.0,
+    'penalty_data_loss': -5000.0,
     'reward_urgency_reduction': 20.0,
     'render_mode': None,
 }
@@ -165,18 +165,20 @@ HYPERPARAMS = {
 }
 
 TRAINING_CONFIG = {
-    'total_timesteps': 1_000_000,
+    'total_timesteps': 20_000_000,
     'eval_freq': 5000,
     'save_freq': 10_000,
     'log_interval': 10,
 }
 
-SAVE_DIR = Path("models/dqn_fairness_framestack")
-LOG_DIR = Path("logs/dqn_fairness_framestack")
-SAVE_DIR.mkdir(parents=True, exist_ok=True)
+# SAVE_DIR = Path("models/dqn_full_observability")
+# LOG_DIR = Path("logs/dqn_full_observability")
+SAVE_DIR = Path("models/dqn_full_observability") # this is the file that is use tore the data full observabilty
+LOG_DIR = Path("logs/dqn_full_observability")
+SAVE_DIR.mkdir(parents=True, exist_ok=True)#not sure about this line chat told me to add so here we are
 
 
-# ==================== MAIN TRAINING ====================
+# ==================== MAIN TRAINING ===================
 
 def main():
     print("STARTING TRAINING (WITH PERSISTENCE FIX)")

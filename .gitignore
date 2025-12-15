@@ -3,6 +3,7 @@ __pycache__/
 *.py[oc]
 build/
 dist/
+model/
 wheels/
 *.egg-info
 .venv # Virtual environments

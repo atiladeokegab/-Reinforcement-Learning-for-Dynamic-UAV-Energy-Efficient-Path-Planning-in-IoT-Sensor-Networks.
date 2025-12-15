@@ -1070,9 +1070,9 @@ if __name__ == "__main__":
 
     # Single episode test with visualization
     env = UAVEnvironment(
-        grid_size=(10, 10),
-        num_sensors=5,
-        max_steps=400,
+        grid_size=(100, 100),
+        num_sensors=20,
+        max_steps=2100,
         sensor_duty_cycle=10.0,
         penalty_data_loss=-500.0,
         reward_urgency_reduction=20.0,

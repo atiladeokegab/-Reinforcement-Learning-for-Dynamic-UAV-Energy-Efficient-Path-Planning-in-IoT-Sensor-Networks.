@@ -5,6 +5,8 @@ Evaluates trained DQN agent with detailed fairness analysis.
 Automatically handles frame-stacked environments and PERSISTS data after reset.
 Saves detailed CSV file for comparison with greedy baselines.
 
+Output: src/agents/dqn/dqn_evaluation_results
+
 Author: ATILADE GABRIEL OKE
 Date: 09 November 2025
 Modified: Added CSV data persistence and detailed metrics logging
@@ -12,7 +14,12 @@ Modified: Added CSV data persistence and detailed metrics logging
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+# ==================== CRITICAL: Set up paths ====================
+script_dir = Path(__file__).resolve().parent  # dqn/
+src_dir = script_dir.parent.parent             # Go up to src/
+
+sys.path.insert(0, str(src_dir))
 
 import numpy as np
 import json
@@ -25,14 +32,19 @@ from environment.uav_env import UAVEnvironment
 
 # ==================== CONFIGURATION ====================
 
-MODEL_PATH = "models/dqn_fairness_framestack/best_model.zip"
-CONFIG_PATH = "models/dqn_fairness_framestack/frame_stacking_config.json"
-OUTPUT_DIR = Path("dqn_evaluation_results")
-OUTPUT_DIR.mkdir(exist_ok=True)
+MODEL_PATH = script_dir / "models/dqn_full_observability/dqn_final.zip"
+CONFIG_PATH = script_dir / "models/dqn_full_observability/frame_stacking_config.json"
+OUTPUT_DIR = script_dir / "dqn_evaluation_results"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+print(f"Script location: {script_dir}")
+print(f"Output directory: {OUTPUT_DIR}")
+print(f"Model path: {MODEL_PATH}")
+print()
 
 EVAL_CONFIG = {
-    'grid_size': (100, 100),
-    'uav_start_position': (100, 100),
+    'grid_size': (500, 500),
+    'uav_start_position': (50, 50),
     'num_sensors': 20,
     'max_battery': 274.0,
     'max_steps': 2100,
@@ -54,6 +66,9 @@ class AnalysisUAVEnv(UAVEnvironment):
     """
     A smart wrapper that saves the final state of the simulation
     the instant before the environment resets.
+
+    This ensures we can capture all metrics even after environment.reset()
+    wipes the internal state.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -88,26 +103,32 @@ class AnalysisUAVEnv(UAVEnvironment):
 # ==================== HELPER FUNCTIONS ====================
 
 def load_frame_stacking_config(config_path):
+    """Load frame stacking configuration from JSON file."""
     try:
         with open(config_path, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        return {'use_frame_stacking': True, 'n_stack': 4}
+        print(f"⚠ Config file not found at {config_path}, using defaults")
+        return {'use_frame_stacking': False, 'n_stack': 4}
 
 def create_eval_env(config, frame_stacking_config):
+    """Create evaluation environment with optional frame stacking."""
     # USE THE SMART WRAPPER instead of standard UAVEnvironment
     base_env = AnalysisUAVEnv(**config)
 
     vec_env = DummyVecEnv([lambda: base_env])
 
-    if frame_stacking_config.get('use_frame_stacking', True):
+    if frame_stacking_config.get('use_frame_stacking', False):
         n_stack = frame_stacking_config.get('n_stack', 4)
         vec_env = VecFrameStack(vec_env, n_stack=n_stack)
         print(f"✓ Frame stacking enabled (n_stack={n_stack})")
+    else:
+        print(f"✓ Frame stacking disabled")
 
     return vec_env, base_env
 
 def calculate_fairness_metrics(sensor_collections):
+    """Calculate fairness statistics from sensor collection rates."""
     if not sensor_collections:
         return {}
     return {
@@ -119,6 +140,7 @@ def calculate_fairness_metrics(sensor_collections):
     }
 
 def get_fairness_level(std_dev):
+    """Classify fairness level based on standard deviation."""
     if std_dev < 15:
         return "EXCELLENT", "+++"
     elif std_dev < 25:
@@ -164,15 +186,25 @@ def main():
     frame_stacking_config = load_frame_stacking_config(CONFIG_PATH)
 
     try:
+        print(f"Loading model from: {MODEL_PATH}")
         model = DQN.load(MODEL_PATH)
+        print("✓ Model loaded successfully")
         eval_env, base_env = create_eval_env(EVAL_CONFIG, frame_stacking_config)
+        print("✓ Environment created\n")
     except Exception as e:
         print(f"✗ Error: {e}")
+        import traceback
+        traceback.print_exc()
         return
 
-    print("\nStarting Visualization... (Press Ctrl+C to stop)")
+    print("Starting Evaluation... (Press Ctrl+C to stop)\n")
 
     obs = eval_env.reset()
+
+    # Debug: Check observation shape
+    print(f"Observation shape: {obs.shape if hasattr(obs, 'shape') else type(obs)}")
+    print(f"Model expects observation space: {model.observation_space}\n")
+
     done = False
     step = 0
     total_reward = 0
@@ -190,7 +222,7 @@ def main():
 
     try:
         while not done:
-            # Predict
+            # Predict - obs is already properly shaped by environment
             action, _ = model.predict(obs, deterministic=True)
             if isinstance(action, np.ndarray):
                 action = action[0]
@@ -199,10 +231,10 @@ def main():
             # Step (Vectorized)
             obs, rewards, dones, infos = eval_env.step([action])
 
-            # Extract scalar
-            reward = rewards[0]
-            done = dones[0]  # This will be True on the final step
-            info = infos[0]  # Contains current step info
+            # Extract scalar values
+            reward = float(rewards[0]) if isinstance(rewards, np.ndarray) else float(rewards)
+            done = bool(dones[0]) if isinstance(dones, np.ndarray) else bool(dones)
+            info = infos[0] if isinstance(infos, list) else infos
 
             total_reward += reward
             step += 1
@@ -212,8 +244,8 @@ def main():
 
             # Log data every 50 steps (to match greedy baseline frequency)
             if step % VIZ_CONFIG['progress_interval'] == 0 or done:
-                coverage_pct = info.get('coverage_percentage', 0)
-                battery_pct = info.get('battery_percent', 0)
+                coverage_pct = info.get('coverage_percentage', 0) if isinstance(info, dict) else 0
+                battery_pct = info.get('battery_percent', 0) if isinstance(info, dict) else 0
                 battery_wh = base_env.uav.battery
 
                 history_data['step'].append(step)
@@ -229,14 +261,13 @@ def main():
 
     except KeyboardInterrupt:
         print("\nInterrupted by user.")
+    except Exception as e:
+        print(f"\n✗ Error during evaluation: {e}")
+        import traceback
+        traceback.print_exc()
 
     elapsed_time = time.time() - start_time
 
-    # =========================================================================
-    # CRITICAL FIX: RECOVER DATA FROM THE SNAPSHOT (NOT THE RESET ENV)
-    # =========================================================================
-
-    # Check if we have the snapshot data
     if base_env.last_episode_sensor_data:
         print("\n✓ Successfully recovered pre-reset simulation data!")
         saved_sensor_data = base_env.last_episode_sensor_data
@@ -245,17 +276,16 @@ def main():
         # Fallback (should not happen if episode finished)
         print("\n⚠ Warning: No snapshot found. Using current (likely reset) state.")
         saved_sensor_data = []
-
-    # Now we perform analysis on 'saved_sensor_data' instead of 'base_env.sensors'
+        final_info = {'battery': 0, 'battery_percent': 0, 'coverage_percentage': 0}
 
     print("\n" + "=" * 100)
     print("EPISODE COMPLETE")
     print("=" * 100)
 
     # Recalculate metrics using the SAVED data
-    total_generated = sum(s['total_data_generated'] for s in saved_sensor_data)
-    total_collected = sum(s['total_data_transmitted'] for s in saved_sensor_data)
-    total_lost = sum(s['total_data_lost'] for s in saved_sensor_data)
+    total_generated = sum(s['total_data_generated'] for s in saved_sensor_data) if saved_sensor_data else 0
+    total_collected = sum(s['total_data_transmitted'] for s in saved_sensor_data) if saved_sensor_data else 0
+    total_lost = sum(s['total_data_lost'] for s in saved_sensor_data) if saved_sensor_data else 0
 
     efficiency = (total_collected / total_generated * 100) if total_generated > 0 else 0
     loss_rate = (total_lost / total_generated * 100) if total_generated > 0 else 0
@@ -355,6 +385,7 @@ def main():
 
     eval_env.close()
     print("\n✓ Evaluation and data export complete.")
+    print(f"✓ All results saved to: {OUTPUT_DIR.absolute()}")
 
 if __name__ == "__main__":
     main()

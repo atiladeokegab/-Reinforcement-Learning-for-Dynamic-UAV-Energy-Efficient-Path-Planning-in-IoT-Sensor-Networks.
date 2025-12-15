@@ -237,8 +237,8 @@ class UAVEnvironment(gym.Env):
 
         self.action_space = spaces.Discrete(5)
 
-        obs_low = np.array([0, 0, 0] + [0, 0] * self.num_sensors, dtype=np.float32)
-        obs_high = np.array([grid_size[0], grid_size[1], max_battery] + [max_buffer_size, 1.0] * self.num_sensors, dtype=np.float32)
+        obs_low = np.array([0, 0, 0] + [0, 0, 0] * self.num_sensors, dtype=np.float32)
+        obs_high = np.array([grid_size[0], grid_size[1], max_battery] + [max_buffer_size, 1.0, 1.0] * self.num_sensors, dtype=np.float32)
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
         self.current_step = 0
@@ -552,12 +552,28 @@ class UAVEnvironment(gym.Env):
         return reward
 
     def _get_observation(self) -> np.ndarray:
-        """Get current observation with urgency metrics."""
+        """Get current observation INCLUDING LINK QUALITY. abulation study"""
         obs_list = [self.uav.position[0], self.uav.position[1], self.uav.battery]
+
         for sensor in self.sensors:
             urgency = self._calculate_urgency(sensor)
-            obs_list.extend([sensor.data_buffer, urgency])
+
+            # LINK QUALITY CALCULATION
+            # This is the "Ablation" feature
+            sensor.update_spreading_factor(tuple(self.uav.position))  # Physics update
+
+            if not sensor.is_in_range(tuple(self.uav.position)):
+                link_quality = 0.0
+            else:
+                sf = sensor.spreading_factor
+                # Normalize SF (SF7=Best=1.0, SF12=Worst=0.1)
+                mapping = {7: 1.0, 8: 0.8, 9: 0.6, 10: 0.4, 11: 0.2, 12: 0.1}
+                link_quality = mapping.get(sf, 0.1)
+
+            obs_list.extend([sensor.data_buffer, urgency, link_quality])
+
         return np.array(obs_list, dtype=np.float32)
+
 
     def _get_info(self) -> dict:
         """Get additional information including urgency stats."""
@@ -567,7 +583,6 @@ class UAVEnvironment(gym.Env):
             'battery': self.uav.battery,
             'battery_percent': self.uav.get_battery_percentage(),
             'sensors_collected': len(self.sensors_visited),
-            'total_sensors': self.num_sensors,
             'current_step': self.current_step,
             'total_reward': self.total_reward,
             'total_data_collected': self.total_data_collected,
@@ -733,8 +748,8 @@ if __name__ == "__main__":
 
     # Create environment WITH FAIRNESS
     env = UAVEnvironment(
-        grid_size=(100, 100),
-        uav_start_position=(50, 50),
+        grid_size=(500, 500),
+        uav_start_position=(500, 500),
         num_sensors=20,
         max_steps=2100,
         sensor_duty_cycle=10.0,
@@ -745,7 +760,6 @@ if __name__ == "__main__":
 
     # Reset environment
     obs, info = env.reset(seed=42)
-
     action_names = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'COLLECT']
 
     try:

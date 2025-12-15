@@ -25,12 +25,12 @@ OUTPUT_DIR = BASELINES_DIR / "baseline_results"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 PLOT_CONFIG = {
-    'grid_size': (50, 50),       # MUST match your DRL training
+    'grid_size': (100, 100),       # MUST match your DRL training
     'num_sensors': 20,
     'max_steps': 2100,
     'path_loss_exponent': 3.8,
     'rssi_threshold': -120.0,
-    'dqn_csv_path': '../dqn/dqn_evaluation_results/dqn_results.csv',  # Path to your DRL data
+    'dqn_csv_path': '../dqn/dqn_evaluation_results/dqn_blind_results.csv',
     'seed': 42
 }
 
