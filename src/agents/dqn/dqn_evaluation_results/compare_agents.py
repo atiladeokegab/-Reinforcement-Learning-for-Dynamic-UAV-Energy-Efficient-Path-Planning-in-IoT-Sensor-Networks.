@@ -3,7 +3,8 @@ Dissertation Comparison Plotter - FAIR VERSION WITH FRAME STACKING
 Generates the final 'DQN vs. Greedy' performance graph with FRESH DQN evaluation.
 All agents run on the EXACT SAME ENVIRONMENT with the same seed.
 CRITICAL: DQN uses VecFrameStack to match training conditions.
-
+if link quality if 0 uav does not move
+if 0.8 moves from 0 to 200
 Author: ATILADE GABRIEL OKE
 Modified: December 2025
 """
@@ -96,7 +97,7 @@ DQN_MODEL_PATH = script_dir_results / "models" / "dqn_full_observability" / "dqn
 DQN_CONFIG_PATH = script_dir_results / "models" / "dqn_full_observability" / "frame_stacking_config.json"
 
 PLOT_CONFIG = {
-    'grid_size': (100, 100),
+    'grid_size': (500, 500),
     'num_sensors': 20,
     'max_steps': 2100,
     'path_loss_exponent': 3.8,
