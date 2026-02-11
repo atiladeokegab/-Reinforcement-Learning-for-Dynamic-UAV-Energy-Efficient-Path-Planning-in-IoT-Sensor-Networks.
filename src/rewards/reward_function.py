@@ -1,54 +1,45 @@
-"""
-Fairness-Constrained Reward Function for UAV Data Collection
-
-Enforces network health through massive penalties for data loss.
-Balances throughput optimization with fairness/safety constraints.
-
-Author: ATILADE GABRIEL OKE
-Date: November 2025
-"""
+import numpy as np
+from typing import List, Dict
 
 
 class RewardFunction:
     """
-    Reward function with fairness constraints.
+    Fixed reward function balancing throughput with fairness.
 
-    Key Features:
-    - Massive penalty for data loss (-500.0+)
-    - Bonus for reducing urgency
-    - Maintains throughput incentives
-    - Ensures no sensor is neglected
-
-    TODO: ADD NEGATIVE REWARD TO THE SYSTEM TO PUNISH THE UAV FOR THE STARVATION OF OTHER SENSORS
+    Key Changes from Original:
+    1. Step penalty reduced from -50 to -0.5 (prevents "stay still" trap)
+    2. Data loss penalty reduced from -5000 to -1 (makes learning possible)
+    3. Reward per byte increased from 55 to 100 (encourages collection)
+    4. Battery penalty reduced from -5 to -0.5 (enables exploration)
+    5. Added variance-based starvation penalty (implements fairness properly)
     """
 
-    def __init__(self,
-                 reward_per_byte: float = 55.0,
-                 reward_new_sensor: float = 50.0,
-                 reward_multi_sensor: float = 200.0,  # INCREASED: Incentivizes strategic hub movement
-                 reward_completion: float = 100.0,
-                 reward_urgency_reduction: float = 1000.0,  # Adjusted for new scale
-                 penalty_revisit: float = -2.0,
-                 penalty_boundary: float = -50.0,  # INCREASED: Punishes out-of-bounds flight severely
-                 penalty_collision: float = -10.0,
-                 penalty_battery: float = -5.0,  # INCREASED: Heavily penalizes wasteful energy consumption
-                 penalty_step: float = -50.0,  # MASSIVELY INCREASED: Forces high-speed collection (SF7)
-                 penalty_data_loss: float = -5000.0):
+    def __init__(
+        self,
+        # Rewards
+        reward_per_byte: float = 100.0,  # INCREASED from 55
+        reward_new_sensor: float = 50.0,
+        reward_multi_sensor: float = 200.0,
+        reward_completion: float = 100.0,
+        reward_urgency_reduction: float = 1000.0,
+        # Penalties
+        penalty_revisit: float = -2.0,
+        penalty_boundary: float = -50.0,
+        penalty_collision: float = -10.0,
+        penalty_battery: float = -0.5,  # REDUCED from -5
+        penalty_step: float = -0.5,  # REDUCED from -50
+        penalty_data_loss: float = -1.0,  # REDUCED from -5000
+        penalty_starvation: float = -500.0,
+    ):  # NEW: Variance-based
         """
         Initialize fairness-constrained reward function.
 
-        Args:
-            reward_per_byte: Reward per byte collected
-            reward_new_sensor: Bonus for first collection from sensor
-            reward_multi_sensor: Bonus per additional sensor in multi-collection
-            reward_completion: Bonus for completing mission
-            reward_urgency_reduction: Bonus for reducing high-urgency sensor buffer
-            penalty_revisit: Penalty for collecting from empty sensor
-            penalty_boundary: Penalty for hitting boundary
-            penalty_collision: Penalty per SF collision
-            penalty_battery: Penalty per Wh of battery used
-            penalty_step: Penalty per step taken
-            penalty_data_loss: MASSIVE penalty per byte lost (fairness constraint)
+        Critical Parameters:
+        - penalty_step: Should be small (-0.5 to -2.0) to avoid "stay still" trap
+        - penalty_data_loss: Should be reduced (-1 to -10) to make learning possible
+        - reward_per_byte: Should be high (100+) to make exploration rewarding
+        - penalty_battery: Should be low (-0.5 to -1) to enable movement
+        - penalty_starvation: Variance-based penalty for fairness
         """
         self.reward_per_byte = reward_per_byte
         self.reward_new_sensor = reward_new_sensor
@@ -61,11 +52,45 @@ class RewardFunction:
         self.penalty_collision = penalty_collision
         self.penalty_battery = penalty_battery
         self.penalty_step = penalty_step
-        self.penalty_data_loss = penalty_data_loss  # CRITICAL
+        self.penalty_data_loss = penalty_data_loss
+        self.penalty_starvation = penalty_starvation  # NEW
 
-    def calculate_movement_reward(self,
-                                  move_success: bool,
-                                  battery_used: float) -> float:
+    def calculate_starvation_penalty(self, sensor_buffers: List[float]) -> float:
+        """
+        Calculate fairness penalty based on buffer variance.
+
+        Core Idea:
+        - If all sensors have equal buffers → penalty ≈ 0
+        - If buffers are unequal → penalty increases with variance
+        - This encourages fair distribution without destroying learning
+
+        Args:
+            sensor_buffers: List of current buffer levels for each sensor
+
+        Returns:
+            Penalty based on variance (0 if all equal, higher if unequal)
+        """
+        if not sensor_buffers or len(sensor_buffers) <= 1:
+            return 0.0
+
+        # Normalize to 0-1 range
+        max_buffer = max(sensor_buffers)
+        if max_buffer == 0:  # All buffers empty
+            return 0.0
+
+        normalized = np.array([b / max_buffer for b in sensor_buffers])
+
+        # Variance: 0 if all equal, up to 0.25 for maximum spread
+        variance = np.var(normalized)
+
+        # Apply penalty proportional to variance
+        penalty = self.penalty_starvation * variance
+
+        return penalty
+
+    def calculate_movement_reward(
+        self, move_success: bool, battery_used: float
+    ) -> float:
         """Calculate reward for movement action."""
         reward = self.penalty_step
 
@@ -76,69 +101,62 @@ class RewardFunction:
 
         return reward
 
-    def calculate_collection_reward(self,
-                                    bytes_collected: float,
-                                    was_new_sensor: bool,
-                                    was_empty: bool,
-                                    all_sensors_collected: bool,
-                                    battery_used: float,
-                                    num_sensors_collected: int = 1,
-                                    collision_count: int = 0,
-                                    data_loss: float = 0.0,
-                                    urgency_reduced: float = 0.0) -> float:  # NEW
+    def calculate_collection_reward(
+        self,
+        bytes_collected: float,
+        was_new_sensor: bool,
+        was_empty: bool,
+        all_sensors_collected: bool,
+        battery_used: float,
+        num_sensors_collected: int = 1,
+        collision_count: int = 0,
+        data_loss: float = 0.0,
+        urgency_reduced: float = 0.0,
+        sensor_buffers: List[float] = None,
+    ) -> float:
         """
         Calculate fairness-constrained reward for data collection.
 
-        Args:
-            bytes_collected: Amount of data collected (bytes)
-            was_new_sensor: True if first time collecting from any sensor
-            was_empty: True if attempted to collect from empty sensor
-            all_sensors_collected: True if all sensors now empty
-            battery_used: Amount of battery consumed (Wh)
-            num_sensors_collected: Number of sensors collected from simultaneously
-            collision_count: Number of SF collisions detected
-            data_loss: Total bytes lost due to buffer overflow
-            urgency_reduced: Sum of urgency reduction across all sensors
-
-        Returns:
-            Total reward for the collection action
+        FIXED VERSION: Balances throughput with fairness learning.
         """
         reward = self.penalty_step
 
-        # Base data collection reward
+        # Base data collection reward (INCREASED to incentivize movement)
         if bytes_collected > 0:
             reward += self.reward_per_byte * bytes_collected
 
             if was_new_sensor:
                 reward += self.reward_new_sensor
 
-            # Multi-sensor bonus
             if num_sensors_collected > 1:
-                multi_sensor_bonus = self.reward_multi_sensor * (num_sensors_collected - 1)
+                multi_sensor_bonus = self.reward_multi_sensor * (
+                    num_sensors_collected - 1
+                )
                 reward += multi_sensor_bonus
 
         # Urgency reduction bonus
-        # Reward for collecting from high-urgency sensors
         if urgency_reduced > 0:
             reward += self.reward_urgency_reduction * urgency_reduced
-
 
         # Penalty for attempting empty collection
         if was_empty and bytes_collected == 0:
             reward += self.penalty_revisit
 
-        # Battery penalty
+        # Battery penalty (REDUCED)
         reward += self.penalty_battery * battery_used
 
         # Collision penalty
         if collision_count > 0:
             reward += self.penalty_collision * collision_count
 
-        #  MASSIVE DATA LOSS PENALTY (Fairness Constraint)
-        # This is the key: make data loss so expensive that the agent
-        # MUST prioritize high-urgency sensors regardless of SF
+        # Data loss penalty (GREATLY REDUCED - makes learning possible)
         if data_loss > 0:
             reward += self.penalty_data_loss * data_loss
+
+        # VARIANCE-BASED STARVATION PENALTY (replaces flat data loss)
+        if sensor_buffers is not None:
+            starvation_penalty = self.calculate_starvation_penalty(sensor_buffers)
+            reward += starvation_penalty
 
         # Mission completion bonus
         if all_sensors_collected:
@@ -146,35 +164,56 @@ class RewardFunction:
 
         return reward
 
-    def get_reward_breakdown(self,
-                            bytes_collected: float = 0.0,
-                            was_new_sensor: bool = False,
-                            was_empty: bool = False,
-                            all_sensors_collected: bool = False,
-                            battery_used: float = 0.0,
-                            num_sensors_collected: int = 1,
-                            collision_count: int = 0,
-                            data_loss: float = 0.0,
-                            urgency_reduced: float = 0.0) -> dict:
-        """
-        Get detailed breakdown of reward components for analysis.
+    def get_reward_breakdown(
+        self,
+        bytes_collected: float = 0.0,
+        was_new_sensor: bool = False,
+        was_empty: bool = False,
+        all_sensors_collected: bool = False,
+        battery_used: float = 0.0,
+        num_sensors_collected: int = 1,
+        collision_count: int = 0,
+        data_loss: float = 0.0,
+        urgency_reduced: float = 0.0,
+        sensor_buffers: List[float] = None,
+    ) -> Dict:
+        """Get detailed breakdown of reward components for analysis."""
+        starvation_penalty = 0.0
+        if sensor_buffers is not None:
+            starvation_penalty = self.calculate_starvation_penalty(sensor_buffers)
 
-        Returns:
-            Dictionary with individual reward components
-        """
         breakdown = {
-            'step_penalty': self.penalty_step,
-            'data_reward': self.reward_per_byte * bytes_collected if bytes_collected > 0 else 0.0,
-            'new_sensor_bonus': self.reward_new_sensor if was_new_sensor else 0.0,
-            'multi_sensor_bonus': self.reward_multi_sensor * (num_sensors_collected - 1) if num_sensors_collected > 1 else 0.0,
-            'urgency_reduction_bonus': self.reward_urgency_reduction * urgency_reduced if urgency_reduced > 0 else 0.0,
-            'empty_penalty': self.penalty_revisit if was_empty and bytes_collected == 0 else 0.0,
-            'battery_penalty': self.penalty_battery * battery_used,
-            'collision_penalty': self.penalty_collision * collision_count if collision_count > 0 else 0.0,
-            'data_loss_penalty': self.penalty_data_loss * data_loss if data_loss > 0 else 0.0,  # CRITICAL
-            'completion_bonus': self.reward_completion if all_sensors_collected else 0.0,
+            "step_penalty": self.penalty_step,
+            "data_reward": (
+                self.reward_per_byte * bytes_collected if bytes_collected > 0 else 0.0
+            ),
+            "new_sensor_bonus": self.reward_new_sensor if was_new_sensor else 0.0,
+            "multi_sensor_bonus": (
+                self.reward_multi_sensor * (num_sensors_collected - 1)
+                if num_sensors_collected > 1
+                else 0.0
+            ),
+            "urgency_reduction_bonus": (
+                self.reward_urgency_reduction * urgency_reduced
+                if urgency_reduced > 0
+                else 0.0
+            ),
+            "empty_penalty": (
+                self.penalty_revisit if was_empty and bytes_collected == 0 else 0.0
+            ),
+            "battery_penalty": self.penalty_battery * battery_used,
+            "collision_penalty": (
+                self.penalty_collision * collision_count if collision_count > 0 else 0.0
+            ),
+            "data_loss_penalty": (
+                self.penalty_data_loss * data_loss if data_loss > 0 else 0.0
+            ),
+            "starvation_penalty": starvation_penalty,  # NEW
+            "completion_bonus": (
+                self.reward_completion if all_sensors_collected else 0.0
+            ),
         }
 
-        breakdown['total'] = sum(breakdown.values())
+        breakdown["total"] = sum(breakdown.values())
 
         return breakdown
