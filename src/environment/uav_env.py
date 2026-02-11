@@ -30,6 +30,7 @@ from matplotlib.patches import Patch, Circle, Wedge
 import sys
 from pathlib import Path
 import time
+import random
 from enum import IntEnum
 
 # Add src to path for imports
@@ -438,16 +439,17 @@ class UAVEnvironment(gym.Env):
             if sensor.data_buffer <= 0:
                 continue
 
-            # Update ADR based on current RSSI (Equation 18)
             sensor.update_spreading_factor(tuple(self.uav.position), current_step=self.current_step)
 
             # Calculate transmission probability
             P_link = sensor.get_success_probability(tuple(self.uav.position), use_advanced_model=True)
             P_cycle = sensor.duty_cycle_probability
-            P_overall = P_link * P_cycle
+            P_overall = P_link * P_cycle * 10
 
             # Probabilistic transmission attempt
-            if np.random.rand() < P_overall:
+            # P_overall is your calculated probability (e.g., 0.099)
+            # random.random() generates a value between 0.0 and 1.0
+            if P_overall > random.random():
                 current_sf = sensor.spreading_factor
 
                 if current_sf not in transmission_attempts:
