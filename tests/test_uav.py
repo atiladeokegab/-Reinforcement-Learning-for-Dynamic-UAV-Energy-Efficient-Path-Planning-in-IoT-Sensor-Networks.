@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.environment.uav import UAV
 
@@ -45,7 +45,7 @@ class TestUAVInitialization:
             max_battery=100.0,
             speed=15.0,
             power_move=700.0,
-            power_hover=500.0
+            power_hover=500.0,
         )
 
         assert np.array_equal(uav.position, np.array([10.0, 20.0], dtype=np.float32))
@@ -77,7 +77,7 @@ class TestUAVMovement:
         """Test UAV moves up correctly."""
         uav = UAV(start_position=(5.0, 5.0))
 
-        success = uav.move('UP', grid_size=(10, 10))
+        success = uav.move("UP", grid_size=(10, 10))
 
         assert success == True
         assert uav.position[0] == 5.0  # x unchanged
@@ -87,7 +87,7 @@ class TestUAVMovement:
         """Test UAV moves down correctly."""
         uav = UAV(start_position=(5.0, 5.0))
 
-        success = uav.move('DOWN', grid_size=(10, 10))
+        success = uav.move("DOWN", grid_size=(10, 10))
 
         assert success == True
         assert uav.position[0] == 5.0  # x unchanged
@@ -97,7 +97,7 @@ class TestUAVMovement:
         """Test UAV moves left correctly."""
         uav = UAV(start_position=(5.0, 5.0))
 
-        success = uav.move('LEFT', grid_size=(10, 10))
+        success = uav.move("LEFT", grid_size=(10, 10))
 
         assert success == True
         assert uav.position[0] == 4.0  # x decreased
@@ -107,7 +107,7 @@ class TestUAVMovement:
         """Test UAV moves right correctly."""
         uav = UAV(start_position=(5.0, 5.0))
 
-        success = uav.move('RIGHT', grid_size=(10, 10))
+        success = uav.move("RIGHT", grid_size=(10, 10))
 
         assert success == True
         assert uav.position[0] == 6.0  # x increased
@@ -118,10 +118,10 @@ class TestUAVMovement:
         uav = UAV(start_position=(5.0, 5.0))
         grid_size = (10, 10)
 
-        uav.move('UP', grid_size)
-        uav.move('RIGHT', grid_size)
-        uav.move('RIGHT', grid_size)
-        uav.move('DOWN', grid_size)
+        uav.move("UP", grid_size)
+        uav.move("RIGHT", grid_size)
+        uav.move("RIGHT", grid_size)
+        uav.move("DOWN", grid_size)
 
         assert uav.position[0] == 7.0
         assert uav.position[1] == 5.0
@@ -131,7 +131,7 @@ class TestUAVMovement:
         uav = UAV()
 
         with pytest.raises(ValueError, match="Invalid direction"):
-            uav.move('DIAGONAL', grid_size=(10, 10))
+            uav.move("DIAGONAL", grid_size=(10, 10))
 
 
 class TestBoundaryDetection:
@@ -141,7 +141,7 @@ class TestBoundaryDetection:
         """Test UAV cannot move beyond upper boundary."""
         uav = UAV(start_position=(5.0, 9.0))  # Near top
 
-        success = uav.move('UP', grid_size=(10, 10))
+        success = uav.move("UP", grid_size=(10, 10))
 
         assert success == False
         assert uav.position[1] == 9.0  # Position unchanged
@@ -150,7 +150,7 @@ class TestBoundaryDetection:
         """Test UAV cannot move beyond lower boundary."""
         uav = UAV(start_position=(5.0, 0.0))  # At bottom
 
-        success = uav.move('DOWN', grid_size=(10, 10))
+        success = uav.move("DOWN", grid_size=(10, 10))
 
         assert success == False
         assert uav.position[1] == 0.0  # Position unchanged
@@ -159,7 +159,7 @@ class TestBoundaryDetection:
         """Test UAV cannot move beyond left boundary."""
         uav = UAV(start_position=(0.0, 5.0))  # At left edge
 
-        success = uav.move('LEFT', grid_size=(10, 10))
+        success = uav.move("LEFT", grid_size=(10, 10))
 
         assert success == False
         assert uav.position[0] == 0.0  # Position unchanged
@@ -168,7 +168,7 @@ class TestBoundaryDetection:
         """Test UAV cannot move beyond right boundary."""
         uav = UAV(start_position=(9.0, 5.0))  # Near right edge
 
-        success = uav.move('RIGHT', grid_size=(10, 10))
+        success = uav.move("RIGHT", grid_size=(10, 10))
 
         assert success == False
         assert uav.position[0] == 9.0  # Position unchanged
@@ -177,8 +177,8 @@ class TestBoundaryDetection:
         """Test UAV behavior at corners."""
         uav = UAV(start_position=(0.0, 0.0))  # Bottom-left corner
 
-        success_left = uav.move('LEFT', grid_size=(10, 10))
-        success_down = uav.move('DOWN', grid_size=(10, 10))
+        success_left = uav.move("LEFT", grid_size=(10, 10))
+        success_down = uav.move("DOWN", grid_size=(10, 10))
 
         assert success_left == False
         assert success_down == False
@@ -193,7 +193,7 @@ class TestBatteryConsumption:
         uav = UAV(max_battery=274.0)
         initial_battery = uav.battery
 
-        uav.move('UP', grid_size=(10, 10), time_step=1.0)
+        uav.move("UP", grid_size=(10, 10), time_step=1.0)
 
         assert uav.battery < initial_battery
 
@@ -202,7 +202,7 @@ class TestBatteryConsumption:
         uav = UAV(max_battery=274.0, power_move=600.0)
         initial_battery = uav.battery
 
-        uav.move('UP', grid_size=(10, 10), time_step=1.0)
+        uav.move("UP", grid_size=(10, 10), time_step=1.0)
 
         # Energy = (600W * 1s) / 3600 = 0.1667 Wh
         expected_energy = (600.0 * 1.0) / 3600
@@ -228,7 +228,7 @@ class TestBatteryConsumption:
         uav = UAV(start_position=(9.0, 5.0), max_battery=274.0, power_move=600.0)
         initial_battery = uav.battery
 
-        uav.move('RIGHT', grid_size=(10, 10), time_step=1.0)  # Collision
+        uav.move("RIGHT", grid_size=(10, 10), time_step=1.0)  # Collision
 
         # Collision energy = (power_move * 0.5 * time) / 3600
         expected_energy = (600.0 * 0.5 * 1.0) / 3600
@@ -241,8 +241,8 @@ class TestBatteryConsumption:
         uav1 = UAV(start_position=(5.0, 5.0), max_battery=274.0)
         uav2 = UAV(start_position=(9.0, 5.0), max_battery=274.0)
 
-        uav1.move('UP', grid_size=(10, 10))  # Successful move
-        uav2.move('RIGHT', grid_size=(10, 10))  # Collision
+        uav1.move("UP", grid_size=(10, 10))  # Successful move
+        uav2.move("RIGHT", grid_size=(10, 10))  # Collision
 
         energy_move = 274.0 - uav1.battery
         energy_collision = 274.0 - uav2.battery
@@ -255,7 +255,7 @@ class TestBatteryConsumption:
         uav = UAV(max_battery=274.0)
 
         for _ in range(5):
-            uav.move('UP', grid_size=(100, 100))
+            uav.move("UP", grid_size=(100, 100))
 
         energy_used = 274.0 - uav.battery
         assert energy_used > 0.5  # Should have used significant energy
@@ -357,8 +357,8 @@ class TestEpisodeReset:
         uav = UAV(start_position=(5.0, 5.0))
 
         # Move away from start
-        uav.move('UP', grid_size=(10, 10))
-        uav.move('RIGHT', grid_size=(10, 10))
+        uav.move("UP", grid_size=(10, 10))
+        uav.move("RIGHT", grid_size=(10, 10))
 
         # Reset
         uav.reset()
@@ -371,7 +371,7 @@ class TestEpisodeReset:
 
         # Drain battery
         for _ in range(10):
-            uav.move('UP', grid_size=(100, 100))
+            uav.move("UP", grid_size=(100, 100))
 
         # Reset
         uav.reset()
@@ -384,7 +384,7 @@ class TestEpisodeReset:
 
         for _ in range(3):
             # Move and use battery
-            uav.move('UP', grid_size=(10, 10))
+            uav.move("UP", grid_size=(10, 10))
             uav.hover(5.0)
 
             # Reset
@@ -443,7 +443,7 @@ class TestEdgeCases:
         uav = UAV(max_battery=274.0, power_move=600.0)
         initial_battery = uav.battery
 
-        uav.move('UP', grid_size=(10, 10), time_step=2.0)
+        uav.move("UP", grid_size=(10, 10), time_step=2.0)
 
         # Energy should be 2x normal
         expected_energy = (600.0 * 2.0) / 3600
@@ -478,7 +478,7 @@ class TestEdgeCases:
         """Test UAV in large grid."""
         uav = UAV(start_position=(50.0, 50.0))
 
-        success = uav.move('UP', grid_size=(100, 100))
+        success = uav.move("UP", grid_size=(100, 100))
 
         assert success == True
         assert uav.position[1] == 51.0
@@ -494,10 +494,7 @@ def uav_default():
 @pytest.fixture
 def uav_custom():
     """Create a UAV with custom parameters."""
-    return UAV(
-        start_position=(10.0, 10.0),
-        max_battery=100.0,
-        speed=15.0
-    )
+    return UAV(start_position=(10.0, 10.0), max_battery=100.0, speed=15.0)
+
 
 # Run tests with: pytest tests/test_uav.py -v

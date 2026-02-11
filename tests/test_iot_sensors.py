@@ -11,6 +11,7 @@ Tests all functionality including:
 Author: Atilade Okeat
 Date: January 2025
 """
+
 import logging
 
 import pytest
@@ -22,10 +23,11 @@ import sys
 from pathlib import Path
 
 # Add src directory to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Now this works!
 from src.environment.iot_sensors import IoTSensor
+
 
 class TestIoTSensorInitialization:
     """Test sensor initialization and parameter validation."""
@@ -47,7 +49,7 @@ class TestIoTSensorInitialization:
             position=(10.5, 20.3),
             data_generation_rate=0.5,
             max_buffer_size=5000.0,
-            spreading_factor=12
+            spreading_factor=12,
         )
 
         assert sensor.sensor_id == 42
@@ -131,10 +133,11 @@ class TestRSSICalculation:
     def test_rssi_at_reference_distance(self):
         """Test RSSI equals reference RSSI at reference distance."""
         sensor = IoTSensor(
-            1, (0, 0),
+            1,
+            (0, 0),
             rssi_reference=-60.0,
             reference_distance=1.0,
-            path_loss_exponent=2.0
+            path_loss_exponent=2.0,
         )
 
         rssi = sensor.calculate_rssi((1.0, 0.0))  # Distance = 1.0
@@ -207,10 +210,11 @@ class TestCommunicationRange:
     def test_range_boundary_threshold(self):
         """Test range boundary is determined by RSSI threshold."""
         sensor = IoTSensor(
-            1, (0, 0),
+            1,
+            (0, 0),
             rssi_reference=-60.0,
             rssi_threshold=-100.0,
-            path_loss_exponent=2.0
+            path_loss_exponent=2.0,
         )
 
         # Find approximate range where RSSI = -100 dBm
@@ -243,7 +247,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0))
         sensor.data_buffer = 100.0
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert success == True
         assert bytes_collected > 0
@@ -253,7 +259,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0), rssi_threshold=-80.0)  # Strict threshold
         sensor.data_buffer = 100.0
 
-        bytes_collected, success = sensor.collect_data((5000.0, 5000.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5000.0, 5000.0), collection_duration=1.0
+        )
 
         assert success == False
         assert bytes_collected == 0.0
@@ -264,7 +272,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0))
         sensor.data_buffer = 0.0
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert success == False
         assert bytes_collected == 0.0
@@ -274,7 +284,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0), spreading_factor=7)  # ~684 bytes/sec
         sensor.data_buffer = 10000.0  # Lots of data
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert success == True
         # Should collect approximately data_rate * duration
@@ -286,7 +298,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0), spreading_factor=7)
         sensor.data_buffer = 50.0  # Less than data_rate * duration
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert success == True
         assert bytes_collected == 50.0  # Collected all available
@@ -298,7 +312,9 @@ class TestDataCollection:
         sensor.data_buffer = 1000.0
         initial_buffer = sensor.data_buffer
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert success == True
         assert sensor.data_buffer == initial_buffer - bytes_collected
@@ -308,7 +324,9 @@ class TestDataCollection:
         sensor = IoTSensor(1, (5.0, 5.0))
         sensor.data_buffer = 50.0
 
-        bytes_collected, success = sensor.collect_data((5.0, 5.0), collection_duration=1.0)
+        bytes_collected, success = sensor.collect_data(
+            (5.0, 5.0), collection_duration=1.0
+        )
 
         assert sensor.data_buffer == 0.0
         assert sensor.data_collected == True
@@ -366,10 +384,10 @@ class TestBufferStatus:
 
         status = sensor.get_buffer_status()
 
-        assert status['buffer_bytes'] == 0.0
-        assert status['buffer_percent'] == 0.0
-        assert status['is_empty'] == True
-        assert status['is_full'] == False
+        assert status["buffer_bytes"] == 0.0
+        assert status["buffer_percent"] == 0.0
+        assert status["is_empty"] == True
+        assert status["is_full"] == False
 
     def test_buffer_status_partial(self):
         """Test buffer status when partially filled."""
@@ -378,10 +396,10 @@ class TestBufferStatus:
 
         status = sensor.get_buffer_status()
 
-        assert status['buffer_bytes'] == 250.0
-        assert status['buffer_percent'] == 25.0
-        assert status['is_empty'] == False
-        assert status['is_full'] == False
+        assert status["buffer_bytes"] == 250.0
+        assert status["buffer_percent"] == 25.0
+        assert status["is_empty"] == False
+        assert status["is_full"] == False
 
     def test_buffer_status_full(self):
         """Test buffer status when full."""
@@ -390,9 +408,9 @@ class TestBufferStatus:
 
         status = sensor.get_buffer_status()
 
-        assert status['buffer_bytes'] == 1000.0
-        assert status['buffer_percent'] == 100.0
-        assert status['is_full'] == True
+        assert status["buffer_bytes"] == 1000.0
+        assert status["buffer_percent"] == 100.0
+        assert status["is_full"] == True
 
     def test_buffer_utilization_property(self):
         """Test buffer_utilization property."""
@@ -476,7 +494,6 @@ class TestSensorRepresentation:
         assert "7" in repr_str
 
 
-
 class TestSpreadingFactorVariations:
     """Test behavior with different spreading factors."""
 
@@ -515,6 +532,7 @@ def sensor_with_data():
     sensor = IoTSensor(sensor_id=1, position=(5.0, 5.0))
     sensor.data_buffer = 100.0
     return sensor
+
 
 # Run tests with: pytest tests/test_iot_sensors.py -v
 

@@ -143,8 +143,6 @@ ENV_CONFIG = {
     'num_sensors': 20,
     'max_steps': 2100,
     'sensor_duty_cycle': 10.0,
-    'penalty_data_loss': -5000.0,
-    'reward_urgency_reduction': 20.0,
     'render_mode': None,
 }
 
@@ -152,20 +150,17 @@ FRAME_STACKING_CONFIG = {'use_frame_stacking': True, 'n_stack': 4}
 
 HYPERPARAMS = {
     'policy': 'MlpPolicy',
-    'learning_rate': 1e-4,
-    'buffer_size': 50_000,
-    'batch_size': 32,
-    'gamma': 0.95,
-    'learning_starts': 1000,
-    'train_freq': 4,
-    'target_update_interval': 1000,
-    'exploration_fraction': 0.95,
-    'gradient_steps': 1,
-    'policy_kwargs': {'net_arch': [512, 512, 256]},
+    'learning_rate': 3e-4,        # Slightly faster learning
+    'buffer_size': 100_000,       # Larger memory for complex environments
+    'batch_size': 64,             # Standard for stable gradients
+    'gamma': 0.99,                # Higher gamma to care more about future sensor visits
+    'learning_starts': 5000,      # Collect more initial random data
+    'exploration_fraction': 0.5,  # Balanced exploration (500k steps)
+    'target_update_interval': 500,# More frequent target updates
+    'policy_kwargs': {'net_arch': [256, 256]}# Deep but not overly complex
 }
-
 TRAINING_CONFIG = {
-    'total_timesteps': 20_000_000,
+    'total_timesteps': 1_000_000,
     'eval_freq': 5000,
     'save_freq': 10_000,
     'log_interval': 10,
