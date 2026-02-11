@@ -24,23 +24,17 @@ def create_diagram():
 
     logger.debug(f"Output file: {output_file}.png")
 
-    graph_attr = {
-        "splines": "spline",
-        "pad": "0.5",
-        "nodesep": "0.8",
-        "ranksep": "1.0"
-    }
+    graph_attr = {"splines": "spline", "pad": "0.5", "nodesep": "0.8", "ranksep": "1.0"}
 
     try:
         with Diagram(
-                "Component Diagram - Q-Learning Simulation Components",
-                direction="TB",
-                graph_attr=graph_attr,
-                show=False,
-                filename=str(output_file),
-                outformat="png"
+            "Component Diagram - Q-Learning Simulation Components",
+            direction="TB",
+            graph_attr=graph_attr,
+            show=False,
+            filename=str(output_file),
+            outformat="png",
         ):
-
             with Cluster("Q-Learning Agent Component"):
                 q_table = Python("Q-Table\n(NumPy Array)")
                 policy = Python("Policy Manager\n(Epsilon-Greedy)")
@@ -77,7 +71,11 @@ def create_diagram():
 
                 sensor_generator >> Edge(label="creates") >> data_simulator
                 position_tracker >> Edge(label="distance calc") >> lora_range_model
-                lora_range_model >> Edge(label="determines coverage") >> coverage_tracker
+                (
+                    lora_range_model
+                    >> Edge(label="determines coverage")
+                    >> coverage_tracker
+                )
 
             with Cluster("Reward Component"):
                 reward_function = Python("Reward Function")
@@ -109,14 +107,18 @@ def create_diagram():
             action_selector >> Edge(label="action", style="bold") >> movement_controller
             transition_model >> Edge(label="next state", style="bold") >> state_manager
             state_manager >> Edge(label="observes", style="bold") >> q_table
-            reward_function >> Edge(label="reward signal", style="bold") >> value_updater
+            (
+                reward_function
+                >> Edge(label="reward signal", style="bold")
+                >> value_updater
+            )
             episode_manager >> Edge(label="resets", style="bold") >> state_manager
             coverage_tracker >> Edge(label="metrics", style="bold") >> logger_comp
 
             logger.info("✓ Diagram components created")
 
         # Verify file was created
-        png_file = output_file.with_suffix('.png')
+        png_file = output_file.with_suffix(".png")
         if png_file.exists():
             file_size = png_file.stat().st_size
             logger.info(f"✓ Diagram saved: {png_file}")
@@ -127,6 +129,7 @@ def create_diagram():
     except Exception as e:
         logger.error(f"✗ Error creating diagram: {e}")
         import traceback
+
         logger.error(traceback.format_exc())
         raise
 
@@ -135,8 +138,7 @@ def create_diagram():
 
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
     logger.info("Running Q-Learning component diagram script...")

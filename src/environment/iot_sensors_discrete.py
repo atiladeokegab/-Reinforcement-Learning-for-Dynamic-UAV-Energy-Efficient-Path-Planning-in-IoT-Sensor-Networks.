@@ -25,19 +25,19 @@
 # RSSI_th is the minimum required signal strength (sensitivity threshold).
 # IF RSSI(d) >= RSSI_th (In Range) THEN:
 
-    # 2.3 Max Collection Capacity
-    # R_data is the continuous data rate (bytes/sec) based on the current SF.
-    # T_col is the fixed communication duration (seconds) within this step.
-    # D_max = R_data * T_col
+# 2.3 Max Collection Capacity
+# R_data is the continuous data rate (bytes/sec) based on the current SF.
+# T_col is the fixed communication duration (seconds) within this step.
+# D_max = R_data * T_col
 
-    # 2.4 Actual Collected Data
-    # The actual data collected is limited by what's in the buffer (B_interim) or the capacity (D_max).
-    # D_collected = min(B_interim, D_max)
+# 2.4 Actual Collected Data
+# The actual data collected is limited by what's in the buffer (B_interim) or the capacity (D_max).
+# D_collected = min(B_interim, D_max)
 
 # ELSE (RSSI(d) < RSSI_th - Out of Range) THEN:
 
-    # 2.5 No Collection
-    # D_collected = 0
+# 2.5 No Collection
+# D_collected = 0
 
 # --- Phase 3: Final State Update ⬆ ---
 
