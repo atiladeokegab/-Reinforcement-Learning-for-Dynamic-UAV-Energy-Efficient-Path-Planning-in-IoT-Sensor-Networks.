@@ -1,21 +1,21 @@
 {
-    "total_reward": -35682661.29979324,
-    "steps": 2100,
-    "elapsed_time_seconds": 115.87136054039001,
-    "coverage_percentage": 25.0,
-    "collection_efficiency_percent": 1.102867965368009,
-    "data_loss_rate_percent": 77.25211038961181,
-    "battery_used_wh": 169.34722222224326,
-    "bytes_per_watt": 6.017518248174435,
-    "total_data_generated": 92399.99999999635,
-    "total_data_transmitted": 1019.05,
-    "total_data_lost": 71380.9499999985,
+    "total_reward": -15998599.860679388,
+    "steps": 1415,
+    "elapsed_time_seconds": 79.5232846736908,
+    "coverage_percentage": 50.0,
+    "collection_efficiency_percent": 16.43944747831704,
+    "data_loss_rate_percent": 54.5760520398353,
+    "battery_used_wh": 268.52777777778505,
+    "bytes_per_watt": 38.11598220750904,
+    "total_data_generated": 62259.999999998836,
+    "total_data_transmitted": 10235.199999999997,
+    "total_data_lost": 33979.050000000825,
     "fairness_metrics": {
-        "mean": 1.102867965368009,
-        "std": 2.796070423761862,
+        "mean": 16.43944747831704,
+        "std": 29.86174088593108,
         "min": 0.0,
-        "max": 11.142857142857583,
-        "range": 11.142857142857583
+        "max": 99.85865724381794,
+        "range": 99.85865724381794
     },
-    "fairness_level": "EXCELLENT"
+    "fairness_level": "MODERATE"
 }

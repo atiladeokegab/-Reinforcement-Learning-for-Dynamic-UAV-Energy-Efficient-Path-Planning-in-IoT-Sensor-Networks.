@@ -282,7 +282,7 @@ DQN_CONFIG_PATH = (
 )
 
 PLOT_CONFIG = {
-    "grid_size": (500, 500),
+    "grid_size": (100, 100),
     "num_sensors": 20,
     "max_steps": 2100,
     "path_loss_exponent": 3.8,

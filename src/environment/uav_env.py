@@ -597,8 +597,8 @@ class UAVEnvironment(gym.Env):
             )
             # Temporary deterministic setting: If you are in range, you get data.
             P_cycle = sensor.duty_cycle_probability
-            # P_overall = P_link * P_cycle * 10
-            P_overall = 0.65
+            P_overall = P_link * P_cycle * 10
+            P_overall = 0.1
 
             # Probabilistic transmission attempt
             # P_overall is your calculated probability (e.g., 0.099)
