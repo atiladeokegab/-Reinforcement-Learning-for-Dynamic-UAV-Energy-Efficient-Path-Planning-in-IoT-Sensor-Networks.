@@ -98,7 +98,6 @@ class IoTSensor:
         self.rssi_history = []
         self.avg_rssi_history = []
 
-    # [Properties and Step methods remain unchanged...]
     @property
     def duty_cycle_probability(self) -> float:
         return self.duty_cycle / 100.0
@@ -150,8 +149,8 @@ class IoTSensor:
 
         Where:
             Ptx = Transmit Power (14 dBm)
-            PL(d) = 20 * n * log10(d)  (Log-Distance Path Loss)
-            X_sigma ~ N(0, 4.0)        (Log-Normal Shadowing)
+            PL(d) = 20 * n * log10(d)(Log-Distance Path Loss)
+            X_sigma ~ N(0, 4.0)(Log-Normal Shadowing)
 
         Returns:
             RSSI in dBm (including random noise)
@@ -198,7 +197,7 @@ class IoTSensor:
         return self.REQUIRED_SNR_DB.get(spreading_factor, 7.5)
 
     def get_success_probability(
-        self, uav_position: Tuple[float, float], use_advanced_model: bool = False
+        self, uav_position: Tuple[float, float], use_advanced_model: bool = True
     ) -> float:
         rssi = self.calculate_rssi(uav_position)
         if rssi < self.rssi_threshold:

@@ -42,7 +42,7 @@ print(f"Model path: {MODEL_PATH}")
 print()
 
 EVAL_CONFIG = {
-    "grid_size": (500, 500),
+    "grid_size": (100, 100),
     "uav_start_position": (50, 50),
     "num_sensors": 20,
     "max_battery": 274.0,
