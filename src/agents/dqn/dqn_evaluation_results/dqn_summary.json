@@ -1,21 +1,21 @@
 {
-    "total_reward": -10443364.494186401,
-    "steps": 1382,
-    "elapsed_time_seconds": 75.39017963409424,
-    "coverage_percentage": 55.00000000000001,
-    "collection_efficiency_percent": 37.704989475069695,
-    "data_loss_rate_percent": 39.01846796474323,
-    "battery_used_wh": 268.61111111111967,
-    "bytes_per_watt": 85.35629782833232,
-    "total_data_generated": 60807.999999998974,
-    "total_data_transmitted": 22927.649999999994,
-    "total_data_lost": 23726.350000000664,
+    "total_reward": 4401739.799390674,
+    "steps": 2100,
+    "elapsed_time_seconds": 3.487391471862793,
+    "coverage_percentage": 100.0,
+    "collection_efficiency_percent": 43.41839826839998,
+    "data_loss_rate_percent": 40.851352813854334,
+    "battery_used_wh": 401.6666666666947,
+    "bytes_per_watt": 99.88033195020049,
+    "total_data_generated": 92399.99999999635,
+    "total_data_transmitted": 40118.6,
+    "total_data_lost": 37746.649999999914,
     "fairness_metrics": {
-        "mean": 37.70498947506972,
-        "std": 43.63843195147732,
-        "min": 0.0,
-        "max": 99.92764109985697,
-        "range": 99.92764109985697
+        "mean": 43.41839826839999,
+        "std": 39.00352880958117,
+        "min": 0.6764069264069532,
+        "max": 99.85714285714678,
+        "range": 99.18073593073983
     },
     "fairness_level": "POOR"
 }

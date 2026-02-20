@@ -16,7 +16,7 @@ Project: Reinforcement Learning for Dynamic UAV Energy-Efficient Path Planning
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import numpy as np
 import argparse
@@ -52,13 +52,13 @@ class TrainingLogger:
 
     def log_episode(self, episode: int, metrics: dict):
         """Log metrics for one episode."""
-        self.episode_rewards.append(metrics['total_reward'])
-        self.episode_steps.append(metrics['steps'])
-        self.episode_success.append(1 if metrics['success'] else 0)
-        self.episode_coverage.append(metrics['coverage_percent'])
-        self.episode_battery_used.append(metrics['battery_used'])
-        self.episode_data_collected.append(metrics['data_collected'])
-        self.epsilon_history.append(metrics['epsilon'])
+        self.episode_rewards.append(metrics["total_reward"])
+        self.episode_steps.append(metrics["steps"])
+        self.episode_success.append(1 if metrics["success"] else 0)
+        self.episode_coverage.append(metrics["coverage_percent"])
+        self.episode_battery_used.append(metrics["battery_used"])
+        self.episode_data_collected.append(metrics["data_collected"])
+        self.epsilon_history.append(metrics["epsilon"])
 
     def get_running_average(self, data, window=None):
         """Calculate running average."""
@@ -76,11 +76,13 @@ class TrainingLogger:
         avg_steps = self.get_running_average(self.episode_steps)
         avg_success = self.get_running_average(self.episode_success)
 
-        print(f"Episode {episode:4d} | "
-              f"Reward: {metrics['total_reward']:7.2f} (avg: {avg_reward:7.2f}) | "
-              f"Steps: {metrics['steps']:3d} (avg: {avg_steps:5.1f}) | "
-              f"Success: {metrics['success']} (rate: {avg_success:.2%}) | "
-              f"ε: {metrics['epsilon']:.3f}")
+        print(
+            f"Episode {episode:4d} | "
+            f"Reward: {metrics['total_reward']:7.2f} (avg: {avg_reward:7.2f}) | "
+            f"Steps: {metrics['steps']:3d} (avg: {avg_steps:5.1f}) | "
+            f"Success: {metrics['success']} (rate: {avg_success:.2%}) | "
+            f"ε: {metrics['epsilon']:.3f}"
+        )
 
     def save_metrics(self, filename: str = None):
         """Save all metrics to JSON file."""
@@ -89,17 +91,17 @@ class TrainingLogger:
             filename = f"{self.log_dir}/training_metrics_{timestamp}.json"
 
         metrics = {
-            'episode_rewards': self.episode_rewards,
-            'episode_steps': self.episode_steps,
-            'episode_success': self.episode_success,
-            'episode_coverage': self.episode_coverage,
-            'episode_battery_used': self.episode_battery_used,
-            'episode_data_collected': self.episode_data_collected,
-            'epsilon_history': self.epsilon_history,
-            'total_episodes': len(self.episode_rewards)
+            "episode_rewards": self.episode_rewards,
+            "episode_steps": self.episode_steps,
+            "episode_success": self.episode_success,
+            "episode_coverage": self.episode_coverage,
+            "episode_battery_used": self.episode_battery_used,
+            "episode_data_collected": self.episode_data_collected,
+            "epsilon_history": self.epsilon_history,
+            "total_episodes": len(self.episode_rewards),
         }
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(metrics, f, indent=2)
 
         print(f"\n✓ Metrics saved to {filename}")
@@ -112,84 +114,114 @@ class TrainingLogger:
             save_path = f"{self.log_dir}/training_curves_{timestamp}.png"
 
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
-        fig.suptitle('Q-Learning Training Progress', fontsize=16, fontweight='bold')
+        fig.suptitle("Q-Learning Training Progress", fontsize=16, fontweight="bold")
 
         episodes = range(1, len(self.episode_rewards) + 1)
 
         # Plot 1: Rewards
         ax = axes[0, 0]
-        ax.plot(episodes, self.episode_rewards, alpha=0.3, label='Episode Reward')
+        ax.plot(episodes, self.episode_rewards, alpha=0.3, label="Episode Reward")
         if len(self.episode_rewards) >= self.window_size:
-            running_avg = [self.get_running_average(self.episode_rewards[:i + 1])
-                           for i in range(len(self.episode_rewards))]
-            ax.plot(episodes, running_avg, linewidth=2, label=f'{self.window_size}-Episode Average')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Total Reward')
-        ax.set_title('Episode Rewards')
+            running_avg = [
+                self.get_running_average(self.episode_rewards[: i + 1])
+                for i in range(len(self.episode_rewards))
+            ]
+            ax.plot(
+                episodes,
+                running_avg,
+                linewidth=2,
+                label=f"{self.window_size}-Episode Average",
+            )
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Total Reward")
+        ax.set_title("Episode Rewards")
         ax.legend()
         ax.grid(True, alpha=0.3)
 
         # Plot 2: Steps per Episode
         ax = axes[0, 1]
-        ax.plot(episodes, self.episode_steps, alpha=0.3, label='Episode Steps')
+        ax.plot(episodes, self.episode_steps, alpha=0.3, label="Episode Steps")
         if len(self.episode_steps) >= self.window_size:
-            running_avg = [self.get_running_average(self.episode_steps[:i + 1])
-                           for i in range(len(self.episode_steps))]
-            ax.plot(episodes, running_avg, linewidth=2, label=f'{self.window_size}-Episode Average')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Steps')
-        ax.set_title('Steps per Episode')
+            running_avg = [
+                self.get_running_average(self.episode_steps[: i + 1])
+                for i in range(len(self.episode_steps))
+            ]
+            ax.plot(
+                episodes,
+                running_avg,
+                linewidth=2,
+                label=f"{self.window_size}-Episode Average",
+            )
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Steps")
+        ax.set_title("Steps per Episode")
         ax.legend()
         ax.grid(True, alpha=0.3)
 
         # Plot 3: Success Rate
         ax = axes[0, 2]
         if len(self.episode_success) >= self.window_size:
-            success_rate = [self.get_running_average(self.episode_success[:i + 1]) * 100
-                            for i in range(len(self.episode_success))]
-            ax.plot(episodes, success_rate, linewidth=2, color='green')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Success Rate (%)')
-        ax.set_title(f'Success Rate ({self.window_size}-Episode Average)')
+            success_rate = [
+                self.get_running_average(self.episode_success[: i + 1]) * 100
+                for i in range(len(self.episode_success))
+            ]
+            ax.plot(episodes, success_rate, linewidth=2, color="green")
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Success Rate (%)")
+        ax.set_title(f"Success Rate ({self.window_size}-Episode Average)")
         ax.set_ylim(0, 105)
         ax.grid(True, alpha=0.3)
 
         # Plot 4: Coverage
         ax = axes[1, 0]
-        ax.plot(episodes, self.episode_coverage, alpha=0.3, label='Coverage')
+        ax.plot(episodes, self.episode_coverage, alpha=0.3, label="Coverage")
         if len(self.episode_coverage) >= self.window_size:
-            running_avg = [self.get_running_average(self.episode_coverage[:i + 1])
-                           for i in range(len(self.episode_coverage))]
-            ax.plot(episodes, running_avg, linewidth=2, label=f'{self.window_size}-Episode Average')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Coverage (%)')
-        ax.set_title('Sensor Coverage')
+            running_avg = [
+                self.get_running_average(self.episode_coverage[: i + 1])
+                for i in range(len(self.episode_coverage))
+            ]
+            ax.plot(
+                episodes,
+                running_avg,
+                linewidth=2,
+                label=f"{self.window_size}-Episode Average",
+            )
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Coverage (%)")
+        ax.set_title("Sensor Coverage")
         ax.legend()
         ax.grid(True, alpha=0.3)
 
         # Plot 5: Epsilon Decay
         ax = axes[1, 1]
-        ax.plot(episodes, self.epsilon_history, linewidth=2, color='orange')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Epsilon')
-        ax.set_title('Exploration Rate (ε)')
+        ax.plot(episodes, self.epsilon_history, linewidth=2, color="orange")
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Epsilon")
+        ax.set_title("Exploration Rate (ε)")
         ax.grid(True, alpha=0.3)
 
         # Plot 6: Battery Usage
         ax = axes[1, 2]
-        ax.plot(episodes, self.episode_battery_used, alpha=0.3, label='Battery Used')
+        ax.plot(episodes, self.episode_battery_used, alpha=0.3, label="Battery Used")
         if len(self.episode_battery_used) >= self.window_size:
-            running_avg = [self.get_running_average(self.episode_battery_used[:i + 1])
-                           for i in range(len(self.episode_battery_used))]
-            ax.plot(episodes, running_avg, linewidth=2, label=f'{self.window_size}-Episode Average')
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Battery Used (Wh)')
-        ax.set_title('Battery Consumption')
+            running_avg = [
+                self.get_running_average(self.episode_battery_used[: i + 1])
+                for i in range(len(self.episode_battery_used))
+            ]
+            ax.plot(
+                episodes,
+                running_avg,
+                linewidth=2,
+                label=f"{self.window_size}-Episode Average",
+            )
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Battery Used (Wh)")
+        ax.set_title("Battery Consumption")
         ax.legend()
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
         print(f"✓ Training curves saved to {save_path}")
 
         return save_path
@@ -215,7 +247,7 @@ def train_agent(args):
         num_sensors=args.num_sensors,
         max_steps=args.max_steps,
         rssi_threshold=args.rssi_threshold,
-        render_mode='human' if args.render else None
+        render_mode="human" if args.render else None,
     )
 
     print(f"✓ Environment created")
@@ -234,7 +266,7 @@ def train_agent(args):
         discount_factor=args.discount_factor,
         epsilon=args.epsilon_start,
         epsilon_min=args.epsilon_min,
-        epsilon_decay=args.epsilon_decay
+        epsilon_decay=args.epsilon_decay,
     )
 
     print(f"✓ Agent created: {agent}")
@@ -255,7 +287,7 @@ def train_agent(args):
     print("=" * 70)
     print()
 
-    best_reward = -float('inf')
+    best_reward = -float("inf")
 
     try:
         for episode in tqdm(range(1, args.episodes + 1), desc="Training"):
@@ -295,13 +327,13 @@ def train_agent(args):
 
             # Log episode metrics
             metrics = {
-                'total_reward': episode_reward,
-                'steps': episode_steps,
-                'success': terminated,  # True if mission complete
-                'coverage_percent': info['coverage_percentage'],
-                'battery_used': 274.0 - info['battery'],
-                'data_collected': info['total_data_collected'],
-                'epsilon': agent.epsilon
+                "total_reward": episode_reward,
+                "steps": episode_steps,
+                "success": terminated,  # True if mission complete
+                "coverage_percent": info["coverage_percentage"],
+                "battery_used": 274.0 - info["battery"],
+                "data_collected": info["total_data_collected"],
+                "epsilon": agent.epsilon,
             }
 
             logger.log_episode(episode, metrics)
@@ -366,45 +398,71 @@ def train_agent(args):
 
 def main():
     """Parse arguments and start training."""
-    parser = argparse.ArgumentParser(description='Train Q-Learning agent for UAV path planning')
+    parser = argparse.ArgumentParser(
+        description="Train Q-Learning agent for UAV path planning"
+    )
 
     # Environment parameters
-    parser.add_argument('--grid-size', type=int, nargs=2, default=[10, 10],
-                        help='Grid size (width height)')
-    parser.add_argument('--num-sensors', type=int, default=20,
-                        help='Number of sensors')
-    parser.add_argument('--max-steps', type=int, default=200,
-                        help='Maximum steps per episode')
-    parser.add_argument('--rssi-threshold', type=float, default=-75.0,
-                        help='RSSI threshold for LoRa communication (dBm)')
+    parser.add_argument(
+        "--grid-size",
+        type=int,
+        nargs=2,
+        default=[10, 10],
+        help="Grid size (width height)",
+    )
+    parser.add_argument("--num-sensors", type=int, default=20, help="Number of sensors")
+    parser.add_argument(
+        "--max-steps", type=int, default=200, help="Maximum steps per episode"
+    )
+    parser.add_argument(
+        "--rssi-threshold",
+        type=float,
+        default=-75.0,
+        help="RSSI threshold for LoRa communication (dBm)",
+    )
 
     # Agent parameters
-    parser.add_argument('--learning-rate', type=float, default=0.1,
-                        help='Learning rate (alpha)')
-    parser.add_argument('--discount-factor', type=float, default=0.95,
-                        help='Discount factor (gamma)')
-    parser.add_argument('--epsilon-start', type=float, default=1.0,
-                        help='Initial exploration rate')
-    parser.add_argument('--epsilon-min', type=float, default=0.01,
-                        help='Minimum exploration rate')
-    parser.add_argument('--epsilon-decay', type=float, default=0.995,
-                        help='Epsilon decay rate per episode')
+    parser.add_argument(
+        "--learning-rate", type=float, default=0.1, help="Learning rate (alpha)"
+    )
+    parser.add_argument(
+        "--discount-factor", type=float, default=0.95, help="Discount factor (gamma)"
+    )
+    parser.add_argument(
+        "--epsilon-start", type=float, default=1.0, help="Initial exploration rate"
+    )
+    parser.add_argument(
+        "--epsilon-min", type=float, default=0.01, help="Minimum exploration rate"
+    )
+    parser.add_argument(
+        "--epsilon-decay",
+        type=float,
+        default=0.995,
+        help="Epsilon decay rate per episode",
+    )
 
     # Training parameters
-    parser.add_argument('--episodes', type=int, default=1000,
-                        help='Number of training episodes')
-    parser.add_argument('--log-interval', type=int, default=10,
-                        help='Log progress every N episodes')
-    parser.add_argument('--save-interval', type=int, default=100,
-                        help='Save checkpoint every N episodes')
+    parser.add_argument(
+        "--episodes", type=int, default=1000, help="Number of training episodes"
+    )
+    parser.add_argument(
+        "--log-interval", type=int, default=10, help="Log progress every N episodes"
+    )
+    parser.add_argument(
+        "--save-interval",
+        type=int,
+        default=100,
+        help="Save checkpoint every N episodes",
+    )
 
     # Other
-    parser.add_argument('--render', action='store_true',
-                        help='Render environment during training')
-    parser.add_argument('--load-checkpoint', type=str, default=None,
-                        help='Load agent from checkpoint')
-    parser.add_argument('--seed', type=int, default=42,
-                        help='Random seed')
+    parser.add_argument(
+        "--render", action="store_true", help="Render environment during training"
+    )
+    parser.add_argument(
+        "--load-checkpoint", type=str, default=None, help="Load agent from checkpoint"
+    )
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
 
     args = parser.parse_args()
 
