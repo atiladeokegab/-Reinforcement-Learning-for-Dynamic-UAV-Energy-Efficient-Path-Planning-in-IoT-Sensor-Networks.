@@ -102,11 +102,11 @@ class IoTSensor:
     def duty_cycle_probability(self) -> float:
         return self.duty_cycle / 100.0
 
-    @property
-    def adr_latency_steps(self) -> int:
-        if self.adr_lambda <= 0:
-            return float("inf")
-        return int(np.ceil(-1.0 / np.log(1 - self.adr_lambda)))
+    # @property
+    # def adr_latency_steps(self) -> int:
+    #     if self.adr_lambda <= 0:
+    #         return float("inf")
+    #     return int(np.ceil(-1.0 / np.log(1 - self.adr_lambda)))
 
     def step(self, time_step: float = 1.0) -> float:
         new_data = self.data_generation_rate * time_step
@@ -343,7 +343,7 @@ if __name__ == "__main__":
     )
 
     print(f"  ADR Lambda: {sensor.adr_lambda}")
-    print(f"  ADR Latency (time constant): ~{sensor.adr_latency_steps} steps")
+    #print(f"  ADR Latency (time constant): ~{sensor.adr_latency_steps} steps")
     print()
 
     # Test 2: Simulate approaching UAV with EMA lag
@@ -426,9 +426,9 @@ if __name__ == "__main__":
     print("KEY INSIGHT: EMA Creates ADR Lag")
     print("=" * 100)
     print(f"Instantaneous: Switches immediately when distance threshold crossed")
-    print(
-        f"EMA (λ=0.1):  Takes ~{sensor_ema.adr_latency_steps} steps to reach 63% convergence"
-    )
+    # print(
+    #     f"EMA (λ=0.1):  Takes ~{sensor_ema.adr_latency_steps} steps to reach 63% convergence"
+    # )
     print(f"→ Forces DQN to learn HOVERING strategies (not just passing by)")
     print(f"→ Frame stacking becomes valuable for predicting future RSSI trends")
     print("=" * 100)

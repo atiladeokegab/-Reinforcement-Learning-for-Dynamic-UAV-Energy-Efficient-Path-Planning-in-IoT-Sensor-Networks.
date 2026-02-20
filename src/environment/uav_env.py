@@ -323,11 +323,11 @@ class UAVEnvironment(gym.Env):
         rssi_threshold: float = -90.0,
         sensor_duty_cycle: float = 10.0,
         uav_start_position: Optional[Tuple[float, float]] = None,
-        max_battery: float = 274.0,
+        max_battery: float = 600.0,
         collection_duration: float = 1.0,
         max_steps: int = 2100,
         render_mode: Optional[str] = None,
-        penalty_data_loss: float = -500.0,
+        penalty_data_loss: float = -1.0,
         reward_urgency_reduction: float = 20.0,
     ):
         """Initialize UAV environment with fairness constraints."""
@@ -690,6 +690,7 @@ class UAVEnvironment(gym.Env):
 
         # ===== PHASE 6: CALCULATE REWARD =====
         # ===== CRITICAL: Use pre-calculated data loss (passed as parameter) =====
+        current_buffers = [float(s.data_buffer) for s in self.sensors]
         reward = self.reward_fn.calculate_collection_reward(
             bytes_collected=total_bytes_collected,
             was_new_sensor=len(new_sensors_collected) > 0,
@@ -700,6 +701,7 @@ class UAVEnvironment(gym.Env):
             collision_count=collision_count,
             data_loss=step_data_loss,  # ===== USE PASSED VALUE (Consistency) =====
             urgency_reduced=urgency_reduced,
+            sensor_buffers=current_buffers,
         )
 
         return reward
@@ -1008,12 +1010,12 @@ if __name__ == "__main__":
 
     # Create environment WITH FAIRNESS
     env = UAVEnvironment(
-        grid_size=(50, 50),
+        grid_size=(100, 100),
         uav_start_position=(0, 0),
         num_sensors=20,
         max_steps=2100,
         sensor_duty_cycle=10.0,
-        penalty_data_loss=-500.0,
+        penalty_data_loss=-1.0,
         reward_urgency_reduction=20.0,
         render_mode="human",
     )

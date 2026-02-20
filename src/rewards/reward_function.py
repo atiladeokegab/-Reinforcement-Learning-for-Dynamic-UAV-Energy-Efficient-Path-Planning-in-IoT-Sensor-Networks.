@@ -29,7 +29,8 @@ class RewardFunction:
         penalty_battery: float = -0.5,  # REDUCED from -5
         penalty_step: float = -0.5,  # REDUCED from -50
         penalty_data_loss: float = -1.0,  # REDUCED from -5000
-        penalty_starvation: float = -500.0,
+        # penalty_starvation: float = -500.0,
+        penalty_starvation: float = -50.0,
     ):  # NEW: Variance-based
         """
         Initialize fairness-constrained reward function.
