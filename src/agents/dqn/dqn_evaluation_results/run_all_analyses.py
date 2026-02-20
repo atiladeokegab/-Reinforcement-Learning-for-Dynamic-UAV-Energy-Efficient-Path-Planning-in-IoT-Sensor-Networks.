@@ -72,7 +72,7 @@ def verify_data_files():
     print("\n" + "=" * 100)
     if not all_good:
         print("⚠ WARNING: Missing required CSV files!")
-        print("Run your evaluation script (compare_agents.py) first.")
+        print("Run your evaluation script (multi_compare_agents.py) first.")
         return False
 
     if json_count == 0:

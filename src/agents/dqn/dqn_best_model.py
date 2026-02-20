@@ -26,13 +26,14 @@ import json
 import time
 import pandas as pd
 from stable_baselines3 import DQN
-from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
+from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack, VecNormalize  # ← ADDED VecNormalize
 from environment.uav_env import UAVEnvironment
 
 # ==================== CONFIGURATION ====================
 
 MODEL_PATH = script_dir / "models/dqn_full_observability/dqn_final.zip"
 CONFIG_PATH = script_dir / "models/dqn_full_observability/frame_stacking_config.json"
+VEC_NORMALIZE_PATH = script_dir / "models/dqn_full_observability/vec_normalize.pkl"  # ← ADDED
 OUTPUT_DIR = script_dir / "dqn_evaluation_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -42,13 +43,13 @@ print(f"Model path: {MODEL_PATH}")
 print()
 
 EVAL_CONFIG = {
-    "grid_size": (100, 100),
+    "grid_size": (500, 500),
     "uav_start_position": (50, 50),
     "num_sensors": 20,
-    "max_battery": 274.0,
+    "max_battery": 600.0,
     "max_steps": 2100,
     "sensor_duty_cycle": 10.0,
-    "penalty_data_loss": -500.0,
+    "penalty_data_loss": -1.0,       # ← FIXED from -500.0
     "reward_urgency_reduction": 20.0,
     "render_mode": None,
 }
@@ -117,11 +118,22 @@ def load_frame_stacking_config(config_path):
         return {"use_frame_stacking": False, "n_stack": 4}
 
 
-def create_eval_env(config, frame_stacking_config):
-    """Create evaluation environment with optional frame stacking."""
-    # USE THE SMART WRAPPER instead of standard UAVEnvironment
-    base_env = AnalysisUAVEnv(**config)
+def _unwrap_base_env(vec):
+    """Drill through VecNormalize → VecFrameStack → DummyVecEnv → Monitor
+    to get the raw AnalysisUAVEnv instance."""
+    inner = vec
+    while hasattr(inner, 'venv'):
+        inner = inner.venv
+    env = inner.envs[0]
+    while hasattr(env, 'env'):
+        env = env.env
+    return env
 
+
+def create_eval_env(config, frame_stacking_config):
+    """Create evaluation environment with optional frame stacking + VecNormalize.
+    Returns (vec_env, true_base_env) — base_env resolved AFTER all wrappers applied."""
+    base_env = AnalysisUAVEnv(**config)
     vec_env = DummyVecEnv([lambda: base_env])
 
     if frame_stacking_config.get("use_frame_stacking", False):
@@ -131,7 +143,18 @@ def create_eval_env(config, frame_stacking_config):
     else:
         print(f"✓ Frame stacking disabled")
 
-    return vec_env, base_env
+    if VEC_NORMALIZE_PATH.exists():
+        vec_env = VecNormalize.load(str(VEC_NORMALIZE_PATH), vec_env)
+        vec_env.training = False
+        vec_env.norm_reward = False
+        print(f"✓ VecNormalize loaded from {VEC_NORMALIZE_PATH.name}")
+    else:
+        print(f"⚠ vec_normalize.pkl not found — observations will NOT be normalised")
+
+    # ← Unwrap AFTER all wrappers applied so reference is correct
+    true_base_env = _unwrap_base_env(vec_env)
+    print(f"  [DEBUG] base_env type: {type(true_base_env).__name__} | battery={true_base_env.uav.battery:.1f}")
+    return vec_env, true_base_env
 
 
 def calculate_fairness_metrics(sensor_collections):
@@ -208,7 +231,6 @@ def main():
     except Exception as e:
         print(f"✗ Error: {e}")
         import traceback
-
         traceback.print_exc()
         return
 
@@ -235,39 +257,52 @@ def main():
         "instant_reward": [],
     }
 
+    # These will hold the true final-step values captured before auto-reset
+    final_battery_wh = base_env.uav.battery
+    final_coverage_pct = 0.0
+
     try:
         while not done:
-            # Predict - obs is already properly shaped by environment
             action, _ = model.predict(obs, deterministic=True)
             if isinstance(action, np.ndarray):
                 action = action[0]
             action = int(action)
 
-            # Step (Vectorized)
+            # ← CRITICAL FIX: snapshot BEFORE step() — VecEnv auto-resets inside step()
+            pre_battery    = base_env.uav.battery
+            pre_battery_pct = base_env.uav.get_battery_percentage()
+            pre_coverage   = (len(base_env.sensors_visited) / base_env.num_sensors) * 100 \
+                             if hasattr(base_env, "sensors_visited") else 0.0
+
             obs, rewards, dones, infos = eval_env.step([action])
 
-            # Extract scalar values
-            reward = (
-                float(rewards[0]) if isinstance(rewards, np.ndarray) else float(rewards)
-            )
-            done = bool(dones[0]) if isinstance(dones, np.ndarray) else bool(dones)
-            info = infos[0] if isinstance(infos, list) else infos
+            reward = float(rewards[0]) if isinstance(rewards, np.ndarray) else float(rewards)
+            done   = bool(dones[0])   if isinstance(dones,   np.ndarray) else bool(dones)
 
             total_reward += reward
             step += 1
 
-            eval_env.envs[0].render()
-            time.sleep(VIZ_CONFIG["step_delay"])
-
-            # Log data every 50 steps (to match greedy baseline frequency)
-            if step % VIZ_CONFIG["progress_interval"] == 0 or done:
-                coverage_pct = (
-                    info.get("coverage_percentage", 0) if isinstance(info, dict) else 0
+            if done:
+                # Use pre-step snapshot — base_env is already reset at this point
+                final_battery_wh   = pre_battery
+                final_coverage_pct = pre_coverage
+                history_data["step"].append(step)
+                history_data["cumulative_reward"].append(total_reward)
+                history_data["battery_percent"].append(pre_battery_pct)
+                history_data["battery_wh"].append(pre_battery)
+                history_data["coverage_percent"].append(pre_coverage)
+                history_data["instant_reward"].append(reward)
+                print(
+                    f"Step {step:>4}: Cov={pre_coverage:>5.1f}% "
+                    f"Bat={pre_battery_pct:>5.1f}% Rew={total_reward:>7.1f} "
+                    f"InstRew={reward:>7.1f}  [FINAL - pre-reset snapshot]"
                 )
-                battery_pct = (
-                    info.get("battery_percent", 0) if isinstance(info, dict) else 0
-                )
-                battery_wh = base_env.uav.battery
+            elif step % VIZ_CONFIG["progress_interval"] == 0:
+                # Mid-episode — base_env not yet reset, safe to read directly
+                coverage_pct = (len(base_env.sensors_visited) / base_env.num_sensors) * 100 \
+                               if hasattr(base_env, "sensors_visited") else 0
+                battery_pct  = base_env.uav.get_battery_percentage()
+                battery_wh   = base_env.uav.battery
 
                 history_data["step"].append(step)
                 history_data["cumulative_reward"].append(total_reward)
@@ -287,7 +322,6 @@ def main():
     except Exception as e:
         print(f"\n✗ Error during evaluation: {e}")
         import traceback
-
         traceback.print_exc()
 
     elapsed_time = time.time() - start_time
@@ -297,35 +331,36 @@ def main():
         saved_sensor_data = base_env.last_episode_sensor_data
         final_info = base_env.last_episode_info
     else:
-        # Fallback (should not happen if episode finished)
-        print("\n⚠ Warning: No snapshot found. Using current (likely reset) state.")
+        print("\n⚠ Warning: No snapshot found. Using pre-step captured values.")
         saved_sensor_data = []
-        final_info = {"battery": 0, "battery_percent": 0, "coverage_percentage": 0}
+        # Use values we captured during the loop before auto-reset
+        final_info = {
+            "battery": final_battery_wh,
+            "battery_percent": (final_battery_wh / 600.0) * 100,
+            "coverage_percentage": final_coverage_pct,
+        }
 
     print("\n" + "=" * 100)
     print("EPISODE COMPLETE")
     print("=" * 100)
 
-    # Recalculate metrics using the SAVED data
     total_generated = (
         sum(s["total_data_generated"] for s in saved_sensor_data)
-        if saved_sensor_data
-        else 0
+        if saved_sensor_data else 0
     )
     total_collected = (
         sum(s["total_data_transmitted"] for s in saved_sensor_data)
-        if saved_sensor_data
-        else 0
+        if saved_sensor_data else 0
     )
     total_lost = (
-        sum(s["total_data_lost"] for s in saved_sensor_data) if saved_sensor_data else 0
+        sum(s["total_data_lost"] for s in saved_sensor_data)
+        if saved_sensor_data else 0
     )
 
     efficiency = (total_collected / total_generated * 100) if total_generated > 0 else 0
     loss_rate = (total_lost / total_generated * 100) if total_generated > 0 else 0
 
-    # Use final_info for battery/coverage
-    battery_used = 274.0 - final_info["battery"]
+    battery_used = 600.0 - final_info["battery"]
     bytes_per_watt = total_collected / battery_used if battery_used > 0 else 0
 
     print(f"\nOverall Performance:")
@@ -356,7 +391,6 @@ def main():
         pct = (col / gen * 100) if gen > 0 else 0
         sensor_collections.append(pct)
 
-        # Store for CSV
         sensor_fairness_data.append(
             {
                 "sensor_id": s["sensor_id"],
@@ -370,11 +404,10 @@ def main():
             }
         )
 
-        bar_len = int(pct / 2.5)  # Scale to 40 chars
+        bar_len = int(pct / 2.5)
         bar = "█" * bar_len
         print(f"S{s['sensor_id']:<7} {gen:<8.0f} {col:<8.0f} {pct:<8.1f} {bar}")
 
-    # Statistics
     fairness_stats = {}
     if sensor_collections:
         stats = calculate_fairness_metrics(sensor_collections)
@@ -385,7 +418,6 @@ def main():
         print(
             f"Std Dev: {stats['std']:.1f}% (Min: {stats['min']:.1f}%, Max: {stats['max']:.1f}%)"
         )
-
         fairness_stats = stats
 
     # ========== SAVE DATA TO CSV FILES ==========
@@ -398,7 +430,6 @@ def main():
         sensor_fairness_data, OUTPUT_DIR, "dqn_sensor_fairness.csv"
     )
 
-    # Save summary statistics
     summary_dict = {
         "total_reward": float(total_reward),
         "steps": int(step),
@@ -420,8 +451,7 @@ def main():
         },
         "fairness_level": (
             get_fairness_level(fairness_stats.get("std", 0))[0]
-            if fairness_stats
-            else "N/A"
+            if fairness_stats else "N/A"
         ),
     }
 

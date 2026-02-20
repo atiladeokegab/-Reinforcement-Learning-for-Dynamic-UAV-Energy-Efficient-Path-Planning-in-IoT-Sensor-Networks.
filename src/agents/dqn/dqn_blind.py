@@ -155,7 +155,7 @@ ENV_CONFIG = {
     "num_sensors": 20,
     "max_steps": 2100,
     "sensor_duty_cycle": 10.0,
-    "penalty_data_loss": -500.0,
+    "penalty_data_loss": -1.0,
     "reward_urgency_reduction": 20.0,
     "render_mode": None,
 }
