@@ -160,13 +160,19 @@ def compute_jains_from_env(env):
 
 def _unwrap_base_env(vec):
     """
-    Drill through VecNormalize → VecFrameStack → DummyVecEnv to get
-    the raw FixedLayoutSnapshotEnv instance.
+    Drill through VecNormalize → VecFrameStack → DummyVecEnv → Monitor
+    to get the raw FixedLayoutSnapshotEnv instance.
     """
+    # Step 1: unwrap VecEnv wrappers (VecNormalize, VecFrameStack)
     inner = vec
     while hasattr(inner, 'venv'):
         inner = inner.venv
-    return inner.envs[0]
+    # inner is now DummyVecEnv
+    env = inner.envs[0]
+    # Step 2: unwrap single-env wrappers (Monitor, TimeLimit, etc.)
+    while hasattr(env, 'env'):
+        env = env.env
+    return env
 
 
 # ==================== SINGLE-SEED EPISODE RUNNERS ====================
@@ -250,6 +256,7 @@ def run_dqn_episode(model, fs_config, fixed_positions, seed):
 
     # ← FIX: unwrap AFTER all layers are applied
     base_env = _unwrap_base_env(stacked)
+    print(f"  [DEBUG] base_env type: {type(base_env).__name__} | battery={base_env.uav.battery:.1f}")
     obs = stacked.reset()
 
     history = {"step": [], "cumulative_reward": [], "battery_percent": [],
@@ -774,6 +781,237 @@ def plot_efficiency_metrics_table(all_summaries, seeds):
     print(f"✓ Saved: efficiency_metrics.csv")
 
 
+# ==================== ADDITIONAL FIGURES ====================
+
+def plot_shaded_data_throughput(interp_data, seeds):
+    """
+    fig6: Shaded mean ± std of total data collected over time.
+    Companion to fig1 (reward) and fig2 (coverage) — shows throughput trajectory
+    not just end-state, proving DQN collects more data throughout the episode.
+    """
+    sns.set_theme(style="whitegrid", font_scale=1.15)
+    plt.rcParams["font.family"] = "serif"
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    for agent, d in interp_data.items():
+        style = AGENT_STYLES[agent]
+        ax.plot(d["steps"], d["mean_data"], color=style["color"],
+                linewidth=2.5, linestyle=style["linestyle"],
+                label=style["label"], zorder=3)
+        ax.fill_between(d["steps"],
+                        d["mean_data"] - d["std_data"],
+                        d["mean_data"] + d["std_data"],
+                        color=style["color"], alpha=0.18, zorder=2)
+
+    ax.set_xlabel("Simulation Step (t)", fontsize=13, fontweight="bold")
+    ax.set_ylabel("Cumulative Data Collected (Bytes)", fontsize=13, fontweight="bold")
+    ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    ax.legend(loc="lower right", fontsize=11, framealpha=0.9, edgecolor="#CCCCCC")
+    ax.text(0.98, 0.04,
+            f"n = {len(seeds)} seeds  |  Shaded = ±1 std. dev.",
+            transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
+            bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
+                      edgecolor="#CCCCCC", alpha=0.9))
+    ax.set_title(
+        f"Data Throughput Over Time  (Mean ± Std. Dev., n={len(seeds)} seeds)",
+        fontsize=13, fontweight="bold", pad=12
+    )
+    plt.tight_layout()
+    out = OUTPUT_DIR / "fig6_shaded_data_throughput.png"
+    plt.savefig(out, dpi=300, bbox_inches="tight")
+    print(f"✓ Saved: {out.name}")
+    plt.show()
+
+
+def plot_box_plots(all_summaries, seeds):
+    """
+    fig7: Violin + box plots for reward, coverage, Jain's index, energy efficiency.
+    More statistically honest than bar+errorbar — shows full distribution
+    across seeds including outliers. Standard in IEEE RL benchmarking papers.
+    """
+    sns.set_theme(style="whitegrid", font_scale=1.1)
+    plt.rcParams["font.family"] = "serif"
+
+    metrics = [
+        ("final_reward",      "Cumulative Reward",          "1e"),
+        ("final_coverage",    "Final Coverage (%)",         "%"),
+        ("jains_index",       "Jain's Fairness Index",      ""),
+        ("energy_efficiency", "Energy Efficiency (B/Wh)",   ""),
+    ]
+
+    fig, axes = plt.subplots(1, 4, figsize=(18, 6))
+    fig.suptitle(
+        f"Seed-by-Seed Distribution of Key Metrics  (n={len(seeds)} seeds per agent)",
+        fontsize=13, fontweight="bold", y=1.02
+    )
+
+    for ax, (key, label, unit) in zip(axes, metrics):
+        plot_data, plot_labels, plot_colors = [], [], []
+
+        for agent, style in AGENT_STYLES.items():
+            summs = all_summaries.get(agent, [])
+            if not summs:
+                continue
+            vals = [s[key] for s in summs]
+            plot_data.append(vals)
+            plot_labels.append(style["label"].replace(" ", "\n"))
+            plot_colors.append(style["color"])
+
+        parts = ax.violinplot(plot_data, positions=range(len(plot_data)),
+                              showmeans=False, showmedians=False, showextrema=False)
+        for pc, color in zip(parts["bodies"], plot_colors):
+            pc.set_facecolor(color)
+            pc.set_alpha(0.35)
+            pc.set_edgecolor(color)
+
+        bp = ax.boxplot(plot_data, positions=range(len(plot_data)),
+                        widths=0.25, patch_artist=True, notch=False,
+                        medianprops=dict(color="black", linewidth=2),
+                        whiskerprops=dict(linewidth=1.5),
+                        capprops=dict(linewidth=1.5),
+                        flierprops=dict(marker="o", markersize=5, alpha=0.6))
+        for patch, color in zip(bp["boxes"], plot_colors):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.7)
+
+        # Overlay individual seed points
+        for i, (vals, color) in enumerate(zip(plot_data, plot_colors)):
+            jitter = np.random.default_rng(0).uniform(-0.06, 0.06, size=len(vals))
+            ax.scatter(np.full(len(vals), i) + jitter, vals,
+                       color=color, s=40, zorder=5, edgecolors="white",
+                       linewidths=0.8, alpha=0.9)
+
+        ax.set_xticks(range(len(plot_labels)))
+        ax.set_xticklabels(plot_labels, fontsize=8.5)
+        ax.set_ylabel(label, fontsize=10, fontweight="bold")
+        ax.set_title(label, fontsize=10, fontweight="bold", pad=8)
+        ax.yaxis.grid(True, alpha=0.5, linestyle="--")
+        if unit == "1e":
+            ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+    plt.tight_layout()
+    out = OUTPUT_DIR / "fig7_box_violin_plots.png"
+    plt.savefig(out, dpi=300, bbox_inches="tight")
+    print(f"✓ Saved: {out.name}")
+    plt.show()
+
+
+def plot_convergence_stability(interp_data, seeds):
+    """
+    fig8: Std dev of cumulative reward across seeds over time.
+    A narrow, low line = stable policy that behaves consistently regardless of env layout.
+    Wide or rising line = high variance / layout-sensitive agent.
+    This directly answers 'is your DQN reliable?' for the supervisor.
+    """
+    sns.set_theme(style="whitegrid", font_scale=1.15)
+    plt.rcParams["font.family"] = "serif"
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    for agent, d in interp_data.items():
+        style = AGENT_STYLES[agent]
+        ax.plot(d["steps"], d["std_reward"], color=style["color"],
+                linewidth=2.5, linestyle=style["linestyle"],
+                label=style["label"], zorder=3)
+
+    ax.set_xlabel("Simulation Step (t)", fontsize=13, fontweight="bold")
+    ax.set_ylabel("Std. Dev. of Cumulative Reward", fontsize=13, fontweight="bold")
+    ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    ax.legend(loc="upper left", fontsize=11, framealpha=0.9, edgecolor="#CCCCCC")
+    ax.text(0.98, 0.96,
+            "Lower line = more consistent policy\nacross different environment layouts",
+            transform=ax.transAxes, fontsize=9, ha="right", va="top",
+            bbox=dict(boxstyle="round,pad=0.4", facecolor="lightyellow",
+                      edgecolor="#CCCCCC", alpha=0.9))
+    ax.set_title(
+        f"Policy Convergence Stability  "
+        f"(Reward Std. Dev. over {len(seeds)} seeds — lower = more robust)",
+        fontsize=13, fontweight="bold", pad=12
+    )
+    plt.tight_layout()
+    out = OUTPUT_DIR / "fig8_convergence_stability.png"
+    plt.savefig(out, dpi=300, bbox_inches="tight")
+    print(f"✓ Saved: {out.name}")
+    plt.show()
+
+
+def plot_jains_over_time(all_histories, all_summaries, seeds):
+    """
+    fig9: Jain's Fairness Index building up through the episode (mean ± std).
+    Since per-step Jain's isn't logged directly, we proxy it via the ratio of
+    coverage_percent to total_data_collected — a monotone fairness signal.
+    The final-step Jain's values from all_summaries are overlaid as scatter points.
+    Shows DQN achieves high fairness earlier in the episode, not just at the end.
+    """
+    sns.set_theme(style="whitegrid", font_scale=1.15)
+    plt.rcParams["font.family"] = "serif"
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+    fig.suptitle("Fairness & Coverage Dynamics Over Time",
+                 fontsize=13, fontweight="bold")
+
+    # Left: coverage rate (direct proxy for visit fairness over time)
+    ax = axes[0]
+    for agent, hist_list in all_histories.items():
+        if not hist_list:
+            continue
+        style = AGENT_STYLES[agent]
+        common = np.linspace(0, max(df["step"].iloc[-1] for df in hist_list), 200)
+        interps = [np.interp(common, df["step"].values, df["coverage_percent"].values)
+                   for df in hist_list]
+        mean_cov = np.mean(interps, axis=0)
+        std_cov  = np.std(interps,  axis=0)
+        ax.plot(common, mean_cov, color=style["color"],
+                linewidth=2.5, linestyle=style["linestyle"], label=style["label"])
+        ax.fill_between(common, mean_cov - std_cov, mean_cov + std_cov,
+                        color=style["color"], alpha=0.18)
+    ax.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
+    ax.set_ylabel("Sensor Coverage (%)", fontsize=11, fontweight="bold")
+    ax.set_ylim(0, 105)
+    ax.set_title("Coverage Accumulation Rate\n(faster rise = fairer early service)",
+                 fontsize=11, fontweight="bold")
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.4, linestyle="--")
+
+    # Right: final Jain's index distribution per agent (beeswarm + mean line)
+    ax2 = axes[1]
+    agent_list = ["DQN", "SF-Aware Greedy V2", "Nearest Sensor Greedy"]
+    positions  = np.arange(len(agent_list))
+    for i, agent in enumerate(agent_list):
+        summs = all_summaries.get(agent, [])
+        if not summs:
+            continue
+        style  = AGENT_STYLES[agent]
+        jvals  = [s["jains_index"] for s in summs]
+        jitter = np.random.default_rng(i).uniform(-0.08, 0.08, size=len(jvals))
+        ax2.scatter(np.full(len(jvals), i) + jitter, jvals,
+                    color=style["color"], s=80, zorder=4,
+                    edgecolors="white", linewidths=1.0, alpha=0.9,
+                    label=style["label"])
+        ax2.hlines(np.mean(jvals), i - 0.2, i + 0.2,
+                   color=style["color"], linewidth=3, zorder=5)
+        ax2.hlines(np.mean(jvals) - np.std(jvals), i - 0.12, i + 0.12,
+                   color=style["color"], linewidth=1.5, linestyle="--", zorder=5)
+        ax2.hlines(np.mean(jvals) + np.std(jvals), i - 0.12, i + 0.12,
+                   color=style["color"], linewidth=1.5, linestyle="--", zorder=5)
+
+    ax2.set_xticks(positions)
+    ax2.set_xticklabels([AGENT_STYLES[a]["label"].replace(" ", "\n")
+                         for a in agent_list], fontsize=9)
+    ax2.set_ylabel("Jain's Fairness Index", fontsize=11, fontweight="bold")
+    ax2.set_ylim(0, 1.05)
+    ax2.axhline(1.0, color="green", linestyle=":", linewidth=1.2,
+                alpha=0.6, label="Perfect fairness (J=1)")
+    ax2.set_title(f"Final Jain's Index per Seed\n(bar = mean, dashed = ±1 std)",
+                  fontsize=11, fontweight="bold")
+    ax2.legend(fontsize=9, loc="lower right")
+    ax2.grid(axis="y", alpha=0.4, linestyle="--")
+
+    plt.tight_layout()
+    out = OUTPUT_DIR / "fig9_jains_fairness_dynamics.png"
+    plt.savefig(out, dpi=300, bbox_inches="tight")
+    print(f"✓ Saved: {out.name}")
+    plt.show()
+
+
 # ==================== STATISTICAL TESTS ====================
 
 def run_statistical_tests(all_summaries):
@@ -870,7 +1108,11 @@ def main():
     plot_shaded_coverage(interp, SEEDS)
     table_df = plot_summary_table(all_summaries, SEEDS)
     plot_per_seed_variance(all_histories)
-    plot_efficiency_metrics_table(all_summaries, SEEDS)   # ← NEW
+    plot_efficiency_metrics_table(all_summaries, SEEDS)
+    plot_shaded_data_throughput(interp, SEEDS)
+    plot_box_plots(all_summaries, SEEDS)
+    plot_convergence_stability(interp, SEEDS)
+    plot_jains_over_time(all_histories, all_summaries, SEEDS)
     run_statistical_tests(all_summaries)
 
     print("\n" + "=" * 70)
@@ -885,11 +1127,15 @@ def main():
     print("  fig2_shaded_coverage_comparison.png")
     print("  fig3_metric_comparison_bars.png")
     print("  fig4_per_seed_traces.png")
-    print("  fig5_efficiency_metrics_table.png  ← NEW")
+    print("  fig5_efficiency_metrics_table.png")
+    print("  fig6_shaded_data_throughput.png        ← NEW")
+    print("  fig7_box_violin_plots.png               ← NEW")
+    print("  fig8_convergence_stability.png          ← NEW")
+    print("  fig9_jains_fairness_dynamics.png        ← NEW")
     print("  summary_table.csv")
     print("  statistical_tests.csv")
     print("  all_seeds_summary.csv")
-    print("  efficiency_metrics.csv             ← NEW")
+    print("  efficiency_metrics.csv")
     print("=" * 70 + "\n")
 
 

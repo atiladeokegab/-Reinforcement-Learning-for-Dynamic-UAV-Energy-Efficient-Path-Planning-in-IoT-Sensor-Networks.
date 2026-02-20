@@ -55,7 +55,8 @@ Date: January 2025
 Project: Reinforcement Learning for Dynamic UAV Energy-Efficient Path Planning
          in IoT Sensor Networks
 """
-from typing import Tuple,List
+
+from typing import Tuple, List
 import numpy as np
 
 
@@ -84,13 +85,15 @@ class UAV:
         Position: [5. 6.], Battery: 273.83 Wh
     """
 
-    def __init__(self,
-                 start_position: Tuple[float, float] = (5.0, 5.0),
-                 max_battery: float = 274.0,  # Wh (TB60 capacity)
-                 speed: float = 10.0,  # m/s (cruising speed)
-                 power_move: float = 500.0,  # W (cruise power)
-                 power_hover: float = 700.0,  # W (hover power)
-                 altitude: float = 100.0):  # m (constant altitude)
+    def __init__(
+        self,
+        start_position: Tuple[float, float] = (5.0, 5.0),
+        max_battery: float = 274.0,  # Wh (TB60 capacity)
+        speed: float = 10.0,  # m/s (cruising speed)
+        power_move: float = 500.0,  # W (cruise power)
+        power_hover: float = 700.0,  # W (hover power)
+        altitude: float = 100.0,
+    ):  # m (constant altitude)
         """
         Initialize UAV with position and battery parameters.
 
@@ -121,7 +124,9 @@ class UAV:
         self.power_hover = power_hover
         self.power_collision = power_move * 0.5  # Half power on failed move
 
-    def move(self, direction: str, grid_size: Tuple[int, int], time_step: float = 1.0) -> bool:
+    def move(
+        self, direction: str, grid_size: Tuple[int, int], time_step: float = 1.0
+    ) -> bool:
         """
         Move UAV in specified direction.
 
@@ -153,20 +158,21 @@ class UAV:
         # Calculate new position based on direction
         new_position = self.position.copy()
 
-        if direction == 'UP':
+        if direction == "UP":
             new_position[1] += 1.0
-        elif direction == 'DOWN':
+        elif direction == "DOWN":
             new_position[1] -= 1.0
-        elif direction == 'LEFT':
+        elif direction == "LEFT":
             new_position[0] -= 1.0
-        elif direction == 'RIGHT':
+        elif direction == "RIGHT":
             new_position[0] += 1.0
         else:
-            raise ValueError(f"Invalid direction: {direction}. Must be UP, DOWN, LEFT, or RIGHT")
+            raise ValueError(
+                f"Invalid direction: {direction}. Must be UP, DOWN, LEFT, or RIGHT"
+            )
 
         # Check boundaries
-        if (0 <= new_position[0] < grid_size[0] and
-                0 <= new_position[1] < grid_size[1]):
+        if 0 <= new_position[0] < grid_size[0] and 0 <= new_position[1] < grid_size[1]:
             # Valid move - update position and consume full movement power
             self.position = new_position
             energy_consumed = (self.power_move * time_step) / 3600  # Convert W*s to Wh
@@ -251,7 +257,6 @@ class UAV:
         self.position = self.start_position.copy()
         self.battery = self.max_battery
 
-
     @property
     def battery_drain_hover(self) -> float:
         """Calculate hover battery drain per second in Wh."""
@@ -259,6 +264,8 @@ class UAV:
 
     def __repr__(self) -> str:
         """String representation of UAV state."""
-        return (f"UAV(position={tuple(self.position)}, "
-                f"battery={self.battery:.2f}Wh/{self.max_battery}Wh, "
-                f"charge={self.get_battery_percentage():.1f}%)")
+        return (
+            f"UAV(position={tuple(self.position)}, "
+            f"battery={self.battery:.2f}Wh/{self.max_battery}Wh, "
+            f"charge={self.get_battery_percentage():.1f}%)"
+        )
