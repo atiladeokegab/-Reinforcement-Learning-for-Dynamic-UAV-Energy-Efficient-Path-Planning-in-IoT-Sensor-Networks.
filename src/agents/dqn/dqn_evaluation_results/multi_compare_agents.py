@@ -49,7 +49,7 @@ PLOT_CONFIG = {
     "sensor_duty_cycle":  10.0,
 }
 
-EVAL_MAX_BATTERY = 600.0
+EVAL_MAX_BATTERY = 274.0
 
 DQN_MODEL_PATH = (
     script_dir_results / "models" / "dqn_full_observability" / "dqn_final.zip"
@@ -119,7 +119,7 @@ def _base_env_kwargs():
         "path_loss_exponent": PLOT_CONFIG["path_loss_exponent"],
         "rssi_threshold":     PLOT_CONFIG["rssi_threshold"],
         "sensor_duty_cycle":  PLOT_CONFIG["sensor_duty_cycle"],
-        "max_battery":        600.0,
+        "max_battery":        274.0,
         "render_mode":        None,
     }
 
