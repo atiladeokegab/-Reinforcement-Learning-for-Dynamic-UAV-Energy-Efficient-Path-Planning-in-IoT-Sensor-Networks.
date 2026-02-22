@@ -323,7 +323,7 @@ class UAVEnvironment(gym.Env):
         rssi_threshold: float = -90.0,
         sensor_duty_cycle: float = 10.0,
         uav_start_position: Optional[Tuple[float, float]] = None,
-        max_battery: float = 600.0,
+        max_battery: float = 274.0,
         collection_duration: float = 1.0,
         max_steps: int = 2100,
         render_mode: Optional[str] = None,

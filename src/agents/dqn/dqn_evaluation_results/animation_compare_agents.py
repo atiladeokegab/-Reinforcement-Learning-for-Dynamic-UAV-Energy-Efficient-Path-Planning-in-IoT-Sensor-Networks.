@@ -48,7 +48,7 @@ PLOT_CONFIG = {
     "seed":               42,
 }
 
-EVAL_MAX_BATTERY     = 600.0
+EVAL_MAX_BATTERY     = 274.0
 ANIMATION_STEP_DELAY = 0.02   # seconds between steps (lower = faster)
 RENDER_EVERY_N_STEPS = 1      # redraw every N steps  (higher = faster/choppier)
 

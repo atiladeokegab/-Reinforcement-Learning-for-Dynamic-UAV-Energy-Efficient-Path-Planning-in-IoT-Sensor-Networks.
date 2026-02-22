@@ -46,10 +46,10 @@ EVAL_CONFIG = {
     "grid_size": (500, 500),
     "uav_start_position": (50, 50),
     "num_sensors": 20,
-    "max_battery": 600.0,
+    "max_battery": 274.0,
     "max_steps": 2100,
     "sensor_duty_cycle": 10.0,
-    "penalty_data_loss": -1.0,       # ← FIXED from -500.0
+    "penalty_data_loss": -1.0,
     "reward_urgency_reduction": 20.0,
     "render_mode": None,
 }
@@ -336,7 +336,7 @@ def main():
         # Use values we captured during the loop before auto-reset
         final_info = {
             "battery": final_battery_wh,
-            "battery_percent": (final_battery_wh / 600.0) * 100,
+            "battery_percent": (final_battery_wh / 274.0) * 100,
             "coverage_percentage": final_coverage_pct,
         }
 
@@ -360,7 +360,7 @@ def main():
     efficiency = (total_collected / total_generated * 100) if total_generated > 0 else 0
     loss_rate = (total_lost / total_generated * 100) if total_generated > 0 else 0
 
-    battery_used = 600.0 - final_info["battery"]
+    battery_used = 274.0 - final_info["battery"]
     bytes_per_watt = total_collected / battery_used if battery_used > 0 else 0
 
     print(f"\nOverall Performance:")
