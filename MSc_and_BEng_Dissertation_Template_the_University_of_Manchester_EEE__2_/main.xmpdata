@@ -1,0 +1,5 @@
+  \Title{BEng and MSc final dissertation \LaTeX\ template EEE}
+  \Author{123456} % should be student number rather than name to help with annoymous marking
+  \Language{en-GB}
+  \Copyrighted{True}
+  % More meta-data fielda can be added here if wanted, see https://ctan.org/pkg/pdfx?lang=en for fields
