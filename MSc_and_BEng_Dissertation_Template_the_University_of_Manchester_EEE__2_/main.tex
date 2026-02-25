@@ -1,0 +1,372 @@
+%%%%%%%%%%%%%%%%%% USAGE INSTRUCTIONS %%%%%%%%%%%%%%%%%%
+% - Compile using LuaLaTeX and biber, unless there is a particular reason not to. Do not use the older LaTex/PDFLaTeX or BibTeX. (The fonts won't work correctly.)
+% - Expect to get 2 warnings when working correctly, one on xcolor and hyperref, and one on ExtSizes saying is better to use a class. These can be ignored.
+% - Font and the report 'year' must be specified when all \documentclass or the template won't work correctly. (There's no error checking/default cases!)
+% - For best performance save images/graphics as PDF files, not as png/jpg/eps. This makes no difference to how images are inserted using \includegraphics.
+% - As many further packages as wanted can be loaded. Below are just an example set. Note that template itself loads a number of packages, including hyperref.
+% - References are handed using biblatex.
+% - Link to the presentation of dissertations policy: https://documents.manchester.ac.uk/display.aspx?DocID=2863
+
+
+
+%%%%%%%%%%%%%%%%%% META DATA SETUP %%%%%%%%%%%%%%%%%%
+% This is where the document title and author are set. Other details for the title page are set later
+% Note that if/when you edit these you may need to 'Recompile from scratch' to get the changes to display in the PDF. (In Overleaf, select the down arrow to the right of the 'Recompile' button)
+\begin{filecontents*}{\jobname.xmpdata}
+  \Title{BEng and MSc final dissertation \LaTeX\ template EEE} 
+  \Author{123456} % should be student number rather than name to help with annoymous marking
+  \Language{en-GB}
+  \Copyrighted{True}
+  % More meta-data fielda can be added here if wanted, see https://ctan.org/pkg/pdfx?lang=en for fields
+\end{filecontents*}
+
+
+%%%%%%%%%%%%%%%%%% DOCUMENT SETUP %%%%%%%%%%%%%%%%%%
+\documentclass[11pt,meng]{uom_eee_dissertation_casson} % course can be msc or beng
+% Check your course handbook for the correct font size to use. Make sure this is correct - you may get an overlength penalty if not! Is currently 12 for BEng, and 11 for MSc. The template doesn't change this automatically for you
+
+
+%%%%%%%%%%%%%%%%%% PACKAGES AND COMMANDS %%%%%%%%%%%%%%%%%%
+
+% Packages
+\usepackage{graphicx}              % for adding graphics files
+  \graphicspath{ {./images/} }
+\usepackage{amsmath}               % assumes amsmath package installed
+  \allowdisplaybreaks[1]           % allow eqnarrays to break across pages
+\usepackage{amssymb}               % assumes amsmath package installed 
+\usepackage{url}                   % format hyperlinks correctly
+\usepackage{rotating}              % allow portrait figures and tables
+\usepackage{multirow}              % allows merging of rows in tables
+\usepackage{lscape}                % allows pages to be typeset in landscape mode
+\usepackage{tabularx}              % allows fixed width tables
+\usepackage{verbatim}              % enhanced version of built-in verbatim environment
+\usepackage{footnote}              % allows more control over footnote environments
+\usepackage{float}                 % allows H option on floats to force here placement
+\usepackage{booktabs}              % improve table line spacing
+\usepackage{lipsum}                % for adding dummy text here
+\usepackage[base]{babel}           % required for lisum package
+\usepackage{subcaption}            % for multiple sub-figures in a single float
+\usepackage{siunitx}               % add SI units
+% Add your packages here
+
+
+% Custom commands
+\newcommand{\degree}{\ensuremath{^\circ}}
+\newcommand{\sus}[1]{$^{\mbox{\scriptsize #1}}$} % superscript in text (e.g. 1st)
+\newcommand{\sub}[1]{$_{\mbox{\scriptsize #1}}$} % subscript in text
+\newcommand{\otoprule}{\midrule[\heavyrulewidth]}
+\newcolumntype{Z}{>{\centering\arraybackslash}X}  % tabularx centered columns 
+% Add your custom commands here
+
+
+
+%%%%%%%%%%%%%%%%%% REFERENCES SETUP %%%%%%%%%%%%%%%%%%
+
+% Setup your references here. Change the reference style here if wanted
+\usepackage[style=ieee,backend=biber,backref=true,hyperref=auto,maxbibnames=3,minbibnames=1]{biblatex}
+% Note backref=true adds a page number (and hyperlink) to each reference so you can easily go back from the references to the main document. You may prefer backref=false if you need to stick strictly to a given reference style
+
+
+% Fixes which can't be applied in the .cls file
+\DefineBibliographyStrings{english}{backrefpage = {cited on p\adddot},  backrefpages = {cited on pp\adddot}}
+%  \renewcommand*{\bibfont}{\large}
+
+
+% Add more .bib files here if wanted
+\addbibresource{references.bib}
+
+
+
+%%%%%%%%%%%%%%%%%% AUTOMATIC WORD COUNT SETUP %%%%%%%%%%%%%%%%%%
+% Automatically counts the words present and makes a \mywordcount variable. This is used later to automatically add the word count (which can be overridden if wanted)
+% See https://www.overleaf.com/learn/how-to/Is_there_a_way_to_run_a_word_count_that_doesn%27t_include_LaTeX_commands%3F for info on what words are counted and how to control this. Any changes to what's counted need to be made in uom_thesis_casson.cls, in the \newcommand{\quickwordcount} command. The default doesn't count words in headings, captions, or references and so you may get slightly different numbers if use a different word count tool
+% This can be a bit fragile. If it doesn't work, there's an option later on to just type in a numer
+%\quickwordcount{\currfilebase} % run word count. This just counts the words. Is displayed with the \wordcount command later
+
+
+
+%%%%%%%%%%%%%%%%%% START DOCUMENT %%%%%%%%%%%%%%%%%%
+
+% Don't edit these lines, title and author are automatically taken from the document meta-data defined above
+\begin{document}
+\makeatletter
+\title{\xmp@Title}
+\studentid{\xmp@Author}
+\makeatother
+
+% Set the below yourself
+\course{Advanced Control and Systems Engineering}  % "Master of Science in" or "Bachelor of Engineering in "
+                                                   % is added automatically
+                                                   % Our BEng courses are: Electrical and Electronic Engineering, Electrical Engineering, and Mechatronic Engineering
+                                                   % Our MSc courses are: Advanced Control and Systems Engineering, Advanced Control and Systems Engineering with Extended Research, Communications and Signal Processing, Communications and Signal Processing with Extended Research, Electrical Power Systems Engineering, Advanced Electrical Power Systems Engineering, Renewable Energy and Clean Technology, Renewable Energy and Clean Technology with Extended Research, Robotics, Robotics with Extended Research
+\faculty{Science and Engineering}                  % "Faculty of" is added automatically
+\school{School of Engineering} % "School of" not added automatically (as if in AMBS, School comes at the end rather than the start), so enter full name of School here
+\submitdate{2025}                                  % regulations ask only for the year, not month
+\wordcount{\mywordcount}		                   % use \wordcount{} to set the count. Can just type in a number (e.g. \wordcount{1000}	if don't want to use the automatic count.) This is automatically displayed after the table of contents. 
+\maketitle
+
+
+
+%%%%%%%%%%%%%%%%%% LISTS OF CONTENT %%%%%%%%%%%%%%%%%%
+%\uomtoc
+% other lists are not required, but can include \uomlof and \uomlot if really want to
+
+
+%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%
+\begin{abstract} % put abstract here.
+  This is abstract text. 
+  
+  \lipsum[1-2]
+\end{abstract}%
+\clearpage
+
+
+
+%%%%%%%%%%%%%%%%%% DECLARATIONS %%%%%%%%%%%%%%%%%%
+\begin{uomoriginality}
+  \uomoriginalitydeclaration 
+  % If the standard originality decalaration is sufficient, saying no portion of the work has been submitted in support of an application for another degree or qualification, the above command will automatically add the required text and nothing else is needed in this section.
+  % If the standard statment isn't sufficient, then comment out the \uomoriginalitydeclaration command and type in your own text here explaining the authorship of any re-used portions. 
+\end{uomoriginality}
+\uomcopyrightstatement
+
+
+
+%%%%%%%%%%%%%%%%%% ACKNOWLEDGEMENTS %%%%%%%%%%%%%%%%%%
+\begin{uomacknowledgements}
+Acknowledgments go here.
+\end{uomacknowledgements}
+
+
+
+%%%%%%%%%%%%%%%%%% Start content %%%%%%%%%%%%%%%%%%
+\uomstartmainbody % Don't delete. used to flag to the hyperlinks in the PDF that the main content is  starting
+
+
+
+%%%%%%%%%%%%%%%%%% INTRODUCTION %%%%%%%%%%%%%%%%%%
+\section{Introduction} % can use \input{} or \include{} for each section to draw content from other files rather than having everything in one big file
+  
+  \lipsum[1-5] % generate dummy text for here
+
+  \subsection{Background and motivation}
+  Hello world!
+
+  \begin{equation}\label{eq:1}
+      F=ma
+  \end{equation}
+
+As shown in~\ref{eq:1}, blah blah blah~\cite{Heath:22}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c|c}
+        Hello & world \\
+        Hello  & world again
+    \end{tabular}
+    \caption{This is my first table}
+    \label{tab:placeholder}
+\end{table}
+    
+
+  
+  \lipsum[1-2]
+  
+  \subsection{Aims and objectives}
+  \lipsum[6-7].
+  
+  \subsection{Report structure}
+  \lipsum[8]
+
+
+%%%%%%%%%%%%%%%%%% LITERATURE REVIEW %%%%%%%%%%%%%%%%%%
+\section{Literature review}
+
+  \subsection{Introduction}
+    \lipsum[1] 
+  
+  \subsection{Example display items}
+    This is an example of providing a cross-reference to \autoref{sec:methods}. Similarly, this is an example cross-reference to a sub-subsection, \autoref{sec:content}.
+    
+    This is an example of adding references \cite{ref:jCAS09,ref:jCAS09a,ref:jCAS10}. If you want the author name, or similar, you can use: \citeauthor*{ref:jCAS09} in \citeyear{ref:jCAS09} introduced a really good idea. (This is for when you primarily use numbered citations, but occasionally need an author's name. If using author names as the reference everywhere, change style=ieee in the biblatex setup above to whatever reference style you want, and then just use the cite command.)
+
+    For adding \emph{emphasis} use the emph command. In general, try to avoid texttt, textit, textbf and similar commands --- these don't tell the document \emph{why} the style is being changed, and this information is needed for screen readers. In contrast, emph gives meaning to the change in format. By default it uses italics, but you can change the style if you want to. 
+    
+    Here are two example tables. \autoref{table:example_tabularx} is an example using tabularx to fix the size of the table to be the same width as the page, with columns that auto-wrap if the text is too long. \autoref{table:example_tabular} is an example using tabular where the width of the table is set by its contents. It may go beyond the width of the page.
+    \begin{table}
+      \centering
+      \caption[Short caption for list of tables]{Example table. Full caption goes here. Often a short caption in [] is used as well as the main caption to keep the list of figures tidy; it gets messy if there are long captions going over more than one line.}
+      \label{table:example_tabularx}
+      \begin{tabularx}{\linewidth}{ZZZZZ}
+        \toprule
+        \multirow{2}{*}{Participant} & \multicolumn{2}{c}{Number / \%} & \multicolumn{2}{c}{Duration / \%} \\
+                                     & Prime dresses & Non-prime dresses & Prime dresses & Non-prime dresses \\
+	  \otoprule
+        1  & 33.33 & 33.91 & 20.83 & 18.42 \\
+        2  & 13.04 & 17.50 & 04.93 & 07.62 \\
+        3  & 22.73 & 20.10 & 13.00 & 08.20 \\
+        4  & 31.34 & 21.88 & 10.57 & 11.09 \\
+        5  & 08.47 & 19.32 & 03.04 & 09.73 \\
+        \hline
+        Mean & 16.4 & 16.5 & 07.8 & 07.5 \\
+        Standard deviation & 09.7 & 06.6 & 05.4 & 03.3 \\
+        \bottomrule
+      \end{tabularx}
+    \end{table}
+
+    \begin{table}
+      \centering
+      \caption[Short caption for list of tables]{Example table. Full caption goes here. Often a short caption in [] is used as well as the main caption to keep the list of figures tidy; it gets messy if there are long captions going over more than one line.}
+      \label{table:example_tabular}
+      \begin{tabular}{ccccc}
+        \toprule
+        \multirow{2}{*}{Participant} & \multicolumn{2}{c}{Number / \%} & \multicolumn{2}{c}{Duration / \%} \\
+                                     & Prime dresses & Non-prime dresses & Prime dresses & Non-prime dresses \\
+	  \otoprule
+        1  & 33.33 & 33.91 & 20.83 & 18.42 \\
+        2  & 13.04 & 17.50 & 04.93 & 07.62 \\
+        3  & 22.73 & 20.10 & 13.00 & 08.20 \\
+        4  & 31.34 & 21.88 & 10.57 & 11.09 \\
+        5  & 08.47 & 19.32 & 03.04 & 09.73 \\
+        \hline
+        Mean & 16.4 & 16.5 & 07.8 & 07.5 \\
+        Standard deviation & 09.7 & 06.6 & 05.4 & 03.3 \\
+        \bottomrule
+      \end{tabular}
+    \end{table}
+  
+    This is an example equation in text \(2\sin{\omega t}\). Below is an example of a displayed equation. See \autoref{equ:example} for info.
+    \begin{equation}
+        a^{2} + b^{2} = c^{2} \label{equ:example}
+    \end{equation}
+
+    Note that numbers are displayed differently in the text depending on how they are entered. Compare for example 123456 vs.\ \(123456\) vs.\ \num{123456}. Entering numbers directly, such as 1955, should be used for \emph{text mode} numbers. That is, those representing text (dates, page numbers, and similar). Numbers representing maths, or variables or similar, should be entered inside \textbackslash( \textbackslash) or \lstinline{\num} so they are typeset in the same way as they appear in an equation. (This requires a bit of discipline, but helps ensure consistent use of number styles throughout.) \lstinline{\num} is provided by the \lstinline{siunitx} package. The display it provides can be customised if wanted. Documentation is at \url{https://texdoc.org/serve/siunitx/0}.
+
+    This is an example of a quote in text \textcquote{ref:jCAS10}{The electroencephalogram (EEG) is a classic noninvasive method for measuring a person's brainwaves}. Below is an example of a displayed quote. Both are using the csquotes package.
+    \begin{displaycquote}{ref:jCAS10}
+      Electrodes are placed on the scalp to detect the microvolt-sized signals that result from synchronized neuronal activity within the brain.
+    \end{displaycquote}
+
+    This is an example figure. See \autoref{fig:uom_logo} for more details. Alternatively, can put multiple figures into a subfigure environment, for example \autoref{fig:uom_logo_in_subfig}, or \autoref{fig:subfig_b} to cite a particular sub-figure.
+    \begin{figure}
+      \centering
+      \includegraphics[alt={Put short description for screen readers here},width=0.3\textwidth,keepaspectratio=true]{uom_logo.pdf}
+      \caption[Short caption for list of figures]{Example figure. Full caption goes here. Often a short caption in [] is used as well as the main caption to keep the list of figures tidy; it gets messy if there are long captions going over more than one line.}
+      \label{fig:uom_logo}
+    \end{figure} 
+
+    \begin{figure}
+      \centering
+      \begin{subfigure}{0.3\linewidth}
+        \includegraphics[alt={Put short description for screen readers here},width=\textwidth,keepaspectratio=true]{uom_logo.pdf}
+        \caption{}
+        \label{fig:subfig_a}
+      \end{subfigure}
+      \begin{subfigure}{0.3\linewidth}
+        \includegraphics[alt={Put short description for screen readers here},width=\textwidth,keepaspectratio=true]{uom_logo.pdf}
+        \caption{}
+        \label{fig:subfig_b}
+      \end{subfigure}
+      \begin{subfigure}{0.3\linewidth}
+        \includegraphics[alt={Put short description for screen readers here},width=\textwidth,keepaspectratio=true]{uom_logo.pdf}
+        \caption{}
+        \label{fig:subfig_c}
+     \end{subfigure}
+     \caption{Three copies of the University logo. (a) Copy one. (b) Copy two. (c) Copy three.}
+     \label{fig:uom_logo_in_subfig}
+    \end{figure}
+
+    An example code listing is given in \autoref{code:example}. See \url{https://www.overleaf.com/learn/latex/Code_listing} for more examples of how to display code. Code in the body of the text can be included as \lstinline{for} or \lstinline{while} or \lstinline{main}.
+
+    \begin{lstlisting}[language=Python, caption={My code example}, label={code:example}]
+import numpy as np
+    
+def my_filter(in,f_obj):
+    y = filter(f_obj,in)
+    
+    return y
+    \end{lstlisting}
+  
+  \subsection{Summary}
+    \lipsum[6] % adds dummy text to fill up the example
+  
+  
+  
+%%%%%%%%%%%%%%%%%% METHODS %%%%%%%%%%%%%%%%%%
+\section{Methods} \label{sec:methods}
+
+  \subsection{Introduction}
+    \lipsum[1] % adds dummy text to fill up the example
+  
+  \subsection{Content} \label{sec:content}
+    \subsubsection{Introduction}
+      \lipsum[1] % adds dummy text to fill up the example
+	
+    \subsubsection{Detail}
+      \lipsum[7-11] % adds dummy text to fill up the example
+    
+    \subsubsection{More detail}
+      \lipsum[1-3] % adds dummy text to fill up the example
+	
+    \subsubsection{Summary}
+      \lipsum[1] % adds dummy text to fill up the example
+  
+  \subsection{Summary}
+    \lipsum[6] % adds dummy text to fill up the example
+
+
+
+%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%
+\section{Results and discussion} \label{sec:results}
+
+  \subsection{Introduction}
+    \lipsum[1] % adds dummy text to fill up the example
+  
+  \subsection{Content}
+    \subsubsection{Introduction}
+	\lipsum[1] % adds dummy text to fill up the example
+	
+	\subsubsection{Detail}
+        \lipsum[7-11] % adds dummy text to fill up the example
+    
+	\subsubsection{More detail}
+	\lipsum[1-3] % adds dummy text to fill up the example
+	
+	\subsubsection{Summary}
+	\lipsum[1] % adds dummy text to fill up the example
+  
+  \subsection{Summary}
+    \lipsum[6] % adds dummy text to fill up the example
+
+
+
+%%%%%%%%%%%%%%%%%% CONCLUSIONS %%%%%%%%%%%%%%%%%%
+\section{Conclusions and future work} % edit subsection heading as appropriate
+    \subsection{Conclusions}
+	\lipsum[1]
+	
+	\subsection{Future work}
+    \lipsum[1-2] \cite{ref:jCAS10,ref:jCAS09,ref:jCAS09a} \lipsum[3-5]
+
+
+
+%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%
+%\clearpage % uncomment to start on a new page if wanted
+\printbibliography[title={References},heading=bibintoc] % a single list of references for the whole thesis
+
+
+
+%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%
+\begin{uomappendix} 
+    \section{Project outline}
+    Project outline as submitted at the start of the project is a required appendix. Put here. 
+    
+    \section{Risk assessment}
+    Risk assessment is a required appendix. Put here.
+    
+    %\subsection{Other appendices as necessary}
+\end{uomappendix}
+
+
+%%%%%%%%%%%%%%%%%% END MATTER %%%%%%%%%%%%%%%%%%
+\end{document}
