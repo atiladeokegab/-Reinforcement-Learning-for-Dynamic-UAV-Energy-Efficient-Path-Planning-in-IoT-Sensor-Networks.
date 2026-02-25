@@ -9,6 +9,12 @@ KEY FIX: All three environments share the EXACT same sensor layout.
   - Those positions are extracted and hard-injected into every other env.
   - No RNG drift between environments — every panel is identical ground truth.
 
+FIX (DQN AUTO-RESET): VecEnv auto-resets base_env the instant done=True fires
+  inside stacked_env.step(). After that call returns, base_env.current_step,
+  uav.battery, sensors_visited, and total_data_collected all reflect the NEW
+  episode (step=0). Fix: capture every piece of display state BEFORE the step
+  call, and use those pre-step values when done=True is detected.
+
 Usage:
     python uav_side_by_side_animation.py
 
@@ -319,7 +325,12 @@ class SideBySideAnimator:
                      color=COLORS["text"], pad=4)
 
     def update_agent(self, idx, x, y, step, cum_reward,
-                     battery_pct, coverage_pct, data_bytes, sensors_visited_set):
+                     battery_pct, coverage_pct, data_bytes, sensors_visited_ids):
+        """
+        sensors_visited_ids: a set/list of sensor_id values that have been visited.
+        Accepts either the live env.sensors_visited set OR a frozen copy passed in
+        from pre-step capture (used by DQN on the done step).
+        """
         self.path_x[idx].append(x)
         self.path_y[idx].append(y)
         self.cum_rewards[idx].append(cum_reward)
@@ -329,7 +340,7 @@ class SideBySideAnimator:
         self.uav_dots[idx].set_data([x], [y])
 
         colours = [
-            COLORS["sensor_visited"] if s.sensor_id in sensors_visited_set
+            COLORS["sensor_visited"] if s.sensor_id in sensors_visited_ids
             else COLORS["sensor"]
             for s in self.envs[idx].sensors
         ]
@@ -406,7 +417,6 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
     dqn_obs = None
     if dqn_model is not None:
         print("\n[4] Wrapping DQN env in VecFrameStack...")
-        # Must capture fixed_positions in closure explicitly
         _fp = fixed_positions
         _kw = _base_env_kwargs()
 
@@ -420,9 +430,8 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
         else:
             dqn_stacked_env = vec
 
-        # VecEnv reset creates a new inner env; grab reference to it
         dqn_obs  = dqn_stacked_env.reset()
-        dqn_base = vec.envs[0]          # update reference to the actual base env
+        dqn_base = vec.envs[0]          # reference to actual base env
 
     # 5. Init greedy agents
     obs_smart, _ = env_smart.reset(seed=seed)
@@ -431,7 +440,7 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
     agent_smart = MaxThroughputGreedyV2(env_smart)
     agent_dumb  = NearestSensorGreedy(env_dumb)
 
-    # 6. Create animator  (use updated dqn_base reference)
+    # 6. Create animator
     envs = [dqn_base, env_smart, env_dumb]
     anim = SideBySideAnimator(envs, AGENT_META)
 
@@ -450,26 +459,74 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
         while not all(done_flags):
             step_counter += 1
 
-            # --- DQN ---
+            # ----------------------------------------------------------------
+            # DQN
+            # ----------------------------------------------------------------
+            # ROOT CAUSE: VecEnv auto-resets base_env INSIDE stacked_env.step().
+            # By the time step() returns with done=True, base_env already holds
+            # the NEW episode state (step=0, full battery, empty visited set).
+            # FIX: snapshot every piece of display state BEFORE the step call,
+            # then use those pre-step values unconditionally when done=True.
+            # ----------------------------------------------------------------
             if not done_flags[0]:
                 action, _ = dqn_model.predict(dqn_obs, deterministic=True)
                 av = int(action[0]) if hasattr(action, '__len__') else int(action)
+
+                # ── PRE-STEP capture — before auto-reset can fire ──────────
+                pre_x         = float(dqn_base.uav.position[0])
+                pre_y         = float(dqn_base.uav.position[1])
+                pre_step      = int(dqn_base.current_step)
+                pre_bat_pct   = float(dqn_base.uav.get_battery_percentage())
+                pre_n_sensors = int(dqn_base.num_sensors)
+                pre_visited   = set(dqn_base.sensors_visited)   # frozen copy
+                pre_cov       = (len(pre_visited) / pre_n_sensors) * 100
+                pre_data      = float(dqn_base.total_data_collected)
+                # ───────────────────────────────────────────────────────────
+
                 dqn_obs, rwds, dns, _ = dqn_stacked_env.step([av])
                 cum_rewards[0] += float(rwds[0])
-                x, y = dqn_base.uav.position[0], dqn_base.uav.position[1]
-                bat  = dqn_base.uav.get_battery_percentage()
-                cov  = (len(dqn_base.sensors_visited) / dqn_base.num_sensors) * 100
-                dat  = dqn_base.total_data_collected
-                anim.update_agent(0, x, y, dqn_base.current_step,
-                                  cum_rewards[0], bat, cov, dat,
-                                  dqn_base.sensors_visited)
-                if bool(dns[0]):
+                done_now = bool(dns[0])
+
+                if done_now:
+                    # base_env has already been auto-reset here —
+                    # use ONLY the pre-step snapshot.
+                    anim.update_agent(
+                        0,
+                        pre_x, pre_y,
+                        pre_step,
+                        cum_rewards[0],
+                        pre_bat_pct,
+                        pre_cov,
+                        pre_data,
+                        pre_visited,
+                    )
                     done_flags[0] = True
                     anim.mark_done(0)
-                    print(f"  [DQN]          DONE  step={dqn_base.current_step}"
-                          f"  reward={cum_rewards[0]:.0f}  cov={cov:.1f}%")
+                    print(
+                        f"  [DQN]          DONE  step={pre_step}"
+                        f"  reward={cum_rewards[0]:.0f}"
+                        f"  cov={pre_cov:.1f}%"
+                        f"  battery={pre_bat_pct:.1f}%"
+                    )
+                else:
+                    # Normal mid-episode update — read live state directly.
+                    x   = float(dqn_base.uav.position[0])
+                    y   = float(dqn_base.uav.position[1])
+                    bat = float(dqn_base.uav.get_battery_percentage())
+                    cov = (len(dqn_base.sensors_visited) / dqn_base.num_sensors) * 100
+                    dat = float(dqn_base.total_data_collected)
+                    anim.update_agent(
+                        0,
+                        x, y,
+                        dqn_base.current_step,
+                        cum_rewards[0],
+                        bat, cov, dat,
+                        dqn_base.sensors_visited,
+                    )
 
-            # --- Smart Greedy ---
+            # ----------------------------------------------------------------
+            # Smart Greedy
+            # ----------------------------------------------------------------
             if not done_flags[1]:
                 action = agent_smart.select_action(obs_smart)
                 obs_smart, rwd, done, trunc, _ = env_smart.step(action)
@@ -487,7 +544,9 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
                     print(f"  [Smart Greedy] DONE  step={env_smart.current_step}"
                           f"  reward={cum_rewards[1]:.0f}  cov={cov:.1f}%")
 
-            # --- Dumb Greedy ---
+            # ----------------------------------------------------------------
+            # Dumb Greedy
+            # ----------------------------------------------------------------
             if not done_flags[2]:
                 action = agent_dumb.select_action(obs_dumb)
                 obs_dumb, rwd, done, trunc, _ = env_dumb.step(action)
@@ -505,7 +564,9 @@ def run_animation(seed=PLOT_CONFIG["seed"]):
                     print(f"  [Dumb Greedy]  DONE  step={env_dumb.current_step}"
                           f"  reward={cum_rewards[2]:.0f}  cov={cov:.1f}%")
 
-            # --- Render ---
+            # ----------------------------------------------------------------
+            # Render
+            # ----------------------------------------------------------------
             if step_counter % RENDER_EVERY_N_STEPS == 0:
                 anim.redraw()
                 elapsed = time.time() - last_render
