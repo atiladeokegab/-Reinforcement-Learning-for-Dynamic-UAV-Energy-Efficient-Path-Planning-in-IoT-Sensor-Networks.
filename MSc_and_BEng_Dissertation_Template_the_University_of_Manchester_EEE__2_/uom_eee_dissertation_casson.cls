@@ -69,7 +69,7 @@
 
 %% Handle options that the class takes - font/size and meng vs. beng
 
-\newcommand{\reportyear}{msc} % set report type
+\newcommand{\reportyear}{beng} % set report type
 \setmainfont[Ligatures=TeX]{Arial}
 \DeclareOption{msc}{
   \renewcommand{\reportyear}{msc}
