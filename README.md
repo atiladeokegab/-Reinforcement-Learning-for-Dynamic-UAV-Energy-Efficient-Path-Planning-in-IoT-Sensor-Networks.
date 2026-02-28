@@ -7,7 +7,9 @@ The UAV must collect data from multiple spatially distributed LoRa IoT sensors w
 
 The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
 
-# System Model
+## System Model
+
+
 We consider a remote IoT monitoring environment comprising a set N = {1, . . . ,N} of
 static sensor devices uniformly distributed over a rectangular Region of Interest (RoI) W ⊂
 R2. These devices continuously generate monitoring data, which accumulates in finite transmission
