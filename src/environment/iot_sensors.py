@@ -28,10 +28,22 @@ class IoTSensor:
         12: 250 / 8,
     }
 
-    REQUIRED_SNR_DB = {7: 7.5, 8: 10.0, 9: 12.5, 10: 15.0, 11: 17.5, 12: 20.0}
+    REQUIRED_SNR_DB = {
+        7: -6.0,
+        8: -9.0,
+        9: -12.0,
+        10: -15.0,
+        11: -17.5,
+        12: -20.0
+    }
 
     # RSSI to SF mapping (Capped SF12 range)
-    RSSI_SF_MAPPING = [(-55, 7), (-70, 9), (-90, 11), (-110, 12)]
+    RSSI_SF_MAPPING = [
+        (-70, 7),  # Switch to SF7 if RSSI > -70 dBm
+        (-90, 9),  # Switch to SF9 if RSSI > -90 dBm
+        (-105, 11),  # Switch to SF11 if RSSI > -105 dBm
+        (-120, 12)  # Default to SF12 for worst-case links
+    ]
 
     def __init__(
         self,
