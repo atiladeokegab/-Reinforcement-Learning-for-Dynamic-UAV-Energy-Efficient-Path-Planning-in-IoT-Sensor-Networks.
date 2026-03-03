@@ -496,7 +496,16 @@ class UAVEnvironment(gym.Env):
         if self.current_step >= self.max_steps:
             truncated = True
 
-        # STEP 5: ACCUMULATE REWARD AND PREPARE OUTPUT
+            # Terminal unvisited-sensor penalty
+            # Applied once at episode end so the agent feels the cost of
+            # missing sensors without noisy per-step interference.
+        if truncated:
+            unvisited = self.num_sensors - len(self.sensors_visited)
+            if unvisited > 0:
+                terminal_penalty = self.reward_fn.penalty_unvisited * unvisited
+                reward += terminal_penalty
+
+            # STEP 5: ACCUMULATE REWARD AND PREPARE OUTPUT
         self.total_reward += reward
         observation = self._get_observation()
         info = self._get_info()
@@ -698,7 +707,7 @@ class UAVEnvironment(gym.Env):
             battery_used=battery_used,
             num_sensors_collected=len(successful_sf_slots),
             collision_count=collision_count,
-            data_loss=step_data_loss,  # ===== USE PASSED VALUE (Consistency) =====
+            data_loss=step_data_loss,
             urgency_reduced=urgency_reduced,
             sensor_buffers=current_buffers,
         )
