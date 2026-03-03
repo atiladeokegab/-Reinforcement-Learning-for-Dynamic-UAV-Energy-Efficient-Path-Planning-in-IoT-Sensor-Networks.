@@ -1,21 +1,22 @@
 {
-    "total_reward": 4401739.799390674,
-    "steps": 2100,
-    "elapsed_time_seconds": 3.487391471862793,
-    "coverage_percentage": 100.0,
-    "collection_efficiency_percent": 43.41839826839998,
-    "data_loss_rate_percent": 40.851352813854334,
-    "battery_used_wh": 401.6666666666947,
-    "bytes_per_watt": 99.88033195020049,
-    "total_data_generated": 92399.99999999635,
-    "total_data_transmitted": 40118.6,
-    "total_data_lost": 37746.649999999914,
-    "fairness_metrics": {
-        "mean": 43.41839826839999,
-        "std": 39.00352880958117,
-        "min": 0.6764069264069532,
-        "max": 99.85714285714678,
-        "range": 99.18073593073983
-    },
-    "fairness_level": "POOR"
+  "model": "C:\\Users\\okeat\\OneDrive\\Desktop\\project\\src\\agents\\dqn\\models\\dqn_domain_rand\\dqn_final.zip",
+  "total_reward": 3733974.145483017,
+  "steps": 1437,
+  "elapsed_seconds": 2.3197567462921143,
+  "coverage_pct": 75.0,
+  "collection_efficiency_pct": 54.47807933194265,
+  "battery_used_wh": 268.5833333333404,
+  "bytes_per_wh": 128.24846416381916,
+  "total_generated": 63227.999999998734,
+  "total_collected": 34445.40000000001,
+  "total_lost": 18285.40000000043,
+  "fairness": {
+    "mean": 54.478079331942624,
+    "std": 45.90799625900859,
+    "min": 0.0,
+    "max": 99.93041057759415,
+    "range": 99.93041057759415,
+    "jains": 0.5847535285466051,
+    "starved": 9.0
+  }
 }
