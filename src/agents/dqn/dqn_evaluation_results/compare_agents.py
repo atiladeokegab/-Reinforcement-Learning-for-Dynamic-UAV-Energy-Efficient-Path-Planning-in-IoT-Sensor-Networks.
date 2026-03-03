@@ -5,6 +5,7 @@ All agents run on the EXACT SAME ENVIRONMENT with the same seed.
 CRITICAL: DQN uses VecFrameStack to match training conditions.
 NEW: Automatically saves sensor-level data for fairness & heatmap analysis.
 NEW: Battery / Steps / Data collected panel plot added.
+UPDATED: Zero-padding support so the trained model can run on any num_sensors ≤ max_sensors_limit.
 
 Author: ATILADE GABRIEL OKE
 Modified: 27 February 2026
@@ -15,6 +16,7 @@ import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import gymnasium
 import json
 from pathlib import Path
 import time
@@ -35,41 +37,92 @@ sys.path.insert(0, str(src_dir))
 from environment.uav_env import UAVEnvironment
 from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
 
-# ==================== ANALYSIS ENV WRAPPER ====================
+# ==================== ANALYSIS ENV WRAPPER (WITH ZERO PADDING) ====================
 
 
 class AnalysisUAVEnv(UAVEnvironment):
     """
-    Smart wrapper that saves the final state of the simulation
-    the instant before the environment resets.
+    Smart wrapper that:
+      1. Saves the final state of the simulation the instant before the env resets.
+      2. Zero-pads the observation vector to a fixed length so the DQN neural
+         network (trained with max_sensors_limit) can evaluate on any num_sensors
+         that is ≤ max_sensors_limit without reloading or retraining.
+
+    features_per_sensor is AUTO-DETECTED from the parent observation_space at
+    init time — no hardcoded constants that can silently mismatch the env layout.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, max_sensors_limit: int = 50, **kwargs):
+        self.max_sensors_limit = max_sensors_limit
         super().__init__(**kwargs)
+
+        # ── Auto-detect features_per_sensor ───────────────────────────────
+        raw_obs_size = self.observation_space.shape[0]
+        self._features_per_sensor: int = 0
+        for uav_f in range(raw_obs_size + 1):
+            remainder = raw_obs_size - uav_f
+            if remainder > 0 and remainder % self.num_sensors == 0:
+                self._features_per_sensor = remainder // self.num_sensors
+                break
+        if self._features_per_sensor == 0:
+            raise ValueError(
+                f"[AnalysisUAVEnv] Cannot infer features_per_sensor: "
+                f"raw obs {raw_obs_size} has no divisor matching num_sensors={self.num_sensors}."
+            )
+
+        padded_obs_size = (
+            raw_obs_size
+            + (self.max_sensors_limit - self.num_sensors) * self._features_per_sensor
+        )
+        self.observation_space = gymnasium.spaces.Box(
+            low=-np.inf, high=np.inf, shape=(padded_obs_size,), dtype=np.float32,
+        )
+
         self.last_episode_sensor_data = None
         self.last_episode_info = None
 
+        print(
+            f"  [AnalysisUAVEnv] raw={raw_obs_size} → padded={padded_obs_size} "
+            f"(active={self.num_sensors}, max={self.max_sensors_limit}, "
+            f"{self._features_per_sensor} features/sensor)"
+        )
+
+    # ── Padding helper ───────────────────────────────────────────────────────
+
+    def _pad(self, raw: np.ndarray) -> np.ndarray:
+        padding = np.zeros(
+            (self.max_sensors_limit - self.num_sensors) * self._features_per_sensor,
+            dtype=np.float32,
+        )
+        return np.concatenate([raw, padding]).astype(np.float32)
+
+    # ── Data-persistence fix: snapshot before auto-reset ───────────────────
+
     def reset(self, **kwargs):
         if hasattr(self, "sensors") and self.current_step > 0:
-            self.last_episode_sensor_data = []
-            for sensor in self.sensors:
-                self.last_episode_sensor_data.append(
-                    {
-                        "sensor_id": sensor.sensor_id,
-                        "position": tuple(sensor.position),
-                        "total_data_generated": float(sensor.total_data_generated),
-                        "total_data_transmitted": float(sensor.total_data_transmitted),
-                        "total_data_lost": float(sensor.total_data_lost),
-                        "data_buffer": float(sensor.data_buffer),
-                    }
-                )
+            self.last_episode_sensor_data = [
+                {
+                    "sensor_id":              sensor.sensor_id,
+                    "position":               tuple(sensor.position),
+                    "total_data_generated":   float(sensor.total_data_generated),
+                    "total_data_transmitted": float(sensor.total_data_transmitted),
+                    "total_data_lost":        float(sensor.total_data_lost),
+                    "data_buffer":            float(sensor.data_buffer),
+                }
+                for sensor in self.sensors
+            ]
             self.last_episode_info = {
-                "battery": self.uav.battery,
-                "battery_percent": self.uav.get_battery_percentage(),
-                "coverage_percentage": (len(self.sensors_visited) / self.num_sensors)
-                * 100,
+                "battery":            self.uav.battery,
+                "battery_percent":    self.uav.get_battery_percentage(),
+                "coverage_percentage": (len(self.sensors_visited) / self.num_sensors) * 100,
             }
-        return super().reset(**kwargs)
+
+        obs, info = super().reset(**kwargs)
+        return self._pad(obs), info
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = super().step(action)
+        return self._pad(obs), reward, terminated, truncated, info
 
 
 # ==================== TRAJECTORY TRACKING ====================
@@ -119,7 +172,6 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
     print(f"Saving sensor snapshot: {agent_name}")
     print(f"{'=' * 80}")
 
-    # ── FIX 3: DQN passes override_sensor_data captured before auto-reset ──
     if override_sensor_data is not None:
         sensor_data_list  = override_sensor_data
         total_generated   = sum(s["total_data_generated"]  for s in sensor_data_list)
@@ -144,24 +196,23 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
         if not hasattr(env, "sensors"):
             print(f"⚠ WARNING: Environment has no sensors attribute")
             return None
-        sensor_data_list = []
-        for sensor in env.sensors:
-            sensor_data_list.append(
-                {
-                    "sensor_id": int(sensor.sensor_id),
-                    "position": tuple(float(x) for x in sensor.position),
-                    "total_data_generated": float(sensor.total_data_generated),
-                    "total_data_transmitted": float(sensor.total_data_transmitted),
-                    "total_data_lost": float(sensor.total_data_lost),
-                    "data_buffer": float(sensor.data_buffer),
-                }
-            )
+        sensor_data_list = [
+            {
+                "sensor_id":              int(sensor.sensor_id),
+                "position":               tuple(float(x) for x in sensor.position),
+                "total_data_generated":   float(sensor.total_data_generated),
+                "total_data_transmitted": float(sensor.total_data_transmitted),
+                "total_data_lost":        float(sensor.total_data_lost),
+                "data_buffer":            float(sensor.data_buffer),
+            }
+            for sensor in env.sensors
+        ]
         total_generated   = sum(s["total_data_generated"]  for s in sensor_data_list)
         total_transmitted = sum(s["total_data_transmitted"] for s in sensor_data_list)
         total_lost        = sum(s["total_data_lost"]        for s in sensor_data_list)
         uav_info = {
-            "battery": float(env.uav.battery),
-            "battery_percent": float(env.uav.get_battery_percentage()),
+            "battery":            float(env.uav.battery),
+            "battery_percent":    float(env.uav.get_battery_percentage()),
             "coverage_percentage": float(
                 (len(env.sensors_visited) / env.num_sensors) * 100
             ),
@@ -169,26 +220,21 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
         print(f"✓ Using current environment state")
 
     snapshot = {
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "agent_name": agent_name,
+        "timestamp":   time.strftime("%Y-%m-%d %H:%M:%S"),
+        "agent_name":  agent_name,
         "environment_config": {
-            "grid_size": (
-                list(env.grid_size) if hasattr(env, "grid_size") else [100, 100]
-            ),
+            "grid_size":   list(env.grid_size) if hasattr(env, "grid_size") else [100, 100],
             "num_sensors": int(len(sensor_data_list)),
-            "max_steps": int(env.max_steps) if hasattr(env, "max_steps") else 0,
+            "max_steps":   int(env.max_steps) if hasattr(env, "max_steps") else 0,
         },
-        "uav_state": convert_to_python_types(uav_info),
+        "uav_state":    convert_to_python_types(uav_info),
         "mission_stats": {
-            "total_data_collected": float(total_transmitted),
-            "total_data_lost": float(total_lost),
-            "sensors_visited": int(
+            "total_data_collected":  float(total_transmitted),
+            "total_data_lost":       float(total_lost),
+            "sensors_visited":       int(len([s for s in sensor_data_list if s["total_data_transmitted"] > 0])),
+            "coverage_percentage":   float(
                 len([s for s in sensor_data_list if s["total_data_transmitted"] > 0])
-            ),
-            "coverage_percentage": float(
-                len([s for s in sensor_data_list if s["total_data_transmitted"] > 0])
-                / len(sensor_data_list)
-                * 100
+                / len(sensor_data_list) * 100
             ),
         },
         "sensor_data": [],
@@ -198,19 +244,16 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
         generated   = float(sensor_data["total_data_generated"])
         transmitted = float(sensor_data["total_data_transmitted"])
         lost        = float(sensor_data["total_data_lost"])
-        sensor_info = {
-            "sensor_id": int(sensor_data["sensor_id"]),
-            "position": [float(x) for x in sensor_data["position"]],
-            "total_data_generated": generated,
+        snapshot["sensor_data"].append({
+            "sensor_id":              int(sensor_data["sensor_id"]),
+            "position":               [float(x) for x in sensor_data["position"]],
+            "total_data_generated":   generated,
             "total_data_transmitted": transmitted,
-            "total_data_lost": lost,
-            "data_buffer": float(sensor_data["data_buffer"]),
-            "collection_rate": float(
-                (transmitted / generated * 100) if generated > 0 else 0.0
-            ),
-            "loss_rate": float((lost / generated * 100) if generated > 0 else 0.0),
-        }
-        snapshot["sensor_data"].append(sensor_info)
+            "total_data_lost":        lost,
+            "data_buffer":            float(sensor_data["data_buffer"]),
+            "collection_rate": float((transmitted / generated * 100) if generated > 0 else 0.0),
+            "loss_rate":       float((lost / generated * 100)        if generated > 0 else 0.0),
+        })
 
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -224,10 +267,8 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
 
     collection_rates = [s["collection_rate"] for s in snapshot["sensor_data"]]
     n = len(collection_rates)
-    jains_index = (
-        (sum(collection_rates) ** 2) / (n * sum(x**2 for x in collection_rates))
-        if n > 0 else 0
-    )
+    s2 = sum(x**2 for x in collection_rates)
+    jains_index = (sum(collection_rates)**2 / (n * s2)) if n > 0 and s2 > 0 else 0
     starved_count = sum(1 for rate in collection_rates if rate < 20.0)
     print(f"  • Jain's Fairness Index: {jains_index:.4f}")
     print(f"  • Starved sensors (<20%): {starved_count}/{n}")
@@ -243,26 +284,25 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DQN_MODEL_PATH = (
     script_dir_results / "models" / "dqn_full_observability" / "dqn_final.zip"
 )
+# ← Updated: now reads from training_config.json (richer than the old frame_stacking_config.json)
 DQN_CONFIG_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "frame_stacking_config.json"
+    script_dir_results / "models" / "dqn_full_observability" / "training_config.json"
 )
 VEC_NORMALIZE_PATH = (
     script_dir_results / "models" / "dqn_full_observability" / "vec_normalize.pkl"
 )
 
 PLOT_CONFIG = {
-    "grid_size": (500, 500),
-    "num_sensors": 20,
-    "max_steps": 2100,
+    "grid_size":          (500, 500),
+    "num_sensors":        20,
+    "max_steps":          2100,
     "path_loss_exponent": 3.8,
-    "rssi_threshold": -120.0,
-    "sensor_duty_cycle": 10.0,
-    "seed": 42,
+    "rssi_threshold":     -120.0,
+    "sensor_duty_cycle":  10.0,
+    "seed":               42,
 }
 
 EVAL_MAX_BATTERY = 274.0
-
-# ==================== AGENT STYLES (shared across all plots) ====================
 
 AGENT_STYLES = {
     "DQN Agent":       {"color": "#1565C0", "marker": "o"},
@@ -277,13 +317,30 @@ print()
 # ==================== HELPER FUNCTIONS ====================
 
 
-def load_frame_stacking_config(config_path):
+def load_training_config(config_path):
+    """
+    Load training_config.json.
+    Falls back gracefully if the file is the old frame_stacking_config.json format
+    (missing max_sensors_limit) so existing model dirs still work.
+    """
+    defaults = {
+        "use_frame_stacking": True,
+        "n_stack": 4,
+        "max_sensors_limit": 50,
+        # features_per_sensor is auto-detected at runtime from the env obs space;
+        # it is NOT stored as a class constant any more. The value in the JSON
+        # (written by train_dqn_zero_padding.py) is used when available; the
+        # default here is only a placeholder and is never read by AnalysisUAVEnv.
+        "features_per_sensor": None,
+    }
     try:
         with open(config_path, "r") as f:
-            return json.load(f)
+            loaded = json.load(f)
+        # Merge: loaded values override defaults
+        return {**defaults, **loaded}
     except FileNotFoundError:
-        print(f"⚠ Config file not found at {config_path}, using defaults")
-        return {"use_frame_stacking": True, "n_stack": 4}
+        print(f"⚠ Config not found at {config_path} — using defaults")
+        return defaults
 
 
 def _unwrap_base_env(vec):
@@ -321,21 +378,35 @@ def _seed_base_env_directly(base_env, seed):
     random.seed(seed)
 
 
-def create_stacked_dqn_env(env_kwargs, frame_stacking_config, seed=PLOT_CONFIG["seed"]):
+def create_stacked_dqn_env(env_kwargs, training_config, seed=PLOT_CONFIG["seed"]):
+    """
+    Build the stacked/normalised VecEnv for DQN evaluation.
+    env_kwargs must include max_sensors_limit so AnalysisUAVEnv can pad correctly.
+    """
     vec_env = DummyVecEnv([lambda: AnalysisUAVEnv(**env_kwargs)])
 
-    if frame_stacking_config.get("use_frame_stacking", True):
-        n_stack = frame_stacking_config.get("n_stack", 4)
+    if training_config.get("use_frame_stacking", True):
+        n_stack = training_config.get("n_stack", 4)
         vec_env = VecFrameStack(vec_env, n_stack=n_stack)
         print(f"✓ Frame stacking enabled (n_stack={n_stack})")
     else:
         print(f"✓ Frame stacking disabled")
 
     if VEC_NORMALIZE_PATH.exists():
-        vec_env = VecNormalize.load(str(VEC_NORMALIZE_PATH), vec_env)
-        vec_env.training = False
-        vec_env.norm_reward = False
-        print(f"✓ VecNormalize loaded from {VEC_NORMALIZE_PATH.name}")
+        # Guard against stale vec_normalize.pkl from a previous training run whose
+        # obs shape no longer matches (e.g. saved before zero-padding was added).
+        # If the shapes disagree we skip normalisation rather than crashing.
+        try:
+            vec_env = VecNormalize.load(str(VEC_NORMALIZE_PATH), vec_env)
+            vec_env.training = False
+            vec_env.norm_reward = False
+            print(f"✓ VecNormalize loaded from {VEC_NORMALIZE_PATH.name}")
+        except AssertionError as e:
+            print(
+                f"⚠ vec_normalize.pkl shape mismatch — skipping normalisation.\n"
+                f"  (The .pkl was saved with a different obs size: {e})\n"
+                f"  Delete {VEC_NORMALIZE_PATH.name} if it belongs to an old run."
+            )
     else:
         print(f"⚠ vec_normalize.pkl not found — observations will NOT be normalised")
 
@@ -358,14 +429,14 @@ def save_baseline_data(agent_name, history_df):
 
 def save_comparison_metadata(agents_config):
     metadata = {
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "grid_size": PLOT_CONFIG["grid_size"],
-        "num_sensors": PLOT_CONFIG["num_sensors"],
-        "max_steps": PLOT_CONFIG["max_steps"],
-        "seed": PLOT_CONFIG["seed"],
+        "timestamp":        time.strftime("%Y-%m-%d %H:%M:%S"),
+        "grid_size":        PLOT_CONFIG["grid_size"],
+        "num_sensors":      PLOT_CONFIG["num_sensors"],
+        "max_steps":        PLOT_CONFIG["max_steps"],
+        "seed":             PLOT_CONFIG["seed"],
         "agents_evaluated": agents_config,
         "output_directory": str(OUTPUT_DIR),
-        "note": "All agents evaluated on identical environment with same seed",
+        "note":             "All agents evaluated on identical environment with same seed",
     }
     metadata_file = OUTPUT_DIR / "comparison_metadata.json"
     with open(metadata_file, "w") as f:
@@ -399,15 +470,13 @@ def run_greedy_agent_for_plot(agent, env, name="Agent", seed=PLOT_CONFIG["seed"]
         trajectory.record(env.uav.position[0], env.uav.position[1])
 
         if env.current_step % 50 == 0 or done or truncated:
-            battery_pct = env.uav.get_battery_percentage()
+            battery_pct  = env.uav.get_battery_percentage()
             coverage_pct = (
                 (len(env.sensors_visited) / env.num_sensors) * 100
                 if hasattr(env, "sensors_visited") else 0
             )
             energy_consumed = EVAL_MAX_BATTERY - env.uav.battery
-            efficiency = (
-                (env.total_data_collected / energy_consumed) if energy_consumed > 0 else 0
-            )
+            efficiency = (env.total_data_collected / energy_consumed) if energy_consumed > 0 else 0
             history["step"].append(env.current_step)
             history["cumulative_reward"].append(cumulative_reward)
             history["battery_percent"].append(battery_pct)
@@ -435,12 +504,6 @@ def run_dqn_agent_for_plot(
     FIX 3: Captures a full sensor snapshot on every step BEFORE calling
     stacked_env.step(). The VecEnv auto-reset fires inside step() the instant
     done=True, replacing base_env.sensors before any post-step code runs.
-    By maintaining pre_sensor_snapshot we always have the correct final-episode
-    sensor positions and collection stats available in the done block.
-
-    Returns: (history_df, step_count, trajectory_array, final_sensor_snapshot)
-    The final_sensor_snapshot should be passed to save_sensor_snapshot() via
-    the override_sensor_data parameter to ensure correct heatmap data.
     """
     print(f"\nRunning {name}...")
     obs = stacked_env.reset()
@@ -463,7 +526,7 @@ def run_dqn_agent_for_plot(
             else int(action)
         )
 
-        # ── PRE-STEP: snapshot UAV state ────────────────────────────────────
+        # Pre-step snapshot of UAV state
         pre_battery   = base_env.uav.battery
         pre_coverage  = (len(base_env.sensors_visited) / base_env.num_sensors) * 100 \
                         if hasattr(base_env, "sensors_visited") else 0.0
@@ -472,14 +535,11 @@ def run_dqn_agent_for_plot(
                         if hasattr(base_env, "sensors_visited") else 0
         pre_pos       = tuple(base_env.uav.position)
 
-        # ── FIX 3: PRE-STEP snapshot of every sensor ────────────────────────
-        # Must happen BEFORE stacked_env.step() because the VecEnv auto-reset
-        # that fires on done=True will immediately replace base_env.sensors
-        # with a fresh unseeded set, destroying the episode's collection data.
+        # FIX 3: Pre-step sensor snapshot (before VecEnv auto-reset fires)
         pre_sensor_snapshot = [
             {
-                "sensor_id": int(s.sensor_id),
-                "position": [float(x) for x in s.position],
+                "sensor_id":              int(s.sensor_id),
+                "position":               [float(x) for x in s.position],
                 "total_data_generated":   float(s.total_data_generated),
                 "total_data_transmitted": float(s.total_data_transmitted),
                 "total_data_lost":        float(s.total_data_lost),
@@ -487,7 +547,6 @@ def run_dqn_agent_for_plot(
             }
             for s in base_env.sensors
         ]
-        # ────────────────────────────────────────────────────────────────────
 
         obs, rewards, dones, infos = stacked_env.step([action])
         reward = float(rewards[0]) if isinstance(rewards, np.ndarray) else float(rewards)
@@ -498,9 +557,7 @@ def run_dqn_agent_for_plot(
         trajectory.record(pre_pos[0], pre_pos[1])
 
         if done:
-            # base_env has already been auto-reset — use pre-step data only
             final_sensor_snapshot = pre_sensor_snapshot
-
             energy_consumed = EVAL_MAX_BATTERY - pre_battery
             efficiency      = (pre_data / energy_consumed) if energy_consumed > 0 else 0.0
 
@@ -747,9 +804,6 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df):
     plt.savefig(out, dpi=300, bbox_inches="tight")
     print(f"✓ Saved: {out.name}")
     plt.show()
-
-
-# ==================== ADDITIONAL VISUALIZATIONS ====================
 
 
 def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path):
@@ -1001,16 +1055,7 @@ def plot_buffer_dynamics(dqn_df, smart_df, dumb_df):
     plt.show()
 
 
-# ==================== NEW: BATTERY / STEPS / DATA PLOT ====================
-
-
 def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
-    """
-    Three-panel figure:
-      Panel 1 — Battery % draining over simulation steps (with 30% low-battery line).
-      Panel 2 — Cumulative data collected over simulation steps.
-      Panel 3 — Combined twin-axis overlay: battery (dashed) + data (solid) per agent.
-    """
     plt.style.use("seaborn-v0_8-whitegrid")
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))
     fig.suptitle(
@@ -1024,32 +1069,19 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
         ("Nearest Sensor Greedy", dumb_df,  AGENT_STYLES["Nearest Greedy"]),
     ]
 
-    # ── Panel 1: Battery Level over Time ─────────────────────────────────────
     ax = axes[0]
     for name, df, style in agents:
         if df is None or df.empty:
             continue
-        ax.plot(
-            df["step"], df["battery_percent"],
-            color=style["color"], linewidth=2.5, label=name,
-            marker=style["marker"], markersize=4, markevery=5,
-        )
-
-    # Annotate where each agent first drops below 30 %
-    for name, df, style in agents:
-        if df is None or df.empty:
-            continue
+        ax.plot(df["step"], df["battery_percent"], color=style["color"],
+                linewidth=2.5, label=name, marker=style["marker"], markersize=4, markevery=5)
         low = df[df["battery_percent"] < 30]
         if not low.empty:
             sx = low["step"].iloc[0]
             sy = low["battery_percent"].iloc[0]
-            ax.annotate(
-                f"t={int(sx)}",
-                xy=(sx, sy), xytext=(sx + 40, sy + 6),
-                fontsize=8, color=style["color"], fontweight="bold",
-                arrowprops=dict(arrowstyle="->", color=style["color"], lw=1.2),
-            )
-
+            ax.annotate(f"t={int(sx)}", xy=(sx, sy), xytext=(sx + 40, sy + 6),
+                        fontsize=8, color=style["color"], fontweight="bold",
+                        arrowprops=dict(arrowstyle="->", color=style["color"], lw=1.2))
     ax.axhline(30, color="red", linestyle="--", linewidth=1.4, alpha=0.75,
                label="Low battery threshold (30%)")
     ax.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
@@ -1059,31 +1091,18 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
     ax.legend(fontsize=9, loc="upper right")
     ax.grid(True, alpha=0.4, linestyle="--")
 
-    # ── Panel 2: Cumulative Data Collected ───────────────────────────────────
     ax = axes[1]
     for name, df, style in agents:
         if df is None or df.empty:
             continue
-        ax.plot(
-            df["step"], df["total_data_collected"],
-            color=style["color"], linewidth=2.5, label=name,
-            marker=style["marker"], markersize=4, markevery=5,
-        )
-
-    # Final-value annotations on right edge
-    for name, df, style in agents:
-        if df is None or df.empty:
-            continue
+        ax.plot(df["step"], df["total_data_collected"], color=style["color"],
+                linewidth=2.5, label=name, marker=style["marker"], markersize=4, markevery=5)
         final_step = df["step"].iloc[-1]
         final_data = df["total_data_collected"].iloc[-1]
-        ax.annotate(
-            f"{final_data:.2e}",
-            xy=(final_step, final_data),
-            xytext=(final_step - 200, final_data * 0.92),
-            fontsize=8, color=style["color"], fontweight="bold",
-            arrowprops=dict(arrowstyle="->", color=style["color"], lw=1.0),
-        )
-
+        ax.annotate(f"{final_data:.2e}", xy=(final_step, final_data),
+                    xytext=(final_step - 200, final_data * 0.92),
+                    fontsize=8, color=style["color"], fontweight="bold",
+                    arrowprops=dict(arrowstyle="->", color=style["color"], lw=1.0))
     ax.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
     ax.set_ylabel("Cumulative Data Collected (Bytes)", fontsize=11, fontweight="bold")
     ax.set_title("Data Throughput", fontsize=12, fontweight="bold")
@@ -1091,37 +1110,23 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
     ax.legend(fontsize=9, loc="upper left")
     ax.grid(True, alpha=0.4, linestyle="--")
 
-    # ── Panel 3: Combined twin-axis overlay ───────────────────────────────────
     ax3  = axes[2]
     ax3b = ax3.twinx()
-
     for name, df, style in agents:
         if df is None or df.empty:
             continue
-        # Battery on primary axis — dashed, faded
-        ax3.plot(
-            df["step"], df["battery_percent"],
-            color=style["color"], linewidth=1.8, linestyle="--", alpha=0.55,
-        )
-        # Data on secondary axis — solid, full opacity
-        ax3b.plot(
-            df["step"], df["total_data_collected"],
-            color=style["color"], linewidth=2.5, label=name,
-            marker=style["marker"], markersize=4, markevery=5,
-        )
-
+        ax3.plot(df["step"], df["battery_percent"], color=style["color"],
+                 linewidth=1.8, linestyle="--", alpha=0.55)
+        ax3b.plot(df["step"], df["total_data_collected"], color=style["color"],
+                  linewidth=2.5, label=name, marker=style["marker"], markersize=4, markevery=5)
     ax3.axhline(30, color="red", linestyle=":", linewidth=1.2, alpha=0.6)
     ax3.set_ylabel("Battery Level (%) — dashed", fontsize=10, color="gray")
     ax3.set_ylim(0, 105)
     ax3.tick_params(axis="y", labelcolor="gray")
-
     ax3b.set_ylabel("Data Collected (Bytes) — solid", fontsize=10, fontweight="bold")
     ax3b.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-
     ax3.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
     ax3.set_title("Combined: Battery vs Data Collected", fontsize=12, fontweight="bold")
-
-    # Legend from the data axis (solid lines) only
     lines, labels = ax3b.get_legend_handles_labels()
     ax3.legend(lines, labels, fontsize=9, loc="upper left")
     ax3.grid(True, alpha=0.4, linestyle="--")
@@ -1144,17 +1149,22 @@ def main():
     print(f"\nOutput Directory: {OUTPUT_DIR}")
     print(f"Seed: {PLOT_CONFIG['seed']}\n")
 
-    frame_stacking_config = load_frame_stacking_config(DQN_CONFIG_PATH)
+    # Load config — now reads training_config.json which includes max_sensors_limit
+    training_config = load_training_config(DQN_CONFIG_PATH)
+    max_sensors_limit = training_config["max_sensors_limit"]
+    print(f"  max_sensors_limit from config: {max_sensors_limit}")
+    print(f"  frame_stacking: n_stack={training_config.get('n_stack', 4)}")
 
     env_kwargs = {
-        "grid_size": PLOT_CONFIG["grid_size"],
-        "num_sensors": PLOT_CONFIG["num_sensors"],
-        "max_steps": PLOT_CONFIG["max_steps"],
+        "grid_size":          PLOT_CONFIG["grid_size"],
+        "num_sensors":        PLOT_CONFIG["num_sensors"],
+        "max_sensors_limit":  max_sensors_limit,   # ← zero-padding limit
+        "max_steps":          PLOT_CONFIG["max_steps"],
         "path_loss_exponent": PLOT_CONFIG["path_loss_exponent"],
-        "rssi_threshold": PLOT_CONFIG["rssi_threshold"],
-        "sensor_duty_cycle": PLOT_CONFIG["sensor_duty_cycle"],
-        "max_battery": 274.0,
-        "render_mode": "human",
+        "rssi_threshold":     PLOT_CONFIG["rssi_threshold"],
+        "sensor_duty_cycle":  PLOT_CONFIG["sensor_duty_cycle"],
+        "max_battery":        274.0,
+        "render_mode":        "human",
     }
 
     agents_config = []
@@ -1173,16 +1183,13 @@ def main():
             print("✓ DQN model loaded successfully")
 
             dqn_stacked_env, dqn_base_env = create_stacked_dqn_env(
-                env_kwargs, frame_stacking_config, seed=PLOT_CONFIG["seed"]
+                env_kwargs, training_config, seed=PLOT_CONFIG["seed"]
             )
-            # NOTE: now returns 4 values — the 4th is the pre-step sensor snapshot
             df_dqn, steps_dqn, dqn_trajectory, dqn_sensor_snap = run_dqn_agent_for_plot(
                 model, dqn_stacked_env, dqn_base_env, "DQN Agent",
                 seed=PLOT_CONFIG["seed"],
             )
             save_baseline_data("dqn_agent_fresh", df_dqn)
-
-            # FIX 3: pass override_sensor_data so the snapshot uses pre-reset data
             save_sensor_snapshot(
                 dqn_base_env,
                 OUTPUT_DIR / "dqn_sensor_snapshot.json",
@@ -1191,9 +1198,9 @@ def main():
                 override_sensor_data=dqn_sensor_snap,
             )
             agents_config.append({
-                "name": "DQN (Proposed)",
-                "steps": steps_dqn,
-                "final_reward": float(df_dqn["cumulative_reward"].iloc[-1]),
+                "name":           "DQN (Proposed)",
+                "steps":          steps_dqn,
+                "final_reward":   float(df_dqn["cumulative_reward"].iloc[-1]),
                 "final_coverage": float(df_dqn["coverage_percent"].iloc[-1]),
             })
             print("✓ DQN evaluation complete")
@@ -1205,10 +1212,14 @@ def main():
     else:
         print(f"⚠ WARNING: DQN model not found at {DQN_MODEL_PATH}")
 
-    # ========== STEP 2: Run Greedy Agents ==========
+    # ========== STEP 2 & 3: Run Greedy Agents ==========
+    # Greedy agents use the base UAVEnvironment — no padding needed
     print("\n" + "-" * 100)
     print("Setting up environment for greedy agents...")
-    env = UAVEnvironment(**env_kwargs)
+    greedy_env_kwargs = {k: v for k, v in env_kwargs.items()
+                         if k not in ("max_sensors_limit", "render_mode")}
+    greedy_env_kwargs["render_mode"] = "human"
+    env = UAVEnvironment(**greedy_env_kwargs)
     print("✓ Environment created\n")
 
     print("-" * 100)
@@ -1217,90 +1228,66 @@ def main():
         agent_smart, env, "SF-Aware Greedy V2", seed=PLOT_CONFIG["seed"]
     )
     save_baseline_data("greedy_smart_v2", df_smart)
-    save_sensor_snapshot(
-        env, OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
-        "Smart Greedy V2", is_wrapper=False,
-    )
+    save_sensor_snapshot(env, OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
+                         "Smart Greedy V2", is_wrapper=False)
     agents_config.append({
-        "name": "SF-Aware Greedy V2",
-        "steps": steps_smart,
-        "final_reward": float(df_smart["cumulative_reward"].iloc[-1]),
+        "name":           "SF-Aware Greedy V2",
+        "steps":          steps_smart,
+        "final_reward":   float(df_smart["cumulative_reward"].iloc[-1]),
         "final_coverage": float(df_smart["coverage_percent"].iloc[-1]),
     })
 
-    # ========== STEP 3: Run Nearest Sensor Greedy ==========
     print("\n" + "-" * 100)
     agent_dumb = NearestSensorGreedy(env)
     df_dumb, steps_dumb, dumb_trajectory = run_greedy_agent_for_plot(
         agent_dumb, env, "Nearest Sensor Greedy", seed=PLOT_CONFIG["seed"]
     )
     save_baseline_data("greedy_nearest", df_dumb)
-    save_sensor_snapshot(
-        env, OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
-        "Nearest Sensor Greedy", is_wrapper=False,
-    )
+    save_sensor_snapshot(env, OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
+                         "Nearest Sensor Greedy", is_wrapper=False)
     agents_config.append({
-        "name": "Nearest Sensor Greedy",
-        "steps": steps_dumb,
-        "final_reward": float(df_dumb["cumulative_reward"].iloc[-1]),
+        "name":           "Nearest Sensor Greedy",
+        "steps":          steps_dumb,
+        "final_reward":   float(df_dumb["cumulative_reward"].iloc[-1]),
         "final_coverage": float(df_dumb["coverage_percent"].iloc[-1]),
     })
 
     save_comparison_metadata(agents_config)
 
     # ========== PLOTTING ==========
-
     print("\n" + "-" * 100)
-    print("Generating trajectory visualization...")
     plot_trajectories(env, dqn_trajectory, smart_trajectory, dumb_trajectory)
-
     print("\n" + "-" * 100)
-    print("Generating performance comparison plot...")
     plot_comparative_analysis(df_dqn, df_smart, df_dumb)
-
     print("\n" + "-" * 100)
-    print("Generating efficiency metrics table...")
     plot_efficiency_table(df_dqn, df_smart, df_dumb)
-
     print("\n" + "-" * 100)
-    print("Generating fairness heatmap...")
     plot_fairness_heatmap(
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
     )
-
     print("\n" + "-" * 100)
-    print("Generating Pareto scatter plot...")
     plot_pareto_scatter(df_dqn, df_smart, df_dumb)
-
     print("\n" + "-" * 100)
-    print("Generating per-sensor bar chart...")
     plot_per_sensor_bar(
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
     )
-
     print("\n" + "-" * 100)
-    print("Generating radar chart...")
     plot_radar_chart(
         df_dqn, df_smart, df_dumb,
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
     )
-
     print("\n" + "-" * 100)
-    print("Generating buffer dynamics plot...")
     plot_buffer_dynamics(df_dqn, df_smart, df_dumb)
-
     print("\n" + "-" * 100)
-    print("Generating battery / steps / data collected plot...")
     plot_battery_steps_data(df_dqn, df_smart, df_dumb)
 
     # ========== SUMMARY ==========
-
     print("\n" + "=" * 100)
     print("COMPARISON SUMMARY STATISTICS")
     print("=" * 100)
@@ -1313,43 +1300,17 @@ def main():
         print(f"  Data Collected: {df_dqn['total_data_collected'].iloc[-1]:>11.0f} bytes")
         print(f"  Efficiency:     {df_dqn['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
 
-    print(f"\nSmart Greedy V2:")
-    print(f"  Final Reward:   {df_smart['cumulative_reward'].iloc[-1]:>15.1f}")
-    print(f"  Final Battery:  {df_smart['battery_percent'].iloc[-1]:>13.1f}%")
-    print(f"  Final Coverage: {df_smart['coverage_percent'].iloc[-1]:>12.1f}%")
-    print(f"  Data Collected: {df_smart['total_data_collected'].iloc[-1]:>11.0f} bytes")
-    print(f"  Efficiency:     {df_smart['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
-
-    print(f"\nNearest Sensor Greedy:")
-    print(f"  Final Reward:   {df_dumb['cumulative_reward'].iloc[-1]:>15.1f}")
-    print(f"  Final Battery:  {df_dumb['battery_percent'].iloc[-1]:>13.1f}%")
-    print(f"  Final Coverage: {df_dumb['coverage_percent'].iloc[-1]:>12.1f}%")
-    print(f"  Data Collected: {df_dumb['total_data_collected'].iloc[-1]:>11.0f} bytes")
-    print(f"  Efficiency:     {df_dumb['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+    for label, df in [("Smart Greedy V2", df_smart), ("Nearest Sensor Greedy", df_dumb)]:
+        print(f"\n{label}:")
+        print(f"  Final Reward:   {df['cumulative_reward'].iloc[-1]:>15.1f}")
+        print(f"  Final Battery:  {df['battery_percent'].iloc[-1]:>13.1f}%")
+        print(f"  Final Coverage: {df['coverage_percent'].iloc[-1]:>12.1f}%")
+        print(f"  Data Collected: {df['total_data_collected'].iloc[-1]:>11.0f} bytes")
+        print(f"  Efficiency:     {df['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
 
     env.close()
-
     print("\n" + "=" * 100)
-    print("✓ EVALUATION COMPLETE - FILES GENERATED")
-    print("=" * 100)
-    print("\nCSV Performance Data:")
-    print("  • dqn_agent_fresh_results.csv")
-    print("  • greedy_smart_v2_results.csv")
-    print("  • greedy_nearest_results.csv")
-    print("\nJSON Sensor Snapshots:")
-    print("  • dqn_sensor_snapshot.json")
-    print("  • greedy_smart_sensor_snapshot.json")
-    print("  • greedy_nearest_sensor_snapshot.json")
-    print("\nVisualization Plots:")
-    print("  • agent_trajectories.png")
-    print("  • final_comparison_graph.png")
-    print("  • efficiency_metrics_table.png")
-    print("  • fairness_heatmap.png")
-    print("  • pareto_scatter.png")
-    print("  • per_sensor_bar.png")
-    print("  • radar_chart.png")
-    print("  • buffer_dynamics.png")
-    print("  • battery_steps_data.png          ← NEW")
+    print("✓ EVALUATION COMPLETE")
     print("=" * 100 + "\n")
 
 

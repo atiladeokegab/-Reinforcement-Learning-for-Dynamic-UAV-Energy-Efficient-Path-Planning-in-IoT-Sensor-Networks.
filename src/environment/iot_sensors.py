@@ -444,3 +444,55 @@ if __name__ == "__main__":
     print(f"→ Forces DQN to learn HOVERING strategies (not just passing by)")
     print(f"→ Frame stacking becomes valuable for predicting future RSSI trends")
     print("=" * 100)
+
+    # Test 6: RSSI and SF values at different distances
+    print("=" * 100)
+    print("Test 6: RSSI and SF Values at Different Distances from UAV")
+    print("=" * 100)
+
+    # Place sensor at origin, move UAV to different distances
+    sensor_dist = IoTSensor(
+        position=(0.0, 0.0),
+        sensor_id=99,
+        transmit_power_dbm=14.0,
+        uav_altitude=100,
+        adr_lambda=0.1,
+        use_ema_adr=False,  # Instantaneous so we see true SF per distance
+        shadowing_std_db=0.0,  # Zero shadowing so values are deterministic
+    )
+
+    # Grid distances (1 grid unit = 10m), UAV always on same y=0 axis
+    grid_distances = [0, 1, 2, 5, 10, 20, 30, 50, 70, 100, 150, 200, 300, 400, 500, 700, 1000, 1500, 2000, 3000, 5000]
+
+    print(
+        f"\n{'Grid Dist':<12} {'Real Dist (m)':<16} {'3D Dist (m)':<14} {'RSSI (dBm)':<14} {'SF':<6} {'Data Rate (B/s)':<18} {'In Range?'}")
+    print("-" * 100)
+
+    for gd in grid_distances:
+        uav_pos = (float(gd), 0.0)
+
+        # Real ground distance
+        real_ground_m = gd * 10
+        real_3d_m = np.sqrt(real_ground_m ** 2 + 100 ** 2)  # 100m altitude
+
+        sensor_dist.avg_rssi = None  # Reset EMA each time
+        sensor_dist.update_spreading_factor(uav_pos, current_step=0)
+
+        rssi = sensor_dist.current_rssi
+        sf = sensor_dist.spreading_factor
+        data_rate = sensor_dist.data_rate
+        in_range = rssi >= sensor_dist.rssi_threshold
+
+        print(
+            f"{gd:<12} {real_ground_m:<16.0f} {real_3d_m:<14.1f} "
+            f"{rssi:<14.1f} {sf:<6} {data_rate:<18.2f} {'✅' if in_range else '❌'}"
+        )
+
+    print()
+    print("Notes:")
+    print(f"  UAV altitude: 100m (fixed)")
+    print(f"  Grid unit = 10m | shadowing disabled for clean deterministic output")
+    print(f"  RSSI threshold: {sensor_dist.rssi_threshold} dBm")
+    print(
+        f"  SF7=fastest ({sensor_dist.LORA_DATA_RATES[7]:.1f} B/s) → SF12=slowest ({sensor_dist.LORA_DATA_RATES[12]:.1f} B/s)")
+    print("=" * 100)
