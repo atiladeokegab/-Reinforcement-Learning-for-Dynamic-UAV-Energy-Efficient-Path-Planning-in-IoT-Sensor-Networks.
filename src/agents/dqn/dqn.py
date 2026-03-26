@@ -35,7 +35,7 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import (
-    CheckpointCallback, BaseCallback, CallbackList,
+    CheckpointCallback, BaseCallback, CallbackList, EvalCallback,
 )
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -469,12 +469,24 @@ def main():
     )
     curriculum_cb = CurriculumCallback(n_envs=N_ENVS, verbose=1)
 
+    eval_env = DummyVecEnv([make_eval_env])
+    eval_env = VecFrameStack(eval_env, n_stack=TRAINING_CONFIG["n_stack"])
+    eval_cb = EvalCallback(
+        eval_env,
+        best_model_save_path = str(SAVE_DIR / "best_model"),
+        log_path             = str(LOG_DIR / "eval"),
+        eval_freq            = 25_000,   # evaluate every 25k steps
+        n_eval_episodes      = 5,
+        deterministic        = True,
+        verbose              = 1,
+    )
+
     # ── Train ────────────────────────────────────────────────────────────
     print("Starting training...")
     t_start = __import__("time").time()
     model.learn(
         total_timesteps = TRAINING_CONFIG["total_timesteps"],
-        callback        = CallbackList([checkpoint_cb, curriculum_cb]),
+        callback        = CallbackList([checkpoint_cb, curriculum_cb, eval_cb]),
         progress_bar    = True,
     )
     elapsed = (__import__("time").time() - t_start) / 60

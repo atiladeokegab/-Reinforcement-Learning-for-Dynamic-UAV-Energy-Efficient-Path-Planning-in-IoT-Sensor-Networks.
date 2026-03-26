@@ -431,6 +431,8 @@ class UAVEnvironment(gym.Env):
         self.sensors_visited = set()
         self.last_action = None
         self.previous_data_loss = 0.0
+        self.capture_effect_triggers = 0
+        self.last_step_bytes_collected = 0.0
         return self._get_observation(), self._get_info()
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
@@ -478,6 +480,7 @@ class UAVEnvironment(gym.Env):
         battery_before = self.uav.battery
 
         if action in [0, 1, 2, 3]:  # Movement actions
+            self.last_step_bytes_collected = 0.0
             reward = self._execute_move_action(action, step_data_loss)
         elif action == 4:  # COLLECT action
             reward = self._execute_collect_action(step_data_loss)
@@ -653,6 +656,7 @@ class UAVEnvironment(gym.Env):
                     # Strongest sensor is >6 dB above interference
                     # Gateway successfully decodes strongest signal
                     successful_sf_slots[current_sf] = strongest_sensor
+                    self.capture_effect_triggers += 1
 
                 else:
                     # Destructive interference: Neither signal dominates
@@ -698,6 +702,7 @@ class UAVEnvironment(gym.Env):
 
         # ===== PHASE 6: CALCULATE REWARD =====
         # ===== CRITICAL: Use pre-calculated data loss (passed as parameter) =====
+        self.last_step_bytes_collected = total_bytes_collected
         current_buffers = [float(s.data_buffer) for s in self.sensors]
         reward = self.reward_fn.calculate_collection_reward(
             bytes_collected=total_bytes_collected,
@@ -753,6 +758,8 @@ class UAVEnvironment(gym.Env):
             "max_urgency": np.max(urgencies),
             "avg_urgency": np.mean(urgencies),
             "high_urgency_sensors": np.sum(urgencies > 0.8),
+            "capture_effect_triggers": self.capture_effect_triggers,
+            "last_step_bytes_collected": self.last_step_bytes_collected,
         }
 
     def render(self):
