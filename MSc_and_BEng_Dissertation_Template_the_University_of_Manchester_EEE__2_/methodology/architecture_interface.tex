@@ -5,100 +5,26 @@ OpenAI Gym) interface~\cite{towers2024gymnasium}, facilitating seamless integrat
 standard DRL libraries such as Stable-Baselines3~\cite{raffin2021stable}. The environment encapsulates the complex cyber-physical interactions into a
 discrete time-stepping logic.
 
-The core logic resides in the \lstinline{step(action)} function, which executes the following
-sequence at every iteration:
-\begin{enumerate}
-    \item \emph{Physics Update}: The UAV's position \(p_t\) is updated based on the selected
-    motion primitive, and battery energy \(E_t\) is decremented according to the power
-    consumption model.
-    \item \emph{Channel Propagation}: The Euclidean distances to all sensors are recalculated.
-    The Two-Ray Ground Reflection model is applied to determine the instantaneous RSSI for
-    every ground node.
-    \item \emph{Protocol Logic}: The internal states of the sensors are updated. This includes
-    incrementing the Age of Information (AoI) counters, generating new data packets based on a
-    Poisson process, and updating the moving average of RSSI values to simulate ADR latency.
-    \item \emph{Collision Resolution}: The environment checks for packet collisions. If multiple
-    sensors transmit on the same Spreading Factor (SF), the Capture Effect logic determines if
-    the strongest signal (closest sensor) exceeds the interference threshold.
-    \item \emph{Reward Calculation}: The multi-objective reward \(R_t\) is computed based on
-    the outcome of the data collection attempts and the UAV's energy usage.
-\end{enumerate}
-This modular design ensures that the DRL agent is trained against a rigorous model of the
-physical and protocol layers, rather than a simplified abstraction.
+Each \lstinline{step(action)} call sequentially: (1) updates UAV position and decrements
+battery; (2) recomputes RSSI via the Two-Ray model; (3) updates AoI counters, generates
+Poisson packets, and advances EMA-ADR; (4) resolves collisions via Capture Effect; and
+(5) computes the multi-objective reward $R_t$.
 
 \subsubsection{Training Algorithm}
 
-The complete training procedure, which integrates the physics-based updates (Two-Ray model)
-and protocol constraints (ADR latency) with the DRL agent's decision process, is detailed in
-\autoref{alg:dqn}.
+At each step the agent selects $a_t = \arg\max_a Q(s_t, a; \theta)$ (or a random
+action with probability $\epsilon$), executes the Gymnasium step, stores the transition
+$(s_t, a_t, r_t, s_{t+1})$ in the replay buffer $\mathcal{D}$, and updates $\theta$
+by minimising the TD loss on a sampled minibatch. The target network $\hat{Q}$ is hard
+updated every $C$ steps to stabilise training. The complete pseudocode is provided in
+Appendix~\ref{app:hyperparams}.
 
-\begin{algorithm}[h]
-\caption{Protocol-Aware DQN Training for UAV Data Collection}
-\label{alg:dqn}
-\begin{algorithmic}[1]
-    \State \textbf{Initialise:} UAV position $p_0$, Replay Buffer $\mathcal{D}$
-    \State \textbf{Initialise:} Q-Network $Q(s, a \mid \theta)$, Target Network $Q'(s, a \mid \theta^{-})$
-    \State \textbf{Initialise:} Hyperparameters: $\epsilon_{\max}, \epsilon_{\min}, \gamma, \alpha, B, C$
-    \State \textbf{Initialise:} Sensor states (Buffers, AoI, SF), $\epsilon \leftarrow \epsilon_{\max}$
-    \For{$\text{episode} \in [1, M]$}
-        \State Reset environment: $s_0 \leftarrow (p_{\text{start}}, E_{\max}, \ldots)$
-        \State $t \leftarrow 0$
-        \While{$E > 0$ \textbf{and} Data Remaining}
-            \If{$\text{random()} < \epsilon$}
-                \State $a_t \leftarrow \text{RandomAction}$ \Comment{Explore}
-            \Else
-                \State $a_t \leftarrow \arg\max_{a}\, Q(s_t, a; \theta)$ \Comment{Exploit}
-            \EndIf
-            \State $s_{t+1},\, r_t,\, \text{done} \leftarrow \text{Environment.Step}(a_t)$
-            \State Store $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
-            \If{$|\mathcal{D}| \geq B$}
-                \State Sample random minibatch $\{(s_j, a_j, r_j, s'_j)\}_{j=1}^{B}$ from $\mathcal{D}$
-                \State Compute TD target: $y_j \leftarrow r_j + \gamma \max_{a'} Q'(s'_j, a' \mid \theta^{-})$
-                \State Compute loss: $L(\theta) \leftarrow \frac{1}{B}\sum_{j=1}^{B}(y_j - Q(s_j, a_j \mid \theta))^2$
-                \State Perform gradient descent: $\theta \leftarrow \theta - \alpha \nabla_\theta L(\theta)$
-            \EndIf
-            \State $s_t \leftarrow s_{t+1}$, $t \leftarrow t + 1$
-        \EndWhile
-        \State $\epsilon \leftarrow \max\!\left(\epsilon_{\min},\ \epsilon - \frac{\epsilon_{\max} - \epsilon_{\min}}{M}\right)$
-        \If{$t \bmod C = 0$}
-            \State $\theta^{-} \leftarrow \theta$
-        \EndIf
-    \EndFor
-\end{algorithmic}
-\end{algorithm}
-
-In the consolidated format (\autoref{alg:dqn}), the environment's complexity is contained
-within the \lstinline{Environment.Step($a_t$)} call. This single operation sequentially
-performs the kinematic update, computes the RSSI via the Two-Ray Ground Model, executes the
-ADR protocol logic, determines packet capture based on the Capture Effect, and calculates the
-final multi-objective reward signal before transitioning the system to state \(s_{t+1}\).
 
 \subsubsection{Hyperparameters}
 
-The hyperparameters used for training the DQN agent were selected based on preliminary tuning
-experiments to balance sample efficiency with stability. The specific values are detailed in
-\autoref{tab:hyperparams}.
-
-\begin{table}[h]
-    \centering
-    \caption{DQN Hyperparameters and Training Configuration}
-    \label{tab:hyperparams}
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Parameter}               & \textbf{Value}             \\
-        \midrule
-        Total Timesteps                  & \(1 \times 10^6\)          \\
-        Learning Rate (\(\alpha\))       & \(1 \times 10^{-4}\)       \\
-        Discount Factor (\(\gamma\))     & \(0.99\)                   \\
-        Buffer Size                      & 100{,}000 transitions      \\
-        Batch Size                       & 32                         \\
-        Target Update Interval (\(C\))   & 1{,}000 steps              \\
-        Exploration Strategy             & \(\epsilon\)-greedy        \\
-        Initial \(\epsilon\)             & 1.0                        \\
-        Final \(\epsilon\)               & 0.05                       \\
-        Exploration Fraction             & 10\% of total steps        \\
-        Network Architecture             & MLP [512, 512, 256]        \\
-        Activation Function              & ReLU                       \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+The DQN was trained with $1\times10^6$ timesteps, learning rate $\alpha = 10^{-4}$,
+discount $\gamma = 0.99$, replay buffer of 100{,}000 transitions, and batch size~32.
+A target network is updated every 1{,}000 steps. $\epsilon$-greedy exploration decays
+from 1.0 to 0.05 over the first 10\% of training steps. The policy network is a 3-layer
+MLP with hidden dimensions [512, 512, 256] and ReLU activations. Full hyperparameter
+listings are provided in \autoref{app:hyperparams}.

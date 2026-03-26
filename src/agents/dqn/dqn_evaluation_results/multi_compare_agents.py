@@ -47,7 +47,8 @@ from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
 
 # ==================== CONFIGURATION ====================
 
-SEEDS         = [42, 123, 256, 789, 1337]
+SEEDS         = [42, 123, 256, 789, 1337, 2024, 999, 314, 555, 2048,
+                 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 SENSOR_COUNTS = [10, 20, 30, 40]          # all must be <= max_sensors_limit (50)
 
 # Grid sizes for Sweep B.
@@ -540,18 +541,19 @@ def _shaded_line(ax, steps, mean, std, style):
 
 
 def plot_shaded_reward(interp_data, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(14, 8))
     for agent, d in interp_data.items():
         _shaded_line(ax, d["steps"], d["mean_reward"], d["std_reward"],
                      AGENT_STYLES[agent])
-    ax.set_xlabel("Simulation Step (t)", fontsize=13, fontweight="bold")
-    ax.set_ylabel("Cumulative Reward", fontsize=13, fontweight="bold")
+    ax.set_xlabel("Simulation Step (t)", fontsize=15, fontweight="bold")
+    ax.set_ylabel("Cumulative Reward", fontsize=15, fontweight="bold")
     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-    ax.legend(loc="lower right", fontsize=11, framealpha=0.9)
+    ax.tick_params(axis="both", labelsize=13)
+    ax.legend(loc="lower right", fontsize=13, framealpha=0.9)
     ax.set_title("Comparative Performance (Mean +- Std, n={} seeds)".format(len(seeds)),
-                 fontsize=13, fontweight="bold", pad=12)
+                 fontsize=15, fontweight="bold", pad=12)
     plt.tight_layout()
     out = out_dir / "fig1_shaded_reward.png"
     plt.savefig(out, dpi=300, bbox_inches="tight")
@@ -586,11 +588,11 @@ def plot_summary_bars(all_summaries, seeds, out_dir):
         ("jains_index",       "Jain's Fairness Index",         "",    True),
         ("energy_efficiency", "Energy Efficiency (bytes/Wh)",  "",    True),
     ]
-    sns.set_theme(style="whitegrid", font_scale=1.1)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
-    fig, axes = plt.subplots(1, 4, figsize=(18, 6))
+    fig, axes = plt.subplots(1, 4, figsize=(22, 7))
     fig.suptitle("Multi-Metric Summary (n={} seeds)".format(len(seeds)),
-                 fontsize=14, fontweight="bold", y=1.02)
+                 fontsize=16, fontweight="bold", y=1.02)
     for ax, (mk, ml, unit, hi) in zip(axes, metrics):
         means, stds, names, colors = [], [], [], []
         for agent, style in AGENT_STYLES.items():
@@ -609,9 +611,9 @@ def plot_summary_bars(all_summaries, seeds, out_dir):
         ax.errorbar(x, means, yerr=stds, fmt="none", color="black",
                     capsize=6, capthick=2, elinewidth=2, zorder=4)
         ax.set_xticks(x)
-        ax.set_xticklabels(names, rotation=20, ha="right", fontsize=9)
-        ax.set_ylabel(ml, fontsize=10, fontweight="bold")
-        ax.set_title(ml, fontsize=10, fontweight="bold", pad=8)
+        ax.set_xticklabels(names, rotation=20, ha="right", fontsize=11)
+        ax.set_ylabel(ml, fontsize=13, fontweight="bold")
+        ax.set_title(ml, fontsize=13, fontweight="bold", pad=8)
         ax.yaxis.grid(True, alpha=0.5)
         if unit == "1e6":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
@@ -848,7 +850,7 @@ def save_raw_data(all_summaries, seeds, out_dir, label):
 
 
 def plot_scalability_metrics(results):
-    sns.set_theme(style="whitegrid", font_scale=1.1)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
     metrics = [
         ("final_reward",      "Cumulative Reward",             "sci"),
@@ -856,11 +858,11 @@ def plot_scalability_metrics(results):
         ("jains_index",       "Jain's Fairness Index",         "plain"),
         ("energy_efficiency", "Energy Efficiency (bytes/Wh)",  "sci"),
     ]
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle(
         "Scalability: Performance vs Sensor Count\n"
         "(Mean +- Std, {} seeds per point, grid=500x500)".format(len(SEEDS)),
-        fontsize=14, fontweight="bold"
+        fontsize=16, fontweight="bold"
     )
     axes = axes.flatten()
     for ax, (mk, ml, fmt) in zip(axes, metrics):
@@ -879,11 +881,12 @@ def plot_scalability_metrics(results):
                     markersize=8, linewidth=2.5, label=style["label"], zorder=3)
             ax.fill_between(SENSOR_COUNTS, means - stds, means + stds,
                             color=style["color"], alpha=0.15, zorder=2)
-        ax.set_xlabel("Number of Sensors", fontsize=11, fontweight="bold")
-        ax.set_ylabel(ml, fontsize=11, fontweight="bold")
-        ax.set_title(ml, fontsize=11, fontweight="bold", pad=8)
+        ax.set_xlabel("Number of Sensors", fontsize=13, fontweight="bold")
+        ax.set_ylabel(ml, fontsize=13, fontweight="bold")
+        ax.set_title(ml, fontsize=13, fontweight="bold", pad=8)
         ax.set_xticks(SENSOR_COUNTS)
-        ax.legend(fontsize=9); ax.grid(True, alpha=0.4, linestyle="--")
+        ax.tick_params(axis="both", labelsize=12)
+        ax.legend(fontsize=11); ax.grid(True, alpha=0.4, linestyle="--")
         if fmt == "sci":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     plt.tight_layout()
@@ -893,18 +896,18 @@ def plot_scalability_metrics(results):
 
 
 def plot_dqn_advantage_gap(results):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
     metrics = [
         ("final_reward",   "Reward Advantage"),
         ("final_coverage", "Coverage Advantage (pp)"),
         ("jains_index",    "Fairness Advantage (Jain's)"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6.5))
     fig.suptitle(
         "DQN Advantage Over Best Greedy vs Sensor Count\n"
         "(Positive = DQN wins, grid=500x500)",
-        fontsize=13, fontweight="bold"
+        fontsize=15, fontweight="bold"
     )
     for ax, (mk, ml) in zip(axes, metrics):
         gaps, errs = [], []
@@ -926,10 +929,12 @@ def plot_dqn_advantage_gap(results):
         ax.errorbar(SENSOR_COUNTS, gaps, yerr=errs, fmt="none", color="black",
                     capsize=5, capthick=1.5, elinewidth=1.5, zorder=4)
         ax.axhline(0, color="black", linewidth=1.2, linestyle="--", alpha=0.5)
-        ax.set_xlabel("Number of Sensors", fontsize=11, fontweight="bold")
-        ax.set_ylabel("Delta {}".format(ml), fontsize=11, fontweight="bold")
-        ax.set_title(ml, fontsize=11, fontweight="bold", pad=8)
-        ax.set_xticks(SENSOR_COUNTS); ax.grid(axis="y", alpha=0.4, linestyle="--")
+        ax.set_xlabel("Number of Sensors", fontsize=13, fontweight="bold")
+        ax.set_ylabel("Delta {}".format(ml), fontsize=13, fontweight="bold")
+        ax.set_title(ml, fontsize=13, fontweight="bold", pad=8)
+        ax.set_xticks(SENSOR_COUNTS)
+        ax.tick_params(axis="both", labelsize=12)
+        ax.grid(axis="y", alpha=0.4, linestyle="--")
         if mk == "final_reward":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     plt.tight_layout()
@@ -999,7 +1004,7 @@ def save_scalability_csv(results):
 
 
 def plot_grid_scalability_metrics(grid_results):
-    sns.set_theme(style="whitegrid", font_scale=1.1)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
     metrics = [
         ("final_reward",      "Cumulative Reward",             "sci"),
@@ -1007,13 +1012,13 @@ def plot_grid_scalability_metrics(grid_results):
         ("jains_index",       "Jain's Fairness Index",         "plain"),
         ("energy_efficiency", "Energy Efficiency (bytes/Wh)",  "sci"),
     ]
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle(
         "Scalability Across Grid Sizes (LoRa SF Regimes)\n"
         "Grid unit=10m | UAV alt=100m | {} sensors | {} seeds".format(
             GRID_SWEEP_NUM_SENSORS, len(SEEDS)
         ),
-        fontsize=13, fontweight="bold"
+        fontsize=16, fontweight="bold"
     )
     axes = axes.flatten()
     x = np.arange(len(GRID_SIZES))
@@ -1043,11 +1048,12 @@ def plot_grid_scalability_metrics(grid_results):
             ax.text(i, ax.get_ylim()[0], GRID_PHYSICS[gs]["sf"],
                     ha="center", va="bottom", fontsize=7, color="grey", style="italic")
 
-        ax.set_xticks(x); ax.set_xticklabels(x_labels, fontsize=9)
-        ax.set_xlabel("Grid Size  (SF regime)", fontsize=10, fontweight="bold")
-        ax.set_ylabel(ml, fontsize=10, fontweight="bold")
-        ax.set_title(ml, fontsize=10, fontweight="bold", pad=8)
-        ax.legend(fontsize=8); ax.grid(True, alpha=0.35, linestyle="--")
+        ax.set_xticks(x); ax.set_xticklabels(x_labels, fontsize=11)
+        ax.set_xlabel("Grid Size  (SF regime)", fontsize=13, fontweight="bold")
+        ax.set_ylabel(ml, fontsize=13, fontweight="bold")
+        ax.set_title(ml, fontsize=13, fontweight="bold", pad=8)
+        ax.tick_params(axis="y", labelsize=12)
+        ax.legend(fontsize=11); ax.grid(True, alpha=0.35, linestyle="--")
         if fmt == "sci":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 
@@ -1058,18 +1064,18 @@ def plot_grid_scalability_metrics(grid_results):
 
 
 def plot_grid_dqn_advantage(grid_results):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
+    sns.set_theme(style="whitegrid", font_scale=1.3)
     plt.rcParams["font.family"] = "serif"
     metrics = [
         ("final_reward",   "Reward Advantage"),
         ("final_coverage", "Coverage Advantage (pp)"),
         ("jains_index",    "Fairness Advantage (Jain's)"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6.5))
     fig.suptitle(
         "DQN Advantage Over Best Greedy vs Grid Size\n"
         "SF regime from iot_sensors.py (grid unit=10m, UAV alt=100m)",
-        fontsize=13, fontweight="bold"
+        fontsize=15, fontweight="bold"
     )
     x = np.arange(len(GRID_SIZES))
     x_labels = [GRID_PHYSICS[g]["label"] for g in GRID_SIZES]
@@ -1102,10 +1108,11 @@ def plot_grid_dqn_advantage(grid_results):
             ax.text(i, gap + (yoff if gap >= 0 else -yoff),
                     sl, ha="center", va=va, fontsize=7.5, color="grey", style="italic")
 
-        ax.set_xticks(x); ax.set_xticklabels(x_labels, fontsize=9)
-        ax.set_xlabel("Grid Size", fontsize=10, fontweight="bold")
-        ax.set_ylabel("Delta {}".format(ml), fontsize=10, fontweight="bold")
-        ax.set_title(ml, fontsize=10, fontweight="bold", pad=8)
+        ax.set_xticks(x); ax.set_xticklabels(x_labels, fontsize=11)
+        ax.set_xlabel("Grid Size", fontsize=13, fontweight="bold")
+        ax.set_ylabel("Delta {}".format(ml), fontsize=13, fontweight="bold")
+        ax.set_title(ml, fontsize=13, fontweight="bold", pad=8)
+        ax.tick_params(axis="y", labelsize=12)
         ax.grid(axis="y", alpha=0.4, linestyle="--")
         if mk == "final_reward":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))

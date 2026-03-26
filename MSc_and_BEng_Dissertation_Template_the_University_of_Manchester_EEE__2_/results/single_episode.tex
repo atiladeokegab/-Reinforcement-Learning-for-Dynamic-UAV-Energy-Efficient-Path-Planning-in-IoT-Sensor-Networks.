@@ -3,17 +3,75 @@
 Figure~\ref{fig:single_episode} shows a representative evaluation episode for the trained
 DQN agent on the 20-sensor, 500$\times$500 condition. The agent achieves 100\% sensor
 coverage by step~200 and sustains data collection until battery depletion at step~1{,}404,
-collecting 57{,}335\,bytes at a mean efficiency of 213.6\,B/Wh. Critically, the cumulative
-reward grows monotonically throughout the episode without plateauing, indicating that the
-agent does not idle once early sensors are visited. This behaviour is a direct consequence
-of the terminal unvisited-sensor penalty ($-2{,}000$ per sensor) and the per-step data
-reward encouraging continued collection from revisited sensors.
+collecting 57{,}335\,bytes at a mean efficiency of 213.6\,B/Wh. Cumulative reward grows
+monotonically without plateauing, indicating that the agent does not idle once early sensors
+are visited---a direct consequence of the buffer-overflow penalty encouraging continued
+collection from revisited sensors.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{sensors_20/fig1_shaded_reward}
+    \includegraphics[width=0.68\textwidth]{sensors_20/fig1_shaded_reward}
     \caption{Cumulative reward and battery level during a single DQN evaluation episode
              (20 sensors, 500$\times$500 grid, seed 42). Shaded band shows $\pm 1$ standard
              deviation across seeds.}
     \label{fig:single_episode}
+\end{figure}
+
+\subsubsection{Spatial Trajectory Comparison}
+
+Figure~\ref{fig:trajectory_comparison} shows the UAV flight paths for all three agents on
+the same sensor layout (seed 42, $N=20$), with sensor positions coloured by their initial SF
+assignment. The contrast is qualitatively striking.
+
+The \textbf{Nearest Greedy} agent executes a near-straight sweep from sensor to sensor
+in order of proximity, issuing a collection action at every step (100\% hover fraction).
+The \textbf{SF-Aware Greedy} agent follows a similar sweeping path but visits higher-priority
+(SF7--SF9) sensors first; like Nearest Greedy, it never repositions without an immediate
+collection target.
+
+The \textbf{DQN} agent, by contrast, devotes a measurable fraction of steps (2.9\% across
+10 seeds, $p = 0.002$, Welch's $t$-test) to deliberate movement---visible as the orange hover
+dots dispersed across the grid rather than concentrated on sensor locations. The DQN's
+trajectory is less linear: it navigates towards spatial positions that simultaneously
+place multiple sensors within collection range across \emph{orthogonal} spreading factors,
+rather than visiting each sensor independently.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{fig_trajectory_comparison}
+    \caption{UAV trajectories for all three agents on the same sensor layout (seed 42,
+             $N=20$, 500$\times$500 grid). Sensor markers are coloured by initial SF
+             assignment (green = SF7, purple = SF12). Orange dots = hover steps; coloured
+             dots = movement steps. The DQN's deliberate repositioning (orange cluster
+             spread across the grid) contrasts with the greedy agents' end-to-end sweeps.}
+    \label{fig:trajectory_comparison}
+\end{figure}
+
+\subsubsection{Spreading Factor Distribution Over Time}
+
+Figure~\ref{fig:sf_dynamics} shows how the distribution of spreading factors across the
+20 sensors evolves throughout the episode for the DQN and SF-Aware Greedy agents. Two
+observations are notable.
+
+First, at episode start both agents face a similar SF distribution dictated by the initial
+sensor layout. As the DQN navigates toward sensors, it systematically reduces the
+proportion of sensors on high SFs (SF11--SF12, shown in red/purple): by maintaining
+proximity to sensors for multiple steps, the EMA-ADR filter converges to lower SF
+assignments, increasing data rates and enabling more concurrent transmissions.
+
+Second, the DQN maintains greater SF diversity (sensors spread across SF7--SF11) for longer
+into the episode than the SF-Aware Greedy baseline, which shows a slower SF downgrade
+progression as it does not reposition to accelerate ADR convergence. This confirms the
+mechanism behind the DQN's per-step efficiency advantage: the deliberate repositioning
+observed in Figure~\ref{fig:trajectory_comparison} is not wasteful movement but the means
+by which the DQN actively manages the spectral environment.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\textwidth]{fig_sf_dynamics}
+    \caption{Spreading factor distribution across all 20 sensors over the episode (seed 42).
+             The DQN (left) maintains greater SF diversity and achieves faster SF downgrades
+             than the SF-Aware Greedy baseline (right), confirming that deliberate
+             repositioning actively reshapes the LoRaWAN spectral environment.}
+    \label{fig:sf_dynamics}
 \end{figure}

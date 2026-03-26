@@ -13,14 +13,6 @@ resulting long Time-on-Air. These two foundational works establish the protocol 
 that every LoRaWAN system designer---and by extension every UAV mission planner---must
 respect.
 
-Performance degrades further in dense or mobile scenarios. Nakamura
-et al.~\cite{nakamura2022lora} highlight the necessity of robust protocols for connecting
-IoT edge-computing nodes, emphasising that reliable transfer of ``small data'' requires
-careful management of connection setups, duty-cycle constraints, and message lengths. Their
-analysis exposes an underappreciated tension in LoRaWAN deployments: the protocol's
-low-overhead design prioritises energy efficiency at the expense of adaptability, leaving
-it ill-equipped to cope with rapidly changing link conditions.
-
 \subsubsection{The SF Monoculture and ADR Failure}
 
 A critical failure mode in mobile LoRaWAN networks is the congestion collapse known as the
@@ -39,16 +31,10 @@ et al.\ conclude that ``reinforcement learning models could be employed to adapt
 to evolving network conditions,'' a direct motivation for the DRL approach in this
 dissertation.
 
-Reynders et al.~\cite{reynders2016range} provide complementary empirical evidence for these
-scalability limits. Through simulation of both LoRa (CSS modulation) and Sigfox (UNB
-modulation) under increasing node density, they demonstrate that the collision probability
-in LoRa networks grows super-linearly once the network load exceeds a critical threshold.
-They show that a LoRa device can send up to six times more packets than a Sigfox device
-under low load due to LoRa's higher bit rate at SF7, but that this advantage evaporates
-under congestion due to inter-node interference. Crucially, they find that
-frequency-adaptive rate management is \emph{necessary}---not optional---to sustain
-performance under high load, providing strong motivation for the ADR modelling choices in
-this work.
+Reynders et al.~\cite{reynders2016range} provide complementary evidence: collision
+probability grows super-linearly beyond a critical load threshold, and frequency-adaptive
+rate management is \emph{necessary} to sustain performance, motivating the ADR modelling
+choices in this work.
 
 \subsubsection{The Capture Effect as a Partial Remedy}
 
@@ -71,9 +57,7 @@ demands low SFs for throughput). A mobile UAV that can close the physical distan
 sensors---reducing path loss and enabling SF downgrade via ADR---can resolve this tension
 dynamically, something no static gateway can achieve.
 
-This dissertation directly incorporates the 6\,dB Capture Effect threshold from Croce
-et al.\ into the collision resolution logic of the simulation environment. The DRL agent
-is therefore rewarded for learning spatial positions that create the necessary power
-differentials to trigger capture, rather than merely ensuring minimum RSSI coverage---a
-design distinction that separates this work from protocol-blind trajectory planners.
+This work directly incorporates the 6\,dB threshold into the collision resolution logic,
+rewarding the agent for reaching spatial positions that create the power differential
+required for capture---a design distinction from all protocol-blind trajectory planners.
 

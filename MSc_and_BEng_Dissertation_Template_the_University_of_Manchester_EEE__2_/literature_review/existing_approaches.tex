@@ -35,3 +35,22 @@ the SF-monoculture avoidance objective here. Nemer et al.~\cite{nemer2022energye
 apply a distributed actor--critic approach to maximise coverage fairness for multi-UAV
 networks, confirming that Jain's Fairness Index is an appropriate target metric for
 DRL-based UAV controllers.
+
+\subsubsection{Algorithm Selection: DQN versus Policy-Gradient Methods}
+
+Three candidate families are considered: DQN~\cite{mnih2015humanlevel}, PPO~\cite{schulman2017proximal}, and SAC~\cite{haarnoja2018soft}.
+The UAV's five-action discrete space directly favours DQN: it was designed for discrete
+actions and achieves sample efficiency via experience replay and a target network.
+PPO handles discrete actions but is on-policy, discarding all experience after each
+update --- a significant cost when episodes span 2100 steps and interactions are
+computationally expensive. SAC's discrete variant~\cite{christodoulou2019soft} loses
+the entropy-maximisation guarantee that motivates its exploration, offering no clear
+advantage here.
+
+Experience replay also addresses the EMA-ADR non-stationarity: by re-using transitions
+from earlier training states, it provides a diverse distribution that stabilises the
+Q-function as the reward landscape shifts with ADR convergence --- a property on-policy
+PPO cannot replicate. Challita et al.~\cite{challita2018interference} and Luong
+et al.~\cite{luong2019drl} both support DQN for discrete-waypoint UAV navigation,
+motivating it as the primary algorithm with actor--critic extensions as future work
+(Section~\ref{sec:future_work}).

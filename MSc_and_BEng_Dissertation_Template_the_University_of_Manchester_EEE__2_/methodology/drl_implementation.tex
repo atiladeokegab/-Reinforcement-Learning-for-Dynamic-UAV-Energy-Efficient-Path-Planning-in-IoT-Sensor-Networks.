@@ -7,11 +7,9 @@ The agent's decision-making policy is approximated using a Deep Q-Network
 map the high-dimensional state vector
 \(\mathbf{S}_t\) to Q-values for the five discrete actions.
 
-The network consists of an input layer matching the state dimension (\(4 + 3N\), where \(N\)
-is the number of sensors), followed by two fully connected hidden layers with 64 neurons each.
-To introduce non-linearity, Rectified Linear Unit (ReLU) activation functions are applied
-after each hidden layer. The output layer consists of 5 linear neurons, each corresponding to
-the estimated Q-value \(Q(s, a)\) for a specific action in \(\mathcal{A}\).
+The network is a 3-layer MLP with hidden dimensions [512, 512, 256] and ReLU activations.
+The input dimension is $4(3+2N)$ (frame-stacked state) and the output is 5 Q-values,
+one per action in $\mathcal{A}$.
 
 The network weights \(\theta\) are optimised using the Adam optimiser to minimise the temporal
 difference error between the predicted Q-values and the target Q-values derived from the
@@ -33,3 +31,12 @@ threshold (e.g., \(P_{\text{overall}} > 0.5\)), the environment forces the DQN a
 navigate the trade-off between proximity-induced signal strength and the stochastic
 availability of sensor nodes. This in turn allows for the creation and editing of link
 quality.
+
+\subsubsection{Training Convergence}
+
+The DQN was trained across 16 sequential curriculum stages. Reward converges within each
+stage (EMA curve rises and plateaus) and later stages converge to progressively higher
+rewards ($3$--$5\times10^6$), confirming that the curriculum successfully bootstraps the
+agent from easy to hard conditions. The TD loss follows the same spike-then-converge
+profile in every stage with no divergence across transitions. Full convergence curves
+are shown in Appendix~\ref{app:training}.
