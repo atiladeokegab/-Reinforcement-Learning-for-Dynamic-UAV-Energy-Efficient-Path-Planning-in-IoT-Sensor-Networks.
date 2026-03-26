@@ -1,0 +1,37 @@
+\subsection{Existing Optimisation Approaches}
+
+Current approaches to optimising UAV-LoRaWAN networks generally fall into two categories:
+static mathematical optimisation and energy-focused path planning.
+
+In the domain of mathematical optimisation, Zorbas et al.~\cite{zorbas2025revisiting} propose
+a Mixed Integer Linear Programming (MILP) framework to determine the optimal SF distribution
+that maximises packet reception probability. While this method provides a theoretically optimal
+allocation for static networks, it lacks the real-time adaptability required for dynamic UAV
+missions where the channel conditions change continuously.
+
+In the domain of path planning, Xiong et al.~\cite{xiong2023flyinglora} introduce
+``FlyingLoRa,'' a scheme designed to minimise energy consumption by jointly optimising the
+UAV's 3D trajectory and transmission scheduling. This approach represents the state-of-the-art
+in energy-efficient collection, utilising iterative algorithms to find sub-optimal solutions
+for flight paths. However, such methods often treat the communication protocol as a static constraint rather
+than a dynamic variable that the UAV can actively manipulate.
+
+A parallel line of research addresses UAV trajectory optimisation as an energy-efficiency
+problem independent of the application-layer protocol. Zeng and
+Zhang~\cite{zeng2017energy} derive a theoretical propulsion energy model for fixed-wing
+UAVs and show that jointly optimising the flight trajectory and communication scheduling
+yields significant energy efficiency gains; this framework motivates the energy-consumption
+term in our reward function. More broadly, Zeng et al.~\cite{zeng2016wireless} and
+Mozaffari et al.~\cite{mozaffari2019tutorial} survey the channel characteristics and
+deployment challenges unique to UAV-aided wireless systems, establishing the channel
+geometry assumptions---in particular the dominance of LoS links at low altitude---on which
+the Two-Ray Ground Reflection model in this work is predicated.
+
+At the intersection of deep reinforcement learning and UAV communications, Challita
+et al.~\cite{challita2018interference} propose a deep RL framework for interference-aware
+path planning of cellular-connected UAVs, demonstrating that DRL agents can learn
+collision-avoidance behaviour that static planners cannot replicate---directly analogous to
+the SF-monoculture avoidance objective here. Nemer et al.~\cite{nemer2022energyefficient}
+apply a distributed actor--critic approach to maximise coverage fairness for multi-UAV
+networks, confirming that Jain's Fairness Index is an appropriate target metric for
+DRL-based UAV controllers.

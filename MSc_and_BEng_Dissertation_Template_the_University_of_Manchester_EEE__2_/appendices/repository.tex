@@ -1,0 +1,41 @@
+\section{Code Repository}
+\label{app:repo}
+
+The source code developed for this project is maintained in a version-controlled Git repository. The repository contains the custom Gymnasium environment, the DQN training scripts, the baseline agent implementations, and the evaluation and plotting scripts used to produce all figures and tables in this dissertation.
+
+\subsection*{Repository Link}
+
+\begin{center}
+\texttt{https://github.com/atiladeokegab/-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks.}
+\end{center}
+
+\subsection*{Repository Structure}
+
+\begin{verbatim}
+project/
+├── src/
+│   ├── envs/
+│   │   └── lorawan_uav_env.py      # Custom Gymnasium environment
+│   ├── agents/
+│   │   └── dqn/
+│   │       ├── dqn.py              # DQN training script
+│   │       ├── evaluate.py         # Multi-seed evaluation script
+│   │       └── dqn_evaluation_results/
+│   │           ├── multi_seed_results/   # Figures for Results chapter
+│   │           ├── baseline_results/     # Baseline comparison data
+│   │           └── sweep_fairness_results/ # Grid-size sweep figures
+│   └── baselines/
+│       ├── greedy_nearest.py       # Nearest-Sensor Greedy baseline
+│       └── greedy_smart.py         # SF-Aware Max-Throughput Greedy baseline
+├── MSc_and_BEng_Dissertation_Template.../
+│   └── main.tex                    # Dissertation LaTeX source
+└── README.md                       # Setup and reproduction instructions
+\end{verbatim}
+
+\subsection*{Reproduction}
+
+Full instructions for setting up the Python environment, training the DQN agent, and reproducing all evaluation results are provided in the repository \texttt{README.md}. The key dependencies are PyTorch, Stable-Baselines3, Gymnasium, NumPy, and Matplotlib. All random seeds used in the evaluation ($\{42, 123, 256, 789, 1337\}$) are specified in the evaluation script to ensure reproducibility.
+
+\subsection*{Third-Party Code}
+
+All third-party code used in this project is clearly identified in the repository. The DQN implementation uses the Stable-Baselines3 library (MIT licence). The Gymnasium environment interface follows the standard \texttt{gymnasium.Env} API. No third-party code is incorporated into the simulation environment or reward function, which are entirely original.

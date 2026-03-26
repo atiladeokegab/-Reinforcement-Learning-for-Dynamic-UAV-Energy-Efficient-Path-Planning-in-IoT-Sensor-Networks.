@@ -1,0 +1,22 @@
+\subsection{Deep Reinforcement Learning}
+
+Reinforcement Learning (RL) formalises the decision-making problem as a Markov Decision
+Process (MDP), defined by the tuple \((\mathcal{S}, \mathcal{A}, P, R, \gamma)\), where
+\(\mathcal{S}\) is the state space, \(\mathcal{A}\) is the action space, \(P\) is the
+transition probability, \(R\) is the reward function, and \(\gamma\) is the discount factor.
+
+\subsubsection{Deep Q-Networks (DQN)}
+
+Standard Q-Learning stores state-action values in a table, which is computationally
+intractable for continuous or high-dimensional state spaces (such as a UAV's position).
+Mnih et al.~\cite{mnih2015humanlevel} introduced the Deep Q-Network (DQN), which solves
+this by using a neural network to approximate the Q-value function \(Q(s, a; \theta)\),
+where \(\theta\) represents the network weights. The agent minimises the temporal difference
+error defined by the Bellman equation:
+\begin{equation}
+    L(\theta) = \mathbb{E}\left[\left(r + \gamma \max_{a'} Q(s', a'; \theta^{-}) - Q(s, a; \theta)\right)^2\right] \label{eq:dqn_loss}
+\end{equation}
+This project implements the DQN agent via the Stable-Baselines3
+library~\cite{raffin2021stable} within a custom Gymnasium environment~\cite{towers2024gymnasium},
+learning the non-linear mapping between the complex network state (RSSI, AoI, battery) and
+the optimal flight vector.

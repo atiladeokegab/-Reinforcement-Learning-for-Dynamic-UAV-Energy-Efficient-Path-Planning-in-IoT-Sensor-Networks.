@@ -1,0 +1,64 @@
+\section{Risk Assessment}
+\label{app:risk}
+
+The following table identifies the principal risks associated with this project, together
+with their likelihood, potential impact, and the mitigation strategies employed.
+
+\begin{table}[H]
+\centering
+\caption{Project Risk Register}
+\label{tab:risk}
+\begin{tabularx}{\textwidth}{p{3cm} p{1.5cm} p{1.5cm} X}
+\toprule
+\textbf{Risk} & \textbf{Likelihood} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+\textbf{Simulation instability}: The custom Gymnasium environment contains bugs
+that cause non-physical state transitions or incorrect reward computation.
+& Medium & High &
+Extensive unit testing of each environment component (propagation model, ADR logic,
+Capture Effect) in isolation before integration. Episode step counters and boundary
+clipping enforce physically plausible states. \\
+\midrule
+\textbf{Training divergence}: The DQN agent fails to converge due to reward
+scale mismatch, exploding gradients, or excessive exploration.
+& Medium & High &
+Reward normalisation and clipping; gradient clipping; target network stabilisation;
+hyperparameter sweep on learning rate and batch size. \\
+\midrule
+\textbf{Overfitting to training scenarios}: The trained policy memorises fixed
+sensor layouts and fails to generalise to unseen configurations.
+& High & High &
+Domain Randomisation: sensor positions, grid sizes, and sensor counts are randomised
+every episode during training. Curriculum Learning ensures gradual exposure to
+increasing difficulty. \\
+\midrule
+\textbf{Computational resource constraints}: Training requires GPU resources
+not available on personal hardware.
+& Low & Medium &
+Primary training conducted on NVIDIA RTX 3050 Ti GPU (personal laptop). Long training
+runs ($2 \times 10^6$ steps) scheduled overnight. Stable-Baselines3 used for
+efficient GPU-accelerated training. \\
+\midrule
+\textbf{Sim-to-Real gap}: The trained policy performs well in simulation but
+fails to transfer to a physical UAV due to unmodelled dynamics.
+& Medium & Medium &
+The simulation incorporates high-fidelity models (Two-Ray, log-normal shadowing,
+EMA-ADR) specifically to reduce this gap. Domain Randomisation further improves
+robustness. Acknowledged as a limitation; HIL validation proposed as future work. \\
+\midrule
+\textbf{Time overrun}: Experimental evaluation and dissertation write-up take
+longer than planned.
+& Medium & Medium &
+Modular dissertation structure with individual \texttt{.tex} files per section allows
+parallel writing and incremental compilation. Regular supervisor meetings to track
+progress and adjust scope if necessary. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Health and Safety}
+
+This project is entirely computational and involves no physical experiments, hazardous
+materials, human participants, or off-campus fieldwork. The only health and safety
+consideration is standard ergonomic risk from extended computer use, which is mitigated
+by regular breaks in accordance with university guidance on display screen equipment (DSE).

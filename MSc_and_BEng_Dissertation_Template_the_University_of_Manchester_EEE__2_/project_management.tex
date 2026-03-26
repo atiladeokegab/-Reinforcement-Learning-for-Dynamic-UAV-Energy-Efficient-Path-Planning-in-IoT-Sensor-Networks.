@@ -1,0 +1,16 @@
+\section{Project Management}
+\label{sec:project_management}
+
+\subsection*{Planning and Execution}
+
+The project was planned at the outset using a five-milestone Gantt chart (Appendix~\ref{app:gantt}), covering environment development, initial DQN training, the Domain Randomisation and Curriculum Learning regime, multi-seed evaluation, and dissertation write-up. The plan was structured across two semesters with natural checkpoints aligned to the Progress Review Meetings.
+
+The project broadly followed the original timeline, with two notable deviations. First, the scope of the evaluation was expanded during Semester 2: the original plan specified a single-condition baseline comparison, but preliminary results revealed high inter-seed variance in the DQN agent at $N \geq 20$. A five-seed, multi-condition evaluation was therefore adopted to provide statistically defensible conclusions, shifting the evaluation phase by approximately two weeks. Second, the introduction of the SF-Aware Max-Throughput Greedy baseline was not planned initially; it was added during Semester 2 after recognising that the Nearest-Sensor Greedy alone could not isolate the contribution of long-horizon planning from the contribution of protocol awareness. Both deviations increased the quality of the final results and were discussed with the Project Supervisor.
+
+\subsection*{Risk Management}
+
+Risks were tracked throughout the project using the Risk Register in Appendix~\ref{app:risk}. Two risks materialised during execution. Training divergence occurred during early DQN experiments on the full curriculum (large grids, $N = 40$), manifesting as reward collapse after approximately $5 \times 10^5$ steps. This was resolved by introducing gradient clipping (max norm 10), reducing the learning rate from $10^{-3}$ to $5 \times 10^{-4}$, and applying reward scaling. The second materialised risk was time overrun in the evaluation phase, mitigated by restricting the grid-size sweep to $N = 20$ sensors and five representative grid sizes rather than the full combinatorial grid originally considered.
+
+\subsection*{Self-Directed Learning and CPD}
+
+The project required substantial self-directed learning across two technical domains not covered in the taught curriculum: LoRaWAN protocol internals and deep reinforcement learning implementation. A CPD Log recording these activities is provided in Appendix~\ref{app:cpd}. Key learning activities included a structured study of the LoRaWAN 1.0.4 specification to correctly implement the ADR mechanism, study of the Stable-Baselines3 DQN source code to understand target network update schedules, and independent reading of the primary literature on the Capture Effect and domain randomisation. The modular \texttt{.tex} file structure adopted for the dissertation allowed writing to proceed in parallel with experimental work, reducing the risk of a late-stage write-up bottleneck.

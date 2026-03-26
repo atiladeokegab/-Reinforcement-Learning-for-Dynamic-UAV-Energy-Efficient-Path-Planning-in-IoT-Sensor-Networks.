@@ -1,0 +1,110 @@
+\subsection{The Shift to AI-Native Networking}
+
+To overcome the limitations of static and heuristic methods, the field is moving toward
+intelligent, autonomous network management. Nguyen et al.~\cite{nguyen20226g} outline the
+vision for 6G IoT, predicting a shift toward ``AI-native'' networks where Deep Reinforcement
+Learning (DRL) and edge intelligence play a central role in managing massive connectivity
+and ultra-reliable low-latency communications. A central argument of their survey is that
+the scale and dynamism of next-generation IoT---billions of heterogeneous devices with
+time-varying channel conditions---makes hand-crafted optimisation policies fundamentally
+insufficient; only agents that can learn from interaction with the environment can keep
+pace. This paradigm motivates the DRL approach taken in this dissertation.
+
+\subsubsection{Deep Q-Networks and Their Application to Communications}
+
+The foundational algorithm underpinning this shift is the Deep Q-Network
+(DQN)~\cite{mnih2015humanlevel}. Mnih et al.\ demonstrated that by combining Q-learning
+with a deep convolutional neural network, experience replay, and a periodically frozen
+target network, an agent could learn superhuman policies for 49 Atari games directly from
+raw pixel input---a result that established DRL as a practical tool for high-dimensional
+control. The two key stabilisation techniques introduced in that work are directly relevant
+to the networking setting: \emph{experience replay} breaks the temporal correlation between
+consecutive training samples (important in a UAV mission where consecutive observations are
+spatially and temporally correlated), and the \emph{target network} prevents the feedback
+loop between the predicted and target Q-values that otherwise causes divergence during
+training.
+
+Luong et al.~\cite{luong2019drl} provide a comprehensive survey of DRL applications in
+communications and networking across five domains: dynamic network access, data rate
+control, wireless caching, data offloading, and network security. Of particular relevance
+to this dissertation are their findings on data collection in IoT networks, where they
+observe that DRL agents consistently outperform static schedulers and greedy heuristics
+under variable channel conditions, but that reward shaping and state space design are
+critical: poorly chosen state representations prevent the agent from learning the temporal
+patterns needed to anticipate future congestion. This motivates the frame-stacking and
+urgency-proxy design choices in this work, discussed in \autoref{sec:method}.
+
+\subsubsection{DRL for UAV Path Planning}
+
+The application of DRL specifically to UAV trajectory planning in wireless networks has
+gained significant traction. Challita et al.~\cite{challita2018interference} formulate the
+joint path planning and interference management problem for multiple cellular-connected UAVs
+as a noncooperative game, solved via a deep RL algorithm based on echo state network (ESN)
+cells. Their key finding is that a DRL policy can learn to trade off wireless latency
+against interference caused to ground users, achieving a Nash equilibrium that reduces
+per-UAV latency by up to 33\% compared to shortest-path navigation. This result is directly
+analogous to the trade-off addressed in this dissertation: the DRL agent must trade off
+spatial coverage (which requires movement) against protocol-layer quality (which requires
+hovering to stabilise LoRaWAN ADR). Challita et al.\ also demonstrate that the ESN-based
+agent generalises to unseen network states, supporting the case for DRL over look-up-table
+approaches.
+
+Nemer et al.~\cite{nemer2022energyefficient} extend this line of work to the fairness
+dimension, proposing a distributed actor--critic algorithm (SBG-AC) for multi-UAV coverage
+that simultaneously optimises coverage score, energy consumption, and Jain's Fairness Index
+over ground users. Their results show that fairness-constrained DRL outperforms
+energy-only DRL, confirming that the reward function must explicitly penalise unequal
+service to prevent the agent converging on a policy that maximises aggregate throughput at
+the expense of underserved nodes. This finding directly motivates the Age-of-Information
+penalty term in the reward function of this work: without an explicit fairness cost, a DRL
+agent trained only on throughput would learn to camp over high-rate (SF7) sensors and
+neglect distant SF12 nodes.
+
+\subsubsection{Age of Information as a Freshness Objective}
+
+A complementary strand of literature has formalised the concept of \emph{information
+freshness} through the Age of Information (AoI) metric. Kaul et al.~\cite{kaul2012realtime}
+introduced AoI as the time elapsed since the last successfully received status update,
+showing that the throughput-optimal update frequency is not the freshness-optimal
+frequency---a system can maximise throughput while delivering stale information if bursts
+of updates are lost or delayed. This decoupling of throughput and freshness is directly
+relevant to UAV-LoRaWAN data collection: an agent that maximises bytes collected can
+achieve high aggregate throughput while starving distant sensors of any service,
+accumulating unbounded AoI at those nodes.
+
+Abd-Elmagid et al.~\cite{abdelmagid2019aoi} extend this analysis to energy-harvesting IoT
+networks, demonstrating a fundamental trade-off between the AoI-optimal scheduling policy
+and the throughput-optimal policy. Their result implies that a single scalar reward
+combining throughput and AoI will generally learn a compromise policy that is suboptimal on
+both individual objectives---supporting the multi-term, weighted reward function design
+adopted in this work. Tripathi and Modiano~\cite{tripathi2022aoi} further show that when
+sources are spatially or statistically correlated (as they are in a sensor field where
+geographically proximate sensors tend to be assigned similar SFs under ADR), the
+AoI-optimal policy must account for this correlation structure, an insight that informs the
+use of per-sensor urgency vectors (rather than a single aggregate AoI) in the state space.
+
+\subsubsection{Generalisation via Curriculum Learning and Domain Randomisation}
+
+A persistent challenge in applying DRL to real-world wireless systems is the
+\emph{generalisation} problem: policies trained on a fixed network topology or channel
+distribution often fail catastrophically when deployed on even slightly different
+conditions. Bengio et al.~\cite{bengio2009curriculum} demonstrate that organising training
+examples by difficulty---beginning with simple cases and progressively introducing harder
+ones---produces policies that learn faster and generalise better than policies trained on
+the full difficulty distribution from the outset. Their theoretical argument is that easy
+examples provide a strong learning signal early in training, building a foundation that
+enables the agent to later distinguish meaningful structure in hard examples.
+
+Tobin et al.~\cite{tobin2017domain} introduce Domain Randomisation as a complementary
+technique for bridging the Sim-to-Real gap: by randomising the physical parameters of the
+simulation environment during training, the policy is forced to learn invariances that hold
+across all realisations, rather than overfitting to a single simulator configuration.
+OpenAI~\cite{openai2019dexterous} subsequently applied Domain Randomisation at scale to
+learn dexterous robot hand manipulation from simulation, transferring policies trained
+entirely in simulation to a physical robot---demonstrating that the technique is effective
+even under very large sim-to-real gaps. In the UAV-LoRaWAN setting, the analogous gap
+arises from unmodelled propagation effects (multipath, shadowing variance, GPS error); by
+randomising sensor positions, grid sizes, and channel parameters during training, this
+dissertation's Domain Randomisation regime produces a single policy deployable across a
+100$\times$ variation in operational area without retraining.
+

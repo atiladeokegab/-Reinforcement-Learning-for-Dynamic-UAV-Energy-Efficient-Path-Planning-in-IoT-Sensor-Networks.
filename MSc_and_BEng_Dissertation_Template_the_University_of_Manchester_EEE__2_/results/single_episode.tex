@@ -1,0 +1,19 @@
+\subsection{Single-Episode Trajectory Analysis}
+
+Figure~\ref{fig:single_episode} shows a representative evaluation episode for the trained
+DQN agent on the 20-sensor, 500$\times$500 condition. The agent achieves 100\% sensor
+coverage by step~200 and sustains data collection until battery depletion at step~1{,}404,
+collecting 57{,}335\,bytes at a mean efficiency of 213.6\,B/Wh. Critically, the cumulative
+reward grows monotonically throughout the episode without plateauing, indicating that the
+agent does not idle once early sensors are visited. This behaviour is a direct consequence
+of the terminal unvisited-sensor penalty ($-2{,}000$ per sensor) and the per-step data
+reward encouraging continued collection from revisited sensors.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{sensors_20/fig1_shaded_reward}
+    \caption{Cumulative reward and battery level during a single DQN evaluation episode
+             (20 sensors, 500$\times$500 grid, seed 42). Shaded band shows $\pm 1$ standard
+             deviation across seeds.}
+    \label{fig:single_episode}
+\end{figure}

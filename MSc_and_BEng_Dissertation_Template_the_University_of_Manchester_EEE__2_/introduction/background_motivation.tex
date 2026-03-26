@@ -1,0 +1,38 @@
+\subsection{Background and motivation}
+
+The deployment of IoT sensor networks has garnered significant research attention due to
+its wide-ranging applications in smart agriculture, environmental monitoring, and disaster
+response~\cite{wei2022uav}. In many of these scenarios, fixed infrastructure is either
+unavailable or prohibitively expensive to deploy. Consequently, UAVs have emerged as a
+critical enabler for data collection, offering the flexibility to serve as mobile gateways
+that can be deployed on-demand to remote or hazardous locations~\cite{wei2022uav,mozaffari2019tutorial,zeng2016wireless}. By
+combining the long-range, low-power capabilities of the LoRaWAN protocol~\cite{augustin2016lora,bor2016lora}
+with the mobility of UAVs, it is theoretically possible to collect data from vast sensor
+fields with minimal infrastructure~\cite{nakamura2022lora}.
+
+However, integrating mobile UAVs into dense LoRaWAN networks presents fundamental challenges
+that standard protocols were not designed to handle. The LoRaWAN architecture, specifically
+its ADR mechanism, is engineered for static, ground-based networks. As identified by Zorbas
+et al.\ (2025), in dense deployments where link qualities change rapidly---such as with a
+moving UAV---the standard network management fails. Devices often converge to the same
+transmission settings, leading to a high rate of ``intra-SF collisions'' and a degradation
+of network performance~\cite{zorbas2025revisiting}. This phenomenon, often referred to as
+the ``SF12 Well'' or ``SF Monoculture,'' causes a congestion collapse where the network's
+concurrent channel capacity is wasted, and packet delivery rates plummet.
+
+Existing solutions to this problem remain siloed. Standard path planning heuristics (such as
+``lawnmower'' patterns) optimise solely for flight distance, ignoring the underlying
+telecommunications physics~\cite{xiong2023flyinglora}. These ``protocol-blind'' trajectories
+inadvertently force sensors into the SF Monoculture, causing the UAV to hover inefficiently
+while waiting for data that cannot be decoded due to collisions. Conversely, mathematical
+optimisation approaches (like Mixed Integer Linear Programming) can solve the resource
+allocation problem for static networks but lack the real-time adaptability required for
+dynamic, mobile environments~\cite{zorbas2025revisiting}.
+
+To address these limitations, a protocol-aware control framework is required---one that
+integrates the UAV's physical mobility with the logical constraints of the LoRaWAN protocol.
+Recent literature has explicitly suggested that reinforcement learning models could be employed
+to adapt to these evolving network conditions~\cite{zorbas2025revisiting,nguyen20226g,luong2019drl,challita2018interference}. By
+treating the UAV's 3D position as a direct control input for the radio protocol, an intelligent
+agent can proactively manage the RF environment, breaking the SF monoculture and ensuring
+true energy efficiency through optimised network throughput.

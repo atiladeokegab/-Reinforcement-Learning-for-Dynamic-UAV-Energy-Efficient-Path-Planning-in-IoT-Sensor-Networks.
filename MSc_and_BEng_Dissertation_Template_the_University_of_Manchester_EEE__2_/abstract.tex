@@ -1,0 +1,28 @@
+This dissertation addresses energy-efficient, dynamic path planning for Unmanned Aerial
+Vehicles (UAVs) tasked with data collection in unsynchronised LoRaWAN Internet of Things
+(IoT) networks. The integration of mobile UAV gateways into LoRaWAN introduces a fundamental
+challenge: rapid link-quality changes caused by UAV movement drive devices to converge on
+identical Spreading Factors, collapsing packet delivery rates in a phenomenon termed the
+``SF Monoculture.''
+
+We propose a protocol-aware Deep Reinforcement Learning (DRL) framework, utilising a
+Deep Q-Network (DQN) agent trained within a custom, high-fidelity Gymnasium environment.
+The environment models the UAV's position as a direct control input to the LoRaWAN protocol,
+incorporating the Two-Ray Ground Reflection path loss model, log-normal shadowing, EMA-based
+Adaptive Data Rate (ADR) latency, asynchronous duty cycles, and the LoRa Capture Effect.
+A Domain Randomisation and Curriculum Learning regime produces a single generalised policy,
+deployable without retraining across grids spanning $100 \times 100$ to $1{,}000 \times 1{,}000$
+cells and network densities of 10 to 40 sensors.
+
+Rigorous evaluation over five independent random seeds and multiple network configurations
+demonstrates that the DQN agent consistently outperforms both a protocol-blind Nearest-Sensor
+Greedy and a novel SF-Aware Max-Throughput Greedy baseline. At 40 sensors, the DQN achieves
+a Jain's Fairness Index of $0.672 \pm 0.054$ versus $0.646 \pm 0.053$ for the SF-Aware
+baseline (+4.0\%) and $0.664 \pm 0.055$ for the Nearest baseline (+1.2\%), with a $+7.3\%$
+improvement in energy efficiency (bytes per watt-hour). The DQN's advantage is statistically
+significant ($p < 0.05$, Welch's $t$-test) at compact operational scales, and grows
+monotonically with network density. The key emergent behaviour is strategic repositioning:
+the DQN uniquely allocates 2.9\% of steps to deliberate movement ($p = 0.002$, Welch's
+$t$-test), reaching positions that yield $+14\%$ more bytes per collection step than
+greedy baselines---demonstrating that the UAV's physical position can serve as an active
+control variable for the communication protocol.

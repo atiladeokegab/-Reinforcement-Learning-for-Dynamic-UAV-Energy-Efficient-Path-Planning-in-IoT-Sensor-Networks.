@@ -1,0 +1,86 @@
+\subsection{Sensor Placement in Simulation}
+
+\subsubsection{Stochastic Sensor Deployment}
+
+The spatial distribution of the \(N\) sensor nodes is modelled using a continuous uniform
+distribution to simulate an unstructured, ad-hoc network topology. For a deployment area
+defined by dimensions \(L \times W\), the coordinates \((x_i, y_i)\) for the \(i\)-th sensor
+are sampled independently:
+\begin{equation}
+    x_i \sim \mathcal{U}(0, L), \quad y_i \sim \mathcal{U}(0, W) \label{eq:uniform_deploy}
+\end{equation}
+The probability density function (PDF) for a sensor appearing at any specific coordinate
+\(x\) along a dimension is given by:
+\begin{equation}
+    f(x) = \frac{1}{b - a} \label{eq:uniform_pdf}
+\end{equation}
+where \(a\) and \(b\) represent the lower and upper spatial bounds, respectively. For our
+simulation grid of \(50 \times 50\) units (where \(a = 0\), \(b = 50\)), the uniform
+probability density is constant at \(f(x) = \frac{1}{50} = 0.02\).
+
+This stochastic initialisation serves three critical research functions:
+\begin{enumerate}
+    \item It ensures the DRL agent learns a generalisable navigation policy rather than
+    memorising a static map.
+    \item It mimics realistic IoT deployment scenarios where sensor locations may not be
+    grid-aligned.
+    \item Random placement naturally creates density clusters, inducing the ``SF Monoculture''
+    problem that the agent must learn to resolve.
+\end{enumerate}
+
+\subsubsection{Multi-Objective Reward Function} \label{sec:reward}
+
+To facilitate efficient learning in this long-horizon optimisation problem, we employ a dense,
+multi-objective reward function. A purely sparse reward (e.g., rewarding only upon full
+mission completion) would result in a vanishing gradient problem given the large state space.
+Instead, the reward function \(R_t\) at time step \(t\) is designed as a weighted sum of
+competing objectives, providing the agent with immediate feedback on the quality of its
+actions.
+
+The total reward is defined as:
+\begin{equation}
+    R_t = w_{\text{coll}} \cdot R_{\text{coll}} - w_{\text{energy}} \cdot C_{\text{energy}}
+        - w_{\text{AoI}} \cdot C_{\text{AoI}} - w_{\text{hover}} \cdot C_{\text{hover}}
+    \label{eq:reward}
+\end{equation}
+where \(w_i\) are tunable hyperparameters balancing the relative importance of each term.
+
+\begin{enumerate}
+    \item \emph{Data Collection Reward} (\(R_{\text{coll}}\)): This is the primary positive
+    reinforcement. The agent receives a discrete reward for every unique data packet
+    successfully decoded from a sensor:
+    \begin{equation}
+        R_{\text{coll}} = \sum_{i=1}^{N} \mathbb{I}(\text{Packet}_i \text{ received at } t)
+        \label{eq:rcoll}
+    \end{equation}
+    This term encourages the agent to position itself in regions of high spectral efficiency
+    where the LoRaWAN ``Capture Effect'' can resolve collisions.
+
+    \item \emph{Energy Consumption Penalty} (\(C_{\text{energy}}\)): To enforce energy
+    efficiency, a penalty is applied proportional to the battery drained by the chosen action:
+    \begin{equation}
+        C_{\text{energy}} = P(a_t) \cdot \Delta t \label{eq:cenergy}
+    \end{equation}
+    This term discourages inefficient, meandering paths and incentivises the agent to complete
+    the collection task using the minimum necessary flight time.
+
+    \item \emph{Age of Information Penalty} (\(C_{\text{AoI}}\)): To ensure network fairness
+    and data freshness, a penalty is applied based on the cumulative Age of
+    Information~\cite{kaul2012realtime,abdelmagid2019aoi} of all sensors:
+    \begin{equation}
+        C_{\text{AoI}} = \frac{1}{N} \sum_{i=1}^{N} \text{AoI}_{i,t} \label{eq:caoi}
+    \end{equation}
+    This critical term prevents the agent from ignoring distant or difficult-to-reach sensors.
+    It forces the UAV to prioritise ``stale'' nodes, thereby preventing information starvation.
+
+    \item \emph{Hovering Regularisation} (\(C_{\text{hover}}\)): While hovering is necessary
+    for LoRaWAN connectivity, excessive hovering is a local optimum trap. A small fixed penalty
+    is applied to non-movement actions to encourage active exploration when data reception is
+    not imminent:
+    \begin{equation}
+        C_{\text{hover}} = \mathbb{I}(a_t = \text{HOVER}) \cdot \lambda_{\text{hover}}
+        \label{eq:chover}
+    \end{equation}
+\end{enumerate}
+This shaped reward structure transforms the sparse ``mission success'' objective into a dense,
+step-by-step gradient that guides the agent toward the optimal policy.

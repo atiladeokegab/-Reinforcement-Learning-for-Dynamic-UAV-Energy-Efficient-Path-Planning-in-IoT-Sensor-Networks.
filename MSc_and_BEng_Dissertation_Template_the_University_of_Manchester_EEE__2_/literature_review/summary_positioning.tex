@@ -1,0 +1,15 @@
+\subsection{Summary and Project Positioning}
+
+Despite significant progress in UAV path planning, a gap remains in effectively coupling
+physical mobility with protocol-level optimisation. Existing works either optimise the path
+while ignoring the protocol's failure modes (creating the SF Monoculture) or optimise the
+protocol using static mathematics that cannot adapt to mobility. Explicitly acknowledging this
+gap, Zorbas et al.~\cite{zorbas2025revisiting} conclude that ``reinforcement learning models
+could be employed to adapt over time to evolving network conditions.''
+
+In this report, the focus is placed on this specific intersection: using a DRL agent to solve
+the SF Monoculture. Unlike the static optimisation in~\cite{zorbas2025revisiting} or the
+energy-centric heuristics in~\cite{xiong2023flyinglora}, the proposed framework treats the
+UAV's physical position as a direct control input for the LoRaWAN protocol, allowing the
+agent to learn an emergent policy that balances energy efficiency with rigorous protocol
+health.
