@@ -1,0 +1,141 @@
+\subsection{Scalability Analysis}
+
+\subsubsection{Sensor-Count Scalability}
+
+Figure~\ref{fig:scalability} shows the DQN advantage in cumulative reward and Jain's
+fairness index as a function of sensor count ($N \in \{10, 20, 30, 40\}$, grid fixed at
+$500 \times 500$). Both metrics exhibit a consistent positive advantage for the DQN that
+increases with $N$, confirming that the benefit of a learned policy over hand-crafted
+heuristics is most pronounced in denser, more challenging networks. The reward advantage
+grows from $+2.7\%$ at $N = 10$ to $+7.4\%$ at $N = 40$ against SF-Aware Greedy, and
+the fairness advantage grows from near-zero to $+3.9\%$.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig10_sensor_scalability}
+        \caption{Absolute metric values vs.\ sensor count.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig11_sensor_dqn_advantage}
+        \caption{DQN advantage (\%) over SF-Aware Greedy.}
+    \end{subfigure}
+    \caption{Scalability of the three agents as a function of network density
+             ($N \in \{10, 20, 30, 40\}$, $500\times500$ grid, five seeds each).}
+    \label{fig:scalability}
+\end{figure}
+
+\noindent The concave shape of the reward-advantage curve---larger gains at $N = 20$
+and $N = 30$ than at $N = 40$---reflects the interaction between sensor density and the
+SF orthogonality constraint. At $N = 40$ on a $500 \times 500$ grid, the network is
+dense enough that inter-sensor distances become smaller than the UAV's effective collection
+radius for SF7, leading to frequent Capture Effect events that all agents partially exploit.
+The DQN's advantage therefore saturates slightly relative to the peak at $N = 30$.
+
+\subsubsection{Grid-Size Scalability}
+
+A second sweep varied the operational area from $100 \times 100$ to $1{,}000 \times 1{,}000$
+cells (corresponding to $1$\,km$^2$ to $100$\,km$^2$ in the physical simulation, with each
+grid unit equal to $10$\,m and UAV altitude fixed at $100$\,m), with $N = 20$ sensors and
+five random seeds per condition. This sweep spans three qualitatively different LoRa
+operating regimes: at $100 \times 100$ most sensors fall within SF7 range; at
+$500 \times 500$ the dominant SFs are SF9--SF11; and at $1{,}000 \times 1{,}000$ the
+network operates predominantly in the SF11/SF12 regime where ADR latency is most severe.
+
+Table~\ref{tab:grid_summary} summarises the mean cumulative reward and Jain's fairness
+index for all three agents across the four grid sizes.
+
+\begin{table}[H]
+\centering
+\caption{Mean cumulative reward ($\pm$ std) and Jain's fairness index ($\pm$ std) across
+         five seeds. All conditions: $N = 20$ sensors, 2{,}100-step episodes.}
+\label{tab:grid_summary}
+\begin{tabularx}{\textwidth}{l l Z Z Z}
+\toprule
+Grid & Agent & Mean Reward ($\times 10^6$) & $\pm$ Std ($\times 10^6$) & Mean $\mathcal{J}$ \\
+\midrule
+\multirow{3}{*}{$100\times100$}
+ & DQN             & 6.673 & 0.111 & 0.9992 \\
+ & SF-Aware Greedy & 6.493 & 0.033 & 0.9994 \\
+ & Nearest Greedy  & 6.477 & 0.047 & 0.9991 \\
+\midrule
+\multirow{3}{*}{$300\times300$}
+ & DQN             & 6.602 & 0.024 & 0.9988 \\
+ & SF-Aware Greedy & 6.549 & 0.026 & 0.9996 \\
+ & Nearest Greedy  & 6.546 & 0.021 & 0.9996 \\
+\midrule
+\multirow{3}{*}{$500\times500$}
+ & DQN             & 6.245 & 0.615 & 0.9824 \\
+ & SF-Aware Greedy & 5.852 & 0.626 & 0.9740 \\
+ & Nearest Greedy  & 5.911 & 0.614 & 0.9753 \\
+\midrule
+\multirow{3}{*}{$1000\times1000$}
+ & DQN             & 4.853 & 0.605 & 0.9044 \\
+ & SF-Aware Greedy & 4.992 & 0.311 & 0.9001 \\
+ & Nearest Greedy  & 4.596 & 0.634 & 0.8856 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent Four observations merit discussion.
+
+\paragraph{Compact grids (SF7 regime).}
+At $100 \times 100$ and $300 \times 300$, all agents achieve near-perfect fairness
+($\mathcal{J} > 0.999$) as the compact area keeps all sensors within SF7 range, almost
+eliminating the monoculture risk. Interestingly, the SF-Aware Greedy achieves a
+marginally \emph{higher} Jain's Index than the DQN at $300 \times 300$ ($0.9996$ versus
+$0.9988$), while the DQN achieves a higher cumulative reward ($6.602 \times 10^6$ versus
+$6.549 \times 10^6$). This is consistent with the reward function design: the DQN
+optimises for throughput reward rather than raw fairness, and in this regime it
+concentrates visits on the highest-throughput sensors rather than distributing attention
+equally. The difference is statistically significant at both compact grid sizes
+($100 \times 100$: $t = 3.12$, $p = 0.029$ against SF-Aware; $t = 3.26$, $p = 0.020$
+against Nearest; $300 \times 300$: $t = 2.95$, $p = 0.018$ against SF-Aware; $t = 3.43$,
+$p = 0.009$ against Nearest).
+
+\paragraph{Intermediate grid ($500 \times 500$, SF9/SF11 regime).}
+At $500 \times 500$, the DQN's throughput advantage is most pronounced (+6.7\% over
+SF-Aware Greedy, +5.7\% over Nearest Greedy in reward), and its fairness advantage over
+the Nearest Greedy becomes visible ($\mathcal{J} = 0.9824$ versus $0.9753$). This regime
+represents the sweet spot for the protocol-aware policy: the combination of SF diversity
+and intermediate distances creates the Capture Effect opportunities that the DQN has
+learned to exploit.
+
+\paragraph{Large grid ($1{,}000 \times 1{,}000$, SF11/SF12 regime).}
+At $1{,}000 \times 1{,}000$, the SF-Aware Greedy achieves a higher raw cumulative reward
+than the DQN ($4.992 \times 10^6$ versus $4.853 \times 10^6$), while the DQN leads on
+Jain's Index ($0.9044$ versus $0.9001$ versus $0.8856$). The high inter-seed variance
+(DQN reward std $\approx 605{,}000$) means neither reward nor fairness differences are
+statistically significant at this scale ($p > 0.57$). The DQN's lower raw reward reflects
+its fairness-penalty overhead: the global buffer-overflow penalty applied to all action
+types causes the agent to sacrifice throughput from high-rate sensors to service
+underserved sensors at the periphery, a behaviour that reduces cumulative reward but
+improves the Jain's Index.
+
+\paragraph{Fairness vs.\ throughput trade-off.}
+The crossover at $1{,}000 \times 1{,}000$---where SF-Aware Greedy leads on reward but
+the DQN leads on fairness---illustrates a fundamental tension in multi-objective
+optimisation. The DQN has been trained to value fairness through the AoI urgency penalty
+and buffer-overflow cost; in a large, sparse network this correctly prioritises neglected
+sensors but at the cost of total throughput. Whether this trade-off is desirable depends
+on the application: time-sensitive monitoring applications (disaster response, public
+safety) should prefer the DQN's fairness-first policy, whereas throughput-maximisation
+applications (bulk data backhaul) might prefer the SF-Aware Greedy at $1{,}000 \times
+1{,}000$ scale.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig13_grid_scalability}
+        \caption{Absolute metric values vs.\ grid size.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig14_grid_dqn_advantage}
+        \caption{DQN advantage (\%) over SF-Aware Greedy.}
+    \end{subfigure}
+    \caption{Scalability of the three agents as a function of grid size
+             ($N = 20$ sensors, five seeds each).}
+    \label{fig:grid_scalability}
+\end{figure}

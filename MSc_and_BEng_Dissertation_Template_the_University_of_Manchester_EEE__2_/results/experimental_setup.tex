@@ -1,0 +1,54 @@
+\subsection{Experimental Setup}
+
+All agents are evaluated on the high-fidelity Gymnasium simulation with the UAV flying at
+a fixed altitude of 100\,m and each grid unit equal to 10\,m. The battery capacity is
+274\,Wh (modelled on the DJI TB60) and the episode horizon is 2{,}100 timesteps. The DQN
+policy is deterministic at test time ($\varepsilon = 0$) and uses the zero-padded
+observation vector ($N_{\max} = 50$) as during training, with frame stacking $k = 4$.
+
+\paragraph{Evaluation Sweeps.}
+Two independent sweeps are conducted to assess both density and area scalability:
+\begin{itemize}
+    \item \textbf{Sweep A --- Sensor-Count Scalability}: Four network densities
+          $N \in \{10, 20, 30, 40\}$ are evaluated on a fixed $500 \times 500$ grid
+          ($5\,\text{km} \times 5\,\text{km}$ Region of Interest).
+    \item \textbf{Sweep B --- Grid-Size Scalability}: Four operational areas
+          $\{100\times100,\; 300\times300,\; 500\times500,\; 1{,}000\times1{,}000\}$
+          cells are evaluated with a fixed $N = 20$ sensors.
+\end{itemize}
+Each condition is evaluated over five independent random seeds
+$\{42, 123, 256, 789, 1337\}$ to account for variation in sensor layout. Canonical
+sensor positions are generated from a master seed for each (grid, $N$) pair so that all
+three agents are compared on identical layouts, ensuring fair comparison.
+
+\paragraph{Baseline Agents.}
+The two baseline agents are:
+\begin{itemize}
+    \item \textbf{Nearest Sensor Greedy} --- at each step, the UAV moves towards the
+          closest sensor with data in its buffer, ignoring the LoRa spreading factor.
+    \item \textbf{SF-Aware Max-Throughput (Greedy\,V2)} --- extends the nearest-sensor
+          heuristic by scoring each candidate sensor as
+          $\text{Score}_i = (13 - \text{SF}_i) \cdot w_1 - d_i \cdot w_2$,
+          explicitly prioritising SF7--SF9 sensors for highest instantaneous throughput
+          while penalising distance.
+\end{itemize}
+
+\paragraph{Evaluation Metrics.}
+The primary metrics are:
+\begin{enumerate}
+    \item Cumulative reward (sum of per-step rewards over the episode horizon).
+    \item Network coverage: fraction of $N$ sensors visited at least once.
+    \item Jain's Fairness Index~\cite{jain1984quantitative} over per-sensor
+          collection rates at episode end:
+          \begin{equation}
+              \mathcal{J} = \frac{\left(\sum_{i=1}^{N} r_i\right)^2}{N \sum_{i=1}^{N} r_i^2}
+              \label{eq:jains}
+          \end{equation}
+          where $r_i$ is the fraction of sensor $i$'s generated data that was collected.
+          $\mathcal{J} = 1$ indicates perfectly equal collection; $\mathcal{J} < 1$
+          indicates that some sensors received disproportionately more or less service.
+    \item Energy efficiency: total bytes collected divided by total energy consumed (bytes/Wh).
+\end{enumerate}
+
+Statistical significance is assessed via Welch's $t$-test (two-sided) on the
+five-seed distributions of cumulative reward, with $\alpha = 0.05$.

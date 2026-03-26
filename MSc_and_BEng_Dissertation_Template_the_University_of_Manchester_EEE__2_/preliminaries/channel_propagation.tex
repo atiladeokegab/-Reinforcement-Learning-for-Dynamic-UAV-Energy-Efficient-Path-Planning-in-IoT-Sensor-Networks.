@@ -1,0 +1,17 @@
+\subsection{Channel Propagation Model}
+
+To accurately simulate the signal strength (RSSI) received by the UAV, a simple Free Space
+Path Loss (FSPL) model is insufficient. This project employs the Two-Ray Ground Reflection
+Model~\cite{rappaport2002wireless}, which accounts for both the direct Line-of-Sight (LoS)
+path and the path reflected off the ground. The choice of propagation model is particularly
+relevant for low-altitude UAV platforms, where the ground-reflection geometry is
+non-negligible~\cite{alhourani2014optimal}.
+
+The received power \(P_r\) at distance \(d\) is approximated by:
+\begin{equation}
+    P_r = P_t G_t G_r \frac{h_t^2 h_r^2}{d^4} \label{eq:tworay_prelim}
+\end{equation}
+where \(P_t\) is the transmit power, \(G_t\) and \(G_r\) are antenna gains, and \(h_t\) and
+\(h_r\) are the heights of the transmitter (sensor) and receiver (UAV). Unlike the
+\(1/d^2\) decay of free space, the Two-Ray model predicts a steeper \(1/d^4\) decay at long
+distances, providing a more realistic constraint for the UAV's data collection radius.

@@ -1,0 +1,35 @@
+\subsection{Deep Reinforcement Learning Implementation}
+
+\subsubsection{Deep Q-Network (DQN) Architecture}
+
+The agent's decision-making policy is approximated using a Deep Q-Network
+(DQN)~\cite{mnih2015humanlevel}. We employ a Multi-Layer Perceptron (MLP) architecture to
+map the high-dimensional state vector
+\(\mathbf{S}_t\) to Q-values for the five discrete actions.
+
+The network consists of an input layer matching the state dimension (\(4 + 3N\), where \(N\)
+is the number of sensors), followed by two fully connected hidden layers with 64 neurons each.
+To introduce non-linearity, Rectified Linear Unit (ReLU) activation functions are applied
+after each hidden layer. The output layer consists of 5 linear neurons, each corresponding to
+the estimated Q-value \(Q(s, a)\) for a specific action in \(\mathcal{A}\).
+
+The network weights \(\theta\) are optimised using the Adam optimiser to minimise the temporal
+difference error between the predicted Q-values and the target Q-values derived from the
+Bellman equation. To ensure training stability, a separate target network \(\hat{Q}\) with
+parameters \(\theta^{-}\) is maintained and updated periodically (every \(C\) steps).
+
+\subsubsection{Custom Gymnasium Environment Design}
+
+The simulation environment is implemented as a custom Gymnasium
+environment~\cite{towers2024gymnasium}, providing a standardised interface that enables
+seamless integration with the Stable-Baselines3~\cite{raffin2021stable} DQN
+implementation. The environment incorporates a probabilistic link-layer model to move beyond
+binary `in-range' abstractions. Each sensor's transmission success is determined by the
+product of its protocol-mandated duty cycle and a sigmoid-mapped signal-to-noise ratio (SNR).
+This mapping calculates the instantaneous success probability \(P_{\text{overall}}\) by
+comparing the RSSI (derived from the Two-Ray Ground Reflection model) against the noise floor
+and the specific SNR requirements of the current Spreading Factor. By setting a transmission
+threshold (e.g., \(P_{\text{overall}} > 0.5\)), the environment forces the DQN agent to
+navigate the trade-off between proximity-induced signal strength and the stochastic
+availability of sensor nodes. This in turn allows for the creation and editing of link
+quality.

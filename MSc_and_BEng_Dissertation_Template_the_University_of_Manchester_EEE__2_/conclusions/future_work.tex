@@ -1,0 +1,45 @@
+\subsection{Future Work}
+
+While the results confirm the viability of the protocol-aware DRL approach, several important limitations of the current framework motivate clear directions for future research.
+
+\subsubsection{Bridging the Sim-to-Real Gap}
+
+All experiments in this dissertation were conducted in simulation. The physics model, while high-fidelity relative to prior work, makes several simplifying assumptions that do not hold in real-world deployments:
+
+\begin{itemize}
+    \item \emph{Wind disturbance and GPS error}: The simulation assumes perfect position control. In practice, wind gusts introduce position error, and GPS/IMU noise means the UAV's actual position deviates from the commanded position. These effects create RSSI uncertainties not captured in the current model.
+    \item \emph{Imperfect ADR}: The EMA-based ADR model is a simplified approximation of the full LoRaWAN ADR specification. Real gateways implement server-side ADR with quantised RSSI histories, link-budget margins, and retransmission acknowledgements that the simulation omits.
+    \item \emph{Obstacle occlusion}: The Two-Ray Ground Reflection model assumes clear line-of-sight between the UAV and all sensors. In environments with trees, buildings, or terrain elevation, multipath fading and shadowing beyond the log-normal model will degrade link quality in spatially structured patterns.
+\end{itemize}
+
+The most important near-term extension is therefore hardware-in-the-loop (HIL) validation: deploying the trained policy on a physical UAV platform (e.g., DJI F450 with a Raspberry Pi companion computer and a Semtech SX1276 LoRa radio) over a small testbed of real LoRaWAN end-devices. Domain Randomisation~\cite{tobin2017domain}, as applied in this work, is specifically designed to narrow the Sim-to-Real gap~\cite{zhao2021sim2real}; HIL experiments would quantify the residual gap and inform which simulation parameters require higher fidelity.
+
+\subsubsection{Extension to Multi-UAV Coordination}
+
+The single-UAV constraint is the most significant practical limitation of the current framework. As sensor count and operational area grow, a single UAV with a fixed battery budget cannot service all sensors within the mission horizon; this is already visible in the degradation of Jain's Fairness Index at $N = 40$ and at the $1{,}000 \times 1{,}000$ grid scale.
+
+A natural extension is the quasi-distributed Deep Q-Learning (QD-DQL) approach of Lee et al.~\cite{lee2025quasi}, which avoids the prohibitive signalling overhead of fully centralised multi-agent control by training each UAV with a shared policy and local observations. Extending the QD-DQL architecture to incorporate LoRaWAN protocol awareness---specifically the Capture Effect and ADR latency---would allow multiple UAVs to coordinate their positions to divide the sensor field spatially while jointly managing SF orthogonality across the entire network, a problem that does not arise in the single-UAV case.
+
+\subsubsection{Joint Altitude and Horizontal Trajectory Optimisation}
+
+The current framework fixes the UAV altitude at $h = 100$\,m, decoupling altitude dynamics from horizontal trajectory optimisation. This simplification is motivated by the observation of Zhang et al.~\cite{zhang2021energy} that higher altitude reduces data rate but increases solar energy harvesting in certain UAV platforms. However, in non-solar-powered platforms, altitude is a genuine control variable: lower altitude reduces path loss (improving SF assignments) but reduces coverage radius; higher altitude extends coverage but forces higher SF values with longer Time-on-Air.
+
+Incorporating altitude as a continuous control variable---extending the action space to include $\{\text{MoveN}, \text{MoveS}, \text{MoveE}, \text{MoveW}, \text{Ascend}, \text{Descend}, \text{Hover}\}$---would require either a larger discrete action space or a transition to a continuous-action algorithm such as Soft Actor-Critic (SAC) or Proximal Policy Optimisation (PPO). The breakpoint distance $d_{\text{break}} = 4\pi h_t h_r / \lambda$ provides a natural altitude-dependent threshold that an intelligent agent could learn to exploit.
+
+\subsubsection{Continuous-Action and Attention-Based Policies}
+
+The DQN architecture used in this work discretises the action space into five cardinal motion primitives, which limits trajectory smoothness and makes fine-grained positioning around sensors impossible. Two improvements merit investigation:
+
+\begin{enumerate}
+    \item \emph{Continuous-action DRL}: Algorithms such as SAC or TD3 (Twin Delayed Deep Deterministic policy gradient) support continuous action spaces, enabling the UAV to select arbitrary flight vectors rather than grid-aligned steps. This would allow the agent to learn precise hovering positions that maximise the RSSI differential for Capture Effect exploitation, potentially increasing throughput significantly at high sensor densities.
+
+    \item \emph{Attention-based policies}: As the number of sensors $N$ grows beyond the zero-padded maximum of $N_{\max} = 50$ used in this work, MLP architectures become increasingly parameter-inefficient. Transformer-based or graph attention network (GAN) policies can process variable-length sensor sets without zero-padding, enabling scalability to 6G IoT scales ($N > 100$) as discussed by Nguyen et al.~\cite{nguyen20226g}. Attention mechanisms also provide interpretability: the attention weights directly identify which sensors the agent is prioritising at each timestep, making the policy more auditable for safety-critical deployments.
+\end{enumerate}
+
+\subsubsection{Heterogeneous Sensor Networks and Traffic Models}
+
+The current framework assumes identical sensor hardware (same transmit power, antenna gain, and data generation rate). Real IoT deployments include heterogeneous devices with different LoRa transceiver chipsets, antenna orientations, and data generation rates driven by different physical processes (e.g., temperature sensors generating data at 1\,Hz versus seismic sensors generating data at 100\,Hz). Extending the urgency formulation in \autoref{eq:urgency} to account for per-sensor priority weights, and training the agent on distributions of heterogeneous traffic profiles, would make the framework deployable in realistic smart-city and environmental monitoring scenarios.
+
+\subsubsection{Online Adaptation and Transfer Learning}
+
+The Domain Randomisation~\cite{tobin2017domain} and Curriculum Learning~\cite{bengio2009curriculum} regime in this work trains a single offline policy evaluated without adaptation. In practice, sensor layouts may change (sensors may be added or removed), and environmental conditions may evolve during a mission. Online fine-tuning---using a small number of gradient steps from in-mission experience---or meta-learning approaches (e.g., Model-Agnostic Meta-Learning, MAML) could allow the policy to rapidly adapt to new layouts without full retraining, an important capability for autonomous UAV systems operating in dynamic environments.

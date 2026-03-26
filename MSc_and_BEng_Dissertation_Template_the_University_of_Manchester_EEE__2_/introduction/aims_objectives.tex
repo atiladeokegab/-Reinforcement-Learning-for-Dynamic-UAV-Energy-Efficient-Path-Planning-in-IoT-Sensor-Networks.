@@ -1,0 +1,43 @@
+\subsection{Aims and objectives}
+
+The primary aim of this project is to develop a protocol-aware Deep Reinforcement Learning
+(DRL) framework capable of optimising UAV flight trajectories for energy-efficient data
+collection in dense, unsynchronised LoRaWAN networks. The goal is to demonstrate that an
+intelligent agent can resolve the ``Spreading Factor (SF) Monoculture'' bottleneck by using
+its physical position as a direct control input for the radio protocol.
+
+Specifically, the project will train a Deep Q-Network (DQN) agent within a high-fidelity
+simulation to learn a non-obvious, network-aware policy that maximises data throughput while
+minimising energy consumption.
+
+The main objectives of the project are summarised below:
+
+\begin{itemize}
+    \item To develop a high-fidelity simulation environment compatible with the Gymnasium
+    interface, incorporating rigorous telecommunications physics including the Two-Ray Ground
+    Reflection path loss model, log-normal shadowing, and asynchronous duty cycles.
+
+    \item To model the specific constraints of the LoRaWAN protocol, particularly the
+    Adaptive Data Rate (ADR) latency, to replicate the causal link between UAV positioning,
+    RSSI, and Spreading Factor allocation.
+
+    \item To formulate the UAV data collection problem as a Markov Decision Process (MDP),
+    designing a multi-objective reward function that balances the competing goals of energy
+    conservation, data freshness (AoI), and collection volume.
+
+    \item To train a Deep Q-Network (DQN) agent to learn an emergent flight policy that
+    autonomously navigates the ``Starvation vs.\ Throughput'' trade-off without human
+    intervention.
+
+    \item To evaluate the performance of the protocol-aware DRL agent by comparing it against
+    standard greedy path-planning heuristics (e.g., ``lawnmower'' patterns) in terms of
+    energy efficiency, network capacity, and successful packet delivery.
+
+    \item To assess the trade-offs between computational complexity, policy robustness, and
+    real-world feasibility, identifying the ``Sim-to-Real'' gap as a key area for future
+    research.
+\end{itemize}
+
+In this project, the collective goal is to demonstrate that a protocol-aware agent is capable
+of generating optimal, energy-efficient trajectories that satisfy network fairness and
+throughput requirements.

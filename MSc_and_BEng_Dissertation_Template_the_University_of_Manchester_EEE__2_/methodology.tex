@@ -1,0 +1,16 @@
+\section{Methodology} \label{sec:method}
+
+This chapter details the development of the protocol-aware Deep Reinforcement Learning (DRL)
+framework. We first present the system model, which mathematically defines the UAV's
+kinematics, energy consumption, and the stochastic LoRaWAN channel. Subsequently, we
+formulate the data collection task as a Markov Decision Process (MDP), defining the specific
+state space, action space, and multi-objective reward function used to train the agent.
+Finally, we describe the algorithmic implementation of the Deep Q-Network (DQN) within the
+custom Gymnasium simulation environment.
+
+\input{methodology/system_model}
+\input{methodology/problem_formulation}
+\input{methodology/sensor_placement}
+\input{methodology/drl_implementation}
+\input{methodology/architecture_interface}
+\input{methodology/summary}

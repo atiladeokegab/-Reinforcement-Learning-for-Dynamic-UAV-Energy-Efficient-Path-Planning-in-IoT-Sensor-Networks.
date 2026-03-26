@@ -1,0 +1,55 @@
+\section{Project Outline}
+
+\subsection*{Project Title}
+Energy-Efficient UAV Path Planning in IoT Networks: A Deep Reinforcement Learning Aided Approach
+
+\subsection*{Project Summary}
+This project develops a protocol-aware Deep Reinforcement Learning framework for optimising
+the trajectory of an Unmanned Aerial Vehicle (UAV) acting as a mobile LoRaWAN gateway over
+a field of static IoT sensors. The central problem addressed is the ``SF Monoculture''
+congestion collapse, wherein standard Adaptive Data Rate mechanisms fail when link qualities
+change rapidly due to UAV mobility, causing all sensors to converge on identical Spreading
+Factors and collapsing packet delivery rates.
+
+\subsection*{Objectives}
+\begin{enumerate}
+    \item Develop a high-fidelity, Gymnasium-compatible simulation environment incorporating
+          Two-Ray Ground Reflection propagation, log-normal shadowing, EMA-based ADR latency,
+          asynchronous duty cycles, and the LoRa Capture Effect.
+    \item Formulate the UAV data collection task as a Markov Decision Process with a
+          multi-objective reward function balancing energy efficiency, data throughput,
+          and Age-of-Information urgency.
+    \item Train a Deep Q-Network (DQN) agent using Domain Randomisation and Curriculum
+          Learning to produce a single generalisable policy across a wide operational envelope.
+    \item Evaluate the DQN agent against two greedy baseline heuristics (Nearest-Sensor
+          Greedy and SF-Aware Max-Throughput Greedy) using a rigorous multi-seed evaluation
+          with Welch's $t$-test significance testing.
+    \item Characterise the Sim-to-Real gap and identify directions for hardware-in-the-loop
+          validation and multi-UAV extension.
+\end{enumerate}
+
+\subsection*{Deliverables}
+\begin{itemize}
+    \item Custom Gymnasium environment implementing the full LoRaWAN physics stack.
+    \item Trained DQN policy generalising across grid sizes $100\times100$ to
+          $1{,}000\times1{,}000$ and sensor counts $N \in \{10, 20, 30, 40\}$.
+    \item Evaluation results across 5 seeds and 8 (grid, $N$) conditions with statistical
+          significance testing.
+    \item This dissertation report.
+\end{itemize}
+
+\subsection*{Timeline}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Milestone} & \textbf{Target} \\
+\midrule
+Simulation environment design and implementation & Semester 1, Week 8 \\
+Initial DQN training (fixed scenario)            & Semester 1, Week 12 \\
+Domain Randomisation and Curriculum Learning     & Semester 2, Week 4 \\
+Multi-seed evaluation and baseline comparison    & Semester 2, Week 8 \\
+Dissertation write-up                            & Semester 2, Week 12 \\
+Submission                                       & Semester 2, Week 14 \\
+\bottomrule
+\end{tabular}
+\end{center}
