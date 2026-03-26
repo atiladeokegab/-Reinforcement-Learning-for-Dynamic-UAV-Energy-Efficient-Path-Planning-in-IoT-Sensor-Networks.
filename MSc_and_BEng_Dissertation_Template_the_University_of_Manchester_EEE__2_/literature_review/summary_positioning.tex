@@ -7,9 +7,34 @@ protocol using static mathematics that cannot adapt to mobility. Explicitly ackn
 gap, Zorbas et al.~\cite{zorbas2025revisiting} conclude that ``reinforcement learning models
 could be employed to adapt over time to evolving network conditions.''
 
-In this report, the focus is placed on this specific intersection: using a DRL agent to solve
-the SF Monoculture. Unlike the static optimisation in~\cite{zorbas2025revisiting} or the
-energy-centric heuristics in~\cite{xiong2023flyinglora}, the proposed framework treats the
-UAV's physical position as a direct control input for the LoRaWAN protocol, allowing the
+Table~\ref{tab:related_work} positions this dissertation at the specific intersection no
+prior work occupies: protocol-aware DRL for mobile LoRaWAN gateways with explicit Capture
+Effect modelling and multi-objective fairness.
+
+\begin{table}[H]
+\centering
+\caption{Positioning of this work relative to key related works across five dimensions.
+         \checkmark~= addressed; \texttimes~= not addressed.}
+\label{tab:related_work}
+\begin{tabularx}{\textwidth}{l Z Z Z Z Z}
+\toprule
+Work & Protocol- & DRL- & LoRaWAN & Capture & Multi- \\
+     & Aware & Based & Specific & Effect & Objective \\
+\midrule
+Zorbas et al.~\cite{zorbas2025revisiting} & \checkmark & \texttimes & \checkmark & \texttimes & \texttimes \\
+Xiong et al.~\cite{xiong2023flyinglora}   & \texttimes & \texttimes & \checkmark & \texttimes & \checkmark \\
+Challita et al.~\cite{challita2018interference} & \checkmark & \checkmark & \texttimes & \texttimes & \texttimes \\
+Nemer et al.~\cite{nemer2022energyefficient} & \texttimes & \checkmark & \texttimes & \texttimes & \checkmark \\
+Luong et al.~\cite{luong2019drl} & \texttimes & \checkmark & \texttimes & \texttimes & \texttimes \\
+\textbf{This work} & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+In this report, the focus is placed on this specific intersection: using a DRL agent to
+solve the SF Monoculture. Unlike the static optimisation in~\cite{zorbas2025revisiting} or
+the energy-centric heuristics in~\cite{xiong2023flyinglora}, the proposed framework treats
+the UAV's physical position as a direct control input for the LoRaWAN protocol, allowing the
 agent to learn an emergent policy that balances energy efficiency with rigorous protocol
-health.
+health. The Capture Effect model distinguishes this work from all prior LoRaWAN
+simulators that assume mutual packet destruction on any intra-SF collision.

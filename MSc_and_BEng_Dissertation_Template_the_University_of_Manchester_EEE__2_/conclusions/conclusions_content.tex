@@ -1,46 +1,58 @@
 \subsection{Conclusions}
 
-This dissertation set out to address a specific and consequential gap in the UAV-assisted IoT literature: the failure of standard path-planning heuristics to account for LoRaWAN protocol dynamics, which causes a congestion collapse known as the ``Spreading Factor (SF) Monoculture.'' The central thesis was that treating the UAV's physical position as a direct control input for the radio protocol---rather than a passive navigation parameter---would enable an intelligent agent to actively resolve this bottleneck, yielding measurable improvements in data collection fairness and energy efficiency.
-
-The work demonstrates that this thesis is correct.
+This dissertation addressed the ``SF Monoculture'' --- the congestion collapse that occurs
+when standard path-planning heuristics ignore LoRaWAN protocol dynamics. The central thesis
+was that treating the UAV's physical position as a direct control input for the radio
+protocol would enable a DRL agent to actively resolve this bottleneck. The work demonstrates
+that this thesis is correct.
 
 \subsubsection{Summary of Contributions}
 
-Four principal contributions were made to achieve this outcome.
-
 \paragraph{High-Fidelity Simulation Environment.}
-A custom Gymnasium-compatible simulation environment was developed incorporating the Two-Ray Ground Reflection propagation model, log-normal shadowing ($\sigma = 4$\,dB), EMA-based ADR latency ($\lambda = 0.1$), asynchronous 10\% duty cycles, and the LoRa Capture Effect (6\,dB threshold). This environment faithfully reproduces the conditions under which the SF Monoculture emerges in mobile LoRaWAN networks, and is the first open simulation framework to model the causal chain from UAV position through RSSI, EMA-ADR, and Capture Effect to packet delivery outcome within a single Gymnasium step function.
+A custom Gymnasium-compatible environment was developed incorporating the Two-Ray Ground
+Reflection model, log-normal shadowing ($\sigma=4$\,dB), EMA-based ADR latency
+($\lambda=0.1$), asynchronous 10\% duty cycles, and the LoRa Capture Effect (6\,dB
+threshold). This is the first open simulation framework to model the full causal chain
+from UAV position through RSSI, EMA-ADR, and Capture Effect to packet delivery within a
+single Gymnasium step.
 
-\paragraph{Domain Randomisation and Curriculum Learning Regime.}
-A training regime combining Domain Randomisation~\cite{tobin2017domain,openai2019dexterous}
-and Curriculum Learning~\cite{bengio2009curriculum} was designed to produce a single DQN
-model capable of generalising across a wide operational envelope without retraining. The curriculum progressively unlocks harder conditions (grid sizes from $100 \times 100$ to $1{,}000 \times 1{,}000$ cells; sensor counts from 10 to 40) across three stages. This approach produced a model that achieves strong performance across a 100$\times$ variation in operational area and a four-fold variation in network density, a significant practical advantage over policies that require retraining for each deployment condition.
+\paragraph{Domain Randomisation and Curriculum Learning.}
+A three-stage curriculum combining domain randomisation~\cite{tobin2017domain} and
+curriculum learning~\cite{bengio2009curriculum} produced a single DQN model that
+generalises across a 100$\times$ variation in operational area and a four-fold variation
+in network density without retraining.
 
-\paragraph{Fairness-Constrained Multi-Objective Reward Function.}
-A dense reward function was designed that incorporates Age-of-Information urgency, buffer-overflow penalties applied to \emph{all} action types (including movement), a new-sensor discovery bonus, and an energy efficiency term. By applying the packet-loss penalty globally rather than only during the Hover action, the reward prevents the agent from exploiting the time-freezing trap of perpetually hovering over a single high-rate sensor, a failure mode observed in earlier reward formulations.
+\paragraph{Fairness-Constrained Multi-Objective Reward.}
+A dense reward function with AoI urgency, buffer-overflow penalties applied to
+\emph{all} action types, a discovery bonus, and an energy term prevents the agent from
+hovering indefinitely over a single high-rate sensor --- a failure mode seen in earlier
+formulations.
 
-\paragraph{Novel SF-Aware Max-Throughput Greedy Baseline.}
-A second baseline agent was introduced that scores candidate sensors by a weighted combination of spreading factor (favouring SF7--SF9 for highest throughput) and Euclidean distance. This baseline provides a stronger, protocol-aware comparison point than the standard Nearest-Sensor heuristic, isolating the contribution of \emph{long-horizon planning} from the contribution of \emph{protocol awareness} alone.
+\paragraph{SF-Aware Greedy Baseline.}
+A novel baseline scoring candidates by a weighted combination of SF (favouring SF7--SF9)
+and distance provides a stronger protocol-aware comparison point, isolating the
+contribution of long-horizon planning from protocol awareness alone.
 
 \subsubsection{Key Findings}
 
-The multi-seed evaluation across five random seeds and eight distinct (grid size, sensor count) conditions yielded the following principal findings.
+All three agents achieve 100\% sensor coverage in all conditions (single exception:
+DQN at $N=40$, seed 1337, 97.5\%). The DQN's throughput advantage grows with sensor
+count: $+2.3\%$ cumulative reward over SF-Aware Greedy at $N=10$ ($p<0.001$, $d=2.52$),
+rising to $+9.0\%$ at $N=30$ ($p=0.021$, $d=0.78$) and $+7.4\%$ at $N=40$;
+the energy efficiency advantage grows from $+2.3$\,B/Wh to $+17.6$\,B/Wh ($+7.5\%$).
+With twenty seeds, $N=10$, $N=20$, and $N=30$ all reach statistical significance
+($p<0.05$); $N=40$ shows a medium effect ($d=0.49$, $p=0.138$) not yet significant
+due to extreme inter-seed layout variance. At $N=40$, Jain's Fairness Index improves
+from $0.699$ (SF-Aware) to $0.725$ (DQN), $+3.7\%$. Grid-size experiments confirm
+the DQN's advantage ($+2.5\%$ at $100\times100$ and $+2.0\%$ at $300\times300$,
+both $p<0.001$); the policy transitions to a fairness-first mode at
+$1{,}000\times1{,}000$ where throughput is statistically indistinguishable ($p=0.96$)
+but Jain's Index remains superior ($0.897$ vs.\ $0.893$).
 
-\paragraph{Coverage.}
-All three agents achieve 100\% sensor coverage across all evaluated conditions, with the single exception of the DQN agent on the most challenging configuration ($N = 40$, seed 1337), where coverage was 97.5\%. This confirms that the terminal unvisited-sensor penalty is effective at driving full exploration of the sensor field.
+The key emergent behaviour is strategic repositioning: the DQN devotes 2.9\% of
+steps to deliberate movement ($p=0.002$), reaching positions that yield 48.7\,B per
+collection step versus 42.7\,B for SF-Aware Greedy (+14\%). The EMA-ADR latency
+becomes a \emph{feature}: the agent maintains proximity for multiple steps to induce
+SF downgrades before repositioning, enabling orthogonal-SF concurrent collection that
+purely myopic greedy policies cannot plan for.
 
-\paragraph{Throughput and Energy Efficiency.}
-The DQN agent outperforms both baselines on cumulative reward at every network density. The advantage grows with sensor count: +2.7\% over SF-Aware Greedy at $N = 10$, rising to +7.4\% at $N = 40$. The corresponding energy efficiency advantage (bytes collected per watt-hour) grows from +2.5\,B/Wh at $N = 10$ to +15.3\,B/Wh at $N = 40$ (+7.3\%). This gain arises because the DQN learns to position itself at locations that simultaneously serve multiple sensors across orthogonal spreading factors, an opportunity that greedy heuristics can only partially exploit through hand-crafted scoring.
-
-\paragraph{Fairness.}
-Jain's Fairness Index over per-sensor collection rates confirms the DQN's advantage is most pronounced at high density. At $N = 40$, the DQN achieves $\mathcal{J} = 0.672 \pm 0.054$ versus $\mathcal{J} = 0.646 \pm 0.053$ for SF-Aware Greedy (+4.0\%) and $\mathcal{J} = 0.664 \pm 0.055$ for Nearest Greedy (+1.2\%). The monotonic degradation of fairness with sensor count for all agents is not a failure of the reward function but an intrinsic consequence of the fixed battery budget and single-UAV constraint: as $N$ grows, the UAV cannot physically service all sensors with equal frequency within the mission horizon. The DQN's advantage reflects its superior prioritisation of underserved sensors.
-
-\paragraph{Grid-Size Scalability.}
-The grid-size sweep ($N = 20$ sensors, grids from $100 \times 100$ to $1{,}000 \times 1{,}000$ cells) reveals a qualitative transition in problem difficulty. At $100 \times 100$ (predominantly SF7 regime), all agents achieve $\mathcal{J} > 0.999$ as the compact area eliminates monoculture risk; the DQN's cumulative reward advantage is statistically significant ($t = 3.12$, $p = 0.029$, Welch's test). At $1{,}000 \times 1{,}000$ (SF11/SF12 regime), ADR latency dominates and fairness degrades for all agents ($\mathcal{J} < 0.91$), but the DQN maintains its Fairness Index lead ($\mathcal{J} = 0.904$ versus $0.900$ for SF-Aware and $0.886$ for Nearest Greedy). At this scale the inter-seed variance is too large (reward std $\approx 605{,}000$) for a five-seed evaluation to confirm significance at $p < 0.05$, motivating larger-scale validation in future work.
-
-\paragraph{Protocol-Aware Repositioning.}
-A key emergent behaviour of the trained policy is strategic repositioning: quantitative analysis of per-step action logs reveals that the DQN devotes 2.9\% of episode steps to deliberate movement ($p = 0.002$, Welch's $t$-test), whereas both greedy baselines issue a collection action at every step (100\% hover fraction), collecting greedily from whichever sensor is nearest. This repositioning is not wasteful---it is the mechanism by which the DQN reaches positions that yield $48.7$\,B per collection step versus $42.7$\,B for the SF-Aware Greedy baseline (+14\%). Capture Effect trigger counts are not significantly different across agents ($p = 1.0$, $n = 5$), indicating that the DQN's per-step efficiency gain arises from improved positioning for concurrent multi-SF collection rather than from exploiting a greater number of intra-SF collisions. The EMA-based ADR latency becomes a \emph{feature} in the DRL framework: the agent learns to maintain proximity for multiple steps to induce SF downgrades before repositioning, reaching locations where orthogonal-SF collection is possible---something the purely myopic greedy policies cannot plan for.
-
-\subsubsection{Objective Attainment}
-
-Each of the six project objectives stated in \autoref{sec:intro} has been met. A high-fidelity Gymnasium environment was developed incorporating the Two-Ray model, log-normal shadowing, and EMA-ADR latency. The LoRaWAN protocol constraints were explicitly modelled, including the causal link between UAV position, RSSI, ADR, and SF allocation. The data collection problem was formulated as an MDP with a multi-objective reward function balancing energy, data freshness (AoI), and throughput. A DQN agent was trained to autonomously navigate the starvation--throughput trade-off without human intervention. The agent's performance was rigorously compared against two greedy baselines using a five-seed, multi-condition evaluation with Welch's $t$-test significance testing. The trade-offs between computational complexity, policy robustness, and real-world feasibility have been identified and discussed, with the Sim-to-Real gap highlighted as the principal avenue for future investigation.

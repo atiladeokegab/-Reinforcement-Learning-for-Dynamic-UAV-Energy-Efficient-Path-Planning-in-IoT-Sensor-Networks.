@@ -18,6 +18,18 @@ assigned distinct SFs by the Adaptive Data Rate (ADR) mechanism. The UAV must th
 optimise its trajectory not merely to minimise distance, but to actively manage these spectral
 assignments to prevent network congestion.
 
+\noindent\textbf{Assumption 1.} \textit{The UAV operates at fixed altitude $h$, reducing
+trajectory optimisation to a 2D horizontal problem; vertical dynamics are abstracted into
+fixed power profiles $P_{\text{hover}}$ and $P_{\text{flight}}$.}
+
+\noindent\textbf{Assumption 2.} \textit{The LoRaWAN gateway is single-channel multi-SF:
+at most one transmission per SF is decoded simultaneously; intra-SF collisions are resolved
+via the Capture Effect (Section~\ref{sec:capture}).}
+
+\noindent\textbf{Assumption 3.} \textit{Sensors are LoRaWAN Class~A devices with a 10\%
+duty cycle and Poisson data generation; network-initiated wake-up is infeasible, so the
+UAV must arrive during a node's natural transmission window.}
+
 \subsubsection{UAV Kinematics and Energy Consumption}
 
 We consider a rotary-wing Unmanned Aerial Vehicle (UAV) operating within a discretised 3D
@@ -61,198 +73,47 @@ the agent to optimise for efficient flight trajectories and penalises excessive 
 thereby aligning the reward signal with the physical reality of limited onboard energy
 storage.
 
-\subsubsection{LoRaWAN Channel and Protocol Modelling}
+\subsubsection{Channel Model and Protocol Modelling}
 
-To accurately simulate the ground-to-air communication channel, a simple Free Space Path
-Loss (FSPL) model is insufficient as it neglects ground reflections, which are significant at
-low UAV altitudes. Instead, this work employs the Two-Ray Ground Reflection Model~\cite{rappaport2002wireless},
-which is particularly appropriate for low-altitude UAV platforms where the LoS path and
-ground-reflected path interfere constructively or destructively depending on the UAV's
-altitude and ground distance~\cite{alhourani2014optimal}.
-
-As shown in \autoref{fig:tworay}, the model calculates the path loss based on the
-interference between the direct and reflected rays. The received power \(P_r\) is given by:
+The ground-to-air channel is modelled using the Two-Ray Ground Reflection
+model~\cite{rappaport2002wireless}, which is appropriate for low-altitude UAV platforms where
+the direct LoS path and ground-reflected path interfere. The received power is:
 \begin{equation}
     P_r = P_t G_t G_r \frac{h_t^2 h_r^2}{d^4} \label{eq:tworay}
 \end{equation}
-where \(h_t\) and \(h_r\) represent the heights of the transmitter (sensor) and receiver
-(UAV), respectively. This results in a steeper signal decay (\(1/d^4\)) compared to free
-space, enforcing realistic constraints on the UAV's data collection radius.
+where $h_t$, $h_r$ are transmitter and receiver heights, $d$ is the 3D slant range, and $G_t$, $G_r$
+are antenna gains. The quartic decay ($1/d^4$) enforces realistic data-collection radius constraints
+and means small changes in the UAV's position have a magnified impact on RSSI---a key property
+that the DRL agent must learn to exploit~\cite{alhourani2014optimal}.
 
-\begin{figure}[h]
-    \centering
-    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-        \textit{[Figure: Two-Ray Ground Reflection Model geometry. Shows the direct LoS path
-        and the ground-reflected path between the ground sensor at height $h_t$ and the UAV
-        at height $h_r$, illustrating the constructive/destructive interference pattern that
-        produces the $1/d^4$ path-loss law beyond the breakpoint distance.]}
-    \vspace{1.5cm}}}
-    \caption[Two-Ray Ground Reflection Model for UAV-IoT Communication]{Two-Ray Ground
-    Reflection Model for UAV-IoT Communication. The model accounts for both the direct
-    Line-of-Sight (LoS) path and the ground-reflected path. The destructive interference
-    between these two paths beyond the breakpoint distance $d_{\text{break}} = 4\pi h_t h_r / \lambda$
-    produces the steeper $1/d^4$ signal decay that enforces realistic data-collection radius
-    constraints in the simulation.}
-    \label{fig:tworay}
-\end{figure}
+\subsubsection{Device Class and Traffic Model}
 
-\subsubsection{Distance and Propagation Geometry}
-
-The simulation operates in a 3D Cartesian coordinate system where the UAV's position at
-time \(t\) is denoted as \(\mathbf{p}_{u,t} = (x_u, y_u, h_u)\) and the \(i\)-th sensor's
-position is fixed at \(\mathbf{p}_{s,i} = (x_i, y_i, 0)\).
-
-The Euclidean distance \(d_{i,t}\) between the UAV and the \(i\)-th sensor is calculated as
-the 3D slant range:
-\begin{equation}
-    d_{i,t} = \sqrt{(x_u - x_i)^2 + (y_u - y_i)^2 + h_u^2} \label{eq:distance}
-\end{equation}
-where \(h_u\) is the UAV's altitude. This 3D distance is critical for the Two-Ray Ground
-Reflection Model, as the path loss depends heavily on the height differential between the
-transmitter and receiver.
-
-In the Two-Ray model, the phase difference between the direct Line-of-Sight (LoS) path and
-the ground-reflected path is a function of this distance and the reflection coefficient. For
-small grazing angles (typical for UAVs flying at altitude \(h_u\) collecting from ground
-sensors), the path loss \(L\) simplifies to the fourth-power law:
-\begin{equation}
-    L \propto \frac{h_u^2 h_s^2}{d_{i,t}^4} \label{eq:fourthpower}
-\end{equation}
-This quartic decay (\(1/d^4\)) means that small changes in the UAV's position or altitude
-have a magnified impact on the Received Signal Strength Indicator (RSSI), creating a highly
-sensitive environment that the DRL agent must learn to navigate precisely.
-
-\subsubsection{LoRaWAN Device Class and Traffic Model}
-
-We model the IoT sensor nodes as LoRaWAN Class A devices~\cite{augustin2016lora,bor2016lora},
-operating in an asynchronous, sensor-initiated transmission mode. Class A operation imposes a strict energy constraint
-where nodes remain in a deep sleep state and activate solely to transmit data packets
-according to a stochastic duty cycle. Consequently, the network operates without centralised
-synchronisation or wake-up receiver infrastructure.
-
-This design choice reflects the practical reality of energy-harvesting IoT deployments. Class
-A devices are the de facto standard in real-world LoRaWAN networks because their simplicity
-and low power consumption make them ideal for battery-powered and energy-harvesting
-applications. The lack of downlink capability in Class A devices precludes the use of wake-up
-receiver architectures, which would require active, power-consuming receivers to remain
-listening for network-initiated wake-up signals---a fundamental contradiction with the strict
-energy budgets of sensor nodes. Thus, our modelling choice ensures that the proposed
-framework remains applicable to genuine large-scale deployments, rather than idealised
-systems with unlimited infrastructure support.
-
-\paragraph{Data Generation and Buffer Model.}
-Data generation at each sensor \(i \in \mathcal{N}\) follows a Poisson process with rate
-\(\lambda_i\):
-\begin{equation}
-    P(\text{packet generated at sensor } i \text{ in interval } [t, t + \Delta t]) = \lambda_i \cdot \Delta t
-    \label{eq:poisson}
-\end{equation}
-Generated packets accumulate in finite transmission buffers with capacity \(B_{\max}\):
-\begin{equation}
-    \text{Buffer}_i(t) \in [0,\, B_{\max}] \label{eq:buffer}
-\end{equation}
-Once a buffer reaches capacity, newly generated packets are discarded without transmission.
-This models the realistic scenario wherein sensor data loses value if not collected
-promptly---a behaviour common in time-sensitive monitoring applications such as environmental
-sensing, disaster response, and industrial monitoring. The buffer overflow mechanism creates a
-hard deadline for data collection: if the UAV does not visit a sensor before its buffer fills,
-the oldest or newest packets (depending on buffer policy) are lost permanently.
-
-\paragraph{Mission Implications.}
-The combination of Class A asynchronous operation and finite buffer capacity creates a
-challenging multi-objective optimisation problem for the DRL agent:
-\begin{itemize}
-    \item \emph{Fairness constraint}: The agent must visit all sensors periodically to prevent
-    buffer overflow and information loss.
-    \item \emph{Energy efficiency constraint}: The agent must minimise flight distance and
-    hovering time to conserve battery energy.
-    \item \emph{Throughput objective}: The agent must maximise the total number of packets
-    collected within the mission horizon.
-\end{itemize}
-These competing objectives naturally emerge from the Class A device constraints and form the
-basis of the reward function design discussed in \autoref{sec:reward}.
+Sensor nodes are modelled as LoRaWAN Class~A devices~\cite{augustin2016lora}, operating
+asynchronously with a 10\% duty cycle. Data generation follows a Poisson process with rate
+$\lambda_i$ per sensor, accumulating in finite buffers of capacity $B_{\max}$. Once a buffer
+is full, new packets are discarded, creating a hard collection deadline for the agent. This
+models realistic energy-harvesting deployments where network-initiated wake-up is infeasible.
 
 \subsubsection{Collision Resolution via Capture Effect} \label{sec:capture}
 
-While orthogonal spreading factors do not interfere with one another, intra-SF collisions
-occur when multiple sensors attempt transmission on the same spreading factor and frequency
-simultaneously. We resolve these collisions using the Capture Effect model~\cite{croce2020lora}, which
-exploits the power-law properties of LoRa receivers to successfully decode the strongest
-signal whilst suppressing weaker interferers.
-
-\paragraph{Capture Effect Criterion.}
-The gateway successfully decodes a signal from sensor \(i\) if its received power \(P_{r,i}\)
-exceeds the sum of all interfering signals by a capture threshold \(\tau_{\text{cap}}\)
-(typically \SI{6}{dB}):
+Intra-SF collisions (multiple sensors on the same spreading factor) are resolved using the
+Capture Effect~\cite{croce2020lora}: the gateway decodes sensor $i$ if its received power
+exceeds the interference from all co-channel sensors by the capture threshold $\tau_{\text{cap}} = \SI{6}{dB}$:
 \begin{equation}
-    \frac{P_{r,i}}{\displaystyle\sum_{j \in \mathcal{I}_{\text{co-channel}}} P_{r,j} + N_0} \geq \tau_{\text{cap}}
+    \frac{P_{r,i}}{\sum_{j \in \mathcal{I}_{\text{co-SF}}} P_{r,j} + N_0} \geq \tau_{\text{cap}}
     \label{eq:capture}
 \end{equation}
-where \(N_0\) is the background noise power spectral density and
-\(\mathcal{I}_{\text{co-channel}} = \{j \in \mathcal{N} \mid j \neq i,\ \text{SF}_j(t) = \text{SF}_i(t)\}\)
-denotes the set of sensors transmitting on the same spreading factor as sensor \(i\).
-
-\paragraph{Implication for Trajectory Optimisation.}
-This constraint is critical to the DRL agent's learning objective. The Capture Effect forces
-the agent to optimise its trajectory not solely for coverage---i.e., achieving minimum
-received signal strength indicator (RSSI) thresholds---but rather to induce a power
-differential that ensures successful packet capture during congestion events.
-
-Consider an intra-SF collision scenario in which two sensors simultaneously transmit on the
-same spreading factor. The received powers at the UAV are:
-\begin{align}
-    P_{r,i} &= P_t G_t G_r \frac{h_t^2 h_r^2}{d_{i,t}^4} \label{eq:pri} \\
-    P_{r,j} &= P_t G_t G_r \frac{h_t^2 h_r^2}{d_{j,t}^4} \label{eq:prj}
-\end{align}
-For sensor \(i\) to be successfully captured, the UAV must position itself such that
-\(d_{i,t} < d_{j,t}\), thereby satisfying:
-\begin{equation}
-    \frac{d_{j,t}^4}{d_{i,t}^4} \geq \tau_{\text{cap}} \label{eq:capture_cond}
-\end{equation}
-This creates a non-trivial spatial optimisation problem wherein naive distance-minimisation or
-greedy path-planning strategies fundamentally fail. The agent must learn to position itself
-strategically closer to the desired sensor during collision events, not merely visit all
-sensors with equal frequency. This insight is fundamental to the work: the UAV's physical
-position becomes an active control variable for the communication protocol, rather than a
-passive design parameter.
+This forces the agent to optimise its trajectory not merely for minimum RSSI coverage but to
+induce the power differential required for successful capture during congestion events---a
+spatial optimisation that greedy heuristics cannot plan for. For two sensors colliding on the
+same SF, the capture condition simplifies to $d_{j,t}^4 / d_{i,t}^4 \geq \tau_{\text{cap}}$,
+requiring the UAV to position itself strictly closer to the desired sensor.
 
 \subsubsection{Gateway Architecture}
 
-The UAV communication module is modelled as a single-channel multi-spreading-factor gateway.
-We exploit the orthogonality of LoRa spreading factors to demodulate multiple concurrent
-signals transmitted simultaneously on distinct spreading factors. This property---unique to
-LoRa modulation---allows us to achieve concurrent channel capacity beyond what would be
-possible in traditional narrowband systems.
+The UAV is modelled as a single-channel multi-SF gateway. LoRa's orthogonal spreading factors
+allow up to one simultaneous transmission per SF; packets that violate this constraint are
+subject to Capture Effect resolution. The operational SF set is restricted to
+$\mathcal{S} = \{7, 9, 11, 12\}$, maintaining sufficient spectral diversity to prevent the
+SF Monoculture while remaining implementable on lightweight airborne hardware.
 
-\paragraph{Spreading Factor Selection.}
-Rather than implementing the full LoRaWAN standard set, which defines spreading factors
-\(\text{SF} \in \{7, 8, 9, 10, 11, 12\}\), we restrict the operational spreading factor set
-to:
-\begin{equation}
-    \mathcal{S} = \{7, 9, 11, 12\} \label{eq:sf_set}
-\end{equation}
-This pragmatic restriction reflects the hardware limitations of real UAV-mounted gateways,
-which typically operate a single transceiver with time-division or frequency-division
-multiplexing across a restricted subset of spreading factors. The specific selection of
-\(\mathcal{S} = \{7, 9, 11, 12\}\) maintains sufficient spectral diversity to prevent the
-spreading factor monoculture whilst remaining implementable on lightweight airborne platforms
-with constrained power and computational budgets.
-
-The four spreading factors in \(\mathcal{S}\) are mutually orthogonal, meaning signals
-modulated with different spreading factors can theoretically coexist on the same frequency
-channel without interfering with one another, provided they do not collide on the same
-spreading factor and frequency pair.
-
-\paragraph{Concurrent Reception and Collision Handling.}
-This single-channel multi-SF architecture enables the UAV to receive up to four simultaneous
-packets, subject to the constraint:
-\begin{equation}
-    |\{i \in \mathcal{N} : \text{SF}_i(t) = k\}| \leq 1, \quad \forall k \in \mathcal{S}
-    \label{eq:concurrent}
-\end{equation}
-where \(\text{SF}_i(t)\) denotes the spreading factor assigned to sensor \(i\) at time \(t\),
-and \(\mathcal{N} = \{1, \ldots, N\}\) is the set of all deployed sensor nodes.
-
-\autoref{eq:concurrent} ensures that at most one sensor transmits on each spreading factor at
-any given time. Packets that violate this constraint are subject to collision resolution via
-the Capture Effect mechanism detailed in \autoref{sec:capture}.
