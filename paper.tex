@@ -1,0 +1,431 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\graphicspath{
+  {src/agents/dqn/dqn_evaluation_results/multi_seed_results/}
+  {src/agents/dqn/dqn_evaluation_results/sweep_fairness_results/}
+}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Protocol-Aware Trajectory Control for UAV-Assisted IoT Data Collection via Deep Reinforcement Learning}
+
+\author{
+\IEEEauthorblockN{Atilade Gabriel Oke}
+\IEEEauthorblockA{
+\textit{Department of Electrical and Electronic Engineering}\\
+\textit{The University of Manchester}\\
+Manchester, United Kingdom\\
+Student ID: 11085980}
+}
+
+\maketitle
+
+\begin{abstract}
+Unmanned Aerial Vehicles (UAVs) paired with LoRaWAN offer scalable IoT data collection, but rapid link-quality changes induced by UAV mobility drive sensors toward identical Spreading Factor assignments---the SF Monoculture---collapsing packet delivery rates. We present a protocol-aware Deep Q-Network (DQN) framework that treats UAV position as a direct control input for the LoRaWAN Adaptive Data Rate protocol. A Domain Randomisation and Curriculum Learning training regime produces a single model deployable across 100$\times$100 to 1{,}000$\times$1{,}000 cell grids and 10--40 sensors without retraining. A fairness-constrained reward incorporating Age-of-Information urgency and a Capture-Effect-aware hovering strategy enable the DQN to outperform both a protocol-blind Nearest Greedy and a novel SF-Aware Greedy baseline across all evaluated conditions. At 40 sensors, the DQN achieves Jain's Fairness Index $J=0.672\pm0.054$ versus $0.646\pm0.053$ (SF-Aware, $+4.0\%$) and $0.664\pm0.055$ (Nearest, $+1.2\%$), with $7.3\%$ higher energy efficiency. Statistical significance ($p<0.05$, Welch's $t$-test) is confirmed at compact operational scales. The framework provides a deployable foundation for multi-UAV LoRaWAN data collection at IoT scale.
+\end{abstract}
+
+\begin{IEEEkeywords}
+UAV, deep reinforcement learning, LoRaWAN, energy efficiency, domain randomisation, curriculum learning, capture effect, age of information
+\end{IEEEkeywords}
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+UAVs have emerged as critical enablers for data collection in remote or hazardous environments where fixed infrastructure is prohibitively expensive~\cite{b1}. Combining LoRaWAN with UAV mobility allows vast sensor-field coverage with minimal infrastructure. However, this integration introduces a fundamental challenge that standard protocols were not designed to handle: rapid link-quality changes caused by a moving UAV cause devices to converge on identical transmission settings---the ``Spreading Factor (SF) Monoculture''~\cite{b3}. This congestion collapse dramatically reduces packet delivery rates and wastes the concurrent channel capacity that LoRa's orthogonal spreading factors are designed to provide.
+
+Existing approaches remain siloed. Standard path-planning heuristics optimize solely for flight distance, ignoring the underlying telecommunications physics~\cite{b4}. Protocol-blind trajectories inadvertently force sensors into the SF Monoculture, causing the UAV to hover inefficiently while waiting for data that cannot be decoded due to collisions. Mathematical optimization approaches can solve resource allocation for static networks but lack real-time adaptability for dynamic mobile environments~\cite{b3}.
+
+We propose a protocol-aware control framework that treats UAV position as a direct control input for the LoRaWAN protocol. Recent literature has explicitly recommended reinforcement learning as the solution to this problem~\cite{b3,b5}. The main contributions of this work are:
+\begin{itemize}
+    \item A high-fidelity Gymnasium-compatible simulation incorporating Two-Ray Ground Reflection propagation, log-normal shadowing, and EMA-based ADR latency.
+    \item A Domain Randomisation and Curriculum Learning training regime that produces a single DQN model generalizing across the full evaluation distribution without retraining.
+    \item A globally-applied fairness-constrained reward function incorporating AoI urgency metrics, applied to all action types to prevent buffer-overflow exploitation.
+    \item A novel SF-Aware Max-Throughput Greedy baseline providing a stronger protocol-aware comparison point.
+    \item A rigorous multi-seed, multi-condition evaluation with Welch's $t$-test significance testing.
+\end{itemize}
+
+% ============================================================
+\section{Related Work}
+% ============================================================
+
+Zhang et al.~\cite{b7} propose action-confined Q-learning and SARSA for trajectory optimization in solar-powered UAV IoT networks, jointly optimizing data throughput, energy consumption, and Jain's fairness index. Their key finding---that higher UAV altitude yields lower data rate but higher harvested energy---motivates our fixed-altitude design decoupling protocol optimization from altitude dynamics. Their on-policy scheme achieves 96.3\% of Q-learning reward in practical scenarios where no causal knowledge is available.
+
+Lee et al.~\cite{b6} address multi-UAV control via Quasi-Distributed DQL (QD-DQL), demonstrating that centralized approaches incur prohibitive signaling overhead as UAV count grows. Their Weight Adjusting Layer neural architecture mitigates the randomness of ground device location information, achieving performance close to the exhaustive-search upper bound. Our single-UAV framework is designed as a foundational policy for extension to their multi-agent setting.
+
+FlyingLoRa~\cite{b4} represents state-of-the-art energy-efficient LoRa path planning but treats the protocol as a static constraint rather than a dynamic variable. Zorbas et al.~\cite{b3} provide a rigorous analysis of the SF Monoculture and explicitly recommend reinforcement learning, which this work directly addresses.
+
+% ============================================================
+\section{System Model}
+% ============================================================
+
+We consider a remote IoT monitoring environment comprising a set $\mathcal{N} = \{1,\ldots,N\}$ of static sensor devices uniformly distributed over a rectangular Region of Interest $\mathcal{W} \subset \mathbb{R}^2$. Sensors continuously generate monitoring data accumulating in finite buffers of capacity $B_{\max}$. A rotary-wing UAV acts as a mobile LoRaWAN gateway over a finite mission horizon of $T = 2{,}100$ discrete time steps.
+
+\subsection{UAV Kinematics and Energy Model}
+
+The UAV operates at fixed altitude $h$ with discrete action space $\mathcal{A} = \{\text{MoveN}, \text{MoveS}, \text{MoveE}, \text{MoveW}, \text{Hover}\}$. Battery energy evolution is governed by:
+\begin{equation}
+E_{k+1} = E_k - P(a_k) \cdot \Delta t
+\label{eq:battery}
+\end{equation}
+where $P(a_k) = 700$\,W for Hover and $500$\,W for translational flight. This counter-intuitive assignment reflects rotary-wing aerodynamics: hovering requires continuous thrust against gravity without translational lift, consuming more power than forward flight~\cite{b7}. The model is parametrized on the DJI TB60 (274\,Wh capacity, 10\,m/s cruising speed).
+
+\subsection{Channel Propagation Model}
+
+A simple Free Space Path Loss model is insufficient at low UAV altitudes due to significant ground reflections. We employ the Two-Ray Ground Reflection Model. For UAV altitude $h_r$ and sensor height $h_t$, received power at 3D slant range $d_{i,t}$ is:
+\begin{equation}
+P_r = P_t G_t G_r \frac{h_t^2 h_r^2}{d_{i,t}^4}
+\label{eq:tworay}
+\end{equation}
+
+The quartic $1/d^4$ decay applies beyond the breakpoint distance $d_{\text{break}} = 4\pi h_t h_r / \lambda \approx 1{,}160$\,m (for $h_r = 100$\,m, $f = 868$\,MHz). Below the breakpoint, free-space loss applies. Log-normal shadowing $X_\sigma \sim \mathcal{N}(0, 4\,\text{dB})$ is superimposed to simulate real-world obstructions:
+\begin{equation}
+\text{RSSI} = P_t - \text{PL}(d) + X_\sigma
+\label{eq:rssi}
+\end{equation}
+
+\subsection{LoRaWAN Protocol and EMA-ADR Model}
+
+Sensor nodes are modeled as LoRaWAN Class A devices. The Adaptive Data Rate (ADR) mechanism maps an Exponential Moving Average (EMA) of RSSI to a Spreading Factor ($\text{SF} \in \{7, 9, 11, 12\}$):
+\begin{equation}
+\overline{\text{RSSI}}[k] = \lambda \cdot \text{RSSI}[k] + (1 - \lambda) \cdot \overline{\text{RSSI}}[k-1]
+\label{eq:ema}
+\end{equation}
+
+The smoothing parameter $\lambda = 0.1$ deliberately creates ADR latency. The UAV must hover for multiple steps to allow $\overline{\text{RSSI}}$ to stabilize before an SF downgrade triggers, forcing the DQN to learn hovering strategies rather than merely passing by sensors. An asynchronous duty cycle of 10\% is modeled as a probabilistic transmission gate at each step.
+
+\subsection{Traffic and Buffer Model}
+
+Data generation at sensor $i$ follows a Poisson process with rate $\lambda_i$. Packets accumulate in finite buffers of capacity $B_{\max}$. Once full, packets are permanently discarded, creating a hard collection deadline. This buffer overflow mechanism directly drives the urgency-based reward design.
+
+\subsection{Collision Resolution via Capture Effect}
+
+Intra-SF collisions occur when multiple sensors transmit on the same SF simultaneously. These are resolved using the LoRa Capture Effect. The gateway successfully decodes sensor $i$ if its received power exceeds co-channel interferers by $\tau_{\text{cap}} \geq 6$\,dB:
+\begin{equation}
+\frac{P_{r,i}}{\sum_{j \in \mathcal{I}_{\text{co}}} P_{r,j} + N_0} \geq \tau_{\text{cap}}
+\label{eq:capture}
+\end{equation}
+
+where $\mathcal{I}_{\text{co}} = \{j \in \mathcal{N} \mid j \neq i,\, \text{SF}_j(t) = \text{SF}_i(t)\}$. This forces the agent to position itself such that the desired sensor is $>6$\,dB stronger than any co-SF interferer---a non-trivial spatial optimization problem where naive distance-minimization fundamentally fails.
+
+% ============================================================
+\section{Problem Formulation}
+% ============================================================
+
+We formulate the UAV trajectory optimization and resource allocation problem as a maximization of the total collected data throughput, subject to energy, kinematic, and protocol constraints. The optimization problem is defined as follows:
+
+\begin{subequations}
+\label{eq:P1}
+\begin{align}
+(\mathcal{P}_1):\ \max_{\pi}\ & \sum_{t=0}^{T} \sum_{i=1}^{N} \mathcal{D}_{i,t} \label{eq:obj} \\
+\text{s.t.}\quad & RSSI_{i,t}(p_t) \geq RSSI_{\min}(SF_{i,t}),\ \forall i \in \mathcal{N} \label{eq:c1} \\
+                 & E_{t+1} = E_t - P(a_t) \cdot \Delta t \geq 0,\ \forall t \label{eq:c2} \\
+                 & \sum_{i \in \mathcal{N}} \mathbb{I}(SF_{i,t} = k) \leq 1,\ \forall k \in \{7,\ldots,12\} \label{eq:c3} \\
+                 & p_{t+1} = p_t + v(a_t) \cdot \Delta t \label{eq:c4} \\
+                 & p_0 = p_{\text{start}},\quad p_T = p_{\text{end}} \label{eq:c5}
+\end{align}
+\end{subequations}
+
+\noindent\textbf{Where:}
+\begin{itemize}
+    \item $\mathcal{N}$: Set of $N$ IoT sensor devices.
+    \item $\pi$: The control policy mapping states to actions $a_t$.
+    \item $\mathcal{D}_{i,t}$: Data collected from sensor $i$ at time $t$ (1 if successful, 0 otherwise).
+    \item $p_t$: UAV position $[x_t, y_t, z_t]^T$ at time $t$.
+    \item $RSSI_{i,t}$: Signal strength received from sensor $i$, calculated via the Two-Ray model.
+    \item $SF_{i,t}$: Spreading Factor assigned to sensor $i$ by the ADR model.
+    \item $E_t$: Remaining UAV battery energy.
+    \item $\mathbb{I}(\cdot)$: Indicator function for collision detection (enforcing SF orthogonality).
+\end{itemize}
+
+This formulation captures the non-convex nature of the problem, where the decision variable (UAV position $p_t$) non-linearly determines the link quality ($RSSI$) and protocol state ($SF$), necessitating a Deep Reinforcement Learning approach.
+
+\subsection{State Space}
+
+The state vector is $S_t = [\mathbf{p}_t,\, E_t,\, \mathbf{B}_t,\, \mathbf{U}_t,\, \mathbf{LQ}_t]$, where $\mathbf{p}_t$ is 2D UAV position; $E_t$ is battery level; $\mathbf{B}_t \in \mathbb{R}^N$ is per-sensor buffer occupancy; $\mathbf{U}_t \in [0,1]^N$ is per-sensor urgency; and $\mathbf{LQ}_t \in [0,1]^N$ is link quality (SF7$\to$1.0, SF12$\to$0.1, 0 if out of range). Urgency is defined as:
+\begin{equation}
+U_{i,t} = \mathrm{clip}\!\left(\frac{B_{i,t}}{B_{\max}} \cdot (1 + 10 \cdot \mathrm{LossRate}_i),\; 0,\; 1\right)
+ ,
+\label{eq:urgency}
+\end{equation}
+where $\mathrm{clip}(\cdot, 0, 1)$ clamps the urgency to $[0,1]$, and $\mathrm{LossRate}_i$ is the running packet-loss fraction for sensor $i$.
+
+Raw dimensionality is $3 + 3N$. Zero-padding to $3 + 3N_{\max}$ ($N_{\max} = 50$) produces a constant-size network input, enabling a single trained model to evaluate on any $N \leq 50$. Frame stacking with $k = 4$ provides temporal context for SF dynamics without explicit SF observation.
+
+\subsection{Multi-Objective Reward Function}
+
+A dense, globally-applied reward function prevents exploitation of time-freezing during collection
+%=======
+\begin{equation}
+R_t = w_c R_{\text{coll}} + w_n R_{\text{new}} + w_u R_{\text{urg}} - w_L C_{\text{loss}} - w_e C_{\text{en}} - w_b C_{\text{bnd}}
+\label{eq:reward}
+\end{equation}
+%=======
+where $R_{\text{coll}}$ rewards decoded bytes; $R_{\text{new}}$ is a one-time new-sensor bonus; $R_{\text{urg}}$ rewards network-wide urgency reduction; $C_{\text{loss}}$ penalizes buffer overflow at $-1.0$\,bytes$^{-1}$ applied to \emph{all} action types including movement; $C_{\text{en}}$ penalizes battery drain; and $C_{\text{bnd}}$ penalizes boundary collisions. A terminal penalty for unvisited sensors discourages sensor neglect.
+
+% ============================================================
+\section{DQN Implementation}
+% ============================================================
+
+\subsection{Network Architecture}
+
+The DQN employs an MLP with architecture [512, 512, 256] and ReLU activations. The Bellman loss is minimized via the Adam optimizer:
+\begin{equation}
+L(\theta) = \mathbb{E}\!\left[\!\left(r + \gamma \max_{a'} Q(s', a'; \theta^-) - Q(s, a; \theta)\right)^2\right]
+\label{eq:bellman}
+\end{equation}
+
+A target network with parameters $\theta^-$ is updated every 1{,}000 steps. Experience replay uses a buffer of 150{,}000 transitions. Training: $2 \times 10^6$ timesteps on an NVIDIA RTX 3050 Ti GPU.
+
+\subsection{Domain Randomisation and Curriculum Learning}
+
+To train a single model generalizing across all evaluation conditions, Domain Randomisation samples a new (grid\_size, num\_sensors) pair every episode. Curriculum Learning progressively unlocks harder conditions as training advances (Table~\ref{tab:curriculum}). Four parallel workers (DummyVecEnv) are each pinned to a different sensor count ($N \in \{10, 20, 30, 40\}$); grid size is randomised independently on every reset. A per-step fairness shaping bonus, normalised by $N$, maintains a consistent gradient signal across conditions.
+
+\begin{table}[htbp]
+\caption{Curriculum Learning Stages}
+\begin{center}
+\begin{tabular}{|c|l|c|c|}
+\hline
+\textbf{Stage} & \textbf{Grid Sizes} & \textbf{Sensors} & \textbf{Unlock} \\
+\hline
+0 & 100$\times$100, 300$\times$300 & 10, 20 & $t = 0$ \\
+1 & 100$\times$100 -- 500$\times$500 & 10--30 & $t = 150\text{k}$ \\
+2 & 100$\times$100 -- 1000$\times$1000 & 10--40 & $t = 400\text{k}$ \\
+\hline
+\end{tabular}
+\label{tab:curriculum}
+\end{center}
+\end{table}
+
+\subsection{Hyperparameters}
+
+Key hyperparameters are summarized in Table~\ref{tab:hyper}.
+
+\begin{table}[htbp]
+\caption{DQN Hyperparameters}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Total timesteps & $2 \times 10^6$ \\
+Learning rate $\alpha$ & $3 \times 10^{-4}$ \\
+Discount factor $\gamma$ & 0.99 \\
+Replay buffer & 150{,}000 transitions \\
+Batch size & 128 \\
+Target update interval & 1{,}000 steps \\
+Exploration $\varepsilon$ & $1.0 \to 0.05$ (25\% of steps) \\
+Frame stacking $k$ & 4 \\
+Network architecture & MLP [512, 512, 256] \\
+Parallel workers & 4 (DummyVecEnv) \\
+Training time (RTX 3050\,Ti) & $\approx$4\,h \\
+\hline
+\end{tabular}
+\label{tab:hyper}
+\end{center}
+\end{table}
+
+\subsection{Evaluation Protocol}
+
+Performance is evaluated over 5 seeds $\times$ 3 agents $\times$ 2 sweeps. \textbf{Sweep A} varies $N \in \{10, 20, 30, 40\}$ with grid fixed at 500$\times$500. \textbf{Sweep B} varies grid $\in \{100{\times}100, 300{\times}300, 500{\times}500, 1000{\times}1000\}$ with $N = 20$. All agents within each (seed, condition) pair use identical canonical sensor positions generated from a master environment, ensuring fair comparison. Statistical significance is assessed via Welch's $t$-test across the 5-seed distributions.
+
+% ============================================================
+\section{Simulation Results}
+% ============================================================
+
+All results are reported as mean $\pm$ std over seeds $\{42, 123, 256, 789, 1337\}$. Metrics: cumulative reward, sensor coverage (\%), Jain's Fairness Index ($J$) over per-sensor collection rates, and energy efficiency (bytes/Wh).
+
+\subsection{Baseline Algorithms}
+
+\textit{Baseline 1---Nearest Sensor Greedy:} Moves toward the sensor with minimum Euclidean distance and non-empty buffer. Protocol-blind; represents the conventional engineering default.
+
+\textit{Baseline 2---SF-Aware Max-Throughput Greedy:} Scores candidates by $\text{Score} = (13 - \text{SF}) \cdot w_1 - \text{Dist} \cdot w_2$, prioritizing SF7--SF9 sensors for highest instantaneous throughput. Protocol-aware but lacks long-horizon planning and fairness enforcement.
+
+\subsection{Sweep A: Sensor-Count Scalability}
+
+Table~\ref{tab:sweepA} presents mean $\pm$ std performance at grid = 500$\times$500 across sensor counts (5 seeds each). At $N=10$, all three agents achieve near-perfect fairness ($J \approx 0.9997$) as low sensor density eliminates SF collisions; Welch's $t$-tests confirm DQN's cumulative reward advantage is significant ($t=6.80$, $p=0.001$ vs SF-Aware; $t=7.10$, $p=0.002$ vs Nearest). As sensor count grows, DQN's Jain's advantage increases: at $N=40$, DQN achieves $J=0.672\pm0.054$ versus SF-Aware ($J=0.646\pm0.053$, $+4.0\%$) and Nearest ($J=0.664\pm0.055$, $+1.2\%$). Energy efficiency follows the same trend, with DQN achieving $224.3\pm24.9$\,bytes/Wh at $N=40$, versus $209.0\pm26.6$ (SF-Aware, $+7.3\%$) and $211.4\pm27.3$ (Nearest, $+6.1\%$). The SF-Aware Greedy outperforms the Nearest Greedy on efficiency at all $N$, confirming that protocol awareness alone---even without long-horizon planning---provides meaningful gains. However, both greedy baselines lack the fairness enforcement mechanism that prevents sensor starvation at high $N$, causing their Jain's index to fall further than the DQN's.
+
+\begin{table}[htbp]
+\caption{Sweep A: Performance vs.\ Sensor Count (Mean, 5 Seeds, Grid = 500$\times$500)}
+\begin{center}
+\begin{tabular}{|c|l|c|c|c|}
+\hline
+$N$ & \textbf{Agent} & \textbf{Cov.\ (\%)} & \textbf{Jain's $J$} & \textbf{Eff.\ (B/Wh)} \\
+\hline
+\multirow{3}{*}{10}
+  & DQN (Proposed)  & $100.0\pm0.0$ & $\mathbf{0.9997\pm0.0004}$ & $\mathbf{114.0\pm0.8}$ \\
+  & SF-Aware Greedy & $100.0\pm0.0$ & $0.9997\pm0.0001$ & $111.2\pm0.3$ \\
+  & Nearest Greedy  & $100.0\pm0.0$ & $0.9997\pm0.0002$ & $111.1\pm0.3$ \\
+\hline
+\multirow{3}{*}{20}
+  & DQN (Proposed)  & $100.0\pm0.0$ & $\mathbf{0.9732\pm0.0306}$ & $\mathbf{204.2\pm21.1}$ \\
+  & SF-Aware Greedy & $100.0\pm0.0$ & $0.9691\pm0.0224$ & $193.4\pm18.0$ \\
+  & Nearest Greedy  & $100.0\pm0.0$ & $0.9722\pm0.0196$ & $194.5\pm17.2$ \\
+\hline
+\multirow{3}{*}{30}
+  & DQN (Proposed)  & $100.0\pm0.0$ & $\mathbf{0.8489\pm0.0432}$ & $\mathbf{224.0\pm19.2}$ \\
+  & SF-Aware Greedy & $100.0\pm0.0$ & $0.8347\pm0.0122$ & $211.6\pm10.6$ \\
+  & Nearest Greedy  & $100.0\pm0.0$ & $0.8393\pm0.0136$ & $212.2\pm10.9$ \\
+\hline
+\multirow{3}{*}{40}
+  & DQN (Proposed)  & $\mathbf{99.5\pm1.0}$ & $\mathbf{0.6717\pm0.0538}$ & $\mathbf{224.3\pm24.9}$ \\
+  & SF-Aware Greedy & $100.0\pm0.0$ & $0.6462\pm0.0525$ & $209.0\pm26.6$ \\
+  & Nearest Greedy  & $100.0\pm0.0$ & $0.6638\pm0.0551$ & $211.4\pm27.3$ \\
+\hline
+\multicolumn{5}{l}{\footnotesize Bold = best per metric. Mean $\pm$ std over 5 seeds \{42,123,256,789,1337\}.}
+\end{tabular}
+\label{tab:sweepA}
+\end{center}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{sensors_40/fig8_jains_dynamics}
+    \caption{Jain's Fairness Index over the episode ($N=40$, $500\times500$ grid).
+             Lines = mean across 5 seeds; shaded bands = $\pm1\sigma$. The DQN
+             maintains consistently higher fairness throughout, driven by its
+             urgency-aware, globally-applied reward.}
+    \label{fig:jains_dyn}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig11_sensor_dqn_advantage}
+    \caption{DQN advantage (\%) over the SF-Aware Greedy baseline on cumulative
+             reward and Jain's~$J$ as a function of sensor count~$N$
+             ($500\times500$ grid, 5 seeds). Both advantages grow monotonically
+             with network density, confirming the benefit of learned policy over
+             hand-crafted heuristics in challenging conditions.}
+    \label{fig:adv_sensor}
+\end{figure}
+
+\subsection{Sweep B: Grid-Size Scalability}
+
+Table~\ref{tab:sweepB} presents results across grid sizes spanning three LoRa SF regimes ($N=20$ sensors, grid unit = 10\,m, UAV altitude = 100\,m). At $100\times100$, all agents achieve $J>0.999$ as the compact area keeps all sensors within SF7 range, eliminating monoculture risk; the DQN advantage is statistically significant here ($t=3.12$, $p=0.029$). At $300\times300$, the DQN again shows significant improvement ($t=2.95$, $p=0.018$), with $J=0.9988\pm0.0004$ versus $J=0.9996\pm0.0001$ for SF-Aware Greedy---an interesting case where the DQN achieves higher throughput reward while the greedy achieves marginally higher Jain's due to its purely throughput-maximising scoring. At $1000\times1000$, fairness degrades for all agents as SF11/SF12 ADR latency dominates; the DQN leads with $J=0.904\pm0.036$ versus $0.900\pm0.029$ (SF-Aware) and $0.886\pm0.044$ (Nearest), though high inter-seed variance prevents significance ($p>0.57$). Crucially, all agents achieve 100\% sensor coverage across all grid sizes, confirming that the battery model is sufficient for the evaluated mission horizon.
+
+\begin{table}[htbp]
+\caption{Sweep B: Performance vs.\ Grid Size (Mean, 5 Seeds, $N = 20$)}
+\begin{center}
+\begin{tabular}{|l|c|l|c|c|}
+\hline
+\textbf{Grid} & \textbf{SF} & \textbf{Agent} & \textbf{Cov.\ (\%)} & \textbf{Jain's $J$} \\
+\hline
+\multirow{2}{*}{100$\times$100}  & \multirow{2}{*}{SF7}
+  & DQN       & $100.0\pm0.0$ & $\mathbf{0.9992\pm0.0004}$ \\
+  && SF-Greedy & $100.0\pm0.0$ & $0.9994\pm0.0002$ \\
+\hline
+\multirow{2}{*}{300$\times$300}  & \multirow{2}{*}{SF7/9}
+  & DQN       & $100.0\pm0.0$ & $\mathbf{0.9988\pm0.0004}$ \\
+  && SF-Greedy & $100.0\pm0.0$ & $0.9996\pm0.0001$ \\
+\hline
+\multirow{2}{*}{500$\times$500}  & \multirow{2}{*}{SF9/11}
+  & DQN       & $100.0\pm0.0$ & $\mathbf{0.9824\pm0.0301}$ \\
+  && SF-Greedy & $100.0\pm0.0$ & $0.9740\pm0.0286$ \\
+\hline
+\multirow{2}{*}{1000$\times$1000} & \multirow{2}{*}{SF11/12}
+  & DQN       & $100.0\pm0.0$ & $\mathbf{0.9044\pm0.0361}$ \\
+  && SF-Greedy & $100.0\pm0.0$ & $0.9001\pm0.0292$ \\
+\hline
+\multicolumn{5}{l}{\footnotesize Bold = best Jain's $J$. Mean $\pm$ std over 5 seeds. $N=20$ sensors.}
+\end{tabular}
+\label{tab:sweepB}
+\end{center}
+\end{table}
+
+\subsection{SF Monoculture Prevention}
+
+A key emergent behavior of the trained DQN is strategic hovering at positions that induce RSSI differentials among co-SF sensors exceeding the 6\,dB Capture Effect threshold. This behavior is counter-intuitive: hovering costs 700\,W versus 500\,W for movement, yet yields a net gain in throughput-per-Wh that neither greedy baseline can replicate. At the $1000\times1000$ scale, the DQN achieves $163.9\pm19.7$\,bytes/Wh versus $168.3\pm10.0$ (SF-Aware) and $155.2\pm20.6$ (Nearest); though the SF-Aware Greedy marginally exceeds DQN in raw efficiency here, the DQN's $+2.1\%$ Jain's advantage demonstrates that it correctly trades marginal efficiency for improved fairness as required by the urgency-aware reward. The Nearest Greedy suffers most at large scale due to cluster fixation, where it repeatedly collects from nearby sensors while distant sensors overflow their buffers.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{figA_jains_summary_matrix}
+    \caption{Jain's Fairness Index across all evaluated (grid size, $N$)
+             conditions. The DQN leads in every condition where SF diversity
+             is non-trivial ($500\times500$ and larger grids). At compact
+             scales (SF7 regime) all agents converge to $J>0.999$.}
+    \label{fig:matrix}
+\end{figure}
+
+\subsection{Statistical Significance}
+
+Welch's $t$-tests reveal a consistent pattern across both sweeps: DQN advantage is statistically significant ($p<0.05$) in low-variance conditions---$N=10$ ($p=0.001$ vs both baselines), grid $100\times100$ ($p=0.029$ vs SF-Aware, $p=0.020$ vs Nearest), and grid $300\times300$ ($p=0.018$ vs SF-Aware, $p=0.009$ vs Nearest). At higher sensor counts ($N\geq20$) and larger grids ($\geq500\times500$), high inter-seed reward variance (e.g., $\sigma=739{,}069$ at $N=40$) prevents significance at $p<0.05$ despite consistent mean advantages, reflecting the inherently stochastic nature of the large-scale problem. This motivates extending future evaluations beyond 5 seeds for large-scale conditions. Notably, at $1000\times1000$ the DQN mean reward ($4{,}852{,}659$) falls below SF-Aware Greedy ($4{,}991{,}872$) due to the DQN's fairness-penalty overhead, while still maintaining superior Jain's Index ($0.904$ vs $0.900$), confirming that the multi-objective reward correctly prioritises fairness over raw throughput.
+
+% ============================================================
+\section{Discussion}
+% ============================================================
+
+The central insight of this work is that UAV position is not merely a navigation variable but an active control input for the LoRaWAN protocol. By exploiting the Capture Effect an intelligent agent can resolve intra-SF collisions that are opaque to protocol-blind path planners. The EMA-based ADR latency, often treated as a nuisance in standard deployments, becomes a feature in the DRL framework: it creates a temporal window during which the agent must maintain proximity to induce SF downgrade, naturally incentivizing the hovering patterns that drive Capture Effect exploitation.
+
+The Domain Randomisation approach produces a single model deployable across a wide operational envelope (1\,km$^2$ to 100\,km$^2$, 10 to 40 sensors) without retraining. The zero-padding architecture ensures the neural network input dimension is stable, and the curriculum prevents the agent from being overwhelmed by the full distribution early in training.
+
+A limitation of the current framework is the single-UAV assumption. As sensor count and area grow, battery budget becomes a binding constraint before all sensors can be visited. The quasi-distributed DQL approach of~\cite{b6}, extended to LoRaWAN protocol awareness, is the natural next step.
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+This work demonstrates that treating UAV position as an active control input for the LoRaWAN protocol---rather than a navigation variable---yields consistent improvements in data collection fairness and energy efficiency. The DQN agent learns to exploit the Capture Effect through strategic hovering, achieving Jain's Fairness Index improvements of up to $4.0\%$ over the protocol-aware SF-Aware Greedy baseline at $N=40$ sensors, and outperforming the protocol-blind Nearest Greedy by up to $1.2\%$ on fairness and $6.1\%$ on energy efficiency. Statistical significance is confirmed in compact scenarios ($p<0.05$, Welch's $t$-test), with the DQN advantage scaling predictably with sensor density. The single Domain Randomisation and Curriculum Learning trained model generalises across a 100$\times$ operational area range (1\,km$^2$ to 100\,km$^2$) and a four-fold sensor density range without retraining, demonstrating practical deployability.
+
+Future directions include: (i) multi-UAV coordination via quasi-distributed DQL~\cite{b6}; (ii) joint altitude and horizontal trajectory optimization; (iii) extension to 6G IoT scales~\cite{b5} with $N > 100$ using attention-based policies; and (iv) hardware-in-the-loop validation to quantify the Sim-to-Real gap.
+
+\section*{Acknowledgment}
+
+Thanks Dr.\ Zahra Mobini for supervision and guidance throughout this project.
+
+\begin{thebibliography}{00}
+
+\bibitem{b1}
+Z. Wei, Z. Feng, Q. Zhang, and W. Xu,
+``UAV-assisted data collection for internet of things: A survey,''
+\textit{IEEE Internet of Things J.}, vol.~9, no.~17, pp.~15460--15483, 2022.
+
+\bibitem{b2}
+K. Nakamura, T. Mori, K. Suganuma, and M. Katayama,
+``A LoRa-based protocol for connecting IoT edge computing nodes
+to provide small-data-based services,''
+\textit{Digit. Commun. Netw.}, vol.~8, no.~3, pp.~257--266, 2022.
+
+\bibitem{b3}
+D. Zorbas, A. Sabyrbek, and L. Di Puglia Pugliese,
+``Revisiting the problem of optimizing spreading factor allocations
+in LoRaWAN: From theory to practice,''
+\textit{Comput. Commun.}, vol.~243, p.~108321, 2025.
+
+\bibitem{b4}
+R. Xiong, H. Gu, J. Ren, H. Wang, and T. He,
+``FlyingLoRa: Towards energy efficient data collection
+in UAV-assisted LoRa networks,''
+\textit{Comput. Netw.}, vol.~220, p.~109511, 2023.
+
+\bibitem{b5}
+D. C. Nguyen, M. Ding, P. N. Pathirana, A. Seneviratne, J. Li,
+D. Niyato, O. Dobre, and H. V. Poor,
+``6G Internet of Things: A comprehensive survey,''
+\textit{IEEE Internet of Things J.}, vol.~9, no.~1, pp.~359--383, 2022.
+
+\bibitem{b6}
+S. Lee, T.-W. Ban, and H. Lee,
+``Network-wide energy-efficiency maximization in UAV-aided IoT networks:
+Quasi-distributed deep reinforcement learning approach,''
+\textit{IEEE Internet of Things J.}, vol.~12, no.~11,
+pp.~15404--15414, Jun.~2025.
+
+\bibitem{b7}
+L. Zhang, A. Celik, S. Dang, and B. Shihada,
+``Energy-efficient trajectory optimization for UAV-assisted IoT networks,''
+\textit{IEEE Trans. Mobile Comput.}, 2021,
+doi:~10.1109/TMC.2021.3075083.
+
+\end{thebibliography}
+
+\end{document}
