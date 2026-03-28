@@ -53,18 +53,12 @@ Figure~\ref{fig:sf_dynamics} shows how the distribution of spreading factors acr
 20 sensors evolves throughout the episode for the DQN and SF-Aware Greedy agents. Two
 observations are notable.
 
-First, at episode start both agents face a similar SF distribution dictated by the initial
-sensor layout. As the DQN navigates toward sensors, it systematically reduces the
-proportion of sensors on high SFs (SF11--SF12, shown in red/purple): by maintaining
-proximity to sensors for multiple steps, the EMA-ADR filter converges to lower SF
-assignments, increasing data rates and enabling more concurrent transmissions.
-
-Second, the DQN maintains greater SF diversity (sensors spread across SF7--SF11) for longer
-into the episode than the SF-Aware Greedy baseline, which shows a slower SF downgrade
-progression as it does not reposition to accelerate ADR convergence. This confirms the
-mechanism behind the DQN's per-step efficiency advantage: the deliberate repositioning
-observed in Figure~\ref{fig:trajectory_comparison} is not wasteful movement but the means
-by which the DQN actively manages the spectral environment.
+The DQN systematically reduces the proportion of sensors on high SFs (SF11--SF12) by
+maintaining proximity for multiple steps, allowing the EMA-ADR filter to converge to lower
+SF assignments before repositioning. This maintains greater SF diversity (SF7--SF11) for
+longer than the SF-Aware Greedy baseline, confirming that deliberate repositioning actively
+manages the spectral environment rather than wasting movement budget. The causal mechanism
+is analysed in detail in Section~\ref{sec:discussion}.
 
 \begin{figure}[H]
     \centering

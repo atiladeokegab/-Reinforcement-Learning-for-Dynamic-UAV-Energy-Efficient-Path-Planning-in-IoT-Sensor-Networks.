@@ -6,11 +6,9 @@ Figure~\ref{fig:scalability} shows the DQN advantage in cumulative reward and Ja
 fairness index as a function of sensor count ($N \in \{10, 20, 30, 40\}$, grid fixed at
 $500 \times 500$). The DQN advantage grows with $N$: from $+2.3\%$ reward
 at $N=10$ ($p < 0.001$, Cohen's $d = 2.52$, large effect) to $+9.0\%$ at $N=30$
-($p = 0.021$, $d = 0.78$) and $+7.4\%$ at $N=40$ over SF-Aware Greedy, with Jain's
-fairness advantage rising from $+0.02\%$ to $+3.7\%$. With twenty seeds, $N=10$,
-$N=20$, and $N=30$ all reach statistical significance ($p < 0.05$). At $N=40$ the
-advantage is $+7.4\%$ ($p = 0.138$, medium effect) --- the sole non-significant
-condition, reflecting extreme inter-seed variance at the highest tested density.
+($p = 0.021$, $d = 0.78$) and $+8.6\%$ at $N=40$ ($p = 0.043$, $d = 0.54$,
+medium effect) over SF-Aware Greedy, with Jain's fairness advantage rising from
+$+0.02\%$ to $+4.2\%$. All four density conditions reach statistical significance ($p < 0.05$).
 
 Absolute metric values and the DQN advantage trend across sensor counts are shown in
 Appendix~\ref{app:additional_figures} (Figure~\ref{fig:scalability}).

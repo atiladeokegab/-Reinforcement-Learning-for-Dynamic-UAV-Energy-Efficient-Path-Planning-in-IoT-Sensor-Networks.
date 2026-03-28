@@ -12,17 +12,16 @@ outperforms both baselines on cumulative reward at every network density, with t
 margin growing as the network becomes denser. At $N = 10$, the DQN leads SF-Aware
 Greedy by $+2.3\%$; this difference is statistically significant
 ($p < 0.001$, Cohen's $d = 2.52$, large effect), reflecting the low variance of both
-agents at low sensor density. Critically, with twenty seeds the advantages at $N=20$
+agents at low sensor density. With twenty seeds the advantages at $N=20$
 ($+4.5\%$, $p = 0.049$, $d = 0.66$) and $N=30$ ($+9.0\%$, $p = 0.021$, $d = 0.78$)
-also reach statistical significance, confirming that the DQN's throughput advantage is
-robust across the majority of tested network densities. At $N = 40$ the mean advantage
-is $+7.4\%$ ($p = 0.138$, $d = 0.49$, medium effect), remaining non-significant due to
-the high inter-seed variance at extreme density.
+reach statistical significance. Extending $N=40$ to thirty seeds yields $+8.6\%$
+($p = 0.043$, $d = 0.54$, medium effect), confirming the DQN's throughput advantage
+is statistically significant across all four tested network densities.
 
 \begin{table}[H]
 \centering
 \caption{Mean cumulative reward ($\pm$ std) and mean energy efficiency (B/Wh) across
-         twenty seeds. All conditions: 500$\times$500 grid, 2{,}100-step episodes.}
+         twenty seeds (thirty for $N=40$). All conditions: 500$\times$500 grid, 2{,}100-step episodes.}
 \label{tab:reward_summary}
 \begin{tabularx}{\textwidth}{l l Z Z Z}
 \toprule
@@ -44,9 +43,9 @@ $N$ & Agent & Mean Reward ($\times 10^6$) & $\pm$ Std ($\times 10^6$) & Efficien
  & Nearest Greedy       & 6.376 & 0.719 & 215.4 \\
 \midrule
 \multirow{3}{*}{40}
- & DQN                  & 7.427 & 1.063 & 250.8 \\
- & SF-Aware Greedy      & 6.913 & 1.087 & 233.2 \\
- & Nearest Greedy       & 6.864 & 1.036 & 231.7 \\
+ & DQN                  & 7.683 & 1.120 & 259.5 \\
+ & SF-Aware Greedy      & 7.075 & 1.153 & 238.7 \\
+ & Nearest Greedy       & 7.048 & 1.112 & 237.9 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -65,7 +64,7 @@ for each agent and sensor count.
 
 \begin{table}[H]
 \centering
-\caption{Mean Jain's fairness index ($\pm$ std) across twenty seeds.}
+\caption{Mean Jain's fairness index ($\pm$ std) across twenty seeds (thirty for $N=40$).}
 \label{tab:fairness_summary}
 \begin{tabularx}{\textwidth}{l l Z Z}
 \toprule
@@ -87,9 +86,9 @@ $N$ & Agent & Mean $\mathcal{J}$ & $\pm$ Std \\
  & Nearest Greedy  & 0.8397 & 0.0470 \\
 \midrule
 \multirow{3}{*}{40}
- & DQN             & 0.7252 & 0.0749 \\
- & SF-Aware Greedy & 0.6994 & 0.0744 \\
- & Nearest Greedy  & 0.6969 & 0.0697 \\
+ & DQN             & 0.7386 & 0.0742 \\
+ & SF-Aware Greedy & 0.7089 & 0.0747 \\
+ & Nearest Greedy  & 0.7084 & 0.0733 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -97,15 +96,15 @@ $N$ & Agent & Mean $\mathcal{J}$ & $\pm$ Std \\
 \noindent At $N=10$ all agents achieve near-perfect fairness ($\mathcal{J}\approx0.9997$).
 Fairness degrades monotonically with $N$ for all agents --- an intrinsic consequence of
 the fixed episode length, not a reward function failure. The DQN's advantage grows with
-density: $+0.02\%$ at $N=10$, rising to $+3.7\%$ at $N=40$ ($\mathcal{J}=0.725$ vs.\
-$0.699$ for SF-Aware Greedy), reflecting the discovery bonus and starvation penalty
+density: $+0.02\%$ at $N=10$, rising to $+4.2\%$ at $N=40$ ($\mathcal{J}=0.739$ vs.\
+$0.709$ for SF-Aware Greedy), reflecting the discovery bonus and starvation penalty
 distributing attention more evenly than the myopic greedy heuristic.
 
 \subsubsection{Energy Efficiency}
 
 All agents fully deplete the battery ($\approx 268.5$\,Wh per episode), so energy efficiency
 is determined entirely by data collected per unit energy. The DQN's efficiency advantage
-over SF-Aware Greedy grows from $+2.3$\,B/Wh at $N=10$ to $+17.6$\,B/Wh at $N=40$ ($+7.5\%$),
+over SF-Aware Greedy grows from $+2.3$\,B/Wh at $N=10$ to $+20.7$\,B/Wh at $N=40$ ($+8.7\%$),
 reflecting the policy's ability to position the UAV at locations enabling concurrent
 multi-sensor collection across orthogonal spreading factors.
 

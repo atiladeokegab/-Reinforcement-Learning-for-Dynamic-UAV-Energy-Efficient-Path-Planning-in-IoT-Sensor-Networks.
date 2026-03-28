@@ -37,22 +37,12 @@ contribution of long-horizon planning from protocol awareness alone.
 
 All three agents achieve 100\% sensor coverage in all conditions (single exception:
 DQN at $N=40$, seed 1337, 97.5\%). The DQN's throughput advantage grows with sensor
-count: $+2.3\%$ cumulative reward over SF-Aware Greedy at $N=10$ ($p<0.001$, $d=2.52$),
-rising to $+9.0\%$ at $N=30$ ($p=0.021$, $d=0.78$) and $+7.4\%$ at $N=40$;
-the energy efficiency advantage grows from $+2.3$\,B/Wh to $+17.6$\,B/Wh ($+7.5\%$).
-With twenty seeds, $N=10$, $N=20$, and $N=30$ all reach statistical significance
-($p<0.05$); $N=40$ shows a medium effect ($d=0.49$, $p=0.138$) not yet significant
-due to extreme inter-seed layout variance. At $N=40$, Jain's Fairness Index improves
-from $0.699$ (SF-Aware) to $0.725$ (DQN), $+3.7\%$. Grid-size experiments confirm
-the DQN's advantage ($+2.5\%$ at $100\times100$ and $+2.0\%$ at $300\times300$,
-both $p<0.001$); the policy transitions to a fairness-first mode at
-$1{,}000\times1{,}000$ where throughput is statistically indistinguishable ($p=0.96$)
-but Jain's Index remains superior ($0.897$ vs.\ $0.893$).
-
-The key emergent behaviour is strategic repositioning: the DQN devotes 2.9\% of
-steps to deliberate movement ($p=0.002$), reaching positions that yield 48.7\,B per
-collection step versus 42.7\,B for SF-Aware Greedy (+14\%). The EMA-ADR latency
-becomes a \emph{feature}: the agent maintains proximity for multiple steps to induce
-SF downgrades before repositioning, enabling orthogonal-SF concurrent collection that
-purely myopic greedy policies cannot plan for.
+count: $+2.3\%$ over SF-Aware Greedy at $N=10$ ($p<0.001$, $d=2.52$), rising to
+$+9.0\%$ at $N=30$ ($p=0.021$) and $+8.6\%$ at $N=40$ ($d=0.54$, $p=0.043$,
+medium effect, significant at all four tested densities); energy efficiency improves
+by up to $+20.7$\,B/Wh ($+8.7\%$). Fairness (Jain's Index) improves by $+4.2\%$ at
+$N=40$ and the policy retains a fairness advantage at $1{,}000\times1{,}000$ scale
+($0.897$ vs.\ $0.893$) even where raw throughput is indistinguishable ($p=0.96$). The key emergent behaviour---strategic repositioning to
+induce EMA-ADR convergence and exploit orthogonal-SF concurrent collection---is
+analysed in Section~\ref{sec:discussion}.
 

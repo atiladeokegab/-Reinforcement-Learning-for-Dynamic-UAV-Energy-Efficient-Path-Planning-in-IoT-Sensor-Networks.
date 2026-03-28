@@ -1,58 +1,114 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.4) (preloaded format=xelatex 2026.3.25)  26 MAR 2026 22:21
-entering extended mode
- restricted \write18 enabled.
- %&-line parsing enabled.
-**./main.tex
-(main.tex
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  27 MAR 2026 13:22
+ restricted system commands enabled.
+**main.tex
+(./main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-10-24>
+Lua module: luaotfload 2024-12-03 v3.29 Lua based OpenType font support
+Lua module: lualibs 2023-07-13 v2.76 ConTeXt Lua standard libraries.
+Lua module: lualibs-extended 2023-07-13 v2.76 ConTeXt Lua libraries -- extended 
+collection.
+luaotfload | conf : Root cache directory is "C:/Users/okeat/AppData/Local/MiKTeX
+/luatex-cache/generic/names".
+luaotfload | init : Loading fontloader "fontloader-2023-12-28.lua" from kpse-res
+olved path "C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/luatex/luaotfload/f
+ontloader-2023-12-28.lua".
+Lua-only attribute luaotfload@noligature = 1
+luaotfload | init : Context OpenType loader version 3.134
+Inserting `luaotfload.node_processor' in `pre_linebreak_filter'.
+Inserting `luaotfload.node_processor' in `hpack_filter'.
+Inserting `luaotfload.glyph_stream' in `glyph_stream_provider'.
+Inserting `luaotfload.define_font' in `define_font'.
+Lua-only attribute luaotfload_color_attribute = 2
+luaotfload | conf : Root cache directory is "C:/Users/okeat/AppData/Local/MiKTeX
+/luatex-cache/generic/names".
+Inserting `luaotfload.harf.strip_prefix' in `find_opentype_file'.
+Inserting `luaotfload.harf.strip_prefix' in `find_truetype_file'.
+Removing  `luaotfload.glyph_stream' from `glyph_stream_provider'.
+Inserting `luaotfload.harf.glyphstream' in `glyph_stream_provider'.
+Inserting `luaotfload.harf.finalize_vlist' in `post_linebreak_filter'.
+Inserting `luaotfload.harf.finalize_hlist' in `hpack_filter'.
+Inserting `luaotfload.cleanup_files' in `wrapup_run'.
+Inserting `luaotfload.harf.finalize_unicode' in `finish_pdffile'.
+Inserting `luaotfload.glyphinfo' in `glyph_info'.
+Lua-only attribute luaotfload.letterspace_done = 3
+Inserting `luaotfload.aux.set_sscale_dimens' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_font_index' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.patch_cambria_domh' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.fixup_fontdata' in `luaotfload.patch_font_unsafe'.
+Inserting `luaotfload.aux.set_capheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_xheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.rewrite_fontname' in `luaotfload.patch_font'.
+Inserting `tracingstacklevels' in `input_level_string'.
 
 LaTeX Info: File `main.xmpdata' already exists on the system.
             Not generating it from this source.
 
-(uom_eee_dissertation_casson.cls
+(./uom_eee_dissertation_casson.cls
 Document Class: uom_eee_dissertation_casson 2025/03/28 - Alex Casson - Universi
 ty of Manchester MSc and BEng dissertation format
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/base/article.cls
 Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/base\size10.clo
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/base/size10.clo
 File: size10.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
-)
-\c@part=\count271
-\c@section=\count272
-\c@subsection=\count273
-\c@subsubsection=\count274
-\c@paragraph=\count275
-\c@subparagraph=\count276
-\c@figure=\count277
-\c@table=\count278
+luaotfload | db : Font names database loaded from C:/Users/okeat/AppData/Local/M
+iKTeX/luatex-cache/generic/names/luaotfload-names.luc.gz)
+\c@part=\count273
+\c@section=\count274
+\c@subsection=\count275
+\c@subsubsection=\count276
+\c@paragraph=\count277
+\c@subparagraph=\count278
+\c@figure=\count279
+\c@table=\count280
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
-\bibindent=\dimen148
+\bibindent=\dimen147
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pdfx\pdfx.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/pdfx/pdfx.sty
 Package: pdfx 2024/06/24 v1.6.5f PDF/X and PDF/A support (CVR/HTH/RRM/PS)
-\pdfx@minorversion=\count279
-\pdfx@majorversion=\count280
-\pdfmajorversion=\count281
-\pdfminorversion=\count282
+\pdfx@minorversion=\count281
+\pdfx@majorversion=\count282
+\pdfmajorversion=\count283
+\pdfminorversion=\count284
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifluatex.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifluatex.sty
 Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
 ))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifpdf.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifpdf.sty
 Package: ifpdf 2019/10/25 v3.4 ifpdf legacy package. Use iftex instead.
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifxetex.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifxetex.sty
 Package: ifxetex 2019/10/25 v0.7 ifxetex legacy package. Use iftex instead.
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/everyshi\everyshi.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/everyshi/everyshi.sty
 Package: everyshi 2020/11/18 v4.00 EveryShipout Package
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pdfx\l8u-penc.def
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/luatex85/luatex85.sty
+Package: luatex85 2016/06/15 v1.4 pdftex aliases for luatex
+)
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pdftexcmds/pdftexcmds
+.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/infwarerr/infwarerr.s
+ty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+)
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/ltxcmds/ltxcmds.sty
+Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
+)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+\pdftexcmds@toks=\toks17
+){C:/Users/okeat/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}
+warning  (map file): entry for 'dummy-space' already exists, duplicates ignored
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/pdfx/l8u-penc.def
 File: l8u-penc.def 2017/06/23 v0.8 Custom LaTeX file, for UTF8 encoded letters 
 and symbols
 LaTeX Encoding Info:    Redeclaring text command \textdoubletilde (encoding L8U
@@ -90,24 +146,26 @@ n input line 3740.
 LaTeX Encoding Info:    Redeclaring text command \textcopyleft (encoding L8U) o
 n input line 3810.
 )
-\pdfxsafeforxmp@toks=\toks17
+\pdfxsafeforxmp@toks=\toks18
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty
 Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 
 Package xcolor Warning: Package option `hyperref' is obsolete and ignored on in
 put line 265.
 
-Package xcolor Info: Driver file: xetex.def on input line 274.
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\xetex.def
-File: xetex.def 2025/11/01 v5.0p Graphics/color driver for xetex
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.lt
-x)
+Package xcolor Info: Driver file: luatex.def on input line 274.
+
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/graphics-def/luatex.def
+File: luatex.def 2025/09/29 v1.2f Graphics/color driver for luatex
+)
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/graphics/mathcolor.ltx)
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
 Package xcolor Info: Model `RGB' extended on input line 1365.
 Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
 Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
@@ -116,79 +174,59 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
-\pdfx@tmptoks=\toks18
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+\pdfx@tmptoks=\toks19
+ (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
-\KV@toks@=\toks19
+\KV@toks@=\toks20
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/kvsetkeys/kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefine
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/kvdefinekeys/kvdefine
 keys.sty
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.s
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pdfescape/pdfescape.s
 ty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
-Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
-.sty
-Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
-)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
-ty
-Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
-)
-Package pdftexcmds Info: \pdf@primitive is available.
-Package pdftexcmds Info: \pdf@ifprimitive is available.
-Package pdftexcmds Info: \pdfdraftmode not found.
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty
+) (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hycolor/hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+) (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/nameref.sty
 Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/refcount/refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettit
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/gettitlestring/gettit
 lestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/kvoptions/kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
-\c@section@level=\count283
+\c@section@level=\count285
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count284
+\etb@tempcnta=\count286
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.s
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/stringenc/stringenc.s
 ty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
-\@linkdim=\dimen149
-\Hy@linkcounter=\count285
-\Hy@pagecounter=\count286
- (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+\@linkdim=\dimen148
+\Hy@linkcounter=\count287
+\Hy@pagecounter=\count288
+ (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+) (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count287
- (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
+\Hy@SavedSpaceFactor=\count289
+ (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 )
 Package hyperref Info: Option `pdfa' set `true' on input line 4066.
@@ -199,26 +237,26 @@ Package hyperref Info: Plain pages OFF on input line 4210.
 Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4462.
-\c@Hy@tempcnt=\count288
+\c@Hy@tempcnt=\count290
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4801.
-\XeTeXLinkMargin=\dimen150
+\XeTeXLinkMargin=\dimen149
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/bitset/bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/bigintcalc/bigintcalc
 .sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count289
-\Field@Width=\dimen151
-\Fld@charsize=\dimen152
+\Fld@menulength=\count291
+\Field@Width=\dimen150
+\Fld@charsize=\dimen151
 Package hyperref Info: Hyper figures OFF on input line 6078.
 Package hyperref Info: Link nesting OFF on input line 6083.
 Package hyperref Info: Hyper index ON on input line 6086.
@@ -226,25 +264,23 @@ Package hyperref Info: backreferencing OFF on input line 6093.
 Package hyperref Info: Link coloring OFF on input line 6098.
 Package hyperref Info: Link coloring with OCG OFF on input line 6103.
 Package hyperref Info: PDF/A mode ON on input line 6106.
-\Hy@abspage=\count290
-\c@Item=\count291
-\c@Hfootnote=\count292
+\Hy@abspage=\count292
+\c@Item=\count293
+\c@Hfootnote=\count294
 )
-Package hyperref Info: Driver: hxetex.
+Package hyperref Info: Driver: hluatex.
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hxetex.def
-File: hxetex.def 2025-07-12 v7.01o Hyperref driver for XeTeX
-\pdfm@box=\box53
-\c@Hy@AnnotLevel=\count293
-\HyField@AnnotCount=\count294
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/hluatex.def
+File: hluatex.def 2025-07-12 v7.01o Hyperref driver for luaTeX
+Package hyperref Info: 񑙳.񑙴:=1.4 on input line 238.
 \Fld@listcount=\count295
 \c@bookmark@seq@number=\count296
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfil
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfil
 echeck.sty
 Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquec
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/uniquecounter/uniquec
 ounter.sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
@@ -255,1897 +291,38 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 Package hyperref Info: Option `psdextra' set `true' on input line 1535.
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\psdextra.def
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/psdextra.def
 File: psdextra.def 2025-07-12 v7.01o Hyperref: Additions to PDF string support
 )
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/colorprofiles\colorpr
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/colorprofiles/colorpr
 ofiles.sty
 Package: colorprofiles 2018/11/01 v1.0.1 color profiles for PDF/X and PDF/A sup
 port
 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/colorprofiles\colorpr
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/colorprofiles/colorpr
 ofiles.tex))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pdfx\AdobeColorProfiles
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/pdfx/AdobeColorProfiles
 .tex)
 ** pdfx: Metadata file main.xmpdata read successfully.
-(main.xmpdata)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
-Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/xmpincl\xmpincl.sty
-Package: xmpincl 2021/09/22 v2.4 Include XMP data in pdflatex
-)
-Using XMP template file: pdfa.xmp
-\xmpinclWrite=\write3
-\xmpinclRead=\read2
-\openout3 = `pdfa.xmpi'.
-
-
-Package pdfx Warning: Setting all color commands to rgb,
-consistent with the Color Model for PDF/A  on input line 3126.
-
-)
-Package hyperref Info: Option `colorlinks' set `false' on input line 35.
-Package hyperref Info: Option `breaklinks' set `true' on input line 35.
- (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/titlesec\titlesec.sty
-Package: titlesec 2025/01/04 v2.17 Sectioning titles
-\ttl@box=\box54
-\beforetitleunit=\skip52
-\aftertitleunit=\skip53
-\ttl@plus=\dimen153
-\ttl@minus=\dimen154
-\ttl@toksa=\toks20
-\titlewidth=\dimen155
-\titlewidthlast=\dimen156
-\titlewidthfirst=\dimen157
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
-Package: geometry 2020/01/02 v5.9 Page Geometry
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
-Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
-)
-\Gm@cnth=\count297
-\Gm@cntv=\count298
-\c@Gm@tempcnt=\count299
-\Gm@bindingoffset=\dimen158
-\Gm@wd@mp=\dimen159
-\Gm@odd@mp=\dimen160
-\Gm@even@mp=\dimen161
-\Gm@layoutwidth=\dimen162
-\Gm@layoutheight=\dimen163
-\Gm@layouthoffset=\dimen164
-\Gm@layoutvoffset=\dimen165
-\Gm@dimlist=\toks21
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/setspace\setspace.sty
-Package: setspace 2022/12/04 v6.7b set line spacing
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/ragged2e\ragged2e.sty
-Package: ragged2e 2023/06/22 v3.6 ragged2e Package
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/footmisc\footmisc.sty
-Package: footmisc 2025/05/09 v7.0b a miscellany of footnote facilities
-\FN@temptoken=\toks22
-\footnotemargin=\dimen166
-Package footmisc Info: Declaring symbol style bringhurst on input line 549.
-Package footmisc Info: Declaring symbol style chicago on input line 557.
-Package footmisc Info: Declaring symbol style wiley on input line 566.
-Package footmisc Info: Declaring symbol style lamport-robust on input line 577.
-
-Package footmisc Info: Declaring symbol style lamport* on input line 597.
-Package footmisc Info: Declaring symbol style lamport*-robust on input line 618
-.
-)
-\CenteringLeftskip=\skip54
-\RaggedLeftLeftskip=\skip55
-\RaggedRightLeftskip=\skip56
-\CenteringRightskip=\skip57
-\RaggedLeftRightskip=\skip58
-\RaggedRightRightskip=\skip59
-\CenteringParfillskip=\skip60
-\RaggedLeftParfillskip=\skip61
-\RaggedRightParfillskip=\skip62
-\JustifyingParfillskip=\skip63
-\CenteringParindent=\skip64
-\RaggedLeftParindent=\skip65
-\RaggedRightParindent=\skip66
-\JustifyingParindent=\skip67
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgfcore.
-sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
-Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
-Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
-Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
-fg
-File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
-)
-Package graphics Info: Driver file: xetex.def on input line 106.
-)
-\Gin@req@height=\dimen167
-\Gin@req@width=\dimen168
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/systemlayer\pgfsys.
-sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.st
-y
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
--common.tex
-\pgfutil@everybye=\toks23
-\pgfutil@tempdima=\dimen169
-\pgfutil@tempdimb=\dimen170
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
--latex.def
-\pgfutil@abb=\box55
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.
-code.tex
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf\pgf.revision.tex)
-Package: pgfrcs 2025-08-29 v3.1.11a (3.1.11a)
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s.code.tex
-Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-.code.tex
-\pgfkeys@pathtoks=\toks24
-\pgfkeys@temptoks=\toks25
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-libraryfiltered.code.tex
-\pgfkeys@tmptoks=\toks26
-))
-\pgf@x=\dimen171
-\pgf@y=\dimen172
-\pgf@xa=\dimen173
-\pgf@ya=\dimen174
-\pgf@xb=\dimen175
-\pgf@yb=\dimen176
-\pgf@xc=\dimen177
-\pgf@yc=\dimen178
-\pgf@xd=\dimen179
-\pgf@yd=\dimen180
-\w@pgf@writea=\write4
-\r@pgf@reada=\read3
-\c@pgf@counta=\count300
-\c@pgf@countb=\count301
-\c@pgf@countc=\count302
-\c@pgf@countd=\count303
-\t@pgf@toka=\toks27
-\t@pgf@tokb=\toks28
-\t@pgf@tokc=\toks29
-\pgf@sys@id@count=\count304
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.c
-fg
-File: pgf.cfg 2025-08-29 v3.1.11a (3.1.11a)
-)
-Driver file for pgf: pgfsys-xetex.def
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s-xetex.def
-File: pgfsys-xetex.def 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s-dvipdfmx.def
-File: pgfsys-dvipdfmx.def 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s-common-pdf.def
-File: pgfsys-common-pdf.def 2025-08-29 v3.1.11a (3.1.11a)
-)
-\pgfsys@objnum=\count305
-)))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-ssoftpath.code.tex
-File: pgfsyssoftpath.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfsyssoftpath@smallbuffer@items=\count306
-\pgfsyssoftpath@bigbuffer@items=\count307
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-sprotocol.code.tex
-File: pgfsysprotocol.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-e.code.tex
-Package: pgfcore 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code
-.tex
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.
-code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparse
-r.code.tex
-\pgfmath@dimen=\dimen181
-\pgfmath@count=\count308
-\pgfmath@box=\box56
-\pgfmath@toks=\toks30
-\pgfmath@stack@operand=\toks31
-\pgfmath@stack@operation=\toks32
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.basic.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.trigonometric.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.random.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.comparison.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.base.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.round.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.misc.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.integerarithmetics.code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.
-code.tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat
-.code.tex
-\c@pgfmathroundto@lastzeros=\count309
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.
-tex)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epoints.code.tex
-File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@picminx=\dimen182
-\pgf@picmaxx=\dimen183
-\pgf@picminy=\dimen184
-\pgf@picmaxy=\dimen185
-\pgf@pathminx=\dimen186
-\pgf@pathmaxx=\dimen187
-\pgf@pathminy=\dimen188
-\pgf@pathmaxy=\dimen189
-\pgf@xx=\dimen190
-\pgf@xy=\dimen191
-\pgf@yx=\dimen192
-\pgf@yy=\dimen193
-\pgf@zx=\dimen194
-\pgf@zy=\dimen195
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathconstruct.code.tex
-File: pgfcorepathconstruct.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@path@lastx=\dimen196
-\pgf@path@lasty=\dimen197
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathusage.code.tex
-File: pgfcorepathusage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@shorten@end@additional=\dimen198
-\pgf@shorten@start@additional=\dimen199
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-escopes.code.tex
-File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfpic=\box57
-\pgf@hbox=\box58
-\pgf@layerbox@main=\box59
-\pgf@picture@serial@count=\count310
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-egraphicstate.code.tex
-File: pgfcoregraphicstate.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgflinewidth=\dimen256
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-etransformations.code.tex
-File: pgfcoretransformations.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@pt@x=\dimen257
-\pgf@pt@y=\dimen258
-\pgf@pt@temp=\dimen259
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-equick.code.tex
-File: pgfcorequick.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eobjects.code.tex
-File: pgfcoreobjects.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathprocessing.code.tex
-File: pgfcorepathprocessing.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-earrows.code.tex
-File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowsep=\dimen260
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eshade.code.tex
-File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@max=\dimen261
-\pgf@sys@shading@range@num=\count311
-\pgf@shadingcount=\count312
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eimage.code.tex
-File: pgfcoreimage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eexternal.code.tex
-File: pgfcoreexternal.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfexternal@startupbox=\box60
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-elayers.code.tex
-File: pgfcorelayers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-etransparency.code.tex
-File: pgfcoretransparency.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epatterns.code.tex
-File: pgfcorepatterns.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-erdf.code.tex
-File: pgfcorerdf.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.
-sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty
-Package: pgf 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-shapes.code.tex
-File: pgfmoduleshapes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfnodeparttextbox=\box61
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-plot.code.tex
-File: pgfmoduleplot.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
-mp-version-0-65.sty
-Package: pgfcomp-version-0-65 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@nodesepstart=\dimen262
-\pgf@nodesepend=\dimen263
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
-mp-version-1-18.sty
-Package: pgfcomp-version-1-18 2025-08-29 v3.1.11a (3.1.11a)
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgffor.st
-y
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfkeys.s
-ty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-.code.tex))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/pgf/math\pgfmath.sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code
-.tex))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.
-code.tex
-Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
-\pgffor@iter=\dimen264
-\pgffor@skip=\dimen265
-\pgffor@stack=\toks33
-\pgffor@toks=\toks34
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z\tikz.code.tex
-Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
-aryplothandlers.code.tex
-File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@plot@mark@count=\count313
-\pgfplotmarksize=\dimen266
-)
-\tikz@lastx=\dimen267
-\tikz@lasty=\dimen268
-\tikz@lastxsaved=\dimen269
-\tikz@lastysaved=\dimen270
-\tikz@lastmovetox=\dimen271
-\tikz@lastmovetoy=\dimen272
-\tikzleveldistance=\dimen273
-\tikzsiblingdistance=\dimen274
-\tikz@figbox=\box62
-\tikz@figbox@bg=\box63
-\tikz@tempbox=\box64
-\tikz@tempbox@bg=\box65
-\tikztreelevel=\count314
-\tikznumberofchildren=\count315
-\tikznumberofcurrentchild=\count316
-\tikz@fig@count=\count317
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-matrix.code.tex
-File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfmatrixcurrentrow=\count318
-\pgfmatrixcurrentcolumn=\count319
-\pgf@matrix@numberofcolumns=\count320
-)
-\tikz@expandcount=\count321
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibrarytopaths.code.tex
-File: tikzlibrarytopaths.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibrarycalc.code.tex
-File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/fontspec\fontspec.sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/l3packages/xparse\xpars
-e.sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
-Package: expl3 2025-10-24 L3 programming layer (loader) 
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-xet
-ex.def
-File: l3backend-xetex.def 2025-10-09 L3 backend support: XeTeX
-\g__graphics_track_int=\count322
-\g__pdfannot_backend_int=\count323
-\g__pdfannot_backend_link_int=\count324
-))
-Package: xparse 2025-10-09 L3 Experimental document command parser
-)
-Package: fontspec 2025/09/29 v2.9g Font selection for XeLaTeX and LuaLaTeX
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/fontspec\fontspec-xetex
-.sty
-Package: fontspec-xetex 2025/09/29 v2.9g Font selection for XeLaTeX and LuaLaTe
-X
-\l__fontspec_script_int=\count325
-\l__fontspec_language_int=\count326
-\l__fontspec_strnum_int=\count327
-\l__fontspec_tmp_int=\count328
-\l__fontspec_tmpa_int=\count329
-\l__fontspec_tmpb_int=\count330
-\l__fontspec_tmpc_int=\count331
-\l__fontspec_em_int=\count332
-\l__fontspec_emdef_int=\count333
-\l__fontspec_strong_int=\count334
-\l__fontspec_strongdef_int=\count335
-\l__fontspec_tmpa_dim=\dimen275
-\l__fontspec_tmpb_dim=\dimen276
-\l__fontspec_tmpc_dim=\dimen277
- (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
-Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/fontspec\fontspec.cfg))
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/tocloft\tocloft.sty
-Package: tocloft 2017/08/31 v2.3i parameterised ToC, etc., typesetting
-Package tocloft Info: The document has section divisions on input line 51.
-\cftparskip=\skip68
-\cftbeforetoctitleskip=\skip69
-\cftaftertoctitleskip=\skip70
-\cftbeforepartskip=\skip71
-\cftpartnumwidth=\skip72
-\cftpartindent=\skip73
-\cftbeforesecskip=\skip74
-\cftsecindent=\skip75
-\cftsecnumwidth=\skip76
-\cftbeforesubsecskip=\skip77
-\cftsubsecindent=\skip78
-\cftsubsecnumwidth=\skip79
-\cftbeforesubsubsecskip=\skip80
-\cftsubsubsecindent=\skip81
-\cftsubsubsecnumwidth=\skip82
-\cftbeforeparaskip=\skip83
-\cftparaindent=\skip84
-\cftparanumwidth=\skip85
-\cftbeforesubparaskip=\skip86
-\cftsubparaindent=\skip87
-\cftsubparanumwidth=\skip88
-\cftbeforeloftitleskip=\skip89
-\cftafterloftitleskip=\skip90
-\cftbeforefigskip=\skip91
-\cftfigindent=\skip92
-\cftfignumwidth=\skip93
-\c@lofdepth=\count336
-\c@lotdepth=\count337
-\cftbeforelottitleskip=\skip94
-\cftafterlottitleskip=\skip95
-\cftbeforetabskip=\skip96
-\cfttabindent=\skip97
-\cfttabnumwidth=\skip98
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/bookmark\bookmark.sty
-Package: bookmark 2023-12-10 v1.31 PDF bookmarks (HO)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/bookmark\bkm-dvipdfm.de
-f
-File: bkm-dvipdfm.def 2023-12-10 v1.31 bookmark driver for dvipdfm (HO)
-\BKM@id=\count338
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
-Package: enumitem 2025/02/06 v3.11 Customized lists
-\labelindent=\skip99
-\enit@outerparindent=\dimen278
-\enit@toks=\toks35
-\enit@inbox=\box66
-\enit@count@id=\count339
-\enitdp@description=\count340
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/appendix\appendix.sty
-Package: appendix 2020/02/08 v1.2c extra appendix facilities
-\c@@pps=\count341
-\c@@ppsavesec=\count342
-\c@@ppsaveapp=\count343
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
-Package: caption 2023/08/05 v3.6o Customizing captions (AR)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
-Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
-\caption@tempdima=\dimen279
-\captionmargin=\dimen280
-\caption@leftmargin=\dimen281
-\caption@rightmargin=\dimen282
-\caption@width=\dimen283
-\caption@indent=\dimen284
-\caption@parindent=\dimen285
-\caption@hangindent=\dimen286
-Package caption Info: Standard document class detected.
-)
-\c@caption@flags=\count344
-\c@continuedfloat=\count345
-Package caption Info: hyperref package is loaded.
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/catchfile\catchfile.s
-ty
-Package: catchfile 2019/12/09 v1.8 Catch the contents of a file (HO)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/etexcmds\etexcmds.sty
-Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/extsizes\extsizes.sty
-Package: extsizes 1996/10/08 v1.0 Non Standard LaTeX Package
-
-
-Package ExtSizes Warning: It is better to use one of the extsizes classes,
- if you can.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/base\size12.clo
-File: size12.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
-LaTeX Info: Command `\normalsize' is already robust on input line 56.
-LaTeX Info: Redefining \small on input line 58.
-LaTeX Info: Redefining \footnotesize on input line 69.
-LaTeX Info: Redefining \scriptsize on input line 80.
-LaTeX Info: Redefining \tiny on input line 81.
-LaTeX Info: Redefining \large on input line 82.
-LaTeX Info: Redefining \Large on input line 83.
-LaTeX Info: Redefining \LARGE on input line 84.
-LaTeX Info: Redefining \huge on input line 85.
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.sty
-Package: csquotes 2024-04-04 v5.2o context-sensitive quotations (JAW)
-\csq@reset=\count346
-\csq@gtype=\count347
-\csq@glevel=\count348
-\csq@qlevel=\count349
-\csq@maxlvl=\count350
-\csq@tshold=\count351
-\csq@ltx@everypar=\toks36
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.def
-File: csquotes.def 2024-04-04 v5.2o csquotes generic definitions (JAW)
-)
-Package csquotes Info: Trying to load configuration file 'csquotes.cfg'...
-Package csquotes Info: ... configuration file loaded successfully.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.cfg
-File: csquotes.cfg 
-)
-Package csquotes Info: Redefining alias 'english' -> 'english/british'.
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/currfile\currfile.sty
-Package: currfile 2024/03/14 v1.0 Provides the file path elements of the curren
-t input file
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/filehook\filehook.sty
-Package: filehook 2022/10/25 v0.8b Hooks for input files
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/filehook\filehook-2020.
-sty
-Package: filehook-2020 2022/10/25 v0.8b Hooks for input files
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/currfile\currfile-abspa
-th.sty
-Package: currfile-abspath 2024/03/14 v1.0 Provides absolute file paths, the par
-ent working directory and the main file name
-)
-\c@currfiledepth=\count352
-
-
-Package currfile-abspath Warning: The required recorder file (.fls) was not fou
-nd.
-(currfile-abspath)                Please compile with the '-recorder' option.
-(currfile-abspath)                Note that MikTeX requires two compiler runs.
-(currfile-abspath)                Occurred on input line 309.
-
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lstset,
-\lst@mode=\count353
- 
-new hook `InitVars',
-
-new hook `EndGroup',
-
-new hook `ExitVars',
-
-new hook `ModeTrue',
-
-new hook `EOL',
-\lst@gtempboxa=\box67
-\lst@token=\toks37
-\lst@length=\count354
-
-new hook `InitVarsBOL',
-\lst@currlwidth=\dimen287
-\lst@column=\count355
-\lst@pos=\count356
-\lst@lostspace=\dimen288
-\lst@width=\dimen289
-basewidth, 
-new hook `FontAdjust',
-fontadjust, 
-new hook `PostOutput',
-
-new hook `OutputBox',
-
-new hook `InitBOL',
-columns, flexiblecolumns,
-\lst@newlines=\count357
- 
-new hook `OnNewLine',
-emptylines, 
-new hook `OnEmptyLine',
-identifierstyle, 
-new hook `EmptyStyle',
-
-new hook `OutputOther',
-
-new hook `Output',
-tabsize, showtabs, tab, showspaces, keepspaces, 
-new hook `Init',
-formfeed, upquote, SelectCharTable, MoreSelectCharTable,
-
-new hook `SetLanguage',
-extendedchars, useoutput, rescanchars, alsoletter, alsodigit, alsoother,
-
-new hook `SelectCharTable',
-excludedelims, delim, moredelim, deletedelim, literate, basicstyle,
-inputencoding, multicols, 
-new hook `EveryLine',
-\lst@lineno=\count358
-print, firstline, lastline, 
-new hook `PreSet',
-nolol, linerange, consecutivenumbers, rangeprefix, rangesuffix,
-rangebeginprefix, rangebeginsuffix, rangeendprefix, rangeendsuffix,
-includerangemarker, 
-new hook `DeInit',
-captionpos, abovecaptionskip, belowcaptionskip, label, title, caption,
-
-new hook `TextStyle',
-\lstlistingname, \lstlistingnamestyle, numberbychapter, boxpos, float,
-floatplacement, aboveskip, belowskip, everydisplay, 
-new hook `DisplayStyle',
-
-new hook `PreInit',
-
-new hook `EveryPar',
-showlines,
-\lst@maxwidth=\dimen290
- 
-new hook `InitVarsEOL',
-gobble, name, \lstlistlistingname, \lstlistoflistings, inputpath,
-\lstnewenvironment, fancyvrb,
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
-File: lstpatch.sty 2025/10/06 1.11 (Carsten Heinz)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
-File: lstmisc.sty 2025/10/06 1.11 (Carsten Heinz)
-
-
-Define lst-aspect `strings': string, morestring, deletestring, stringstyle,
-showstringspaces, 
-new hook `ExcludeDelims',
-
-Allocs: none
-
-Define lst-aspect `comments': comment, morecomment, deletecomment,
-commentstyle, 
-new hook `AfterBeginComment',
-
-Allocs: none
-
-Define lst-aspect `escape': texcl, escapebegin, escapeend, escapechar,
-escapeinside, mathescape, 
-Allocs: none
-
-Define lst-aspect `keywords': sensitive, 
-new hook `TrackKeywords',
-
-new hook `PostTrackKeywords',
-
-new hook `DetectKeywords',
-classoffset, keywords, morekeywords, deletekeywords, keywordstyle,
-keywordstyle, ndkeywords, morendkeywords, deletendkeywords, ndkeywordstyle,
-keywordsprefix, otherkeywords, 
-Allocs: none
-
-Define lst-aspect `emph': emph, moreemph, deleteemph, emphstyle, 
-Allocs: none
-
-Define lst-aspect `index': index, moreindex, deleteindex, indexstyle,
-\lstindexmacro, 
-Allocs: none
-
-Define lst-aspect `style': \lststylefiles, \lstdefinestyle, \lst@definestyle,
-style, 
-new hook `SetStyle',
-
-Allocs: none
-
-Define lst-aspect `language': \lstlanguagefiles, \lstdefinelanguage,
-\lst@definelanguage, language, alsolanguage, \lstalias, defaultdialect,
-
-Allocs: none
-
-Define lst-aspect `labels': numbers, stepnumber, numberfirstline, numberstyle,
-numbersep, numberblanklines, firstnumber,
-\c@lstnumber=\count359
-\lst@skipnumbers=\count360
- 
-Allocs: 2\count, 
-
-Define lst-aspect `lineshape': xleftmargin, xrightmargin, resetmargins,
-
-new hook `BoxUnsafe',
-linewidth, lineskip, breaklines, breakindent, breakautoindent,
-breakatwhitespace, prebreak, postbreak, 
-Allocs: none
-
-Define lst-aspect `frames': framexleftmargin, framexrightmargin,
-framextopmargin, framexbottommargin, backgroundcolor, fillcolor, rulecolor,
-rulesepcolor, rulesep, framerule, framesep, frameshape, frameround, frame,
-\lst@framebox=\box68
-
-
-Allocs: 1\box, 
-) 
-Allocs: 8\count, 4\dimen, 2\box, 1\toks, 
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
-File: listings.cfg 2025/10/06 1.11 listings configuration
-))
-Package: listings 2025/10/06 1.11 (Carsten Heinz)
-==> First Aid for listings.sty no longer applied!
-    Expected:
-        2024/09/23 1.10c (Carsten Heinz)
-    but found:
-        2025/10/06 1.11 (Carsten Heinz)
-    so I'm assuming it got fixed.
-
-Package fontspec Info: 
-(fontspec)             Font family 'Arial(0)' created for font 'Arial' with
-(fontspec)             options [Ligatures=TeX,Ligatures=TeX].
-(fontspec)              
-(fontspec)              This font family consists of the following NFSS
-(fontspec)             series/shapes:
-(fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.:
-(fontspec)             <->"Arial/OT:script=latn;language=dflt;mapping=tex-text;
-"
-(fontspec)             - 'small caps'  (m/sc) with NFSS spec.:
-(fontspec)             <->"Arial/OT:script=latn;language=dflt;+smcp;mapping=tex
--text;"
-(fontspec)             - 'bold' (b/n) with NFSS spec.:
-(fontspec)             <->"Arial/B/OT:script=latn;language=dflt;mapping=tex-tex
-t;"
-(fontspec)             - 'bold small caps'  (b/sc) with NFSS spec.:
-(fontspec)             <->"Arial/B/OT:script=latn;language=dflt;+smcp;mapping=t
-ex-text;"
-(fontspec)             - 'italic' (m/it) with NFSS spec.:
-(fontspec)             <->"Arial/I/OT:script=latn;language=dflt;mapping=tex-tex
-t;"
-(fontspec)             - 'italic small caps'  (m/scit) with NFSS spec.:
-(fontspec)             <->"Arial/I/OT:script=latn;language=dflt;+smcp;mapping=t
-ex-text;"
-(fontspec)             - 'bold italic' (b/it) with NFSS spec.:
-(fontspec)             <->"Arial/BI/OT:script=latn;language=dflt;mapping=tex-te
-xt;"
-(fontspec)             - 'bold italic small caps'  (b/scit) with NFSS spec.:
-(fontspec)             <->"Arial/BI/OT:script=latn;language=dflt;+smcp;mapping=
-tex-text;"
-
-
-Package fontspec Info: 
-(fontspec)             Font family 'Carlito(0)' created for font 'Carlito'
-(fontspec)             with options [Ligatures=TeX,Ligatures=TeX].
-(fontspec)              
-(fontspec)              This font family consists of the following NFSS
-(fontspec)             series/shapes:
-(fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.:
-(fontspec)             <->"Carlito/OT:script=latn;language=dflt;mapping=tex-tex
-t;"
-(fontspec)             - 'bold' (b/n) with NFSS spec.:
-(fontspec)             <->"Carlito/B/OT:script=latn;language=dflt;mapping=tex-t
-ext;"
-(fontspec)             - 'italic' (m/it) with NFSS spec.:
-(fontspec)             <->"Carlito/I/OT:script=latn;language=dflt;mapping=tex-t
-ext;"
-(fontspec)             - 'bold italic' (b/it) with NFSS spec.:
-(fontspec)             <->"Carlito/BI/OT:script=latn;language=dflt;mapping=tex-
-text;"
-
-\logowidth=\skip100
-\logoheight=\skip101
-\logopad=\skip102
-\marginleft=\skip103
-\marginright=\skip104
-\margintop=\skip105
-\marginbottom=\skip106
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
-Package: amsmath 2025/07/09 v2.17z AMS math features
-\@mathmargin=\skip107
-
-For additional information on amsmath, use the `?' option.
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
-Package: amstext 2024/11/17 v2.01 AMS text
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
-File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks38
-\ex@=\dimen291
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
-Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen292
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
-Package: amsopn 2022/04/08 v2.04 operator names
-)
-\inf@bad=\count361
-LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count362
-\leftroot@=\count363
-LaTeX Info: Redefining \overline on input line 398.
-LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count364
-\DOTSCASE@=\count365
-LaTeX Info: Redefining \ldots on input line 495.
-LaTeX Info: Redefining \dots on input line 498.
-LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box69
-\strutbox@=\box70
-LaTeX Info: Redefining \big on input line 721.
-LaTeX Info: Redefining \Big on input line 722.
-LaTeX Info: Redefining \bigg on input line 723.
-LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen293
-LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count366
-LaTeX Info: Redefining \bmod on input line 904.
-LaTeX Info: Redefining \pmod on input line 909.
-LaTeX Info: Redefining \smash on input line 939.
-LaTeX Info: Redefining \relbar on input line 969.
-LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count367
-\dotsspace@=\muskip18
-\c@parentequation=\count368
-\dspbrk@lvl=\count369
-\tag@help=\toks39
-\row@=\count370
-\column@=\count371
-\maxfields@=\count372
-\andhelp@=\toks40
-\eqnshift@=\dimen294
-\alignsep@=\dimen295
-\tagshift@=\dimen296
-\tagwidth@=\dimen297
-\totwidth@=\dimen298
-\lineht@=\dimen299
-\@envbody=\toks41
-\multlinegap=\skip108
-\multlinetaggap=\skip109
-\mathdisplay@stack=\toks42
-LaTeX Info: Redefining \[ on input line 2950.
-LaTeX Info: Redefining \] on input line 2951.
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
-Package: amssymb 2013/01/14 v3.01 AMS font symbols
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
-Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
-\symAMSa=\mathgroup4
-\symAMSb=\mathgroup5
-LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
-LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
-(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
-)) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\rotating.st
-y
-Package: rotating 2025/01/14 v2.16e rotated objects in LaTeX
-\c@r@tfl@t=\count373
-\rotFPtop=\skip110
-\rotFPbot=\skip111
-\rot@float@box=\box71
-\rot@mess@toks=\toks43
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
-Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
-\multirow@colwidth=\skip112
-\multirow@cntb=\count374
-\multirow@dima=\skip113
-\bigstrutjot=\dimen300
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/graphics\lscape.sty
-Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
-Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
-Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
-\col@sep=\dimen301
-\ar@mcellbox=\box72
-\extrarowheight=\dimen302
-\NC@list=\toks44
-\extratabsurround=\skip114
-\backup@length=\skip115
-\ar@cellbox=\box73
-)
-\TX@col@width=\dimen303
-\TX@old@table=\dimen304
-\TX@old@col=\dimen305
-\TX@target=\dimen306
-\TX@delta=\dimen307
-\TX@cols=\count375
-\TX@ftn=\toks45
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/tools\verbatim.sty
-Package: verbatim 2024-01-22 v1.5x LaTeX2e package for verbatim enhancements
-\every@verbatim=\toks46
-\verbatim@line=\toks47
-\verbatim@in@stream=\read4
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/mdwtools\footnote.sty
-Package: footnote 1997/01/28 1.13 Save footnotes around boxes
-\fn@notes=\box74
-\fn@width=\dimen308
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
-Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count376
-\float@exts=\toks48
-\float@box=\box75
-\@float@everytoks=\toks49
-\@floatcapt=\box76
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
-Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
-\heavyrulewidth=\dimen309
-\lightrulewidth=\dimen310
-\cmidrulewidth=\dimen311
-\belowrulesep=\dimen312
-\belowbottomsep=\dimen313
-\aboverulesep=\dimen314
-\abovetopsep=\dimen315
-\cmidrulesep=\dimen316
-\cmidrulekern=\dimen317
-\defaultaddspace=\dimen318
-\@cmidla=\count377
-\@cmidlb=\count378
-\@aboverulesep=\dimen319
-\@belowrulesep=\dimen320
-\@thisruleclass=\count379
-\@lastruleclass=\count380
-\@thisrulewidth=\dimen321
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/lipsum\lipsum.sty
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/l3packages/l3keys2e\l3k
-eys2e.sty
-Package: l3keys2e 2025-10-09 LaTeX2e option processing using LaTeX3 keys
-)
-Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
-\g__lipsum_par_int=\count381
-\l__lipsum_a_int=\count382
-\l__lipsum_b_int=\count383
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/lipsum\lipsum.ltd.tex))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.sty
-Package: babel 2025/10/22 v25.14 The multilingual framework for LuaLaTeX, pdfLa
-TeX and XeLaTeX
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.def
-File: babel.def 2025/10/22 v25.14 Babel common definitions
-))
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
-Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
-Package caption Info: New subtype `subfigure' on input line 238.
-\c@subfigure=\count384
-Package caption Info: New subtype `subtable' on input line 238.
-\c@subtable=\count385
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/siunitx\siunitx.sty
-Package: siunitx 2025-07-09 v3.4.14 A comprehensive (SI) units package
-\l__siunitx_number_uncert_offset_int=\count386
-\l__siunitx_number_exponent_fixed_int=\count387
-\l__siunitx_number_min_decimal_int=\count388
-\l__siunitx_number_min_integer_int=\count389
-\l__siunitx_number_round_precision_int=\count390
-\l__siunitx_number_lower_threshold_int=\count391
-\l__siunitx_number_upper_threshold_int=\count392
-\l__siunitx_number_group_first_int=\count393
-\l__siunitx_number_group_size_int=\count394
-\l__siunitx_number_group_minimum_int=\count395
-\l__siunitx_angle_tmp_dim=\dimen322
-\l__siunitx_angle_marker_box=\box77
-\l__siunitx_angle_unit_box=\box78
-\l__siunitx_compound_count_int=\count396
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/translations\translatio
-ns.sty
-Package: translations 2022/02/05 v1.12 internationalization of LaTeX2e packages
- (CN)
-)
-\l__siunitx_table_tmp_box=\box79
-\l__siunitx_table_tmp_dim=\dimen323
-\l__siunitx_table_column_width_dim=\dimen324
-\l__siunitx_table_integer_box=\box80
-\l__siunitx_table_decimal_box=\box81
-\l__siunitx_table_uncert_box=\box82
-\l__siunitx_table_before_box=\box83
-\l__siunitx_table_after_box=\box84
-\l__siunitx_table_before_dim=\dimen325
-\l__siunitx_table_carry_dim=\dimen326
-\l__siunitx_unit_tmp_int=\count397
-\l__siunitx_unit_position_int=\count398
-\l__siunitx_unit_total_int=\count399
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorithm.st
-y
-Invalid UTF-8 byte or sequence at line 11 replaced by U+FFFD.
-Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
-nment
-\@float@every@algorithm=\toks50
-\c@algorithm=\count400
-)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algpseudoc
-ode.sty
-Package: algpseudocode 
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algorithmi
-cx.sty
-Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
-
-Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
-\c@ALG@line=\count401
-\c@ALG@rem=\count402
-\c@ALG@nested=\count403
-\ALG@tlm=\skip116
-\ALG@thistlm=\skip117
-\c@ALG@Lnr=\count404
-\c@ALG@blocknr=\count405
-\c@ALG@storecount=\count406
-\c@ALG@tmpcounter=\count407
-\ALG@tmplength=\skip118
-)
-Document Style - pseudocode environments for use with the `algorithmicx' style
-) (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\biblatex.sty
-Package: biblatex 2025/07/10 v3.21 programmable bibliographies (PK/MW)
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/logreq\logreq.sty
-Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count408
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/logreq\logreq.def
-File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
-))
-\c@tabx@nest=\count409
-\c@listtotal=\count410
-\c@listcount=\count411
-\c@liststart=\count412
-\c@liststop=\count413
-\c@citecount=\count414
-\c@citetotal=\count415
-\c@multicitecount=\count416
-\c@multicitetotal=\count417
-\c@instcount=\count418
-\c@maxnames=\count419
-\c@minnames=\count420
-\c@maxitems=\count421
-\c@minitems=\count422
-\c@citecounter=\count423
-\c@maxcitecounter=\count424
-\c@savedcitecounter=\count425
-\c@uniquelist=\count426
-\c@uniquename=\count427
-\c@refsection=\count428
-\c@refsegment=\count429
-\c@maxextratitle=\count430
-\c@maxextratitleyear=\count431
-\c@maxextraname=\count432
-\c@maxextradate=\count433
-\c@maxextraalpha=\count434
-\c@abbrvpenalty=\count435
-\c@highnamepenalty=\count436
-\c@lownamepenalty=\count437
-\c@maxparens=\count438
-\c@parenlevel=\count439
-\blx@tempcnta=\count440
-\blx@tempcntb=\count441
-\blx@tempcntc=\count442
-\c@blx@maxsection=\count443
-\blx@maxsegment@0=\count444
-\blx@notetype=\count445
-\blx@parenlevel@text=\count446
-\blx@parenlevel@foot=\count447
-\blx@sectionciteorder@0=\count448
-\blx@sectionciteorderinternal@0=\count449
-\blx@entrysetcounter=\count450
-\blx@biblioinstance=\count451
-\labelnumberwidth=\skip119
-\labelalphawidth=\skip120
-\biblabelsep=\skip121
-\bibitemsep=\skip122
-\bibnamesep=\skip123
-\bibinitsep=\skip124
-\bibparsep=\skip125
-\bibhang=\skip126
-\blx@bcfin=\read5
-\blx@bcfout=\write5
-\blx@langwohyphens=\language79
-\c@mincomprange=\count452
-\c@maxcomprange=\count453
-\c@mincompwidth=\count454
-Package biblatex Info: Trying to load biblatex default data model...
-Package biblatex Info: ... file 'blx-dm.def' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\blx-dm.def
-File: blx-dm.def 2025/07/10 v3.21 biblatex datamodel (PK/MW)
-)
-Package biblatex Info: Trying to load biblatex style data model...
-Package biblatex Info: ... file 'ieee.dbx' not found.
-Package biblatex Info: Trying to load biblatex custom data model...
-Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count455
-\c@savedafterword=\count456
-\c@annotator=\count457
-\c@savedannotator=\count458
-\c@author=\count459
-\c@savedauthor=\count460
-\c@bookauthor=\count461
-\c@savedbookauthor=\count462
-\c@commentator=\count463
-\c@savedcommentator=\count464
-\c@editor=\count465
-\c@savededitor=\count466
-\c@editora=\count467
-\c@savededitora=\count468
-\c@editorb=\count469
-\c@savededitorb=\count470
-\c@editorc=\count471
-\c@savededitorc=\count472
-\c@foreword=\count473
-\c@savedforeword=\count474
-\c@holder=\count475
-\c@savedholder=\count476
-\c@introduction=\count477
-\c@savedintroduction=\count478
-\c@namea=\count479
-\c@savednamea=\count480
-\c@nameb=\count481
-\c@savednameb=\count482
-\c@namec=\count483
-\c@savednamec=\count484
-\c@translator=\count485
-\c@savedtranslator=\count486
-\c@shortauthor=\count487
-\c@savedshortauthor=\count488
-\c@shorteditor=\count489
-\c@savedshorteditor=\count490
-\c@labelname=\count491
-\c@savedlabelname=\count492
-\c@institution=\count493
-\c@savedinstitution=\count494
-\c@lista=\count495
-\c@savedlista=\count496
-\c@listb=\count497
-\c@savedlistb=\count498
-\c@listc=\count499
-\c@savedlistc=\count500
-\c@listd=\count501
-\c@savedlistd=\count502
-\c@liste=\count503
-\c@savedliste=\count504
-\c@listf=\count505
-\c@savedlistf=\count506
-\c@location=\count507
-\c@savedlocation=\count508
-\c@organization=\count509
-\c@savedorganization=\count510
-\c@origlocation=\count511
-\c@savedoriglocation=\count512
-\c@origpublisher=\count513
-\c@savedorigpublisher=\count514
-\c@publisher=\count515
-\c@savedpublisher=\count516
-\c@language=\count517
-\c@savedlanguage=\count518
-\c@origlanguage=\count519
-\c@savedoriglanguage=\count520
-\c@pageref=\count521
-\c@savedpageref=\count522
-\shorthandwidth=\skip127
-\shortjournalwidth=\skip128
-\shortserieswidth=\skip129
-\shorttitlewidth=\skip130
-\shortauthorwidth=\skip131
-\shorteditorwidth=\skip132
-\locallabelnumberwidth=\skip133
-\locallabelalphawidth=\skip134
-\localshorthandwidth=\skip135
-\localshortjournalwidth=\skip136
-\localshortserieswidth=\skip137
-\localshorttitlewidth=\skip138
-\localshortauthorwidth=\skip139
-\localshorteditorwidth=\skip140
-Package biblatex Info: Trying to load enhanced support for Unicode engines...
-Package biblatex Info: ... file 'blx-unicode.def' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\blx-unicode.de
-f)
-Package biblatex Info: Trying to load compatibility code...
-Package biblatex Info: ... file 'blx-compat.def' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\blx-compat.def
-File: blx-compat.def 2025/07/10 v3.21 biblatex compatibility (PK/MW)
-)
-Package biblatex Info: Trying to load generic definitions...
-Package biblatex Info: ... file 'biblatex.def' found.
- (C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\biblatex.def
-File: biblatex.def 2025/07/10 v3.21 biblatex compatibility (PK/MW)
-\c@textcitecount=\count523
-\c@textcitetotal=\count524
-\c@textcitemaxnames=\count525
-\c@biburlbigbreakpenalty=\count526
-\c@biburlbreakpenalty=\count527
-\c@biburlnumpenalty=\count528
-\c@biburlucpenalty=\count529
-\c@biburllcpenalty=\count530
-\biburlbigskip=\muskip19
-\biburlnumskip=\muskip20
-\biburlucskip=\muskip21
-\biburllcskip=\muskip22
-\c@smartand=\count531
-)
-Package biblatex Info: Trying to load bibliography style 'ieee'...
-Package biblatex Info: ... file 'ieee.bbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex-ieee\ieee.bbx
-File: ieee.bbx 2025-08-01 v1.4f biblatex bibliography style
-Package biblatex Info: Trying to load bibliography style 'numeric-comp'...
-Package biblatex Info: ... file 'numeric-comp.bbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex/bbx\numeric-co
-mp.bbx
-File: numeric-comp.bbx 2025/07/10 v3.21 biblatex bibliography style (PK/MW)
-Package biblatex Info: Trying to load bibliography style 'numeric'...
-Package biblatex Info: ... file 'numeric.bbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex/bbx\numeric.bb
-x
-File: numeric.bbx 2025/07/10 v3.21 biblatex bibliography style (PK/MW)
-Package biblatex Info: Trying to load bibliography style 'standard'...
-Package biblatex Info: ... file 'standard.bbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex/bbx\standard.b
-bx
-File: standard.bbx 2025/07/10 v3.21 biblatex bibliography style (PK/MW)
-\c@bbx:relatedcount=\count532
-\c@bbx:relatedtotal=\count533
-))))
-Package biblatex Info: Trying to load citation style 'ieee'...
-Package biblatex Info: ... file 'ieee.cbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex-ieee\ieee.cbx
-File: ieee.cbx 2025-08-01 v1.4f biblatex citation style
-Package biblatex Info: Trying to load citation style 'numeric-verb'...
-Package biblatex Info: ... file 'numeric-verb.cbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex/cbx\numeric-ve
-rb.cbx
-File: numeric-verb.cbx 2025/07/10 v3.21 biblatex citation style (PK/MW)
-Package biblatex Info: Redefining '\cite'.
-Package biblatex Info: Redefining '\parencite'.
-Package biblatex Info: Redefining '\footcite'.
-Package biblatex Info: Redefining '\footcitetext'.
-Package biblatex Info: Redefining '\smartcite'.
-Package biblatex Info: Redefining '\textcite'.
-Package biblatex Info: Redefining '\supercite'.
-Package biblatex Info: Redefining '\parencites'.
-Package biblatex Info: Redefining '\smartcites'.
-Package biblatex Info: Redefining '\textcites'.
-))
-Package biblatex Info: Trying to load configuration file...
-Package biblatex Info: ... file 'biblatex.cfg' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\biblatex.cfg
-File: biblatex.cfg 
-)
-Package biblatex Info: XeTeX detected.
-(biblatex)             Assuming input encoding 'utf8'.
-Package biblatex Info: Document encoding is UTF8 ....
-Package biblatex Info: ... and expl3
-(biblatex)             2025-10-24 L3 programming layer (loader) 
-(biblatex)             is new enough (at least 2020/04/06),
-(biblatex)             setting 'casechanger=expl3'.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\blx-case-expl3
-.sty
-Package: blx-case-expl3 2025/07/10 v3.21 expl3 case changing code for biblatex
-))
-Package csquotes Info: Checking for multilingual support...
-Package csquotes Info: ... none found.
-Package translations Info: No language package found. I am going to use `englis
-h' as default language. on input line 105.
- (main.aux)
-\openout1 = `main.aux'.
-
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-Package hyperref Info: Link coloring OFF on input line 105.
-
-*geometry* driver: auto-detecting
-*geometry* detected driver: xetex
-*geometry* verbose mode - [ preamble ] result:
-* driver: xetex
-* paper: a4paper
-* layout: <same size as paper>
-* layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: 
-* h-part:(L,W,R)=(56.9055pt, 483.69687pt, 56.9055pt)
-* v-part:(T,H,B)=(56.9055pt, 731.23584pt, 56.9055pt)
-* \paperwidth=597.50787pt
-* \paperheight=845.04684pt
-* \textwidth=483.69687pt
-* \textheight=731.23584pt
-* \oddsidemargin=-15.36449pt
-* \evensidemargin=-15.36449pt
-* \topmargin=-15.36449pt
-* \headheight=0.0pt
-* \headsep=0.0pt
-* \topskip=12.0pt
-* \footskip=26.0pt
-* \marginparwidth=0.0pt
-* \marginparsep=0.0pt
-* \columnsep=10.0pt
-* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
-* \hoffset=0.0pt
-* \voffset=0.0pt
-* \mag=1000
-* \@twocolumnfalse
-* \@twosidefalse
-* \@mparswitchfalse
-* \@reversemarginfalse
-* (1in=72.27pt=25.4mm, 1cm=28.453pt)
-
-Package ragged2e Info: ABD: executing \RaggedRight on input line 105.
-
-Package fontspec Info: 
-(fontspec)             Adjusting the maths setup (use [no-math] to avoid
-(fontspec)             this).
-
-\symlegacymaths=\mathgroup6
-LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 105.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 105.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 105.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 105.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 105.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 105.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 105.
-LaTeX Font Info:    Redeclaring math accent \check on input line 105.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 105.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 105.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 105.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 105.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 105.
-LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 105.
-
-LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> TU/Carlito(0)/m/n on input line 105.
-LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 105.
-LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> TU/Carlito(0)/m/n on input line 105.
-LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  TU/Carlito(0)/m/n --> TU/Carlito(0)/m/n on input line 1
-05.
-LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> TU/Carlito(0)/m/it on input line 105.
-LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> TU/Carlito(0)/b/n on input line 105.
-LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 105.
-LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 105.
-LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  TU/Carlito(0)/m/n --> TU/Carlito(0)/b/n on input line 1
-05.
-LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> TU/Carlito(0)/b/it on input line 105.
-
-LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 105.
-LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 105.
-Package caption Info: Begin \AtBeginDocument code.
-Package caption Info: float package is loaded.
-Package caption Info: listings package is loaded.
-Package caption Info: rotating package is loaded.
-Package caption Info: End \AtBeginDocument code.
-\c@lstlisting=\count534
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/translations/dicts\tran
-slations-basic-dictionary-english.trsl
-File: translations-basic-dictionary-english.trsl (english translation file `tra
-nslations-basic-dictionary')
-)
-Package translations Info: loading dictionary `translations-basic-dictionary' f
-or `english'. on input line 105.
-Package biblatex Info: Trying to load language 'english'...
-Package biblatex Info: ... file 'english.lbx' found.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/biblatex/lbx\english.lb
-x
-File: english.lbx 2025/07/10 v3.21 biblatex localization (PK/MW)
-)
-Package biblatex Info: XeTeX detected.
-(biblatex)             Assuming input encoding 'utf8'.
-Package biblatex Info: Automatic encoding selection.
-(biblatex)             Assuming data encoding 'utf8'.
-\openout5 = `main.bcf'.
-
-Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'main.bbl' found.
- (main.bbl)
-Package biblatex Info: Reference section=0 on input line 105.
-Package biblatex Info: Reference segment=0 on input line 105.
-File: ./images/uom_logo.pdf Graphic file (type pdf)
-<use ./images/uom_logo.pdf>
- [1
-
-] (main.toc
-LaTeX Font Info:    Trying to load font information for U+msa on input line 1.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 1.
-
-(C:\Users\okeat\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-[2] [3])
-\tf@toc=\write6
-\openout6 = `main.toc'.
-
- [4] (abstract.tex)
-Overfull \hbox (14.12149pt too wide) in paragraph at lines 17--130
-[]\TU/Carlito(0)/m/n/12 Rigorous evaluation over five independent random seeds 
-and multiple network configurations demon- 
- []
-
-
-Overfull \hbox (5.19647pt too wide) in paragraph at lines 17--130
-\OT1/cmr/m/n/12 0\OML/cmm/m/it/12 :\OT1/cmr/m/n/12 002$\TU/Carlito(0)/m/n/12 , 
-Welch’s $\OML/cmm/m/it/12 t$\TU/Carlito(0)/m/n/12 -test), reaching positions th
-at yield $\OT1/cmr/m/n/12 +14[]$ \TU/Carlito(0)/m/n/12 more bytes per collectio
-n step than greedy 
- []
-
-[5
-
-
-] [6
-
-
-]
-Overfull \hbox (3.12344pt too wide) in paragraph at lines 141--141
-\TU/Carlito(0)/m/n/12 ments which the University has from time to time. This pa
-ge must form part of any such copies 
- []
-
-[7
-
-] (acknowledgements.tex) [8
-
-] (abbreviations.tex [9
-
-]) (introduction.tex
-(introduction/background_motivation.tex) (introduction/aims_objectives.tex
-[10
-
-]
-Overfull \hbox (2.30313pt too wide) in paragraph at lines 3--8
-\TU/Carlito(0)/m/n/12 framework capable of optimising UAV flight trajectories f
-or energy-efficient data collection in dense, 
- []
-
-[11]) (introduction/report_structure.tex)) (literature_review.tex
-(literature_review/lorawan_scalability.tex [12]
-Overfull \hbox (10.18399pt too wide) in paragraph at lines 18--33
-\TU/Carlito(0)/m/n/12 A critical failure mode in mobile LoRaWAN networks is the
- congestion collapse known as the “Spread- 
- []
-
-[13]) (literature_review/existing_approaches.tex [14]
-Overfull \hbox (13.66641pt too wide) in paragraph at lines 41--49
-\TU/Carlito(0)/m/n/12 interactions are computationally expensive. SAC’s discret
-e variant [[][]19[]] loses the entropy-maximisation 
- []
-
-) (literature_review/ai_native_networking.tex [15]
-Overfull \hbox (3.20547pt too wide) in paragraph at lines 20--25
-\TU/Carlito(0)/m/n/12 Challita et al. [[][]11[]] apply DRL to interference-awar
-e path planning for cellular-connected UAVs, show- 
- []
-
-
-Overfull \hbox (2.53165pt too wide) in paragraph at lines 34--38
-\TU/Carlito(0)/m/n/12 strate a fundamental AoI–throughput trade-off in IoT netw
-orks, supporting the multi-term weighted 
- []
-
-) (literature_review/summary_positioning.tex [16]
-Overfull \hbox (1.1254pt too wide) in paragraph at lines 10--13
-\TU/Carlito(0)/m/n/12 aware DRL for mobile LoRaWAN gateways with explicit Captu
-re Effect modelling and multi-objective 
- []
-
-)) [17] (preliminaries.tex (preliminaries/lorawan_physical_layer.tex
-Overfull \hbox (9.58633pt too wide) in paragraph at lines 3--6
-\TU/Carlito(0)/m/n/12 LoRa (Long Range) is a proprietary spread-spectrum modula
-tion technique derived from Chirp Spread 
- []
-
-) (preliminaries/channel_propagation.tex
-Overfull \hbox (7.36954pt too wide) in paragraph at lines 25--1
-\TU/Carlito(0)/m/n/12 multaneously. However, LoRa receivers exhibit the Capture
- Effect: if one signal is sufficiently stronger 
- []
-
-[18]) (preliminaries/deep_rl.tex)) (methodology.tex [19]
-(methodology/system_model.tex [20] [21]
-Overfull \hbox (1.61368pt too wide) in paragraph at lines 91--96
-\TU/Carlito(0)/m/n/12 lection deadline for the agent. This models realistic ene
-rgy-harvesting deployments where network- 
- []
-
-[22]) (methodology/problem_formulation.tex [23])
-(methodology/sensor_placement.tex [24]) (methodology/drl_implementation.tex
-Overfull \hbox (0.88516pt too wide) in paragraph at lines 14--18
-\TU/Carlito(0)/m/n/12 ence error between the predicted Q-values and the target 
-Q-values derived from the Bellman equa- 
- []
-
-[25]) (methodology/architecture_interface.tex [26]) (methodology/summary.tex))
-Overfull \hbox (8.16446pt too wide) in paragraph at lines 3--169
-\TU/Carlito(0)/m/n/12 Ray Ground Reflection model and Capture Effect. The MDP f
-ormulation translates the multi-objective 
- []
-
-(results.tex (results/intro.tex) (results/experimental_setup.tex [27])
-(results/single_episode.tex
-Overfull \hbox (19.55203pt too wide) in paragraph at lines 3--10
-\TU/Carlito(0)/m/n/12 lection until battery depletion at step 1,404, collecting
- 57,335bytes at a mean efficiency of 213.6B/Wh. 
- []
-
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fi
-g1_shaded_reward.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig1_sh
-aded_reward.png>
-[28]
-Overfull \hbox (2.47305pt too wide) in paragraph at lines 26--31
-\TU/Carlito(0)/m/n/12 follows a similar sweeping path but visits higher-priorit
-y (SF7–SF9) sensors first; like Nearest Greedy, 
- []
-
-File: ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajector
-y_comparison.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory_com
-parison.png>
-[29]
-File: ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_dynami
-cs.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_dynamics.pn
-g>
-) (results/multi_seed_analysis.tex [30] [31] [32]) (results/scalability.tex [33
-]
-Overfull \hbox (2.96524pt too wide) in paragraph at lines 15--17
-[]\TU/Carlito(0)/m/n/12 Absolute metric values and the DQN advantage trend acro
-ss sensor counts are shown in Appendix []H[] 
- []
-
-[34]
-Overfull \hbox (3.85587pt too wide) in paragraph at lines 65--72
-\TU/Carlito(0)/m/n/12 buffer-overflow penalty drives it to service underserved 
-peripheral sensors, sacrificing total through- 
- []
-
-
-Overfull \hbox (7.05118pt too wide) in paragraph at lines 65--72
-\TU/Carlito(0)/m/n/12 put but maintaining higher Jain’s Index. Applications req
-uiring equitable coverage (disaster response, 
- []
-
-) (results/ablation_study.tex [35] [36]) (results/robustness_analysis.tex
-[37]
-Overfull \hbox (2.99454pt too wide) in paragraph at lines 66--71
-\TU/Carlito(0)/m/n/12 Although full hardware-in-the-loop (HIL) deployment lies 
-beyond the scope of this project, the three 
- []
-
-[38]) (results/discussion.tex [39] [40])) (conclusions.tex
-(conclusions/conclusions_content.tex [41] [42]) (conclusions/future_work.tex
-[43])) (project_management.tex) [44] [45]
-Overfull \hbox (0.36172pt too wide) in paragraph at lines 181--181
-\TU/Carlito(0)/m/n/12 vide small-data-based services,” \TU/Carlito(0)/m/it/12 D
-igital Communications and Networks\TU/Carlito(0)/m/n/12 , vol. 8, no. 3, pp. 25
-7– 
- []
-
-
-Overfull \hbox (3.59024pt too wide) in paragraph at lines 181--181
-[]\TU/Carlito(0)/m/n/12 D. Zorbas, A. Sabyrbek, and L. Di Puglia Pugliese, “  R
-evisiting the problem of optimizing spread- 
- []
-
-[46
-
-]
-Overfull \hbox (3.15079pt too wide) in paragraph at lines 181--181
-[]\TU/Carlito(0)/m/n/12 B. Reynders, W. Meert, and S. Pollin, “  Range and coex
-istence analysis of long range unlicensed 
- []
-
-
-Overfull \hbox (0.29727pt too wide) in paragraph at lines 181--181
-[]\TU/Carlito(0)/m/n/12 J. Schulman et al., “  Proximal policy optimization alg
-orithms,” \TU/Carlito(0)/m/it/12 arXiv preprint arXiv:1707.06347\TU/Carlito(0)/
-m/n/12 , 
- []
-
-
-Overfull \hbox (8.70547pt too wide) in paragraph at lines 181--181
-[]\TU/Carlito(0)/m/n/12 P. Christodoulou, “  Soft actor-critic for discrete act
-ion settings,” \TU/Carlito(0)/m/it/12 arXiv preprint arXiv:1910.07207\TU/Carlit
-o(0)/m/n/12 , 
- []
-
-[47]
-Overfull \hbox (8.51797pt too wide) in paragraph at lines 181--181
-[]\TU/Carlito(0)/m/n/12 OpenAI et al., “  Learning dexterous in-hand manipulati
-on,” \TU/Carlito(0)/m/it/12 The International Journal of Robotics 
- []
-
-[48] [49] (appendices/project_outline.tex [50
-
-]) (appendices/gantt_chart.tex
-[51]
-Overfull \vbox (102.53809pt too high) has occurred while \output is active []
-
-
-[52]) (appendices/risk_assessment.tex
-Overfull \hbox (8.4908pt too wide) in paragraph at lines 56--56
-[]|\TU/Carlito(0)/b/n/12 Likelihood|  
- []
-
-[53]
-Overfull \vbox (449.25266pt too high) has occurred while \output is active []
-
-
-[54]) (appendices/cpd_log.tex
-Overfull \hbox (10.45352pt too wide) in paragraph at lines 4--5
-[]\TU/Carlito(0)/m/n/12 This log records self-directed learning and skills deve
-lopment activities undertaken during the project. 
- []
-
-[55] [56]) (appendices/repository.tex [57]
-Overfull \hbox (301.16312pt too wide) in paragraph at lines 9--10
- \TU/lmtt/m/n/12 https://github.com/atiladeokegab/-Reinforcement-Learning-for-D
-ynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks. 
- []
-
-[58]
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ├ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no │ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no └ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-Missing character: There is no ─ in font [lmmono12-regular]:!
-) (appendices/hyperparams.tex [59]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 40.
- [60]) (appendices/sim_to_real.tex [61]
-File: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_r
-eal_summary.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_real_s
-ummary.png>
-
-[62]
-File: ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_l
-ayout_reward.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_layout
-_reward.png>
-File: ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_l
-ayout_advantage.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_layout
-_advantage.png>
-) (appendices/additional_figures.tex
-File: ../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_co
-nvergence.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_converg
-ence.png>
- [63]
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fi
-g3_metric_bars.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig3_me
-tric_bars.png>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_40/fi
-g3_metric_bars.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_40/fig3_me
-tric_bars.png>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_
-scalability.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_scala
-bility.png>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11_sensor_
-dqn_advantage.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11_sensor_dqn_a
-dvantage.png>
- [64]
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig13_grid_sc
-alability.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig13_grid_scalabi
-lity.png>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig14_grid_dq
-n_advantage.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig14_grid_dqn_adv
-antage.png>
-File: ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_ba
-rs.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bars.pn
-g>
-File: ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fa
-irness.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fairnes
-s.png>
- [65]
-File: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_hil_prep
-aration.png Graphic file (type bmp)
-<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_hil_preparati
-on.png>
-) [66] (main.aux)
- ***********
-LaTeX2e <2025-11-01>
-L3 programming layer <2025-10-24>
- ***********
-Package logreq Info: Writing requests to 'main.run.xml'.
-\openout1 = `main.run.xml'.
-
- ) 
-Here is how much of TeX's memory you used:
- 44702 strings out of 402987
- 924388 string characters out of 5448524
- 1819897 words of memory out of 5000000
- 72677 multiletter control sequences out of 15000+600000
- 636333 words of font info for 118 fonts, out of 8000000 for 9000
- 1348 hyphenation exceptions out of 8191
- 104i,14n,119p,1183b,7204s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-Output written on main.pdf (66 pages).
+(./main.xmpdata)
+! I can't write on file `main.pdf'.
+Please type another file name for output
+! Emergency stop.
+\reserved@a ...umcoords } file{\pdfx@rgb@profile }
+                                                  \edef \OBJ@RGB {\the \pdfl...
+l.2158  }
+         % end of \IfFileExists for RGB
+*** (job aborted, file error in nonstop mode)
+
+
+
+Here is how much of LuaTeX's memory you used:
+ 11352 strings out of 476081
+ 100000,552014 words of node,token memory allocated 398 words of node memory still in use:
+   2 hlist, 1 rule, 1 dir, 3 kern, 1 glyph, 4 attribute, 49 glue_spec, 4 attribu
+te_list, 5 if_stack, 1 write, 1 pdf_colorstack nodes
+   avail lists: 2:14,3:2,5:2,7:8,9:3
+ 33680 multiletter control sequences out of 65536+600000
+ 15 fonts using 723367 bytes
+ 104i,0n,103p,423b,1688s stack positions out of 10000i,1000n,20000p,200000b,200000s
+!  ==> Fatal error occurred, no output PDF file produced!

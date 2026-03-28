@@ -7,16 +7,15 @@ which accumulates in finite transmission buffers. Unlike simple deadline-based m
 assume data carries value only if it is collected before the buffer capacity \(B_{\max}\) is
 exceeded, after which packet loss occurs.
 
-The system model is characterised by a rotary-wing UAV acting as a mobile LoRaWAN gateway,
-dispatched to harvest data from the ground sensors. The mission duration is fixed to a finite
-horizon \(T\) and divided into discrete time steps \(t = 0, 1, \ldots, T\), each of duration
-\(\Delta t\). We assume the UAV flies at a fixed altitude \(h\) to maintain a consistent
-ground-to-air channel geometry, updating its horizontal position \(p_t = (x_t, y_t)\) at
-each step. Critically, the system employs the LoRaWAN protocol with orthogonal Spreading
-Factors (SF), allowing multiple sensors to upload data simultaneously provided they are
-assigned distinct SFs by the Adaptive Data Rate (ADR) mechanism. The UAV must therefore
-optimise its trajectory not merely to minimise distance, but to actively manage these spectral
-assignments to prevent network congestion.
+A rotary-wing UAV acts as a mobile LoRaWAN gateway, dispatched to harvest data from the
+ground sensors. The mission duration is fixed to a finite horizon \(T\) and divided into
+discrete time steps \(t = 0, 1, \ldots, T\), each of duration \(\Delta t\). The UAV flies
+at fixed altitude \(h\) to maintain a consistent ground-to-air channel geometry, updating
+its horizontal position \(p_t = (x_t, y_t)\) at each step. The system employs the LoRaWAN
+protocol with orthogonal Spreading Factors (SF), enabling simultaneous uploads from multiple
+sensors when they are assigned distinct SFs by the Adaptive Data Rate (ADR) mechanism. The
+UAV must therefore optimise its trajectory to actively manage spectral assignments and
+prevent network congestion.
 
 \noindent\textbf{Assumption 1.} \textit{The UAV operates at fixed altitude $h$, reducing
 trajectory optimisation to a 2D horizontal problem; vertical dynamics are abstracted into

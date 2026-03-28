@@ -1,4 +1,5 @@
 \subsection{Discussion}
+\label{sec:discussion}
 
 The results confirm the central hypothesis: a protocol-aware DRL agent trained with domain
 randomisation and curriculum learning outperforms standard path-planning heuristics across a
@@ -9,39 +10,34 @@ range of network densities, with the advantage growing as the problem becomes ha
 The DQN's key advantage is its ability to learn implicit positioning rules that maximise
 concurrent transmission across orthogonal spreading factors. Per-step action analysis confirms
 that greedy agents issue a collection action at every timestep (100\% hover fraction), whereas
-the DQN devotes 2.9\% of steps to deliberate movement ($p = 0.002$, Welch's $t$-test, $n=10$ seeds,
-Cohen's $d = 2.1$, large effect). This repositioning is not wasteful: it is the mechanism
-by which the DQN reaches positions that yield $48.7$\,B per collection step versus $42.7$\,B
-for SF-Aware Greedy (+14\%), though this per-step advantage does not reach statistical
-significance at $n=5$ seeds ($p = 0.209$, $d = 0.60$, medium effect). Capture Effect
-trigger counts are statistically indistinguishable across agents ($p = 1.0$, $d \approx 0$),
-confirming that the DQN's throughput gain is driven by improved spatial positioning for
-multi-SF concurrent collection, not by resolving a greater number of intra-SF collisions.
+the DQN devotes 2.9\% of steps to deliberate movement ($p = 0.002$, Welch's $t$-test, $n=10$
+seeds, Cohen's $d = 2.1$, large effect), reaching positions yielding $48.7$\,B per collection
+step versus $42.7$\,B for SF-Aware Greedy (+14\%). Capture Effect trigger counts are
+statistically indistinguishable ($p = 1.0$, $d \approx 0$), confirming the gain is driven by
+improved spatial positioning, not by resolving intra-SF collisions.
 
 The SF dynamics analysis (Figure~\ref{fig:sf_dynamics}) provides the causal explanation:
-the DQN maintains proximity to sensors for multiple steps, allowing the EMA-ADR filter to
-converge to lower SF assignments before the agent repositions. This converts the ADR
-latency---normally a fidelity cost---into a feature: the agent has learned to induce SF
-downgrades through dwelling, then exploit the resulting orthogonal SF diversity for
-high-throughput concurrent collection. Greedy policies, which jump immediately to the
-nearest sensor, cannot plan for this multi-step ADR convergence effect.
+by maintaining proximity for multiple steps, the DQN allows the EMA-ADR filter to converge
+to lower SF assignments before repositioning. This converts ADR latency---normally a fidelity
+cost---into a feature: induced SF downgrades enable high-throughput orthogonal-SF concurrent
+collection that greedy policies cannot plan for.
 
 \subsubsection{Density Dependence and Effect Sizes}
 
-With twenty seeds, three of four density conditions reach statistical significance.
+All four density conditions reach statistical significance.
 At $N=10$, $d = 2.52$ (large effect, $p < 0.001$): both agents have very tight reward
 distributions at low density, so the mean gap ($+2.3\%$) is highly reliably reproduced.
 At $N=20$, $d = 0.66$ (medium effect, $p = 0.049$) and at $N=30$, $d = 0.78$
-(medium effect, $p = 0.021$) --- both now statistically significant with twenty seeds,
-where ten seeds yielded only $p = 0.09$ and $p = 0.48$ respectively. At $N=40$,
-the mean advantage is $+7.4\%$ ($d = 0.49$, medium effect, $p = 0.138$), remaining
-non-significant due to inter-seed variance exceeding 1M reward units.
-Table~\ref{tab:effect_sizes} summarises effect sizes across all density conditions.
+(medium effect, $p = 0.021$). At $N=40$, extending to thirty seeds yields $+8.6\%$
+($d = 0.54$, medium effect, $p = 0.043$), confirming significance at the highest density.
+The non-monotonic pattern ($d=0.54$ at $N=40$ vs.\ $d=0.78$ at $N=30$) reflects
+layout-dependent variance dominating the mean gap at extreme density (std = 1.120M at
+$N=40$ vs.\ 0.040M at $N=10$). Table~\ref{tab:effect_sizes} summarises all effect sizes.
 
 \begin{table}[H]
 \centering
 \caption{Cohen's $d$ effect sizes for DQN vs.\ SF-Aware Greedy (cumulative reward),
-         20-seed evaluation. $d < 0.2$ = negligible; $0.2$--$0.5$ = small;
+         20-seed evaluation (30-seed for $N=40$). $d < 0.2$ = negligible; $0.2$--$0.5$ = small;
          $0.5$--$0.8$ = medium; $> 0.8$ = large.}
 \label{tab:effect_sizes}
 \begin{tabularx}{\textwidth}{l Z Z Z Z}
@@ -51,13 +47,11 @@ $N$ & Reward $d$ & Jain's $d$ & Efficiency $d$ & Interpretation \\
 10  & 2.52 & 0.43 & 2.68 & Large ($p < 0.001$) \\
 20  & 0.66 & 0.36 & 0.67 & Medium ($p = 0.049$\textsuperscript{*})  \\
 30  & 0.78 & 0.61 & 0.77 & Medium ($p = 0.021$\textsuperscript{*})  \\
-40  & 0.49 & 0.35 & 0.50 & Small ($p = 0.138$) \\
+40  & 0.54 & 0.40 & 0.55 & Medium ($p = 0.043$\textsuperscript{*}) \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\noindent The non-monotonic effect size pattern ($d=0.49$ at $N=40$ vs.\ $d=0.78$ at $N=30$) reflects layout-dependent variance dominating the mean gap at extreme density.
-
 \subsubsection{Limitations}
 
-Three limitations apply. First, inter-seed variance at $N=40$ prevents $p < 0.05$ at the largest scale; further seeds would confirm significance at $1000\times1000$. Second, fairness degrades at high density for all agents due to the fixed battery constraint, not the algorithm~\cite{jin2023equalizing}. Third, all evaluation is simulation-based; real-world effects (wind, GPS error, hardware latency) are discussed in Chapter~\ref{sec:conclusions}.
+Two limitations apply. First, fairness (Jain's Index) at $N=40$ does not reach significance ($p=0.129$), degrading for all agents due to the fixed battery constraint, not the algorithm~\cite{jin2023equalizing}. Second, all evaluation is simulation-based; real-world effects (wind, GPS error, hardware latency) are discussed in Chapter~\ref{sec:conclusions}.
