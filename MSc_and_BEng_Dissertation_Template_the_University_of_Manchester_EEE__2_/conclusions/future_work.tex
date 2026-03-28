@@ -4,14 +4,14 @@
 The principal directions for extending this work are summarised below.
 
 \paragraph{Sim-to-Real Validation.}
-Although Section~\ref{sec:results} quantifies robustness to GPS noise, path-loss mismatch, and duty-cycle variation, the trained policy has not been tested on physical hardware. The most important near-term extension is hardware-in-the-loop (HIL) deployment on a real UAV platform over a LoRaWAN testbed to quantify residual sim-to-real gap and validate the domain randomisation regime~\cite{tobin2017domain,zhao2021sim2real}.
+The most important near-term extension is hardware-in-the-loop (HIL) deployment on a real UAV platform over a LoRaWAN testbed to quantify the residual sim-to-real gap and validate the domain randomisation regime under joint perturbations~\cite{tobin2017domain,zhao2021sim2real}.
 
 \paragraph{Multi-UAV Coordination.}
-The single-UAV constraint limits scalability at $N=40$ and $1{,}000\times1{,}000$ scale. The quasi-distributed Deep Q-Learning (QD-DQL) approach of Lee et al.~\cite{lee2025quasi} provides a natural extension: extending QD-DQL with Capture Effect and ADR awareness would allow multiple UAVs to jointly manage SF orthogonality without centralised signalling overhead.
+The single-UAV constraint limits scalability at high density. Extending the quasi-distributed DQL approach of Lee et al.~\cite{lee2025quasi} with Capture Effect and ADR awareness would allow multiple UAVs to jointly manage SF orthogonality without centralised signalling.
 
 \paragraph{3D Trajectory and Continuous Actions.}
-The current framework fixes altitude at $h=100$\,m and discretises motion into five cardinal actions. Two improvements merit investigation: (i)~incorporating altitude as a control variable (the breakpoint distance $d_{\text{break}} = 4\pi h_t h_r / \lambda$ provides a natural altitude-dependent threshold to exploit); and (ii)~adopting continuous-action algorithms (SAC or TD3) to enable fine-grained positioning that maximises the RSSI differential for Capture Effect exploitation---potentially significant at high sensor densities.
+Incorporating altitude as a control variable and adopting continuous-action algorithms (SAC or TD3) would enable fine-grained positioning that exploits the altitude-dependent RSSI breakpoint for Capture Effect maximisation.
 
 \paragraph{Attention Policies and Heterogeneous Networks.}
-As $N$ grows beyond the zero-padded maximum ($N_{\max}=50$), MLP architectures become parameter-inefficient. Transformer-based or graph-attention policies can process variable-length sensor sets without padding, enabling scalability to 6G IoT scales~\cite{nguyen20226g}. Extending the urgency formulation to account for heterogeneous per-sensor traffic profiles (e.g.\ seismic vs.\ temperature sensors) would make the framework deployable in realistic smart-city scenarios.
+Transformer-based or graph-attention policies would remove the $N_{\max}=50$ padding constraint, enabling scalability to 6G IoT densities~\cite{nguyen20226g} and heterogeneous per-sensor traffic profiles.
 
