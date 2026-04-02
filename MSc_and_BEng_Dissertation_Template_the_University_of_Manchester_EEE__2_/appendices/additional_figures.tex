@@ -1,0 +1,102 @@
+\section{Additional Results Figures}
+\label{app:additional_figures}
+
+\subsection*{Training Convergence}
+\label{app:training}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_training_convergence}
+    \caption{Training convergence per curriculum stage (8 stages with $\geq50$ logged
+             episodes shown; short interrupted stages omitted). Each line is one stage,
+             coloured light-to-dark with stage index. \textbf{Left:} mean episode reward
+             --- early stages (4--6) converge at large negative values; later stages
+             (7, 10, 13, 15, 16) converge to $3$--$5\times10^6$.
+             \textbf{Right:} TD loss --- all stages show the spike-then-converge profile.
+             Raw values in transparent colour; EMA ($w=0.9$) in bold.}
+    \label{fig:training_convergence}
+\end{figure}
+
+\subsection*{Multi-Seed Comparative Figures}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{sensors_20/fig3_metric_bars}
+        \caption{$N = 20$ sensors.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{sensors_40/fig3_metric_bars}
+        \caption{$N = 40$ sensors.}
+    \end{subfigure}
+    \caption{Per-metric bar charts (mean $\pm$ std across twenty seeds) comparing DQN and
+             greedy baselines at two representative network densities.}
+    \label{fig:metric_bars}
+\end{figure}
+
+\subsection*{Scalability Figures}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig10_sensor_scalability}
+        \caption{Absolute metric values vs.\ sensor count.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig11_sensor_dqn_advantage}
+        \caption{DQN advantage (\%) over SF-Aware Greedy.}
+    \end{subfigure}
+    \caption{Scalability of the three agents as a function of network density
+             ($N \in \{10, 20, 30, 40\}$, $500\times500$ grid, twenty seeds each).}
+    \label{fig:scalability}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig13_grid_scalability}
+        \caption{Absolute metric values vs.\ grid size.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig14_grid_dqn_advantage}
+        \caption{DQN advantage (\%) over SF-Aware Greedy.}
+    \end{subfigure}
+    \caption{Scalability of the three agents as a function of grid size
+             ($N = 20$ sensors, twenty seeds each).}
+    \label{fig:grid_scalability}
+\end{figure}
+
+\subsection*{Ablation Study Figures}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.62\textwidth}
+        \includegraphics[width=\textwidth]{fig_ablation_bars}
+        \caption{Mean $\pm$ std for cumulative reward, Jain's index, and energy
+                 efficiency across all ablation conditions.}
+        \label{fig:ablation_bars}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.34\textwidth}
+        \includegraphics[width=\textwidth]{fig_ablation_fairness}
+        \caption{Per-seed Jain's index scatter. Horizontal bars show the mean.}
+        \label{fig:ablation_fairness}
+    \end{subfigure}
+    \caption{Ablation study results ($N = 20$, 500$\times$500 grid, $n = 20$ seeds).
+             Blue = Full Model.}
+    \label{fig:ablation}
+\end{figure}
+
+\subsection*{HIL Preparation Analysis}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_hil_preparation}
+    \caption{HIL preparation analysis: DQN reward under systematic wind drift (left)
+             and observation latency (right). Error bars show $\pm 1$ std across 5 seeds.
+             Secondary $y$-axis shows percentage change relative to the unperturbed baseline.}
+    \label{fig:hil}
+\end{figure}

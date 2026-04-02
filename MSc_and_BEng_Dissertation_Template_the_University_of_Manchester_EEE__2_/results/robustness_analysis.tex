@@ -1,0 +1,90 @@
+\subsection{Robustness and Generalisation Analysis}
+
+\subsubsection{Sim-to-Real Perturbation Tests}
+
+To quantify the sensitivity of the trained policy to real-world deployment mismatches,
+three domain shifts were applied at evaluation time (no retraining):
+
+\noindent\textbf{GPS position noise}: Gaussian noise $\mathcal{N}(0,\sigma)$ was added
+to the UAV position observation. At realistic accuracy levels ($\sigma=1$, i.e.\ 10\,m),
+reward degradation is negligible ($+8.8\%$ change, within seed variance). Even at
+$\sigma=10$ (100\,m error) performance is stable, confirming the policy is robust to
+GPS uncertainty. Jain's Index remains 1.00 across all noise levels, indicating fairness
+is not affected.
+
+\noindent\textbf{Path-loss model mismatch}: Evaluating with path-loss exponent shifted
+by up to $\Delta n = +1.0$ from the training value of $n=3.8$ produces reward degradation
+of only $-0.7\%$, confirming the policy is robust to moderate channel model errors.
+
+\noindent\textbf{Duty-cycle tightening}: Reducing sensor duty cycle from 10\% to 6\%
+degrades reward by $-8.7\%$; tightening to 4\% degrades by $-14.2\%$. This is the most
+significant sensitivity identified and reflects a genuine physical dependency: stricter
+duty cycles reduce the number of transmission windows per step, fundamentally limiting
+achievable throughput regardless of policy quality. The full per-condition breakdown is
+provided in Appendix~\ref{app:sim_to_real}.
+
+\subsubsection{Cross-Layout Generalisation}
+
+The policy was trained exclusively on uniformly random sensor layouts via domain
+randomisation. Table~\ref{tab:cross_layout} reports the DQN's reward advantage over
+SF-Aware Greedy across six structurally distinct deployment patterns (all $N=20$,
+$500\times500$, 5 seeds), assessing whether the learned policy transfers to
+out-of-distribution layouts.
+
+Table~\ref{tab:cross_layout} reports the per-layout results. The DQN generalises
+successfully to grid-aligned ($+8.3\%$, $p=0.001$) and ring ($+5.4\%$, $p=0.001$)
+layouts. However, the policy \emph{fails} on the two-cluster layout ($-11.3\%$, $p=0.001$):
+the DQN's intermediate-positioning strategy---optimal for uniform random layouts---is
+suboptimal when all sensors are co-located in two dense groups, where the SF-Aware
+Greedy's visit-nearest heuristic is near-optimal because no repositioning overhead is needed.
+The root cause is a training distribution mismatch: uniform domain randomisation never
+generates bimodal density profiles. Adding clustered layouts to the curriculum would enable
+a context-sensitive switching strategy.
+Full per-layout bar charts are in Appendix~\ref{app:sim_to_real}.
+
+\begin{table}[H]
+\centering
+\caption{DQN reward advantage over SF-Aware Greedy by layout type ($n=5$ seeds per layout, Welch's $t$).}
+\label{tab:cross_layout}
+\begin{tabular}{lrr}
+\toprule
+Layout Type & DQN Adv.\ (\%) & $p$ \\
+\midrule
+Uniform random (training dist.) & $+5.2$ & $0.14$ \\
+Grid-aligned                    & $+8.3$ & $0.001$\textsuperscript{***} \\
+Ring                            & $+5.4$ & $0.001$\textsuperscript{***} \\
+4-corner clusters               & $+1.2$ & $0.40$  \\
+Single quadrant                 & $+1.3$ & $0.11$  \\
+Two dense clusters              & $\mathbf{-11.3}$ & $0.001$\textsuperscript{***} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Hardware-in-the-Loop Preparation Analysis}
+\label{sec:hil}
+
+Two additional domain shifts inherent to physical UAV platforms were evaluated to complete
+the pre-deployment robustness profile.
+
+\noindent\textbf{Systematic wind drift.}
+A constant drift vector (random direction, fixed per episode) of magnitude
+$\delta_w \in \{0, 0.5, 1.0, 2.0\}$ grid-units per step was applied to the UAV's
+position and observation.
+
+\noindent\textbf{Observation latency.}
+The observation seen by the policy was delayed by $k \in \{0, 1, 2, 4\}$ timesteps,
+modelling avionics processing delays of $0$--$400$\,ms (typical DJI SDK round-trip:
+$50$--$200$\,ms).
+
+Results are in Appendix~\ref{app:additional_figures} (Figure~\ref{fig:hil}).
+At $\delta_w = 1.0$ ($10$\,m/step) reward falls by $6.6\%$, identifying one grid cell
+per step as the primary sensitivity threshold; at extreme drift ($\delta_w = 2.0$) the
+impact is small ($-0.5\%$), consistent with the steep $1/d^4$ RSSI gradient beyond
+sensor range. Observation latency at all tested levels ($k = 1$--$4$ steps) produces
+negligible reward change, confirming immunity to delays up to $400$\,ms---a direct
+benefit of the four-frame observation stack.
+
+Together these results define a \emph{HIL readiness profile}: the policy is robust to
+GPS noise, path-loss mismatch, duty-cycle variation, wind drift up to $10$\,m/step, and
+observation latency up to $400$\,ms. The primary remaining uncertainty is the joint
+effect of simultaneous perturbations.
