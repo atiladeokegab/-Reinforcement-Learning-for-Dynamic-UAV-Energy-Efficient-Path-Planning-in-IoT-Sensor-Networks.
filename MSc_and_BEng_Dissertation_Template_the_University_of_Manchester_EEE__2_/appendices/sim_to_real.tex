@@ -1,0 +1,67 @@
+\section{Sim-to-Real Perturbation Results}
+\label{app:sim_to_real}
+
+\begin{table}[H]
+\centering
+\caption{DQN reward and Jain's fairness index under three domain shift conditions
+         (mean $\pm$ std, 5 seeds, $N=20$, $500\times500$). Baseline is the
+         unperturbed evaluation condition for each perturbation type.}
+\label{tab:sim_to_real_full}
+\begin{tabularx}{\textwidth}{l l Z Z Z}
+\toprule
+Perturbation & Condition & Mean Reward ($\times 10^6$) & $\pm$ Std & \% vs.\ Baseline \\
+\midrule
+\multirow{4}{*}{GPS noise ($\sigma$)}
+ & $\sigma=0$ (baseline) & 5.128 & 0.616 & --- \\
+ & $\sigma=1$ (10\,m)    & 5.581 & 0.320 & $+8.8\%$ \\
+ & $\sigma=5$ (50\,m)    & 5.837 & 0.431 & $+13.8\%$ \\
+ & $\sigma=10$ (100\,m)  & 5.826 & 0.434 & $+13.6\%$ \\
+\midrule
+\multirow{4}{*}{Path-loss shift ($\Delta n$)}
+ & $\Delta n=0$ (baseline) & 5.979 & --- & --- \\
+ & $\Delta n=+0.2$         & 5.331 & --- & $-10.8\%$ \\
+ & $\Delta n=+0.5$         & 5.947 & --- & $-0.5\%$ \\
+ & $\Delta n=+1.0$         & 5.939 & --- & $-0.7\%$ \\
+\midrule
+\multirow{4}{*}{Duty cycle (\%)}
+ & 10\% (baseline) & 5.708 & --- & --- \\
+ & 8\%             & 5.912 & --- & $+3.6\%$ \\
+ & 6\%             & 5.211 & --- & $-8.7\%$ \\
+ & 4\%             & 4.897 & --- & $-14.2\%$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{Note on GPS results}: The apparent reward increase with GPS noise
+reflects seed variance (std $\approx 600{,}000$, comparable to the observed differences).
+The increase is not statistically significant at $n=5$ and should not be interpreted as
+noise improving performance. The key finding is the \emph{absence of degradation} at
+realistic noise levels, confirming policy robustness.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_sim_to_real_summary}
+    \caption{DQN reward under three domain shift conditions.
+             Left: GPS position noise. Centre: path-loss model mismatch.
+             Right: duty-cycle tightening. Secondary $y$-axis shows
+             percentage change relative to the unperturbed baseline.}
+    \label{fig:sim_to_real_full}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_cross_layout_reward}
+    \caption{Mean cumulative reward per layout type for DQN, SF-Aware Greedy, and
+             Nearest-Sensor Greedy (5 seeds, $N=20$, $500\times500$).
+             Error bars show $\pm1$ standard deviation across seeds.}
+    \label{fig:cross_layout_reward}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{fig_cross_layout_advantage}
+    \caption{DQN percentage reward advantage over SF-Aware Greedy by layout type.
+             Significant advantages ($p<0.05$, Welch's $t$) are marked with~***.
+             The two-cluster layout is the only configuration where the DQN underperforms.}
+    \label{fig:cross_layout_adv}
+\end{figure}

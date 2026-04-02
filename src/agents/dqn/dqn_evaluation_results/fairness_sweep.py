@@ -83,9 +83,9 @@ BASE_CONFIG = {
 EVAL_MAX_BATTERY = 274.0
 
 # Paths — adjust if your layout differs
-DQN_MODEL_PATH     = script_dir_results / "models" / "dqn_full_observability" / "dqn_final.zip"
-DQN_CONFIG_PATH    = script_dir_results / "models" / "dqn_full_observability" / "training_config.json"
-VEC_NORMALIZE_PATH = script_dir_results / "models" / "dqn_full_observability" / "vec_normalize.pkl"
+DQN_MODEL_PATH     = script_dir_results / "models" / "dqn_domain_rand" / "dqn_final.zip"
+DQN_CONFIG_PATH    = script_dir_results / "models" / "dqn_domain_rand" / "training_config.json"
+VEC_NORMALIZE_PATH = script_dir_results / "models" / "dqn_domain_rand" / "vec_normalize.pkl"
 
 OUTPUT_DIR = script_dir / "sweep_fairness_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

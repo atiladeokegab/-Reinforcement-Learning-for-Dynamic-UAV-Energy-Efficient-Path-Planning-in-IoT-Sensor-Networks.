@@ -59,10 +59,10 @@ ANIMATION_STEP_DELAY = 0.02   # seconds between steps (lower = faster)
 RENDER_EVERY_N_STEPS = 1      # redraw every N steps  (higher = faster/choppier)
 
 DQN_MODEL_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "dqn_final.zip"
+    script_dir_results / "models" / "dqn_domain_rand" / "dqn_final.zip"
 )
 DQN_CONFIG_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "frame_stacking_config.json"
+    script_dir_results / "models" / "dqn_domain_rand" / "frame_stacking_config.json"
 )
 
 # ==================== VISUAL THEME ====================

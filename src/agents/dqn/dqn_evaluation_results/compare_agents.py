@@ -282,14 +282,14 @@ OUTPUT_DIR = script_dir / "baseline_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DQN_MODEL_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "dqn_final.zip"
+    script_dir_results / "models" / "dqn_domain_rand" / "dqn_final.zip"
 )
 # ← Updated: now reads from training_config.json (richer than the old frame_stacking_config.json)
 DQN_CONFIG_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "training_config.json"
+    script_dir_results / "models" / "dqn_domain_rand" / "training_config.json"
 )
 VEC_NORMALIZE_PATH = (
-    script_dir_results / "models" / "dqn_full_observability" / "vec_normalize.pkl"
+    script_dir_results / "models" / "dqn_domain_rand" / "vec_normalize.pkl"
 )
 
 PLOT_CONFIG = {
