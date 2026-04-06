@@ -17,13 +17,13 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning Simulation Container diagram...")
+    logger.info("Creating UAV DQN Container diagram...")
 
     # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / "q_learning_container_diagram"
+    output_file = output_dir / "dqn_container_diagram"
 
     logger.debug(f"Output file: {output_file}.png")
 
@@ -33,7 +33,7 @@ def create_diagram():
 
     try:
         with Diagram(
-            "Container Diagram - UAV Q-Learning Simulation (Simulation-Based)",
+            "Container Diagram - UAV DQN Training & Evaluation System",
             direction="TB",
             graph_attr=graph_attr,
             show=False,
@@ -42,161 +42,145 @@ def create_diagram():
         ):
             # External Actors
             researcher = Person(
-                name="Researcher", description="Runs experiments and analyzes results"
+                name="Researcher / Student",
+                description="Runs dqn.py training, evaluate_dqn.py, "
+                "ablation_study.py, compare_agents.py, fairness_sweep.py",
             )
 
             # External Systems
             visualization = System(
                 name="Visualization Tools",
-                description="Matplotlib, Seaborn, Plotly",
+                description="Matplotlib, Seaborn — produces PNG figures "
+                "in dqn_evaluation_results/",
                 external=True,
             )
 
-            file_system = System(
-                name="File System Storage",
-                description="Logs, models, results",
+            gpu_system = System(
+                name="GPU Compute",
+                description="CUDA 12.1, PyTorch 2.5.1+cu121 — "
+                "accelerates DQN policy network training",
                 external=True,
             )
 
             # Main System Containers
-            with SystemBoundary("UAV Q-Learning Simulation System"):
-                # Training Controller
-                training_controller = Container(
-                    name="Training Controller",
-                    technology="Python",
-                    description="Orchestrates training episodes, manages hyperparameters, tracks convergence",
+            with SystemBoundary("UAV DQN Training & Evaluation System"):
+                # Training entry point
+                training_script = Container(
+                    name="Training Script (dqn.py)",
+                    technology="Python, Stable-Baselines3",
+                    description="Domain randomisation + curriculum learning. "
+                    "4 parallel envs (DummyVecEnv). "
+                    "2M timesteps. Output: dqn_final.zip",
                 )
 
-                # Q-Learning Agent Container
-                q_learning_agent = Container(
-                    name="Q-Learning Agent",
-                    technology="Python, NumPy",
-                    description="Implements Q-Learning algorithm: state-action selection, Q-table updates, epsilon-greedy policy",
+                # DQN Agent
+                dqn_agent = Container(
+                    name="DQN Agent (SB3)",
+                    technology="Python, PyTorch, Stable-Baselines3",
+                    description="MlpPolicy [512, 512, 256], Huber loss, "
+                    "Adam optimiser, target network soft-update, "
+                    "epsilon-greedy exploration",
                 )
 
-                # Environment Simulation Container
+                # Environment
                 environment = Container(
-                    name="Simulated Environment",
-                    technology="Python, Gymnasium/OpenAI Gym",
-                    description="Simulates 2D/3D grid world with IoT sensors, UAV physics, communication ranges",
+                    name="UAVEnvironment (uav_env.py)",
+                    technology="Python, Gymnasium",
+                    description="2D grid (100–1000 units, ~10m/unit), "
+                    "5 discrete actions (N/S/E/W/Hover), "
+                    "2100 timesteps per episode (~7 min flight). "
+                    "Zero-padded obs for up to 50 sensors.",
                 )
 
-                # Simulated UAV
-                simulated_uav = Container(
-                    name="Simulated UAV",
+                # UAV model
+                uav_container = Container(
+                    name="UAV (uav.py)",
                     technology="Python",
-                    description="Virtual UAV with position, battery level, movement constraints, LoRa range simulation",
+                    description="DJI TB60-inspired: 274 Wh, 100m altitude, "
+                    "10 m/s speed, 500W move / 700W hover power",
                 )
 
-                # Simulated IoT Network
-                simulated_iot = Container(
-                    name="Simulated IoT Network",
+                # IoT sensors
+                iot_container = Container(
+                    name="IoT Sensors (iot_sensors.py)",
                     technology="Python",
-                    description="Virtual sensor nodes with positions, data generation, coverage tracking",
+                    description="LoRa SF7–SF12, 1000-byte buffer, "
+                    "1% EU duty cycle, EMA-ADR (λ=0.1), "
+                    "Two-Ray path loss + N(0, 4dB) shadowing",
                 )
 
-                # Reward Calculator
-                reward_calculator = Container(
-                    name="Reward Calculator",
+                # Reward
+                reward_container = Container(
+                    name="RewardFunction (reward_function.py)",
                     technology="Python",
-                    description="Computes rewards based on data collected, coverage, battery usage, path efficiency",
+                    description="+100/byte, +5000 new sensor, +200 multi-sensor, "
+                    "+1000 urgency reduction, -2 revisit, "
+                    "-50 boundary, -500 starvation, -2000 unvisited",
                 )
 
-                # Metrics & Logger
-                metrics_logger = Container(
-                    name="Metrics & Logger",
-                    technology="Python, Pandas",
-                    description="Logs episode rewards, Q-values, trajectories, coverage statistics",
+                # Evaluation scripts
+                evaluation = Container(
+                    name="Evaluation Suite",
+                    technology="Python",
+                    description="evaluate_dqn.py (single-seed), "
+                    "ablation_study.py (A1–A4), "
+                    "compare_agents.py (DQN vs greedy baselines), "
+                    "fairness_sweep.py (multi-condition Jain's index)",
                 )
 
-                # Configuration Manager
-                config_manager = Container(
-                    name="Configuration Manager",
-                    technology="Python, YAML/JSON",
-                    description="Manages simulation parameters, Q-Learning hyperparameters, experiment configs",
+                # Greedy baselines
+                greedy_baselines = Container(
+                    name="Greedy Baselines (greedy_agents.py)",
+                    technology="Python",
+                    description="NearestSensorGreedy: moves to nearest sensor "
+                    "with data. MaxThroughputGreedy: SF-aware, "
+                    "prioritises lowest SF (highest data rate).",
                 )
 
-                # Results Database
-                results_db = Database(
-                    name="Results Storage",
-                    technology="SQLite / CSV / HDF5",
-                    description="Stores Q-tables, episode history, training metrics, experiment results",
+                # Ablation control model
+                ablation_control = Container(
+                    name="Ablation Control (train_ablation_a4.py)",
+                    technology="Python, Stable-Baselines3",
+                    description="Fixed env: 500×500, N=20, no domain randomisation. "
+                    "Output: models/dqn_no_dr/",
+                )
+
+                # Model storage
+                model_storage = Database(
+                    name="Model Storage",
+                    technology=".zip (SB3 format)",
+                    description="models/dqn_domain_rand/dqn_final.zip — "
+                    "main trained model. "
+                    "models/dqn_no_dr/ — ablation A4 control model.",
                 )
 
             # External Relationships
-            (
-                researcher
-                >> Relationship("Configures experiments [Config files]")
-                >> config_manager
-            )
-            researcher >> Relationship("Starts training runs") >> training_controller
-            researcher >> Relationship("Views plots, analyzes results") >> visualization
+            researcher >> Relationship("Runs training") >> training_script
+            researcher >> Relationship("Runs evaluation & ablation scripts") >> evaluation
+            researcher >> Relationship("Views result PNGs") >> visualization
 
-            (
-                file_system
-                >> Relationship("Loads saved Q-tables, checkpoints")
-                >> results_db
-            )
-            results_db >> Relationship("Saves models, logs") >> file_system
+            gpu_system >> Relationship("Accelerates policy network updates") >> dqn_agent
 
-            visualization >> Relationship("Reads metrics for plotting") >> results_db
+            # Internal relationships
+            training_script >> Relationship("Creates and wraps (DummyVecEnv × 4)") >> environment
+            training_script >> Relationship("Configures & trains") >> dqn_agent
+            training_script >> Relationship("Saves checkpoints + final model") >> model_storage
 
-            # Internal Container Relationships
-            (
-                config_manager
-                >> Relationship("Provides hyperparameters (alpha, gamma, epsilon)")
-                >> q_learning_agent
-            )
-            (
-                config_manager
-                >> Relationship("Provides environment config (grid, sensors)")
-                >> environment
-            )
+            dqn_agent >> Relationship("Observes state vector") >> environment
+            dqn_agent >> Relationship("Selects action (0–4)") >> uav_container
+            dqn_agent >> Relationship("Receives reward + next state") >> reward_container
 
-            training_controller >> Relationship("Initializes episodes") >> environment
-            (
-                training_controller
-                >> Relationship("Controls training loop")
-                >> q_learning_agent
-            )
-            (
-                training_controller
-                >> Relationship("Monitors convergence")
-                >> metrics_logger
-            )
+            environment >> Relationship("Contains") >> uav_container
+            environment >> Relationship("Contains (10–40 sensors)") >> iot_container
+            environment >> Relationship("Calls") >> reward_container
 
-            q_learning_agent >> Relationship("Reads/updates Q-values") >> results_db
-            q_learning_agent >> Relationship("Observes state") >> environment
-            q_learning_agent >> Relationship("Selects action") >> simulated_uav
+            uav_container >> Relationship("Moves, hovers, collects") >> iot_container
 
-            environment >> Relationship("Contains UAV state") >> simulated_uav
-            environment >> Relationship("Contains sensor network") >> simulated_iot
-            environment >> Relationship("Requests reward") >> reward_calculator
+            evaluation >> Relationship("Loads model") >> model_storage
+            evaluation >> Relationship("Benchmarks against") >> greedy_baselines
+            evaluation >> Relationship("Exports PNGs") >> visualization
 
-            simulated_uav >> Relationship("Executes movement") >> environment
-            simulated_uav >> Relationship("Checks sensor range") >> simulated_iot
-
-            simulated_iot >> Relationship("Provides data availability") >> simulated_uav
-            (
-                simulated_iot
-                >> Relationship("Reports coverage status")
-                >> reward_calculator
-            )
-
-            (
-                reward_calculator
-                >> Relationship("Returns reward value")
-                >> q_learning_agent
-            )
-            (
-                reward_calculator
-                >> Relationship("Evaluates coverage, efficiency")
-                >> simulated_iot
-            )
-
-            metrics_logger >> Relationship("Logs episode data") >> results_db
-            metrics_logger >> Relationship("Tracks Q-value changes") >> q_learning_agent
-            metrics_logger >> Relationship("Records trajectories") >> simulated_uav
+            ablation_control >> Relationship("Trains no-DR model") >> model_storage
 
             logger.info("✓ Diagram components created")
 
@@ -216,7 +200,7 @@ def create_diagram():
         logger.error(traceback.format_exc())
         raise
 
-    logger.info("Container diagram creation complete!")
+    logger.info("DQN container diagram creation complete!")
 
 
 if __name__ == "__main__":
@@ -224,6 +208,6 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    logger.info("Running Q-Learning simulation container diagram script...")
+    logger.info("Running DQN container diagram script...")
     create_diagram()
     logger.info("Script finished!")

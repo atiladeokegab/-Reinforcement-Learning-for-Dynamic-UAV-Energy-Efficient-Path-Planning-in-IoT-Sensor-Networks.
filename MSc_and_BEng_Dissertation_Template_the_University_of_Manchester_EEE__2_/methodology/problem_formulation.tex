@@ -20,13 +20,10 @@ SF orthogonality (one active transmission per SF).
 
 \noindent\textbf{Proposition 1} (Intractability and Markov Restoration).
 \textit{Under Assumptions 1--3, (P1) is non-convex: $p_t$ and $\mathrm{SF}_{i,t}$
-are coupled through an EMA filter with memory
-($\widehat{\text{RSSI}}_{i,t} = \lambda\,\text{RSSI}_{i,t} + (1{-}\lambda)\widehat{\text{RSSI}}_{i,t-1}$,
-$\lambda{=}0.1$), violating the Markov property under standard RSSI observations.
+are coupled through the EMA-ADR filter ($\lambda{=}0.1$), violating the Markov property.
 Classical methods (MILP, convex MPC) cannot tractably encode this history.
-The frame-stacked observation $\mathbf{S}_t^{\mathrm{stacked}}$ (Eq.~\ref{eq:stacked_state})
-restores approximate Markovianity: the four-frame window renders EMA-ADR convergence
-state-observable, enabling SF inference from urgency trends without explicit SF tracking.}
+Frame stacking $\mathbf{S}_t^{\mathrm{stacked}}$ (Eq.~\ref{eq:stacked_state})
+restores approximate Markovianity by rendering EMA-ADR convergence state-observable.}
 
 \subsubsection{State Space Definition}
 
@@ -61,13 +58,7 @@ spreading factor history.
 
 \subsubsection{Action Space Definition}
 
-The action space is discrete:
-\begin{equation}
-    \mathcal{A} = \{\text{MoveN},\ \text{MoveS},\ \text{MoveE},\ \text{MoveW},\ \text{Hover}\}
-    \label{eq:action_space_def}
-\end{equation}
-Movement actions update the UAV's position by step size $\delta_d$ in the chosen
-cardinal direction; Hover keeps $p_{t+1} = p_t$. Hover is energetically more expensive
-per unit displacement ($P_{\text{hover}} > P_{\text{flight}}$) but essential for
-stabilising the LoRa link during data collection and for allowing duty-cycle windows
-to open.
+The discrete action space $\mathcal{A}$ (Eq.~\ref{eq:action_space}) is as defined in
+Section~4.1.1. Hover is energetically more expensive per unit displacement
+($P_{\text{hover}} > P_{\text{flight}}$) but essential for stabilising the LoRa link
+during data collection and for allowing duty-cycle windows to open.

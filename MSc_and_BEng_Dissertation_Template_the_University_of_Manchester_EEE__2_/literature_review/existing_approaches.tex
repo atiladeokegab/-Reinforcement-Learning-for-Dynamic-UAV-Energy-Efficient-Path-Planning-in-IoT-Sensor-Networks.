@@ -6,35 +6,55 @@ static mathematical optimisation and energy-focused path planning.
 In the domain of mathematical optimisation, Zorbas et al.~\cite{zorbas2025revisiting} propose
 a Mixed Integer Linear Programming (MILP) framework to determine the optimal SF distribution
 that maximises packet reception probability. While this method provides a theoretically optimal
-allocation for static networks, it lacks the real-time adaptability required for dynamic UAV
-missions where the channel conditions change continuously.
+allocation for static networks, it has two critical limitations for the mobile-gateway setting:
+first, MILP scales exponentially with the number of binary SF assignment variables, becoming
+intractable for $N > 20$ sensors; second, and more fundamentally, it assumes channel conditions
+are known and stationary at solve time, an assumption that fails continuously as the UAV moves
+and the EMA-ADR control loop propagates outdated RSSI estimates across the network. The authors
+themselves acknowledge this limitation, concluding that reinforcement learning is the appropriate
+tool for the dynamic case~\cite{zorbas2025revisiting}.
 
 In the domain of path planning, Xiong et al.~\cite{xiong2023flyinglora} introduce
 ``FlyingLoRa,'' a scheme designed to minimise energy consumption by jointly optimising the
-UAV's 3D trajectory and transmission scheduling. This approach represents the state-of-the-art
-in energy-efficient collection, utilising iterative algorithms to find sub-optimal solutions
-for flight paths. However, such methods often treat the communication protocol as a static constraint rather
-than a dynamic variable that the UAV can actively manipulate.
+UAV's 3D trajectory and transmission scheduling. Although this represents the state-of-the-art
+in energy-efficient LoRa data collection, FlyingLoRa has three notable limitations: it
+optimises trajectory offline using iterative algorithms that require full knowledge of sensor
+locations and link budgets before the mission begins, it omits ADR dynamics entirely (treating
+each sensor's data rate as fixed), and it does not model the Capture Effect---assuming mutual
+packet destruction on any intra-SF collision. As a result, FlyingLoRa cannot exploit the
+positioning-induced SF diversity that the protocol-aware DRL agent learns to generate.
 
 A parallel line of research addresses UAV trajectory optimisation as an energy-efficiency
 problem independent of the application-layer protocol. Zeng and
 Zhang~\cite{zeng2017energy} derive a theoretical propulsion energy model for fixed-wing
 UAVs and show that jointly optimising the flight trajectory and communication scheduling
 yields significant energy efficiency gains; this framework motivates the energy-consumption
-term in our reward function. More broadly, Zeng et al.~\cite{zeng2016wireless} and
+term in our reward function. However, the Zeng--Zhang model is derived for fixed-wing
+platforms under the assumption of LoS-only links, making it inapplicable to rotary-wing
+UAVs (where translational lift inverts the move/hover power relationship) and environments
+with ground reflection. More broadly, Zeng et al.~\cite{zeng2016wireless} and
 Mozaffari et al.~\cite{mozaffari2019tutorial} survey the channel characteristics and
 deployment challenges unique to UAV-aided wireless systems, establishing the channel
 geometry assumptions---in particular the dominance of LoS links at low altitude---on which
-the Two-Ray Ground Reflection model in this work is predicated.
+the Two-Ray Ground Reflection model in this work is predicated. A key gap across all of
+these works is that none jointly models the physical channel \emph{and} the MAC-layer ADR
+feedback loop, meaning their conclusions about optimal positioning do not account for
+the SF convergence dynamics that dominate throughput in dense deployments.
 
 At the intersection of deep reinforcement learning and UAV communications, Challita
 et al.~\cite{challita2018interference} propose a deep RL framework for interference-aware
 path planning of cellular-connected UAVs, demonstrating that DRL agents can learn
 collision-avoidance behaviour that static planners cannot replicate---directly analogous to
-the SF-monoculture avoidance objective here. Nemer et al.~\cite{nemer2022energyefficient}
-apply a distributed actor--critic approach to maximise coverage fairness for multi-UAV
-networks, confirming that Jain's Fairness Index is an appropriate target metric for
-DRL-based UAV controllers.
+the SF-monoculture avoidance objective here. However, Challita et al.\ operate in the
+cellular domain where the interference model is well-characterised and stationary; they
+do not encounter the non-stationary MAC-layer dynamics (EMA-ADR, duty cycles, Capture
+Effect) that make the LoRaWAN setting substantially harder.
+Nemer et al.~\cite{nemer2022energyefficient} apply a distributed actor--critic approach to
+maximise coverage fairness for multi-UAV networks, confirming that Jain's Fairness Index
+is an appropriate target metric for DRL-based UAV controllers. A limitation of Nemer et al.\
+is that their evaluation uses fixed sensor positions and a simplified channel model,
+leaving open whether the fairness gains transfer to the stochastic, topology-varying
+conditions that domain randomisation is designed to address.
 
 \subsubsection{Algorithm Selection: DQN versus Policy-Gradient Methods}
 

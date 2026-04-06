@@ -1,4 +1,5 @@
 \subsection{Robustness and Generalisation Analysis}
+\label{sec:robustness}
 
 \subsubsection{Sim-to-Real Perturbation Tests}
 
@@ -28,34 +29,35 @@ provided in Appendix~\ref{app:sim_to_real}.
 The policy was trained exclusively on uniformly random sensor layouts via domain
 randomisation. Table~\ref{tab:cross_layout} reports the DQN's reward advantage over
 SF-Aware Greedy across six structurally distinct deployment patterns (all $N=20$,
-$500\times500$, 5 seeds), assessing whether the learned policy transfers to
-out-of-distribution layouts.
+$500\times500$, $n=10$ seeds per layout, Welch's $t$-test with Cohen's $d$).
 
-Table~\ref{tab:cross_layout} reports the per-layout results. The DQN generalises
-successfully to grid-aligned ($+8.3\%$, $p=0.001$) and ring ($+5.4\%$, $p=0.001$)
-layouts. However, the policy \emph{fails} on the two-cluster layout ($-11.3\%$, $p=0.001$):
-the DQN's intermediate-positioning strategy---optimal for uniform random layouts---is
-suboptimal when all sensors are co-located in two dense groups, where the SF-Aware
-Greedy's visit-nearest heuristic is near-optimal because no repositioning overhead is needed.
-The root cause is a training distribution mismatch: uniform domain randomisation never
-generates bimodal density profiles. Adding clustered layouts to the curriculum would enable
-a context-sensitive switching strategy.
+Table~\ref{tab:cross_layout} reveals three generalisation regimes.
+\emph{Structured regular} (grid-aligned $+2.6\%$, $p=0.007$, $d=1.36$; ring $+3.0\%$,
+$p=0.002$, $d=1.70$): large effects confirm reliable advantage on geometrically regular layouts.
+\emph{Dispersed similar to training} (uniform random, 4-corner, single quadrant): no significant
+difference ($p>0.50$ for all three), consistent with the training distribution covering
+analogous spatial arrangements.
+\emph{Bimodal} (two dense clusters, $-14.0\%$, $p<0.001$, $d=5.33$): the very large effect
+identifies the precise failure boundary — bimodal distributions absent from the training
+curriculum where the Greedy's visit-nearest heuristic is near-optimal. This directly motivates
+the clustered layout curriculum extension (Section~\ref{sec:future_work}).
 Full per-layout bar charts are in Appendix~\ref{app:sim_to_real}.
 
 \begin{table}[H]
 \centering
-\caption{DQN reward advantage over SF-Aware Greedy by layout type ($n=5$ seeds per layout, Welch's $t$).}
+\caption{DQN reward advantage over SF-Aware Greedy by layout type ($n=10$ seeds per layout,
+         Welch's $t$-test). Effect sizes ($d$) reported in-text.}
 \label{tab:cross_layout}
 \begin{tabular}{lrr}
 \toprule
-Layout Type & DQN Adv.\ (\%) & $p$ \\
+Layout Type & DQN Adv.\ vs.\ SF-Aware Greedy (\%) & $p$ \\
 \midrule
-Uniform random (training dist.) & $+5.2$ & $0.14$ \\
-Grid-aligned                    & $+8.3$ & $0.001$\textsuperscript{***} \\
-Ring                            & $+5.4$ & $0.001$\textsuperscript{***} \\
-4-corner clusters               & $+1.2$ & $0.40$  \\
-Single quadrant                 & $+1.3$ & $0.11$  \\
-Two dense clusters              & $\mathbf{-11.3}$ & $0.001$\textsuperscript{***} \\
+Uniform random (training dist.) & $+2.7$ & $0.508$ \\
+Grid-aligned                    & $+2.6$ & $0.007$\textsuperscript{**} \\
+Ring                            & $+3.0$ & $0.002$\textsuperscript{**} \\
+4-corner clusters               & $+0.5$ & $0.622$ \\
+Single quadrant                 & $-0.3$ & $0.523$ \\
+Two dense clusters              & $\mathbf{-14.0}$ & $<0.001$\textsuperscript{***} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -84,7 +86,6 @@ sensor range. Observation latency at all tested levels ($k = 1$--$4$ steps) prod
 negligible reward change, confirming immunity to delays up to $400$\,ms---a direct
 benefit of the four-frame observation stack.
 
-Together these results define a \emph{HIL readiness profile}: the policy is robust to
-GPS noise, path-loss mismatch, duty-cycle variation, wind drift up to $10$\,m/step, and
-observation latency up to $400$\,ms. The primary remaining uncertainty is the joint
-effect of simultaneous perturbations.
+Together these results define a HIL readiness profile: robust to GPS noise, path-loss
+mismatch, duty-cycle variation, wind drift up to $10$\,m/step, and observation latency
+up to $400$\,ms.

@@ -10,13 +10,13 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning Simulation Context diagram...")
+    logger.info("Creating UAV DQN Simulation Context diagram...")
 
     # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / "q_learning_system_context"
+    output_file = output_dir / "dqn_system_context"
 
     logger.debug(f"Output file: {output_file}.png")
 
@@ -26,7 +26,7 @@ def create_diagram():
 
     try:
         with Diagram(
-            "System Context - UAV Q-Learning Simulation (Simulation-Based)",
+            "System Context - UAV DQN Simulation (Stable-Baselines3)",
             direction="TB",
             graph_attr=graph_attr,
             show=False,
@@ -36,66 +36,78 @@ def create_diagram():
             # External Actors
             researcher = Person(
                 name="Researcher",
-                description="Configures simulation parameters, Q-Learning hyperparameters, and analyzes results",
+                description="Configures simulation parameters, DQN hyperparameters "
+                "(learning_rate, gamma, batch_size, buffer_size), and analyzes results",
             )
 
             # External Systems (for data export/visualization)
             visualization_tools = System(
                 name="Visualization & Analysis Tools",
-                description="Matplotlib, Pandas for plotting trajectories, rewards, Q-values",
+                description="Matplotlib, Seaborn, Pandas for plotting trajectories, "
+                "rewards, fairness curves, ablation bars",
                 external=True,
             )
 
             results_storage = System(
                 name="Results Repository",
-                description="File system or cloud storage for simulation logs and trained models",
+                description="models/dqn_domain_rand/dqn_final.zip (SB3 format), "
+                "dqn_evaluation_results/ PNG figures",
                 external=True,
             )
 
             # Main System
-            with SystemBoundary("UAV Q-Learning Simulation System"):
+            with SystemBoundary("UAV DQN Training & Evaluation System"):
                 simulation_system = System(
-                    name="Q-Learning UAV Simulation",
-                    description="Simulated environment for training Q-Learning agent to optimize IoT data collection paths",
+                    name="DQN UAV Simulation",
+                    description="Trains SB3 DQN (MlpPolicy [512,512,256]) across "
+                    "16 domain-randomised conditions (4 grids × 4 sensor counts) "
+                    "with curriculum learning. 4 parallel envs, 2M timesteps.",
                 )
 
             # Relationships
             (
                 researcher
                 >> Relationship(
-                    "Configures: grid size, sensor positions, Q-Learning params (alpha, gamma, epsilon)"
+                    "Configures: grid sizes (100–1000), sensor counts (10–40), "
+                    "DQN hyperparameters, curriculum thresholds"
                 )
                 >> simulation_system
             )
             (
                 researcher
                 >> Relationship(
-                    "Monitors: training progress, episode rewards, convergence"
+                    "Monitors: episode rewards, Jain's fairness index, coverage, convergence"
                 )
                 >> simulation_system
             )
 
             (
                 simulation_system
-                >> Relationship("Exports: Q-table, training metrics, episode logs")
+                >> Relationship(
+                    "Exports: dqn_final.zip (trained model), checkpoint .zip files"
+                )
                 >> results_storage
             )
             (
                 simulation_system
-                >> Relationship("Sends: trajectory data, reward curves, coverage maps")
+                >> Relationship(
+                    "Sends: trajectory data, reward curves, ablation results, "
+                    "fairness sweep PNGs"
+                )
                 >> visualization_tools
             )
 
             (
                 researcher
                 >> Relationship(
-                    "Analyzes: performance metrics, learning curves, policy effectiveness"
+                    "Analyzes: DQN vs greedy baselines, ablation study (A1–A4), "
+                    "cross-layout generalization"
                 )
                 >> visualization_tools
             )
             (
                 researcher
-                >> Relationship("Reviews: saved models, experiment logs")
+                >> Relationship("Reviews: saved .zip models, evaluation PNGs")
                 >> results_storage
             )
 
@@ -117,7 +129,7 @@ def create_diagram():
         logger.error(traceback.format_exc())
         raise
 
-    logger.info("Context diagram creation complete!")
+    logger.info("DQN context diagram creation complete!")
 
 
 if __name__ == "__main__":
@@ -125,6 +137,6 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    logger.info("Running Q-Learning simulation context diagram script...")
+    logger.info("Running DQN simulation context diagram script...")
     create_diagram()
     logger.info("Script finished!")

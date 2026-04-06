@@ -60,13 +60,11 @@ Grid & Agent & Mean Reward ($\times 10^6$) & $\pm$ Std ($\times 10^6$) & Mean $\
 \end{tabularx}
 \end{table}
 
-\noindent At $1{,}000\times1{,}000$, the SF-Aware Greedy achieves a marginally higher raw reward
-than the DQN ($4.832$ vs.\ $4.824 \times 10^6$, $p = 0.96$, negligible difference), while
-the DQN leads on fairness ($\mathcal{J} = 0.897$ vs.\ $0.893$). This crossover illustrates the
-fundamental fairness--throughput trade-off: the DQN's buffer-overflow penalty drives
-it to service underserved peripheral sensors, sacrificing total throughput but
-maintaining higher Jain's Index. Applications requiring equitable coverage (disaster
-response, public safety) should prefer the DQN's fairness-first policy.
+\noindent At $1{,}000\times1{,}000$, SF-Aware Greedy marginally exceeds the DQN on reward
+($4.832$ vs.\ $4.824 \times 10^6$, $p = 0.96$), while the DQN leads on fairness
+($\mathcal{J} = 0.897$ vs.\ $0.893$). This crossover reflects the fairness--throughput
+trade-off: the buffer-overflow penalty drives the DQN to service peripheral sensors,
+preferring equitable coverage over raw throughput.
 
 Absolute metric values and DQN advantage by grid size are provided in
 Appendix~\ref{app:additional_figures} (Figure~\ref{fig:grid_scalability}).

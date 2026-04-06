@@ -93,12 +93,10 @@ $N$ & Agent & Mean $\mathcal{J}$ & $\pm$ Std \\
 \end{tabularx}
 \end{table}
 
-\noindent At $N=10$ all agents achieve near-perfect fairness ($\mathcal{J}\approx0.9997$).
-Fairness degrades monotonically with $N$ for all agents --- an intrinsic consequence of
-the fixed episode length, not a reward function failure. The DQN's advantage grows with
-density: $+0.02\%$ at $N=10$, rising to $+4.2\%$ at $N=40$ ($\mathcal{J}=0.739$ vs.\
-$0.709$ for SF-Aware Greedy), reflecting the discovery bonus and starvation penalty
-distributing attention more evenly than the myopic greedy heuristic.
+\noindent Fairness degrades monotonically with $N$ for all agents (fixed episode length
+constraint). The DQN's advantage grows with density: $+0.02\%$ at $N=10$ to $+4.2\%$
+at $N=40$ ($\mathcal{J}=0.739$ vs.\ $0.709$), reflecting the discovery bonus and
+starvation penalty distributing attention more evenly.
 
 \subsubsection{Energy Efficiency}
 

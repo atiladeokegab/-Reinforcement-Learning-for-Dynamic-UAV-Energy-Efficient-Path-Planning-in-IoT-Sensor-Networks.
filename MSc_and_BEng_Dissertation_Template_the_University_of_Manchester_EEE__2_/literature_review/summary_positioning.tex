@@ -7,6 +7,23 @@ protocol using static mathematics that cannot adapt to mobility. Explicitly ackn
 gap, Zorbas et al.~\cite{zorbas2025revisiting} conclude that ``reinforcement learning models
 could be employed to adapt over time to evolving network conditions.''
 
+\subsubsection{Simulation Tool Gap}
+
+No existing open simulation framework models the complete causal chain required for
+protocol-aware UAV control. Bor et al.'s LoRaSim~\cite{bor2016lora} provides the
+foundational LoRaWAN collision model but assumes a static topology and omits both ADR
+dynamics and the Capture Effect, making it unsuitable for mobile-gateway evaluation.
+Xiong et al.'s FlyingLoRa~\cite{xiong2023flyinglora} introduces UAV trajectory planning
+over LoRa networks but omits ADR entirely (treating each sensor's data rate as fixed) and
+assumes mutual packet destruction on any intra-SF collision --- the exact assumption that
+Croce et al.~\cite{croce2020lora} empirically disprove. Zorbas et al.~\cite{zorbas2025revisiting}
+model ADR convergence accurately but use a static MILP formulation that cannot be used as
+a Gymnasium-compatible step environment for DRL training. No prior work therefore provides
+a Gymnasium-compatible environment that simultaneously models EMA-ADR convergence, the
+6\,dB Capture Effect threshold, Two-Ray path loss, log-normal shadowing, and asynchronous
+duty cycles within a single step --- the combination required for an agent to learn
+position-induced SF-diversity exploitation.
+
 Table~\ref{tab:related_work} positions this dissertation at the specific intersection no
 prior work occupies: protocol-aware DRL for mobile LoRaWAN gateways with explicit Capture
 Effect modelling and multi-objective fairness.

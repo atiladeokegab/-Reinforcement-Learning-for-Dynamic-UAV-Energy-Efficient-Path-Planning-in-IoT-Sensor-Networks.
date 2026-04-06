@@ -28,6 +28,10 @@ optimisation approaches (like Mixed Integer Linear Programming) can solve the re
 allocation problem for static networks but lack the real-time adaptability required for
 dynamic, mobile environments~\cite{zorbas2025revisiting}.
 
+A further gap exists at the simulation level: no open framework models the complete
+causal chain from UAV position through RSSI, EMA-ADR convergence, and Capture Effect
+to packet delivery within a single Gymnasium step.
+
 To address these limitations, a protocol-aware control framework is required---one that
 integrates the UAV's physical mobility with the logical constraints of the LoRaWAN protocol.
 Zorbas et al.~\cite{zorbas2025revisiting}, Nguyen et al.~\cite{nguyen20226g}, and surveys

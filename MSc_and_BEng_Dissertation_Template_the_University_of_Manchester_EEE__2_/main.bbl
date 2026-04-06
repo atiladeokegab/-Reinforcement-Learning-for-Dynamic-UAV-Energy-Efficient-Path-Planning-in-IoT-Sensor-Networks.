@@ -426,8 +426,8 @@
       \strng{authornamehash}{75ebdd0dbc8dee82e3b3c79121f04007}
       \strng{authorfullhash}{642fd06b0a92a6b5a0af229252fdd89f}
       \strng{authorfullhashraw}{642fd06b0a92a6b5a0af229252fdd89f}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{IEEE Internet of Things Journal}
@@ -487,8 +487,8 @@
       \strng{authornamehash}{ecd55108e14d4507b3b1e66be53ea462}
       \strng{authorfullhash}{2438cf814cd00b554e9280133bdd4709}
       \strng{authorfullhashraw}{2438cf814cd00b554e9280133bdd4709}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{IEEE Communications Surveys \& Tutorials}
@@ -528,8 +528,8 @@
       \strng{authornamehash}{313cbf9662836813a9d7f17615050b64}
       \strng{authorfullhash}{87cfabed68e61eb0c0e537ba4bb39dfe}
       \strng{authorfullhashraw}{87cfabed68e61eb0c0e537ba4bb39dfe}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{2018 IEEE International Conference on Communications (ICC)}
@@ -648,8 +648,8 @@
       \strng{authornamehash}{fa57656e5d8d64e798e41c2482308401}
       \strng{authorfullhash}{fa57656e5d8d64e798e41c2482308401}
       \strng{authorfullhashraw}{fa57656e5d8d64e798e41c2482308401}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{IEEE Transactions on Wireless Communications}
@@ -931,8 +931,8 @@
       \strng{authornamehash}{28b95736babd474d4966cdfbe61aa0b3}
       \strng{authorfullhash}{28b95736babd474d4966cdfbe61aa0b3}
       \strng{authorfullhashraw}{28b95736babd474d4966cdfbe61aa0b3}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{arXiv preprint arXiv:1910.07207}
@@ -1060,8 +1060,8 @@
       \strng{authornamehash}{2c42dddd45e1ea280a64e08c9a87d720}
       \strng{authorfullhash}{59127397f3045b880071f52e5e66fdf5}
       \strng{authorfullhashraw}{59127397f3045b880071f52e5e66fdf5}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}
@@ -1167,8 +1167,8 @@
       \strng{authornamehash}{388e7feddf6d4d7336d2c895e55fa4b6}
       \strng{authorfullhash}{96b1e04da8f7923703ffcd33d2ad51c1}
       \strng{authorfullhashraw}{96b1e04da8f7923703ffcd33d2ad51c1}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{The International Journal of Robotics Research}
@@ -1213,8 +1213,8 @@
       \strng{authornamehash}{058f6aa7282521dda725a309bd2d3fea}
       \strng{authorfullhash}{9ba3fef12dbb2a31c664e09902e90cdf}
       \strng{authorfullhashraw}{9ba3fef12dbb2a31c664e09902e90cdf}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Proceedings of the 26th Annual International Conference on Machine Learning (ICML)}
@@ -1336,8 +1336,8 @@
       \strng{authornamehash}{5044a4768c7fc20f25fb680bb11f4aaf}
       \strng{authorfullhash}{e3c43789f8de334374c8e95d9d514552}
       \strng{authorfullhashraw}{e3c43789f8de334374c8e95d9d514552}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of Machine Learning Research}
@@ -1456,8 +1456,8 @@
       \strng{authornamehash}{671a5b29dade9bddb3ee8cb7bc0889d0}
       \strng{authorfullhash}{ec0c7e0d3ab69a343e89c8f030262b7b}
       \strng{authorfullhashraw}{ec0c7e0d3ab69a343e89c8f030262b7b}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{eprintclass}{cs.LG}
@@ -1497,8 +1497,8 @@
       \strng{authornamehash}{154051113a54fef159f636abdfbb2e9d}
       \strng{authorfullhash}{23daa408d11549376406ab92000bf8c2}
       \strng{authorfullhashraw}{23daa408d11549376406ab92000bf8c2}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{number}{DEC-TR-301}
@@ -1532,8 +1532,8 @@
       \strng{authornamehash}{96f00b64f64c19f0ca3213c3121b6793}
       \strng{authorfullhash}{cb150eee6a2e205855a3032584358c15}
       \strng{authorfullhashraw}{cb150eee6a2e205855a3032584358c15}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Computer Networks}
@@ -1583,48 +1583,6 @@
       \field{year}{2021}
       \verb{eprint}
       \verb 2009.13303
-      \endverb
-    \endentry
-    \entry{lee2025quasi}{article}{}{}
-      \name{author}{3}{}{%
-        {{hash=ec8c17d8350f10525e5cce83d6433d18}{%
-           family={Lee},
-           familyi={L\bibinitperiod},
-           given={Sangwon},
-           giveni={S\bibinitperiod}}}%
-        {{hash=d9b163bcb4bef3174fc2e39a63e46770}{%
-           family={Ban},
-           familyi={B\bibinitperiod},
-           given={Tae-Won},
-           giveni={T\bibinithyphendelim W\bibinitperiod}}}%
-        {{hash=6cf678d9e9a9d016c68bd1c8fdc26e51}{%
-           family={Lee},
-           familyi={L\bibinitperiod},
-           given={Howon},
-           giveni={H\bibinitperiod}}}%
-      }
-      \strng{namehash}{5d0a9e046ab256ccb7a8dee277d60cd8}
-      \strng{fullhash}{e528746a8514abe563fc024b7a483009}
-      \strng{fullhashraw}{e528746a8514abe563fc024b7a483009}
-      \strng{bibnamehash}{e528746a8514abe563fc024b7a483009}
-      \strng{authorbibnamehash}{e528746a8514abe563fc024b7a483009}
-      \strng{authornamehash}{5d0a9e046ab256ccb7a8dee277d60cd8}
-      \strng{authorfullhash}{e528746a8514abe563fc024b7a483009}
-      \strng{authorfullhashraw}{e528746a8514abe563fc024b7a483009}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{IEEE Internet of Things Journal}
-      \field{month}{6}
-      \field{number}{11}
-      \field{title}{Network-Wide Energy-Efficiency Maximization in {UAV}-Aided {IoT} Networks: Quasi-Distributed Deep Reinforcement Learning Approach}
-      \field{volume}{12}
-      \field{year}{2025}
-      \field{pages}{15404\bibrangedash 15414}
-      \range{pages}{11}
-      \verb{doi}
-      \verb 10.1109/JIOT.2025.3549000
       \endverb
     \endentry
   \enddatalist

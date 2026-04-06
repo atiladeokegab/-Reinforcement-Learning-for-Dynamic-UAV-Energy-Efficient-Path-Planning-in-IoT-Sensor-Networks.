@@ -16,6 +16,21 @@ error defined by the Bellman equation:
 \begin{equation}
     L(\theta) = \mathbb{E}\left[\left(r + \gamma \max_{a'} Q(s', a'; \theta^{-}) - Q(s, a; \theta)\right)^2\right] \label{eq:dqn_loss}
 \end{equation}
+
+DQN introduces two mechanisms that stabilise training in problems with correlated sequential
+observations. \textbf{Experience replay} stores past transitions $(s_t, a_t, r_t, s_{t+1})$
+in a fixed-capacity buffer and samples uniformly at random during each weight update. This
+breaks the temporal correlation between consecutive observations---critical for a UAV whose
+successive positions are spatially correlated---and improves sample efficiency by re-using
+each transition multiple times. \textbf{Target network stabilisation} maintains a second
+copy of the Q-network, $\hat{Q}$ with frozen parameters $\theta^{-}$, to compute the
+bootstrap target $r + \gamma \max_{a'} Q(s', a'; \theta^{-})$. The target parameters are
+hard-updated every $C$ steps ($\theta^{-} \leftarrow \theta$), preventing the feedback loop
+in which Q-value updates chase a continuously shifting target and cause divergence. Both
+mechanisms are essential for the non-stationary reward landscape in this work, where EMA-ADR
+convergence causes the same state-action pair to yield different rewards at different stages
+of training.
+
 This project implements the DQN agent via the Stable-Baselines3
 library~\cite{raffin2021stable} within a custom Gymnasium environment~\cite{towers2024gymnasium},
 learning the non-linear mapping between the complex network state (RSSI, AoI, battery) and

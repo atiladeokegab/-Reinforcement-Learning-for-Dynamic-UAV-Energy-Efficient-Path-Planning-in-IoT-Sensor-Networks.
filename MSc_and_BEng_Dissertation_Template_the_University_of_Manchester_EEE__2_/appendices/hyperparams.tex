@@ -9,17 +9,17 @@
         \toprule
         \textbf{Parameter}               & \textbf{Value}             \\
         \midrule
-        Total Timesteps                  & $1 \times 10^6$            \\
-        Learning Rate ($\alpha$)         & $1 \times 10^{-4}$         \\
+        Total Timesteps                  & $2 \times 10^6$            \\
+        Learning Rate ($\alpha$)         & $3 \times 10^{-4}$         \\
         Discount Factor ($\gamma$)       & $0.99$                     \\
-        Replay Buffer Size               & 100{,}000 transitions      \\
-        Batch Size                       & 32                         \\
+        Replay Buffer Size               & 150{,}000 transitions      \\
+        Batch Size                       & 128                        \\
         Target Network Update ($C$)      & every 1{,}000 steps        \\
         Gradient Clip (max norm)         & 10                         \\
         Exploration Strategy             & $\epsilon$-greedy          \\
         Initial $\epsilon$               & 1.0                        \\
         Final $\epsilon$                 & 0.05                       \\
-        Exploration Fraction             & 10\% of total timesteps    \\
+        Exploration Fraction             & 25\% of total timesteps    \\
         Policy Network Architecture      & MLP [512, 512, 256]        \\
         Activation Function              & ReLU                       \\
         Frame Stack ($k$)                & 4                          \\
@@ -31,7 +31,7 @@
 
 \noindent Gradient clipping (max norm~10) was introduced after observing reward
 collapse during early curriculum training on large grids ($N=40$) without it.
-The learning rate was reduced from $10^{-3}$ to $10^{-4}$ in the same corrective
+The learning rate was reduced from $10^{-3}$ to $3 \times 10^{-4}$ in the same corrective
 iteration, as discussed in Section~\ref{sec:project_management}.
 
 \subsection*{Training Algorithm}

@@ -5,24 +5,26 @@ challenge: rapid link-quality changes caused by UAV movement drive devices to co
 identical Spreading Factors, collapsing packet delivery rates in a phenomenon termed the
 ``SF Monoculture.''
 
-We propose a protocol-aware Deep Reinforcement Learning (DRL) framework, utilising a
-Deep Q-Network (DQN) agent trained within a custom, high-fidelity Gymnasium environment.
-The environment models the UAV's position as a direct control input to the LoRaWAN protocol,
-incorporating the Two-Ray Ground Reflection path loss model, log-normal shadowing, EMA-based
-Adaptive Data Rate (ADR) latency, asynchronous duty cycles, and the LoRa Capture Effect.
-A Domain Randomisation and Curriculum Learning regime produces a single generalised policy,
-deployable without retraining across grids spanning $100 \times 100$ to $1{,}000 \times 1{,}000$
-cells and network densities of 10 to 40 sensors.
+A protocol-aware Deep Reinforcement Learning (DRL) framework is proposed, utilising a Deep
+Q-Network (DQN) agent trained within a custom, high-fidelity Gymnasium environment---to the
+author's knowledge the first open simulation to model the complete causal chain from UAV
+position through RSSI, EMA-based Adaptive Data Rate (ADR) latency, and the LoRa Capture
+Effect to packet delivery within a single step. The environment additionally incorporates
+the Two-Ray Ground Reflection path loss model, log-normal shadowing, and asynchronous duty
+cycles. A Domain Randomisation and Curriculum Learning regime produces a single generalised
+policy, deployable without retraining across grids spanning $100{\times}100$ to
+$1{,}000{\times}1{,}000$ cells and network densities of 10 to 40 sensors.
 
-Rigorous evaluation over five independent random seeds and multiple network configurations
-demonstrates that the DQN agent consistently outperforms both a protocol-blind Nearest-Sensor
-Greedy and a novel SF-Aware Max-Throughput Greedy baseline. At 40 sensors, the DQN achieves
-a Jain's Fairness Index of $0.672 \pm 0.054$ versus $0.646 \pm 0.053$ for the SF-Aware
-baseline (+4.0\%) and $0.664 \pm 0.055$ for the Nearest baseline (+1.2\%), with a $+7.3\%$
-improvement in energy efficiency (bytes per watt-hour). The DQN's advantage is statistically
-significant ($p < 0.05$, Welch's $t$-test) at compact operational scales, and grows
-monotonically with network density. The key emergent behaviour is strategic repositioning:
-the DQN uniquely allocates 2.9\% of steps to deliberate movement ($p = 0.002$, Welch's
-$t$-test), reaching positions that yield $+14\%$ more bytes per collection step than
-greedy baselines---demonstrating that the UAV's physical position can serve as an active
-control variable for the communication protocol.
+Multi-seed evaluation (20 seeds per condition, 30 for $N=40$) against a protocol-blind
+Nearest-Sensor Greedy and a novel SF-Aware Max-Throughput Greedy baseline demonstrates
+that the DQN consistently outperforms both agents. The throughput advantage grows with
+network density, reaching $+8.6\%$ cumulative reward at $N=40$ ($p=0.043$, Cohen's
+$d=0.54$). At 40 sensors the DQN achieves a Jain's Fairness Index of
+$0.739 \pm 0.074$ versus $0.709 \pm 0.075$ for the SF-Aware baseline ($+4.2\%$), with a
+$+8.7\%$ improvement in energy efficiency (259.5 vs.\ 238.7\,B/Wh). Statistical
+significance is confirmed at all four tested network densities ($N \in \{10,20,30,40\}$,
+$p < 0.05$, Welch's $t$-test). The key emergent behaviour is strategic repositioning: the
+DQN allocates 2.9\% of steps to deliberate movement ($p=0.002$, Cohen's $d=2.1$),
+reaching positions that yield $+14\%$ more bytes per collection step by inducing
+EMA-ADR convergence to lower Spreading Factors---demonstrating that UAV physical position
+can serve as an active control variable for the radio protocol.

@@ -35,3 +35,8 @@ earlier reward formulations.
 
 This shaped structure provides immediate step-level feedback that guides the agent
 toward the long-horizon multi-objective optimum.
+
+\paragraph{Reward scale rationale.}
+Component magnitudes are calibrated so that visiting all sensors is strictly preferable
+to revisiting a single node ($+5{,}000$ discovery vs.\ $-2{,}000$ terminal penalty per
+unvisited sensor), and no component exceeds 15\% of total episode reward.

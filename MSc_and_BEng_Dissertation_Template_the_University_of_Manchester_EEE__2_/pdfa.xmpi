@@ -62,8 +62,8 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> 
    <dc:format>application/pdf</dc:format> 
-   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Energy-Efficient UAV Path Planning in IOT Networks: A Deep Reinforcement Learning Aided Approach</rdf:li></rdf:Alt></dc:title>
-   <dc:creator><rdf:Seq><rdf:li>11085980</rdf:li></rdf:Seq></dc:creator>
+   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">BEng and MSc final dissertation LaTeX template EEE</rdf:li></rdf:Alt></dc:title>
+   <dc:creator><rdf:Seq><rdf:li>123456</rdf:li></rdf:Seq></dc:creator>
    <dc:language><rdf:Bag><rdf:li>en-GB</rdf:li></rdf:Bag></dc:language>
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
@@ -76,15 +76,15 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
    <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool> 
-   <xmp:ModifyDate>2026-03-27T13:24:43+00:00</xmp:ModifyDate> 
-   <xmp:CreateDate>2026-03-27T13:24:43+00:00</xmp:CreateDate> 
-   <xmp:MetadataDate>2026-03-27T13:24:43+00:00</xmp:MetadataDate> 
+   <xmp:ModifyDate>2026-04-05T10:24:47+01:00</xmp:ModifyDate> 
+   <xmp:CreateDate>2026-04-05T10:24:47+01:00</xmp:CreateDate> 
+   <xmp:MetadataDate>2026-04-05T10:24:47+01:00</xmp:MetadataDate> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
-   <xmpMM:DocumentID>uuid:7EB1FBF3-C263-7F11-34DC-41ACFF894494</xmpMM:DocumentID> 
-   <xmpMM:InstanceID>uuid:4C1B431C-3A95-957B-7858-1652B1818AE2</xmpMM:InstanceID> 
+   <xmpMM:DocumentID>uuid:DF005B57-2A06-8753-7167-92D8CE935460</xmpMM:DocumentID> 
+   <xmpMM:InstanceID>uuid:1D4147ED-5AB1-275A-3509-CBD7B1A319D8</xmpMM:InstanceID> 
   </rdf:Description> 
  </rdf:RDF> 
 </x:xmpmeta> 

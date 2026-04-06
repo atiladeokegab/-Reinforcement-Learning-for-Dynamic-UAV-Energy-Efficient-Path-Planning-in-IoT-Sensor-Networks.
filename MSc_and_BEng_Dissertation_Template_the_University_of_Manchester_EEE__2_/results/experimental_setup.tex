@@ -17,6 +17,10 @@ are compared on identical sensor layouts.
 \textbf{SF-Aware Greedy} scores candidates as
 $\text{Score}_i = (13 - \text{SF}_i)\cdot w_1 - d_i\cdot w_2$,
 prioritising SF7--SF9 sensors for higher instantaneous throughput.
+A random-walk agent was not included as a formal baseline because both greedy heuristics
+already achieve 100\% sensor coverage and competitive throughput; the relevant comparison is
+whether the DQN's learned policy outperforms \emph{competent} planning strategies, not
+whether it outperforms undirected exploration.
 
 \paragraph{Evaluation Metrics.}
 Primary metrics are cumulative reward, network coverage (fraction of sensors visited),
