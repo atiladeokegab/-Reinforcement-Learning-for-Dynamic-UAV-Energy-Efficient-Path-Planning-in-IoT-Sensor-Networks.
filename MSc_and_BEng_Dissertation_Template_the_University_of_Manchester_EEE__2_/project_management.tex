@@ -1,19 +1,4 @@
 \section{Project Management}
 \label{sec:project_management}
 
-\subsection*{Planning and Execution}
-
-The project was planned at the outset using a five-milestone Gantt chart (Appendix~\ref{app:gantt}), covering environment development, initial DQN training, the Domain Randomisation and Curriculum Learning regime, multi-seed evaluation, and dissertation write-up. The plan was structured across two semesters with natural checkpoints aligned to the Progress Review Meetings.
-
-The project broadly followed the original timeline, with two notable deviations. First, the evaluation scope was expanded: preliminary results revealed high inter-seed variance at $N \geq 20$, so a twenty-seed multi-condition design was adopted to provide statistically defensible conclusions, shifting the evaluation phase by approximately two weeks. Second, the SF-Aware Greedy baseline was not planned initially; it was added during Semester 2 to isolate the contribution of long-horizon planning from protocol awareness. Both deviations were discussed with the Project Supervisor.
-
-\subsection*{Risk Management}
-
-Risks were tracked via the Risk Register in Appendix~\ref{app:risk}. Two materialised. Training divergence on early full-curriculum DQN runs was resolved by gradient clipping (max norm 10), a reduced learning rate ($5 \times 10^{-4}$), and reward scaling. Evaluation time overrun was mitigated by restricting the grid-size sweep to $N=20$ sensors and five grid sizes.
-
-\subsection*{Self-Directed Learning and CPD}
-
-Substantial self-directed learning was required across LoRaWAN protocol internals and
-DRL implementation, including study of the LoRaWAN 1.0.4 specification, Stable-Baselines3
-DQN internals, and the primary Capture Effect and domain randomisation literature.
-A full CPD Log is provided in Appendix~\ref{app:cpd}.
+The project followed a five-milestone Gantt chart (Appendix~\ref{app:gantt}) across two semesters. Two plan deviations occurred: evaluation expanded to a twenty-seed multi-condition design (high inter-seed variance at $N\geq20$) and an SF-Aware Greedy baseline was added in Semester~2; both discussed with the supervisor. Two risks materialised: training divergence (gradient clipping, lr~$3\times10^{-4}$) and evaluation time overrun (grid sweep restricted to $N=20$)---see Risk Register (Appendix~\ref{app:risk}). CPD covered LoRaWAN internals, Stable-Baselines3 DQN, and domain randomisation; full log in Appendix~\ref{app:cpd}.

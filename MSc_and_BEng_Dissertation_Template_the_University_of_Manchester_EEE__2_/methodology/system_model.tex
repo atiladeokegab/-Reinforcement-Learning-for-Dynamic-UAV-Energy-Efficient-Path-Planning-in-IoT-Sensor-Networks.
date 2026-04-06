@@ -26,8 +26,11 @@ at most one transmission per SF is decoded simultaneously; intra-SF collisions a
 via the Capture Effect (Section~\ref{sec:capture}).}
 
 \noindent\textbf{Assumption 3.} \textit{Sensors are LoRaWAN Class~A devices with a 10\%
-duty cycle and Poisson data generation; network-initiated wake-up is infeasible, so the
-UAV must arrive during a node's natural transmission window.}
+duty cycle\footnote{The EU 868\,MHz ISM band mandates a 1\% radio duty cycle. The 10\%
+parameter models the \emph{effective} per-timestep transmission probability (wake-up
+rate $\times$ packet frequency $\times$ channel access). Sensitivity is tested down to
+4\% in Section~\ref{sec:robustness}.} and Poisson data generation; network-initiated wake-up is
+infeasible, so the UAV must arrive during a node's natural transmission window.}
 
 \subsubsection{UAV Kinematics and Energy Consumption}
 
@@ -88,10 +91,11 @@ that the DRL agent must learn to exploit~\cite{alhourani2014optimal}.
 \subsubsection{Device Class and Traffic Model}
 
 Sensor nodes are modelled as LoRaWAN Class~A devices~\cite{augustin2016lora}, operating
-asynchronously with a 10\% duty cycle. Data generation follows a Poisson process with rate
-$\lambda_i$ per sensor, accumulating in finite buffers of capacity $B_{\max}$. Once a buffer
-is full, new packets are discarded, creating a hard collection deadline for the agent. This
-models realistic energy-harvesting deployments where network-initiated wake-up is infeasible.
+asynchronously with an effective 10\% per-timestep transmission probability (see
+Assumption~3 footnote). Data generation follows a Poisson process with rate $\lambda_i$ per
+sensor, accumulating in finite buffers of capacity $B_{\max}$. Once a buffer is full, new
+packets are discarded, creating a hard collection deadline for the agent. This models
+realistic energy-harvesting deployments where network-initiated wake-up is infeasible.
 
 \subsubsection{Collision Resolution via Capture Effect} \label{sec:capture}
 
@@ -110,9 +114,8 @@ requiring the UAV to position itself strictly closer to the desired sensor.
 
 \subsubsection{Gateway Architecture}
 
-The UAV is modelled as a single-channel multi-SF gateway. LoRa's orthogonal spreading factors
-allow up to one simultaneous transmission per SF; packets that violate this constraint are
-subject to Capture Effect resolution. The operational SF set is restricted to
-$\mathcal{S} = \{7, 9, 11, 12\}$, maintaining sufficient spectral diversity to prevent the
-SF Monoculture while remaining implementable on lightweight airborne hardware.
+The UAV is a single-channel multi-SF gateway: up to one simultaneous transmission per SF,
+with intra-SF violations resolved by Capture Effect. The operational SF set
+$\mathcal{S} = \{7, 9, 11, 12\}$ balances spectral diversity against airborne hardware
+constraints.
 

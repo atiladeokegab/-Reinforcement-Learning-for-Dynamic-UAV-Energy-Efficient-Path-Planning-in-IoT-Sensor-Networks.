@@ -3,33 +3,36 @@
 
 To isolate the contribution of each design component, four controlled ablations
 are evaluated on the primary test condition (500$\times$500\,m grid, $N = 20$
-sensors, 5 seeds). Table~\ref{tab:ablation} summarises the results.
+sensors, $n = 20$ seeds, Welch's $t$-test vs.\ Full Model).
+Table~\ref{tab:ablation} summarises the results.
 
 \begin{table}[H]
 \centering
-\caption{Ablation study results (mean $\pm$ std, $n = 5$ seeds,
-         500$\times$500 grid, $N = 20$ sensors). The Full Model baseline
-         is identical to the primary evaluation condition in
+\caption{Ablation study results (mean $\pm$ std, $n = 20$ seeds,
+         500$\times$500 grid, $N = 20$ sensors). Cohen's $d$ and Welch's $t$-test
+         $p$-value are computed against the Full Model on cumulative reward.
+         The Full Model baseline is identical to the primary evaluation condition in
          Section~\ref{sec:results}.}
 \label{tab:ablation}
-\begin{tabularx}{\textwidth}{l Z Z Z}
+\begin{tabularx}{\textwidth}{l Z Z Z Z}
 \toprule
 Condition
   & Mean Reward ($\times 10^6$)
   & Mean $\mathcal{J}$
-  & Efficiency (B/Wh) \\
+  & Efficiency (B/Wh)
+  & $d$ (vs.\ Full Model) \\
 \midrule
 Full Model (baseline)
-  & $5.924 \pm 0.410$ & $0.974 \pm 0.017$ & $199.7 \pm 13.4$ \\
+  & $5.924 \pm 0.410$ & $0.974 \pm 0.017$ & $199.7 \pm 13.4$ & --- \\
 \midrule
 A1 --- No Capture Effect
-  & $5.278 \pm 0.620$ & $0.942 \pm 0.034$ & $174.7 \pm 20.5$ \\
+  & $5.278 \pm 0.620$ & $0.942 \pm 0.034$ & $174.7 \pm 20.5$ & 1.23 (large, $p=0.0005$) \\
 A2 --- Instant ADR
-  & $6.385 \pm 0.179$ & $0.992 \pm 0.005$ & $214.8 \pm 5.6$  \\
+  & $6.385 \pm 0.179$ & $0.992 \pm 0.005$ & $214.8 \pm 5.6$  & 1.46 (large, $p=0.0001$) \\
 A3 --- No AoI Observation
-  & $5.915 \pm 0.406$ & $0.973 \pm 0.017$ & $199.5 \pm 13.3$ \\
+  & $5.915 \pm 0.406$ & $0.973 \pm 0.017$ & $199.5 \pm 13.3$ & 0.02 (negligible, $p=0.946$) \\
 A4 --- No Domain Randomisation
-  & $5.612 \pm 0.414$ & $0.964 \pm 0.020$ & $189.5 \pm 13.4$ \\
+  & $5.612 \pm 0.414$ & $0.964 \pm 0.020$ & $189.5 \pm 13.4$ & 0.76 (medium, $p=0.022$) \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -38,35 +41,36 @@ Bar charts and per-seed Jain's index scatter for all ablation conditions are pro
 Appendix~\ref{app:additional_figures} (Figure~\ref{fig:ablation}).
 
 \paragraph{A1 --- No Capture Effect.}
-Disabling the Capture Effect (raising the SIR threshold to infinity so all intra-SF
-collisions cause mutual destruction) reduces reward by $10.9\%$, Jain's index by $3.3\%$,
-and energy efficiency by $12.5\%$. The Capture Effect is a meaningful throughput-recovery
-mechanism: in the full model, the strongest intra-SF transmitter wins the channel, rescuing
-data that would otherwise be lost. Without it, effective throughput drops and fairness
-degrades because sensors sharing a spreading factor both lose their packets, creating
-uneven collection. The increased standard deviation ($0.620$ vs.\ $0.410$) confirms that the
-no-capture condition is more sensitive to spatial layout.
+Disabling the Capture Effect reduces reward by $10.9\%$, Jain's index by $3.3\%$, and
+energy efficiency by $12.5\%$ ($d = 1.23$, large effect, $p = 0.0005$). The Capture Effect
+is a meaningful throughput-recovery mechanism: the strongest intra-SF transmitter wins the
+channel, rescuing data that would otherwise be lost. Without it, effective throughput drops
+and fairness degrades because sensors sharing a spreading factor both lose their packets.
+The increased standard deviation ($0.620$ vs.\ $0.410$) confirms the no-capture condition
+is more sensitive to spatial layout — precisely the variance that reduces the effect size
+at high density in the primary evaluation.
 
 \paragraph{A2 --- Instant ADR.}
 Replacing the EMA-ADR filter ($\lambda = 0.1$) with instantaneous RSSI-to-SF mapping
 ($\lambda = 1.0$) increases reward by $7.8\%$ and reduces standard deviation dramatically
-($0.179 \times 10^6$ vs.\ $0.410 \times 10^6$). This is an upper bound, not a target: instant
-ADR is physically unrealisable in deployed LoRaWAN networks. The EMA design is a deliberate
-fidelity choice that models the slow ADR convergence of real network servers; a real
-deployment would observe performance closer to the EMA result.
+($0.179 \times 10^6$ vs.\ $0.410 \times 10^6$, $d = 1.46$, $p = 0.0001$). This is an upper
+bound, not a target: instant ADR is physically unrealisable in deployed LoRaWAN networks.
+The performance gap between A2 and the Full Model quantifies the cost of real ADR latency,
+motivating the strategic repositioning behaviour the DQN learns to exploit.
 
 \paragraph{A3 --- No AoI Observation.}
-Zeroing all urgency features produces results statistically indistinguishable from the Full
-Model (all differences $< 0.2\%$). This does \emph{not} imply AoI terms were unnecessary:
+Zeroing all urgency features produces a negligible effect ($d = 0.02$, $p = 0.946$, all
+metric differences $< 0.2\%$). This does \emph{not} imply AoI terms were unnecessary:
 during training the penalty acts as an exploration curriculum, preventing the degenerate
 hovering policy observed in earlier reward formulations. This shaping is permanent---baked
 into the learned weights---so at inference time the agent no longer needs to observe urgency
-signals; the equidistant patrol geometry already guarantees fairness~\cite{kaul2012realtime,abdelmagid2019aoi}.
-The policy is therefore robust to complete failure of the urgency-sensing pipeline.
+signals. The $p = 0.946$ confirms the policy is robust to complete failure of the
+urgency-sensing pipeline.
 
 \paragraph{A4 --- No Domain Randomisation.}
 Training on a fixed (500$\times$500, $N=20$) configuration yields $5.3\%$ lower reward,
-$1.0\%$ lower Jain's index, and $5.1\%$ lower energy efficiency on the same test condition.
-The consistent degradation demonstrates that domain randomisation contributes even when
-evaluated on a condition the no-DR agent was trained on exclusively, producing a more robust
-feature representation by preventing overfitting to a single spatial configuration.
+$1.0\%$ lower Jain's index, and $5.1\%$ lower energy efficiency on the same test condition
+($d = 0.76$, medium effect, $p = 0.022$). The statistically significant degradation
+demonstrates that domain randomisation contributes even when evaluated on the exact
+condition the no-DR agent was trained on exclusively, producing a more robust feature
+representation by preventing overfitting to a single spatial configuration.

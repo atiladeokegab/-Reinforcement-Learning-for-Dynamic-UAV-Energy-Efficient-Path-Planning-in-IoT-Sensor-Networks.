@@ -24,6 +24,7 @@ dependencies = [
     "stable-baselines3>=2.7.0",
     "tqdm>=4.67.1",
     "torch==2.5.1+cu121",
+    "absl-py==2.1.0",
 ]
 
 [tool.uv]

@@ -14,20 +14,29 @@ The source code developed for this project is maintained in a version-controlled
 \begin{verbatim}
 project/
 ├── src/
-│   ├── envs/
-│   │   └── lorawan_uav_env.py      # Custom Gymnasium environment
-│   ├── agents/
-│   │   └── dqn/
-│   │       ├── dqn.py              # DQN training script
-│   │       ├── evaluate.py         # Multi-seed evaluation script
-│   │       └── dqn_evaluation_results/
-│   │           ├── multi_seed_results/   # Figures for Results chapter
-│   │           ├── baseline_results/     # Baseline comparison data
-│   │           └── sweep_fairness_results/ # Grid-size sweep figures
-│   └── baselines/
-│       ├── greedy_nearest.py       # Nearest-Sensor Greedy baseline
-│       └── greedy_smart.py         # SF-Aware Max-Throughput Greedy baseline
-├── MSc_and_BEng_Dissertation_Template.../
+│   ├── environment/
+│   │   ├── uav_env.py              # Gymnasium environment (grid, actions, rendering)
+│   │   ├── iot_sensors.py          # LoRa sensor physics (path loss, ADR, buffers)
+│   │   └── uav.py                  # UAV position and battery model
+│   ├── rewards/
+│   │   └── reward_function.py      # Multi-objective reward (data, fairness, energy)
+│   └── agents/dqn/
+│       ├── dqn.py                  # Main training (domain randomisation + curriculum)
+│       ├── evaluate_dqn.py         # Multi-seed evaluation script
+│       ├── train_ablation_a4.py    # Ablation A4 control (fixed env, no DR)
+│       └── dqn_evaluation_results/
+│           ├── compare_agents.py       # DQN vs. greedy baselines
+│           ├── ablation_study.py       # Component ablation (4 ablations)
+│           ├── fairness_sweep.py       # Multi-condition fairness analysis
+│           ├── greedy_agents.py        # Nearest-Sensor + SF-Aware baselines
+│           ├── multi_seed_results/     # Figures for Results chapter
+│           ├── baseline_results/       # Baseline comparison figures
+│           ├── ablation_results/       # Ablation study figures
+│           └── sweep_fairness_results/ # Fairness and scalability figures
+├── models/
+│   ├── dqn_domain_rand/dqn_final.zip   # Trained DQN (domain-randomised)
+│   └── dqn_no_dr/                      # Ablation A4 model (fixed env)
+├── MSc_and_BEng_Dissertation_Template_.../
 │   └── main.tex                    # Dissertation LaTeX source
 └── README.md                       # Setup and reproduction instructions
 \end{verbatim}

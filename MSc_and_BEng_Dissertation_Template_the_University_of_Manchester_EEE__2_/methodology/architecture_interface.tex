@@ -22,9 +22,9 @@ Appendix~\ref{app:hyperparams}.
 
 \subsubsection{Hyperparameters}
 
-The DQN was trained with $1\times10^6$ timesteps, learning rate $\alpha = 10^{-4}$,
-discount $\gamma = 0.99$, replay buffer of 100{,}000 transitions, and batch size~32.
+The DQN was trained for $2\times10^6$ timesteps, learning rate $\alpha = 3\times10^{-4}$,
+discount $\gamma = 0.99$, replay buffer of 150{,}000 transitions, and batch size~128.
 A target network is updated every 1{,}000 steps. $\epsilon$-greedy exploration decays
-from 1.0 to 0.05 over the first 10\% of training steps. The policy network is a 3-layer
+from 1.0 to 0.05 over the first 25\% of training steps. The policy network is a 3-layer
 MLP with hidden dimensions [512, 512, 256] and ReLU activations. Full hyperparameter
 listings are provided in \autoref{app:hyperparams}.

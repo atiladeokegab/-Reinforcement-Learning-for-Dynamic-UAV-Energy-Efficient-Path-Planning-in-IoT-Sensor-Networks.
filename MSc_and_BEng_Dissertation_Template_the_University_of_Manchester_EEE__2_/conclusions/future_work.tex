@@ -1,17 +1,7 @@
 \subsection{Future Work}
 \label{sec:future_work}
 
-The principal directions for extending this work are summarised below.
+Three extensions are prioritised. (1)~\textbf{Clustered layout curriculum}: the cross-layout analysis identifies bimodal sensor distributions as the primary out-of-distribution failure mode ($-14.0\%$, $d=5.33$); adding clustered and ring placement distributions to the training curriculum would directly address this boundary condition without architectural changes. (2)~\textbf{Sim-to-Real validation}: the HIL profile characterises perturbations independently; the primary remaining uncertainty is their joint effect (GPS noise, wind drift, and duty-cycle variation simultaneously), which requires hardware-in-the-loop testing over a real LoRaWAN testbed to quantify~\cite{tobin2017domain,zhao2021sim2real}. (3)~\textbf{3D trajectory and continuous actions}: fixing altitude at 100\,m abstracts the altitude-dependent RSSI breakpoint; incorporating altitude control and adopting SAC or TD3 would enable fine-grained positioning at the radial distance that maximises the Capture Effect power differential, a trade-off the current 2D discrete action space cannot express.
 
-\paragraph{Sim-to-Real Validation.}
-The most important near-term extension is hardware-in-the-loop (HIL) deployment on a real UAV platform over a LoRaWAN testbed to quantify the residual sim-to-real gap and validate the domain randomisation regime under joint perturbations~\cite{tobin2017domain,zhao2021sim2real}.
 
-\paragraph{Multi-UAV Coordination.}
-The single-UAV constraint limits scalability at high density. Extending the quasi-distributed DQL approach of Lee et al.~\cite{lee2025quasi} with Capture Effect and ADR awareness would allow multiple UAVs to jointly manage SF orthogonality without centralised signalling.
-
-\paragraph{3D Trajectory and Continuous Actions.}
-Incorporating altitude as a control variable and adopting continuous-action algorithms (SAC or TD3) would enable fine-grained positioning that exploits the altitude-dependent RSSI breakpoint for Capture Effect maximisation.
-
-\paragraph{Attention Policies and Heterogeneous Networks.}
-Transformer-based or graph-attention policies would remove the $N_{\max}=50$ padding constraint, enabling scalability to 6G IoT densities~\cite{nguyen20226g} and heterogeneous per-sensor traffic profiles.
 

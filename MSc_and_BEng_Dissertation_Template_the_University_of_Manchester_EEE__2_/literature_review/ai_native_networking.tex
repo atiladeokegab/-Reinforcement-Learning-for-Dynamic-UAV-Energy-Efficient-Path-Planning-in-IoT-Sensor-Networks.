@@ -17,17 +17,32 @@ motivates the frame-stacking and urgency-proxy design choices in~\autoref{sec:me
 
 \subsubsection{DRL for UAV Path Planning}
 
+No prior work applies DRL specifically to UAV path planning in LoRaWAN networks with
+explicit ADR and Capture Effect modelling. The closest precedents operate in the cellular
+domain, where interference models are stationary and the MAC-layer dynamics (EMA-ADR,
+duty cycles) that dominate LoRaWAN throughput are absent.
+
 Challita et al.~\cite{challita2018interference} apply DRL to interference-aware path
 planning for cellular-connected UAVs, showing that a learned policy can trade off wireless
 latency against ground-user interference---achieving up to 33\% latency reduction over
 shortest-path navigation and generalising to unseen network states. This trade-off is
-directly analogous to the starvation--throughput balance addressed here.
+directly analogous to the starvation--throughput balance addressed here, but their
+stationary interference model does not capture the non-stationary EMA-ADR feedback
+loop that makes the LoRaWAN setting harder.
 
 Nemer et al.~\cite{nemer2022energyefficient} demonstrate that fairness-constrained DRL
 (SBG-AC algorithm, Jain's Fairness Index as objective) outperforms energy-only DRL,
 confirming that the reward function must explicitly penalise unequal service to prevent the
 agent converging on policies that neglect underserved nodes. This finding directly motivates
-the Age-of-Information penalty term in this work.
+the Age-of-Information penalty term in this work. However, Nemer et al.\ use fixed sensor
+positions and a simplified channel model, leaving open whether the fairness gains transfer
+to the stochastic, topology-varying LoRaWAN conditions that domain randomisation is
+designed to address.
+
+The absence of LoRaWAN-specific DRL prior work is not an oversight in this review: it
+reflects a genuine gap in the literature, confirmed by the simulation tool analysis
+(Section~\ref{sec:lit}), and constitutes the primary motivation for this
+dissertation.
 
 \subsubsection{Information Freshness and Domain Generalisation}
 

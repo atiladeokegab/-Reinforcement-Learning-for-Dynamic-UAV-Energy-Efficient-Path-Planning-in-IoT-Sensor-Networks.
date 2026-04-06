@@ -1,257 +1,332 @@
-# UAV-IoT Data Collection Optimization using Reinforcement Learning
+# UAV-IoT Data Collection via Protocol-Aware Deep Reinforcement Learning
 
-## Overview
+## Introduction
 
-This project focuses on **optimizing the flight trajectory of an Unmanned Aerial Vehicle (UAV)** for efficient **IoT data collection** using **Reinforcement Learning (RL)**.  
-The UAV must collect data from multiple spatially distributed LoRa IoT sensors while **minimizing energy consumption**, **maximizing multi-sensor collection efficiency**, and respecting **realistic LoRa communication constraints** including duty cycle regulations.
+This repository contains the simulation framework and trained models for a final-year engineering project (EEEN30330) at the University of Manchester. A Deep Q-Network (DQN) agent learns to navigate a UAV over a 2D grid to collect data from LoRa IoT sensors, optimising jointly for data throughput, energy efficiency, and fairness across sensors.
 
-The system models a UAV flying over an IoT network (e.g., smart agriculture, environmental monitoring, or disaster response) where it learns to balance **energy-efficient flight paths** with **opportunistic multi-sensor data collection** during brief sensor wake windows through autonomous decision-making.
-
-## System Model
-
-
-We consider a remote IoT monitoring environment comprising a set N = {1, . . . ,N} of
-static sensor devices uniformly distributed over a rectangular Region of Interest (RoI) W ⊂
-R2. These devices continuously generate monitoring data, which accumulates in finite transmission
-buffers. Unlike simple deadline-based models, we assume data carries value only
-if it is collected before the buffer capacity Bmax is exceeded, after which packet loss occurs.
-The system model is characterized by a rotary-wing UAV acting as a mobile LoRaWAN
-gateway, dispatched to harvest data from the ground sensors. The mission duration is fixed
-to a finite horizon T and divided into discrete time steps t = 0, 1, . . . , T, each of duration Δt.
-We assume the UAV flies at a fixed altitude h to maintain a consistent ground-to-air channel
-geometry, updating its horizontal position pt = (xt, yt) at each step. Critically, the system
-employs the LoRaWAN protocol with orthogonal Spreading Factors (SF), allowing multiple
-sensors to upload data simultaneously provided they are assigned distinct SFs by the
-Adaptive Data Rate (ADR) mechanism. The UAV must therefore optimize its trajectory not
-merely to minimize distance, but to actively manage these spectral assignments to prevent
-network congestion.
----
-## Demo Video of Environment
-[![two_ray_model_3d](asset/diagrams/env/two_ray_model_3d.png)
-
-## Problem formulation
-[![Problem_formulation](asset/diagrams/env/problem_formulation.png)
-
-## Key Features
-
-### Advanced LoRa Communication Modeling
-- **✔Spreading Factor (SF) Orthogonality**: Supports concurrent data collection from up to 6 sensors simultaneously (SF7-SF12)
-- **✔Realistic Path Loss**: Two-Ray Ground Reflection model with configurable path loss exponents
-- **✔Adaptive Data Rate (ADR)**: Dynamic spreading factor selection based on RSSI and distance
-- **✔Probabilistic Transmission**: Success probability calculated as P_success = P_link × P_cycle
-- **✔Capture Effect**: Collision resolution where closest sensor wins per spreading factor
-
-### Energy-Aware System Design
-- **✔UAV Battery Constraints**: Realistic battery drain for movement and hovering
-- **✔Sensor Duty Cycles**: EU-compliant 1% duty cycle support (configurable 1-100%)
-- **✔Energy-Efficient Rewards**: Multi-objective optimization balancing collection vs. energy usage
-
-### Multi-Sensor Collection Strategy
-- **✔Simultaneous Collection**: UAV can collect from multiple sensors in a single COLLECT action
-- **✔SF-Based Concurrency**: Different spreading factors enable parallel transmissions
-- **✔Asynchronous Sensors**: Randomized duty cycle positions prevent synchronization artifacts
-- **Strategic Positioning**: Agent learns to position for maximum multi-sensor collection opportunities
-
-###  Enhanced Visualization
-- **✔Real-Time Environment Rendering**: Live 2D grid visualization with sensor states
-- **✔Duty Cycle Indicators**: Green/red rings showing active/sleeping sensors
-- **✔Active Collection Display**: Purple dashed lines with SF labels for ongoing transmissions
-- **✔Communication Range Visualization**: Dotted lines showing sensors in range
-- **✔Performance Metrics Panel**: Real-time stats on battery, coverage, and data collected
+The key contribution is a Gymnasium-compatible simulation that models the complete causal chain from UAV position through received signal strength (RSSI), EMA-based Adaptive Data Rate (ADR) convergence latency, and the LoRa Capture Effect to packet delivery — all within a single environment step. This end-to-end fidelity enables the DQN agent to learn to exploit protocol-level dynamics (e.g., repositioning to accelerate ADR convergence to lower Spreading Factors) in ways that simple greedy heuristics cannot.
 
 ---
 
-## Objectives
+## Contextual Overview
 
-1. ✔ Develop a simulation environment modeling UAV movement and LoRa-based IoT communication  
-2. ✔ Implement realistic LoRa physics including SF orthogonality, duty cycles, and path loss  
-3. ✔ Enable multi-sensor concurrent collection with collision resolution  
-4. ✔ Formulate the UAV data collection problem as a **Markov Decision Process (MDP)**  
-5. ✔ Implement and compare **Q-Learning** (value-based) and **Proximal Policy Optimization (PPO)** (policy-based)  
-6. ✔ Design reward functions balancing **energy consumption**, **data collection**, and **multi-sensor efficiency**  
-7. Analyze trained UAV policies and demonstrate learned path planning behavior
+The figure below shows a representative UAV trajectory learned by the DQN agent alongside two greedy baselines operating in the same 500×500-unit environment with 20 LoRa sensors. The DQN agent (left) visits all sensors while the greedy agents (centre and right) exhibit inefficient routing and sensor neglect.
+
+![UAV Trajectory Comparison](src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory_comparison.png)
+
+The system architecture is as follows:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                      DQN Agent (SB3)                         │
+│               MLP Policy [512, 512, 256]                     │
+│   Domain Randomisation · Curriculum Learning · 4× DummyVecEnv│
+└──────────────────────────┬───────────────────────────────────┘
+                           │  action: {0=N, 1=S, 2=E, 3=W, 4=Hover}
+                           ▼
+┌──────────────────────────────────────────────────────────────┐
+│            Gymnasium Environment  (uav_env.py)               │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌────────────┐  │
+│  │  UAV (uav.py)   │  │ IoTSensor        │  │  Reward    │  │
+│  │  274 Wh battery │  │ (iot_sensors.py) │  │  Function  │  │
+│  │  100 m altitude │  │ SF7–SF12, EMA-ADR│  │            │  │
+│  │  10 m/s speed   │  │ Capture Effect   │  │            │  │
+│  └─────────────────┘  └──────────────────┘  └────────────┘  │
+│   Two-Ray Ground Reflection · N(0,4dB) Shadowing · 2100 steps│
+└──────────────────────────┬───────────────────────────────────┘
+                           │  observation, reward, done
+                           ▼
+         Multi-seed evaluation vs. NearestSensor & MaxThroughput baselines
+```
+
+The position heatmap below shows where the DQN agent spends its time across 20 seeds — it concentrates hovering time over sensor clusters rather than traversing empty space.
+
+![UAV Position Heatmap](src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_position_heatmap.png)
+
+### Repository Structure
+
+```
+project/
+├── src/
+│   ├── environment/
+│   │   ├── uav_env.py              # Gymnasium environment (grid, actions, rendering)
+│   │   ├── iot_sensors.py          # LoRa sensor physics (path loss, ADR, buffers)
+│   │   └── uav.py                  # UAV position and battery model
+│   ├── rewards/
+│   │   └── reward_function.py      # Multi-objective reward (data, fairness, energy)
+│   ├── diagrams/
+│   │   ├── environment/            # three_dimensional.py — Two-Ray model visualisation
+│   │   ├── q_learning/             # DQN system context, component, container, code diagrams
+│   │   ├── ppo_learning/           # DQN training pipeline and evaluation diagrams
+│   │   └── greedy/                 # MaxThroughputGreedy flowchart
+│   └── agents/dqn/
+│       ├── dqn.py                  # Main training (domain randomisation + curriculum)
+│       ├── evaluate_dqn.py         # Single-seed evaluation
+│       ├── train_ablation_a4.py    # Ablation A4: fixed env, no domain randomisation
+│       └── dqn_evaluation_results/
+│           ├── ablation_study.py           # Component ablation (A1–A4)
+│           ├── compare_agents.py           # DQN vs greedy baselines
+│           ├── fairness_sweep.py           # Multi-condition fairness analysis
+│           ├── greedy_agents.py            # NearestSensor + MaxThroughput baselines
+│           ├── training_results/           # Training convergence figures
+│           ├── trajectory_results/         # Single-episode trajectory figures
+│           ├── baseline_results/           # DQN vs baseline comparison figures
+│           ├── ablation_results/           # Ablation study figures
+│           ├── sweep_fairness_results/     # Jain's fairness sweep figures
+│           ├── multi_seed_results/         # Multi-seed evaluation figures
+│           ├── hover_analysis/             # Hover behaviour analysis figures
+│           └── cross_layout_results/       # Cross-layout generalisation figures
+├── models/
+│   ├── dqn_domain_rand/
+│   │   └── dqn_final.zip           # Trained DQN model (domain-randomised + curriculum)
+│   └── dqn_no_dr/                  # Ablation A4 control model (fixed env)
+├── MSc_and_BEng_Dissertation_Template_.../
+│   └── main.tex                    # Dissertation LaTeX source
+└── README.md
+```
 
 ---
 
-## Problem Statement
+## Installation Instructions
 
-This dissertation addresses the problem of energy-efficient, dynamic path planning for Unmanned Aerial Vehicles UAVs 
-tasked with data collection in dense, unsynchronized LoRaWAN IoT networks. We identify that standard path planning heuristics are suboptimal,
-as they fail to account for the LoRa protocol's physics, leading to a Spreading Factor SF monoculture" bottleneck that wastes concurrent channel capacity.
+### Required Software
 
-### Key Challenges
-- **Duty Cycle Constraints**: IoT sensors are only active 1-10% of the time; UAV must learn sensor wake patterns
-- **Multi-Sensor Coordination**: Optimize positioning to collect from multiple sensors simultaneously
-- **SF Collision Management**: Handle concurrent transmissions on the same spreading factor
-- **Energy-Data Tradeoff**: Balance hovering time for collection vs. movement for coverage
-- **Asynchronous Sensors**: Each sensor operates on independent duty cycle timing
+| Requirement | Version |
+|---|---|
+| Python | 3.11 or higher |
+| `uv` package manager | latest (recommended) |
+| CUDA-capable GPU | Optional — CPU training is supported but significantly slower |
 
-### Constraints
-- UAV must collect data from all sensors while respecting battery limits
-- Data transfer occurs only when:
-  - UAV is within effective LoRa range (RSSI > threshold)
-  - Sensor is active in its duty cycle window
-  - Probabilistic transmission success (based on link quality)
-- Up to 6 concurrent collections per action (one per SF7-SF12)
-- Collision resolution via capture effect (closest sensor wins)
+Install `uv` if not already installed:
+
+```bash
+pip install uv
+```
+
+### Dependencies
+
+All dependencies are declared in `pyproject.toml`. Key packages:
+
+| Package | Version |
+|---|---|
+| PyTorch | 2.5.1+cu121 |
+| Stable-Baselines3 | latest |
+| Gymnasium | latest |
+| NumPy | latest |
+| Matplotlib | latest |
+| Seaborn | latest |
+| Pandas | latest |
+
+### Environment Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/atiladeokegab/-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks.git
+cd <repo-directory>
+
+# 2. Install all dependencies with uv (creates a virtual environment automatically)
+uv sync
+
+# --- Alternative: install with pip ---
+pip install torch==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+pip install stable-baselines3 gymnasium matplotlib seaborn pandas numpy
+```
+
+To verify the installation:
+
+```bash
+uv run python -c "import stable_baselines3, gymnasium, torch; print('OK')"
+```
 
 ---
 
-## System Design
+## How to Run the Software
 
-### Environment
-- 2D discrete grid representing UAV operating area.
-- Each IoT node occupies a fixed grid position.
-- UAV state includes:
-  - Current position  
-  - AoI of each node  
-  - Remaining energy  
+### Train the DQN Agent
 
-### Action Space
-- `{North, South, East, West, Hover}`
+```bash
+uv run python src/agents/dqn/dqn.py
+```
+
+This trains the agent for 2 million timesteps across 4 parallel environments using domain randomisation and a three-stage curriculum (easy → medium → full distribution). The trained model is saved to:
+
+```
+models/dqn_domain_rand/dqn_final.zip
+```
+
+Expected training time: approximately 4 hours on an RTX 3050 Ti (GPU). CPU training is possible but will take significantly longer.
+
+### Evaluate Against Greedy Baselines
+
+```bash
+uv run python src/agents/dqn/dqn_evaluation_results/compare_agents.py
+```
+
+Runs the DQN agent, `NearestSensorGreedy`, and `MaxThroughputGreedy` on the same seeded episodes and produces comparison figures in `dqn_evaluation_results/baseline_results/`.
+
+### Run the Ablation Study
+
+```bash
+uv run python src/agents/dqn/dqn_evaluation_results/ablation_study.py
+```
+
+Evaluates all four ablation variants (A1–A4) against the full DQN. Figures saved to `dqn_evaluation_results/ablation_results/`.
+
+### Run the Fairness Sweep
+
+```bash
+uv run python src/agents/dqn/dqn_evaluation_results/fairness_sweep.py
+```
+
+Sweeps all 16 training conditions (4 grid sizes × 4 sensor counts) and plots Jain's fairness index. Figures saved to `dqn_evaluation_results/sweep_fairness_results/`.
+
+### Train the Ablation A4 Control Model
+
+```bash
+uv run python src/agents/dqn/train_ablation_a4.py
+```
+
+Trains a fixed-environment DQN (500×500, N=20, no domain randomisation). Saved to `models/dqn_no_dr/`.
+
+### Reproduce All Results Figures
+
+To reproduce every figure from the dissertation Results chapter in sequence:
+
+```bash
+uv run python src/agents/dqn/dqn_evaluation_results/compare_agents.py
+uv run python src/agents/dqn/dqn_evaluation_results/fairness_sweep.py
+uv run python src/agents/dqn/dqn_evaluation_results/ablation_study.py
+```
+
+Fixed random seeds are used throughout: `{42, 123, 256, 789, 1337}` (20 seeds per condition, 30 for N=40).
+
+---
+
+## Technical Details
+
+### Algorithm
+
+The agent is a Deep Q-Network (DQN) implemented via Stable-Baselines3. Key hyperparameters:
+
+| Hyperparameter | Value |
+|---|---|
+| Policy network | MLP [512, 512, 256] |
+| Optimiser | Adam |
+| Loss function | Huber (SmoothL1) |
+| Discount factor γ | 0.99 |
+| Replay buffer size | 100,000 transitions |
+| Batch size | 256 |
+| Target network update | Soft update (τ = 0.005) |
+| Exploration | ε-greedy (ε: 1.0 → 0.05) |
+| Parallel environments | 4 (DummyVecEnv) |
+| Total timesteps | 2,000,000 |
+
+**Domain randomisation** samples a new `(grid_size, num_sensors)` pair each episode from a 16-condition joint distribution (4 grids × 4 sensor counts). A three-stage **curriculum** unlocks harder conditions progressively:
+
+- Stage 0 (0–150k steps): grids 100–300, N = 10–20
+- Stage 1 (150k–400k steps): + grid 500, N = 30
+- Stage 2 (400k+ steps): full distribution including 1000×1000, N = 40
+
+The training convergence curve below shows episode reward stabilising after approximately 1.2M timesteps:
+
+![Training Convergence](src/agents/dqn/dqn_evaluation_results/training_results/fig_training_convergence.png)
+
+### Environment Model
+
+| Parameter | Value |
+|---|---|
+| Grid size | 100×100 to 1000×1000 cells (10 m/cell) |
+| UAV altitude | 100 m (constant) |
+| UAV speed | 10 m/s |
+| UAV battery | 274 Wh (DJI TB60-inspired) |
+| Power — moving | 500 W |
+| Power — hovering | 700 W |
+| Action space | N, S, E, W, Hover/Collect (5 discrete) |
+| Episode length | 2100 timesteps (~7 min flight) |
+| Sensors per episode | 10–40 |
+| Spreading Factors | SF7–SF12 (EMA-ADR, λ = 0.1) |
+| Buffer size per sensor | 1000 bytes |
+| Duty cycle | 1% (EU LoRaWAN regulation) |
+| Path loss model | Two-Ray Ground Reflection |
+| Shadowing | Gaussian N(0, 4 dB) added to RSSI |
+| Capture Effect threshold | 6 dB; closest same-SF transmitter wins |
 
 ### Reward Function
-A weighted combination of:
-- Energy usage penalty  
-- Data collection gain  
-- Visiting new nodes reward  
-- Hovering penalty  
-- AoI penalty  
 
-### Algorithms
-- **Phase 1:** 4 types of Greedy (Baseline)  
-- **Phase 2:** DQN (Deep RL)  
+| Event | Reward |
+|---|---|
+| Per byte collected | +100 |
+| New sensor visited (first time) | +5000 |
+| Multi-sensor collection bonus | +200 |
+| Urgency (AoI) reduction | +1000 |
+| Revisit penalty | −2 |
+| Boundary collision | −50 |
+| Sensor starvation (neglect) | −500 |
+| Unvisited sensor at episode end | −2000 |
 
----
+### Key Results
 
-## Reinforcement Learning Workflow
+The figure below summarises the DQN's performance advantage over both greedy baselines across the key metrics at N = 40 sensors:
 
-1. ✔ Initialize UAV and IoT environment  
-2. ✔Choose and execute an action  
-3. ✔Receive reward based on energy, AoI, and data freshness  
-4. ✔Update policy or Q-table  
-5. Repeat until convergence  
-6. Evaluate trained policy performance  
+![Final Comparison](src/agents/dqn/dqn_evaluation_results/baseline_results/final_comparison_graph.png)
 
----
+| Metric | DQN | MaxThroughputGreedy | Advantage |
+|---|---|---|---|
+| Cumulative reward | — | — | +8.6% (p = 0.043, Cohen's d = 0.54) |
+| Energy efficiency | 259.5 B/Wh | 238.7 B/Wh | +8.7% |
+| Jain's Fairness Index | 0.739 | 0.709 | +4.2% |
+| Sensor coverage | 100% | 100% | = |
 
-## Technical Stack
+### Ablation Study
 
-| Component | Technology                                                                              |
-|------------|-----------------------------------------------------------------------------------------|
-| **Language** | Python 3.11 ($\text{better support for torch}$)                                         |
-| **RL Libraries** | Stable-Baselines3 (PPO, DQN, A2C), Gymnasium                                            |
-| **Simulation** | Custom UAV Environment (OpenAI Gym Compatible)                                          |
-| **Visualization** | Matplotlib, Seaborn                                                                     |
-| **Backend/Compute** | WSL2 (Ubuntu) with NVIDI A RTX 3050 Ti switched back to Windows got stuck in linux hell |
-| **Report Writing** | LaTeX / Overleaf                                                                        |
+Four components were ablated to isolate their contributions:
 
----
-
-## Key Performance Metrics
-
-| Metric | Description |
-|--------|-------------|
-| **Average AoI** | Mean Age of Information across all nodes |
-| **Energy Consumption** | Total simulated UAV energy use |
-| **Trajectory Efficiency** | Distance per AoI improvement |
-| **Reward Convergence** | Stability and magnitude of cumulative rewards |
-| **Learning Comparison** | PPO vs Q-Learning performance |
-
----
-
-## Project Milestones
-
-| Phase                       | Timeline | Goal |
-|-----------------------------|-----------|------|
-| Environment Setup           | Oct 2025 | Create 2D UAV-IoT simulation |
-| Q-Learning Implementation   | Nov 2025 | Baseline model training |
-| DQN Implementation          | Dec 2025 – Jan 2026 |  deep RL model |
-| Evaluation & Visualization  | Feb – Mar 2026 | Compare algorithms and tune rewards |
-| Final Report & Presentation | Apr – May 2026 | Submit final report and demo |
-
----
-### Path Loss Formula
-
-The path loss is given by:
-
-$$
-PL(d) = 20 \, n \, \log_{10}\left(\frac{d}{d_0}\right)
-$$
-
-#### Relationship Between RSS and Path Loss
-
-The received signal strength (RSS) is related to the transmitted power and path loss as:
-
-$$
-RSS(d) = P_t - PL(d)
-$$
-
-Where:
-- $RSS(d)$: Received signal strength at distance $d$ (in dBm)
-- $P_t$: Transmit power (in dBm)
-- $PL(d)$: Path loss at distance $d$ (in dB)
-
-#### Addition of Gaussian random variable
-Since we cannot model all the trees and objects which will be interfering with signal we introduce a disturbance of 4 db
-but a zero mean gaussian random variable
-
-where y = random disturbance between the -4bd to +4db
-$$
-RSSI = RSS(d) + y
-$$
----
-
-#### Example Spreading Factor Calibration For A 50m By 50m Environment
-```
-    RSSI_SF_MAPPING = [
-        (-39, 7),            # SF7: RSSI > -39 dBm (very close, 0-1m)
-        (-44, 9),            # SF9: RSSI > -44 dBm (close, 1-2m)
-        (-50, 11),           # SF11: RSSI > -51 dBm (medium, 2-10m)
-        (-100, 12)  # SF12: RSSI < -51 dBm (far, 10-70m)
-    ]
-
-```
----
-
-### LoRa Data Rates
-for the modeling of Lora we apperciate that the ADR does not change immediately, so we take the average RSSI over N steps
-
-| Spreading Factor | Data Rate (bytes/sec) | Characteristics |
+| Ablation | Component removed | Description |
 |---|---|---|
-| 7 | ~684 | Highest speed, shortest range |
-| 8 | ~390 | — |
-| 9 | ~220 | — |
-| 10 | ~122 | — |
-| 11 | ~55 | — |
-| 12 | ~31 | Maximum range, lowest speed |
+| A1 | Capture Effect | All same-SF simultaneous transmissions → packet loss |
+| A2 | EMA-ADR smoothing | λ set to 1.0 (instant ADR, no convergence latency) |
+| A3 | AoI observation | Urgency features zeroed — agent cannot see time-since-visit |
+| A4 | Domain randomisation | Fixed 500×500, N = 20; separate control model trained |
+
+![Ablation Results](src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bars.png)
+
+### Fairness Across Conditions
+
+Jain's fairness index is measured across all 16 training conditions. The summary matrix below shows the DQN maintains a consistent fairness advantage over greedy baselines as grid size and sensor count scale:
+
+![Jain's Fairness Summary Matrix](src/agents/dqn/dqn_evaluation_results/sweep_fairness_results/figA_jains_summary_matrix.png)
+
+### Third-Party Code and Academic Integrity
+
+All third-party libraries are used in accordance with their licences:
+
+| Library | Licence | Use |
+|---|---|---|
+| Stable-Baselines3 | MIT | DQN agent implementation |
+| Gymnasium | MIT | Environment interface |
+| PyTorch | BSD-3 | Neural network backend |
+| Matplotlib / Seaborn | PSF / BSD | Figures |
+| NumPy / Pandas | BSD | Numerical computation / data |
+
+The custom Gymnasium environment (`uav_env.py`, `iot_sensors.py`, `uav.py`), reward function (`reward_function.py`), and all evaluation scripts are original work by Atilade Gabriel Oke.
 
 ---
 
+## Known Issues and Future Improvements
 
-## Results for the cummulative results
-![Results](src/agents/dqn/dqn_evaluation_results/baseline_results/final_comparison_graph.png)
+**Known limitations:**
 
-## Results for the cummulative results
-![Results](src/agents/dqn/dqn_evaluation_results/baseline_results/agent_trajectories.png)
+- The simulation assumes a flat, obstacle-free environment. Real deployments involve 3D terrain, buildings, and dynamic interference that are not modelled.
+- The Two-Ray ground reflection model is a simplified path-loss approximation. Real LoRa links in urban environments would require more detailed channel models (e.g., ray-tracing).
+- The UAV battery model uses constant power consumption values; real flight power varies with payload, wind, and manoeuvring.
+- Evaluation uses a DummyVecEnv (serial); large-scale sweeps (e.g., N=40, 30 seeds) are compute-intensive on CPU.
+- The observation space is zero-padded to a fixed maximum of 50 sensors; the agent's performance on sensor counts above 40 has not been evaluated.
 
-## Demo Video of Environment
-[![Demo Video](https://img.youtube.com/vi/Cb4rHDsgCUA/0.jpg)](https://youtu.be/QgQFRd8uP28)
-## Environment diagram
-![2D Environment](asset/diagrams/env/uniform_distribution.png)
-## C4 Architecture Diagrams
+**Potential future improvements:**
 
-### 1. System Context Diagram
-![System Context](asset/diagrams/q_learning/q_learning_system_context.png)
-
-### 2. Container Diagram
-![Container Diagram](asset/diagrams/q_learning/q_learning_container_diagram.png)
-
-### 3. Component Diagram
-![Component Diagram](asset/diagrams/q_learning/q_learning_component_diagram.png))
-
-### 4. Code Diagram
-![Code Diagram](asset/diagrams/q_learning/q_learning_code_diagram.png)
-
-
-
+- Replace the simplified path-loss model with a ray-tracing or measured channel model for higher sim-to-real fidelity.
+- Extend to multi-UAV cooperative collection using multi-agent RL.
+- Add dynamic sensor arrival/departure to model real IoT deployments.
+- Implement 3D flight (variable altitude) to exploit altitude-dependent ADR changes.
+- Integrate real GPS and LoRa hardware (Raspberry Pi + LoRa HAT) for hardware-in-the-loop validation.
+- Investigate continuous action spaces and actor-critic algorithms (SAC, TD3) for smoother trajectory optimisation.

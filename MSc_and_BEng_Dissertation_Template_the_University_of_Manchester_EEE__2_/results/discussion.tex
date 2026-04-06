@@ -7,16 +7,13 @@ range of network densities, with the advantage growing as the problem becomes ha
 
 \subsubsection{Mechanism of the DQN Advantage}
 
-The DQN's key advantage is its ability to learn implicit positioning rules that maximise
-concurrent transmission across orthogonal spreading factors. Per-step action analysis confirms
-that greedy agents issue a collection action at every timestep (100\% hover fraction), whereas
-the DQN devotes 2.9\% of steps to deliberate movement ($p = 0.002$, Welch's $t$-test, $n=10$
-seeds, Cohen's $d = 2.1$, large effect), reaching positions yielding $48.7$\,B per collection
-step versus $42.7$\,B for SF-Aware Greedy (+14\%). Capture Effect trigger counts are
-statistically indistinguishable ($p = 1.0$, $d \approx 0$), confirming the gain is driven by
-improved spatial positioning, not by resolving intra-SF collisions.
+The DQN's key advantage is learning positioning rules that maximise concurrent orthogonal-SF
+transmission. Greedy agents hover at every step (100\% hover fraction), whereas the DQN devotes
+2.9\% of steps to deliberate movement ($p = 0.002$, $d = 2.1$, large), yielding $48.7$\,B per
+collection step vs.\ $42.7$\,B for SF-Aware Greedy (+14\%). Capture Effect trigger counts are
+indistinguishable ($p = 1.0$), confirming the gain is from positioning, not collision resolution.
 
-The SF dynamics analysis (Figure~\ref{fig:sf_dynamics}) provides the causal explanation:
+The SF dynamics analysis (Figure~\ref{fig:sf_dynamics} in Appendix~\ref{app:additional_figures}) provides the causal explanation:
 by maintaining proximity for multiple steps, the DQN allows the EMA-ADR filter to converge
 to lower SF assignments before repositioning. This converts ADR latency---normally a fidelity
 cost---into a feature: induced SF downgrades enable high-throughput orthogonal-SF concurrent
@@ -24,15 +21,9 @@ collection that greedy policies cannot plan for.
 
 \subsubsection{Density Dependence and Effect Sizes}
 
-All four density conditions reach statistical significance.
-At $N=10$, $d = 2.52$ (large effect, $p < 0.001$): both agents have very tight reward
-distributions at low density, so the mean gap ($+2.3\%$) is highly reliably reproduced.
-At $N=20$, $d = 0.66$ (medium effect, $p = 0.049$) and at $N=30$, $d = 0.78$
-(medium effect, $p = 0.021$). At $N=40$, extending to thirty seeds yields $+8.6\%$
-($d = 0.54$, medium effect, $p = 0.043$), confirming significance at the highest density.
-The non-monotonic pattern ($d=0.54$ at $N=40$ vs.\ $d=0.78$ at $N=30$) reflects
-layout-dependent variance dominating the mean gap at extreme density (std = 1.120M at
-$N=40$ vs.\ 0.040M at $N=10$). Table~\ref{tab:effect_sizes} summarises all effect sizes.
+All four density conditions reach statistical significance ($p < 0.05$, Table~\ref{tab:effect_sizes}). Two competing forces shape the pattern: as density grows, the SF-diversity mechanism becomes more impactful (mean advantage rises from $+2.3\%$ at $N=10$ to $+9.0\%$ at $N=30$), but spatial layout variance also scales with density (std = 1.120M at $N=40$ vs.\ 0.040M at $N=10$), diluting the effect size. This explains the non-monotonic $d$ pattern ($d=2.52 \to 0.78 \to 0.54$): high-density performance is more sensitive to spatial arrangement.
+
+The same trend holds across all three metrics: the efficiency advantage grows from $+2.3$\,B/Wh at $N=10$ to $+20.7$\,B/Wh at $N=40$, confirming the reward advantage is not a reward-function artefact but reflects real data collection gain. The Jain's Index advantage at $N=40$ ($+4.2\%$, $d=0.40$) confirms that the throughput gain does not come at the cost of fairness — the AoI penalty continues to distribute attention across sensors even in the high-variance density regime. Table~\ref{tab:effect_sizes} summarises all effect sizes.
 
 \begin{table}[H]
 \centering
@@ -54,4 +45,20 @@ $N$ & Reward $d$ & Jain's $d$ & Efficiency $d$ & Interpretation \\
 
 \subsubsection{Limitations}
 
-Two limitations apply. First, fairness (Jain's Index) at $N=40$ does not reach significance ($p=0.129$), degrading for all agents due to the fixed battery constraint, not the algorithm~\cite{jin2023equalizing}. Second, all evaluation is simulation-based; real-world effects (wind, GPS error, hardware latency) are discussed in Chapter~\ref{sec:conclusions}.
+Three limitations bound the scope of the conclusions. First, the throughput advantage ($+2.3\%$--$+9.0\%$) is
+statistically significant but operationally modest. The A2 ablation (instant ADR, $\lambda=1.0$, $+7.8\%$
+reward) establishes an approximate upper bound on any positioning strategy's achievable gain; the DQN
+recovers roughly half of this via deliberate repositioning, indicating the SF Monoculture is partially
+self-limiting due to the 6\,dB Capture Effect threshold.
+
+Second, the channel model assumes a flat ground plane and a single-channel gateway; real deployments
+involve terrain-induced shadowing beyond the tested $\Delta n=+1.0$ perturbation space, and multi-channel
+gateways would reduce the relative cost of intra-SF collisions by allowing concurrent reception across
+multiple frequency channels---diminishing the SF Monoculture pressure that the DQN's repositioning
+strategy is designed to exploit. All evaluation is simulation-based; the
+joint effect of simultaneous real-world perturbations remains unquantified.
+
+Third, Jain's fairness at $N=40$ does not reach significance ($p=0.129$) because the fixed battery
+makes equitable coverage geometrically infeasible at high density~\cite{jin2023equalizing}. The
+five-action 2D action space further constrains positioning; altitude control and continuous actions
+remain as extensions (Section~\ref{sec:future_work}).

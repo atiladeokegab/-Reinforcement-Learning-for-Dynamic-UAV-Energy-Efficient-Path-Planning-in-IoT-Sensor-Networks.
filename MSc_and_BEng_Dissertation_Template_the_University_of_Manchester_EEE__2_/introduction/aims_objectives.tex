@@ -15,7 +15,10 @@ The main objectives of the project are summarised below:
 \begin{itemize}
     \item To develop a high-fidelity simulation environment compatible with the Gymnasium
     interface, incorporating rigorous telecommunications physics including the Two-Ray Ground
-    Reflection path loss model, log-normal shadowing, and asynchronous duty cycles.
+    Reflection path loss model, log-normal shadowing, and asynchronous duty cycles. To the
+    author's knowledge, this is the first open framework to model the complete causal chain
+    from UAV position through RSSI, EMA-ADR, and Capture Effect to packet delivery within a
+    single simulation step.
 
     \item To model the specific constraints of the LoRaWAN protocol, particularly the
     Adaptive Data Rate (ADR) latency, to replicate the causal link between UAV positioning,
@@ -30,14 +33,15 @@ The main objectives of the project are summarised below:
     intervention.
 
     \item To evaluate the performance of the protocol-aware DRL agent by comparing it against
-    standard greedy path-planning heuristics (e.g., ``lawnmower'' patterns) in terms of
-    energy efficiency, network capacity, and successful packet delivery.
+    two greedy path-planning baselines --- Nearest-Sensor Greedy and SF-Aware Max-Throughput
+    Greedy --- in terms of energy efficiency, fairness (Jain's Index), and total bytes
+    delivered, using rigorous multi-seed statistical testing (Welch's $t$-test, Cohen's $d$).
 
     \item To assess the trade-offs between computational complexity, policy robustness, and
     real-world feasibility, identifying the ``Sim-to-Real'' gap as a key area for future
     research.
 \end{itemize}
 
-In this project, the collective goal is to demonstrate that a protocol-aware agent is capable
-of generating optimal, energy-efficient trajectories that satisfy network fairness and
-throughput requirements.
+Collectively, these objectives demonstrate that a protocol-aware agent can generate
+energy-efficient trajectories satisfying both network fairness and throughput requirements
+without relying on pre-specified routing heuristics.

@@ -1,11 +1,7 @@
 from pathlib import Path
 import logging
 from diagrams import Diagram, Cluster, Edge
-from diagrams.programming.framework import React
 from diagrams.programming.language import Python
-from diagrams.onprem.compute import Server
-from diagrams.onprem.database import PostgreSQL
-from diagrams.custom import Custom
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +10,13 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning Component diagram...")
+    logger.info("Creating UAV DQN Component diagram...")
 
     # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / "q_learning_component_diagram"
+    output_file = output_dir / "dqn_component_diagram"
 
     logger.debug(f"Output file: {output_file}.png")
 
@@ -28,92 +24,76 @@ def create_diagram():
 
     try:
         with Diagram(
-            "Component Diagram - Q-Learning Simulation Components",
+            "Component Diagram - DQN UAV Simulation (Stable-Baselines3)",
             direction="TB",
             graph_attr=graph_attr,
             show=False,
             filename=str(output_file),
             outformat="png",
         ):
-            with Cluster("Q-Learning Agent Component"):
-                q_table = Python("Q-Table\n(NumPy Array)")
-                policy = Python("Policy Manager\n(Epsilon-Greedy)")
-                action_selector = Python("Action Selector")
-                value_updater = Python("Q-Value Updater\n(Bellman Equation)")
+            with Cluster("DQN Agent Component (Stable-Baselines3)"):
+                mlp_policy = Python("MlpPolicy\n[512, 512, 256]\n(PyTorch)")
+                exploration = Python("Exploration\n(Epsilon-Greedy)")
+                action_selector = Python("Action Selector\n(5 discrete actions:\nN/S/E/W/Hover)")
+                dqn_updater = Python("DQN Update\n(Huber Loss + Adam)\nTarget Network")
+                replay_buffer = Python("Replay Buffer\n(Experience Replay)")
 
-                policy >> Edge(label="selects action") >> action_selector
-                action_selector >> Edge(label="updates") >> value_updater
-                value_updater >> Edge(label="modifies") >> q_table
+                exploration >> Edge(label="selects action") >> action_selector
+                action_selector >> Edge(label="stores transition") >> replay_buffer
+                replay_buffer >> Edge(label="mini-batch") >> dqn_updater
+                dqn_updater >> Edge(label="updates weights") >> mlp_policy
 
-            with Cluster("Environment Component"):
-                state_manager = Python("State Manager")
-                grid_world = Python("Grid World\n(2D/3D Space)")
-                transition_model = Python("Transition Model")
+            with Cluster("Environment Component (Gymnasium)"):
+                state_manager = Python("State Manager\n(UAVEnvironment)")
+                grid_world = Python("Grid World\n(100–1000 unit grid\n~10m per unit)")
+                domain_rand = Python("Domain Randomiser\n(4 grids × 4 sensor counts\n= 16 conditions)")
+                curriculum = Python("Curriculum Scheduler\n(Stage 0→1→2\nover 2M timesteps)")
 
+                domain_rand >> Edge(label="samples") >> grid_world
+                curriculum >> Edge(label="unlocks stages") >> domain_rand
                 state_manager >> Edge(label="manages") >> grid_world
-                grid_world >> Edge(label="provides dynamics") >> transition_model
 
             with Cluster("Simulated UAV Component"):
-                uav_physics = Python("UAV Physics Engine")
-                position_tracker = Python("Position Tracker")
-                battery_model = Python("Battery Model")
-                movement_controller = Python("Movement Controller")
+                uav_model = Python("UAV (uav.py)\nTB60: 274 Wh, 100m alt\nspeed=10 m/s")
+                position_tracker = Python("Position Tracker\n(x, y) in grid")
+                battery_model = Python("Battery Model\nmove=500W, hover=700W")
 
-                movement_controller >> Edge(label="updates") >> position_tracker
-                movement_controller >> Edge(label="consumes") >> battery_model
-                uav_physics >> Edge(label="validates") >> movement_controller
+                uav_model >> Edge(label="updates") >> position_tracker
+                uav_model >> Edge(label="consumes") >> battery_model
 
             with Cluster("Simulated IoT Network Component"):
-                sensor_generator = Python("Sensor Generator")
-                coverage_tracker = Python("Coverage Tracker")
-                data_simulator = Python("Data Simulator")
-                lora_range_model = Python("LoRa Range Model")
+                sensor_model = Python("IoTSensor (iot_sensors.py)\nSF7–SF12, 1000-byte buffer\n1% duty cycle (EU)")
+                adr_model = Python("EMA-ADR (λ=0.1)\nRSSI → SF update")
+                path_loss = Python("Two-Ray Path Loss\n+ Gaussian Shadowing\nN(0, 4 dB)")
 
-                sensor_generator >> Edge(label="creates") >> data_simulator
-                position_tracker >> Edge(label="distance calc") >> lora_range_model
-                (
-                    lora_range_model
-                    >> Edge(label="determines coverage")
-                    >> coverage_tracker
-                )
+                sensor_model >> Edge(label="uses") >> adr_model
+                adr_model >> Edge(label="computes") >> path_loss
 
             with Cluster("Reward Component"):
-                reward_function = Python("Reward Function")
-                coverage_evaluator = Python("Coverage Evaluator")
-                efficiency_calculator = Python("Efficiency Calculator")
+                reward_function = Python("RewardFunction\n(reward_function.py)")
+                data_reward = Python("Data Reward\n+100/byte collected\n+5000 new sensor")
+                fairness_reward = Python("Fairness / Urgency\n+1000 urgency reduced\n-500 starvation")
+                penalty = Python("Penalties\n-2 revisit, -50 boundary\n-2000 unvisited end")
 
-                coverage_tracker >> Edge(label="provides metrics") >> coverage_evaluator
-                battery_model >> Edge(label="efficiency data") >> efficiency_calculator
-                coverage_evaluator >> Edge(label="contributes") >> reward_function
-                efficiency_calculator >> Edge(label="contributes") >> reward_function
+                reward_function >> Edge(label="computes") >> data_reward
+                reward_function >> Edge(label="computes") >> fairness_reward
+                reward_function >> Edge(label="applies") >> penalty
 
-            with Cluster("Training Controller Component"):
-                episode_manager = Python("Episode Manager")
-                convergence_checker = Python("Convergence Checker")
-                hyperparameter_manager = Python("Hyperparameter Manager")
+            with Cluster("Parallel Training Component"):
+                vec_env = Python("DummyVecEnv\n(4 parallel envs)")
+                checkpoint = Python("CheckpointCallback\nSaves .zip files")
+                eval_cb = Python("EvalCallback\n(500×500, N=20)")
 
-                hyperparameter_manager >> Edge(label="configures") >> policy
-                episode_manager >> Edge(label="monitors") >> convergence_checker
+                vec_env >> Edge(label="feeds") >> replay_buffer
+                dqn_updater >> Edge(label="triggers") >> checkpoint
 
-            with Cluster("Data Management Component"):
-                logger_comp = Python("Metrics Logger")
-                results_exporter = Python("Results Exporter")
-                checkpoint_manager = Python("Checkpoint Manager")
-
-                q_table >> Edge(label="saves") >> checkpoint_manager
-                logger_comp >> Edge(label="exports") >> results_exporter
-
-            # Component interactions
-            action_selector >> Edge(label="action", style="bold") >> movement_controller
-            transition_model >> Edge(label="next state", style="bold") >> state_manager
-            state_manager >> Edge(label="observes", style="bold") >> q_table
-            (
-                reward_function
-                >> Edge(label="reward signal", style="bold")
-                >> value_updater
-            )
-            episode_manager >> Edge(label="resets", style="bold") >> state_manager
-            coverage_tracker >> Edge(label="metrics", style="bold") >> logger_comp
+            # Cross-component interactions
+            action_selector >> Edge(label="action (0–4)", style="bold") >> uav_model
+            state_manager >> Edge(label="obs vector", style="bold") >> mlp_policy
+            reward_function >> Edge(label="reward signal", style="bold") >> dqn_updater
+            battery_model >> Edge(label="battery %") >> state_manager
+            path_loss >> Edge(label="RSSI → SF") >> sensor_model
+            sensor_model >> Edge(label="AoI / urgency obs") >> state_manager
 
             logger.info("✓ Diagram components created")
 
@@ -133,7 +113,7 @@ def create_diagram():
         logger.error(traceback.format_exc())
         raise
 
-    logger.info("Component diagram creation complete!")
+    logger.info("DQN component diagram creation complete!")
 
 
 if __name__ == "__main__":
@@ -141,6 +121,6 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    logger.info("Running Q-Learning component diagram script...")
+    logger.info("Running DQN component diagram script...")
     create_diagram()
     logger.info("Script finished!")

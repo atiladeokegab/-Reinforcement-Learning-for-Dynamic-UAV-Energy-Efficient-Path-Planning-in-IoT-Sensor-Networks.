@@ -16,27 +16,32 @@ difference error between the predicted Q-values and the target Q-values derived 
 Bellman equation. To ensure training stability, a separate target network \(\hat{Q}\) with
 parameters \(\theta^{-}\) is maintained and updated periodically (every \(C\) steps).
 
-\subsubsection{Custom Gymnasium Environment Design}
+\subsubsection{Probabilistic Link-Layer Model}
 
-The simulation environment is implemented as a custom Gymnasium
-environment~\cite{towers2024gymnasium}, providing a standardised interface that enables
-seamless integration with the Stable-Baselines3~\cite{raffin2021stable} DQN
-implementation. The environment incorporates a probabilistic link-layer model to move beyond
-binary `in-range' abstractions. Each sensor's transmission success is determined by the
-product of its protocol-mandated duty cycle and a sigmoid-mapped signal-to-noise ratio (SNR).
-This mapping calculates the instantaneous success probability \(P_{\text{overall}}\) by
-comparing the RSSI (derived from the Two-Ray Ground Reflection model) against the noise floor
-and the specific SNR requirements of the current Spreading Factor. By setting a transmission
-threshold (e.g., \(P_{\text{overall}} > 0.5\)), the environment forces the DQN agent to
-navigate the trade-off between proximity-induced signal strength and the stochastic
-availability of sensor nodes. This in turn allows for the creation and editing of link
-quality.
+Rather than binary ``in-range'' abstractions, the environment models each sensor's transmission
+success as the product of its protocol-mandated duty cycle and a sigmoid-mapped SNR.
+The instantaneous success probability $P_{\text{overall}}$ is computed by comparing the RSSI
+(derived from the Two-Ray Ground Reflection model) against the noise
+floor and the SF-specific SNR threshold. Setting a threshold of $P_{\text{overall}} > 0.5$
+forces the DQN agent to navigate the trade-off between proximity-induced signal strength and
+the stochastic availability of sensor nodes, enabling active management of link quality
+through positioning.
 
 \subsubsection{Training Convergence}
 
-The DQN was trained across 16 sequential curriculum stages. Reward converges within each
-stage (EMA curve rises and plateaus) and later stages converge to progressively higher
-rewards ($3$--$5\times10^6$), confirming that the curriculum successfully bootstraps the
-agent from easy to hard conditions. The TD loss follows the same spike-then-converge
-profile in every stage with no divergence across transitions. Full convergence curves
-are shown in Appendix~\ref{app:training}.
+The DQN was trained across three curriculum stages progressively introducing all 16 training
+conditions (4 grid sizes $\times$ 4 sensor counts). Within each stage, the mean episode
+reward follows a characteristic rise-and-plateau trajectory: early episodes produce large
+negative rewards as the agent explores randomly, followed by a monotonic increase as the
+policy learns to collect data, converging to a stable plateau. Later stages converge to
+progressively higher absolute rewards ($3$--$5\times10^6$), confirming that the curriculum
+successfully bootstraps the agent from easy to hard conditions.
+
+The TD loss exhibits a spike-then-converge profile at each stage transition---the spike
+reflects the temporary distribution shift as new grid sizes and sensor counts enter the
+training mix, while convergence confirms the replay buffer and target network stabilise
+learning despite this non-stationarity. Critically, no divergence occurs across any stage
+transition, validating the curriculum ordering (small grids with few sensors first,
+progressing to large grids with dense deployments). Full convergence curves for both reward
+and TD loss across all stages are provided in Appendix~\ref{app:training}
+(Figure~\ref{fig:training_convergence}).
