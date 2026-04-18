@@ -39,10 +39,10 @@ class IoTSensor:
 
     # RSSI to SF mapping (Capped SF12 range)
     RSSI_SF_MAPPING = [
-        (-70, 7),  # Switch to SF7 if RSSI > -70 dBm
-        (-90, 9),  # Switch to SF9 if RSSI > -90 dBm
-        (-105, 11),  # Switch to SF11 if RSSI > -105 dBm
-        (-120, 12)  # Default to SF12 for worst-case links
+        (-60, 7),   # Switch to SF7 if RSSI > -60 dBm  (~50 grid units)
+        (-70, 9),   # Switch to SF9 if RSSI > -70 dBm  (~89 grid units)
+        (-78, 11),  # Switch to SF11 if RSSI > -78 dBm (~141 grid units)
+        (-85, 12),  # Default to SF12 for worst-case links (~211 grid units)
     ]
 
     def __init__(
@@ -55,7 +55,7 @@ class IoTSensor:
         transmit_power_dbm: float = 14.0,  # Updated to realistic 14dBm
         path_loss_exponent: float = 3.8,  # Urban Path Loss
         d0: float = 1.0,
-        rssi_threshold: float = -120.0,
+        rssi_threshold: float = -85.0,
         noise_floor_dbm: float = -105.0,
         uav_altitude: int = 100,  # Fixed at 100m
         spreading_factor: int = 12,

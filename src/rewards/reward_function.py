@@ -37,6 +37,7 @@ class RewardFunction:
         reward_multi_sensor: float      = 200.0,
         reward_completion: float        = 100.0,
         reward_urgency_reduction: float = 1000.0,
+        reward_movement: float          = 10.0,     # small bonus per successful move (anti-hover)
         # Penalties
         penalty_revisit: float          = -2.0,
         penalty_boundary: float         = -50.0,
@@ -45,13 +46,14 @@ class RewardFunction:
         penalty_step: float             = -0.5,
         penalty_data_loss: float        = -1.0,
         penalty_starvation: float       = -500.0,   # FIX 2: was -50
-        penalty_unvisited: float        = -2000.0,  # FIX 3: NEW
+        penalty_unvisited: float        = -15000.0, # FIX 3: was -2000 — must dominate hover strategy
     ):
         self.reward_per_byte          = reward_per_byte
         self.reward_new_sensor        = reward_new_sensor
         self.reward_multi_sensor      = reward_multi_sensor
         self.reward_completion        = reward_completion
         self.reward_urgency_reduction = reward_urgency_reduction
+        self.reward_movement          = reward_movement
 
         self.penalty_revisit    = penalty_revisit
         self.penalty_boundary   = penalty_boundary
@@ -98,9 +100,11 @@ class RewardFunction:
     def calculate_movement_reward(
         self, move_success: bool, battery_used: float
     ) -> float:
-        """Reward for a movement action."""
+        """Reward for a movement action. Small bonus for moving (anti-hover incentive)."""
         reward = self.penalty_step
-        if not move_success:
+        if move_success:
+            reward += self.reward_movement
+        else:
             reward += self.penalty_boundary
         reward += self.penalty_battery * battery_used
         return reward
@@ -208,6 +212,7 @@ class RewardFunction:
 
         breakdown = {
             "step_penalty":           self.penalty_step,
+            "movement_bonus":         0.0,  # populated by env when action != hover
             "data_reward":            self.reward_per_byte * bytes_collected
                                       if bytes_collected > 0 else 0.0,
             "new_sensor_bonus":       self.reward_new_sensor
