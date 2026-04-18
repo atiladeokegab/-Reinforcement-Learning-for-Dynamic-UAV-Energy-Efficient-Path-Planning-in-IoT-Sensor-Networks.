@@ -320,7 +320,7 @@ class UAVEnvironment(gym.Env):
         max_buffer_size: float = 1000.0,
         lora_spreading_factor: int = 7,
         path_loss_exponent: float = 2.0,
-        rssi_threshold: float = -90.0,
+        rssi_threshold: float = -85.0,
         sensor_duty_cycle: float = 10.0,
         uav_start_position: Optional[Tuple[float, float]] = None,
         max_battery: float = 274.0,
@@ -372,12 +372,10 @@ class UAVEnvironment(gym.Env):
 
         self.action_space = spaces.Discrete(5)
 
-        obs_low = np.array([0, 0, 0] + [0, 0, 0] * self.num_sensors, dtype=np.float32)
-        obs_high = np.array(
-            [grid_size[0], grid_size[1], max_battery]
-            + [max_buffer_size, 1.0, 1.0] * self.num_sensors,
-            dtype=np.float32,
-        )
+        # All features normalized to [0, 1]: uav_x/W, uav_y/H, battery/max,
+        # buffer/max, urgency (already clipped), link_quality (already [0,1]).
+        obs_low  = np.zeros(3 + 3 * self.num_sensors, dtype=np.float32)
+        obs_high = np.ones(3 + 3 * self.num_sensors, dtype=np.float32)
         self.observation_space = spaces.Box(
             low=obs_low, high=obs_high, dtype=np.float32
         )
@@ -607,7 +605,7 @@ class UAVEnvironment(gym.Env):
             P_link = sensor.get_success_probability(
                 tuple(self.uav.position), use_advanced_model=True
             )
-            # Temporary deterministic setting: If you are in range, you get data.
+            # P_overall = sigmoid(SNR margin) * duty-cycle probability
             P_cycle = sensor.duty_cycle_probability
             P_overall = P_link * P_cycle
 
@@ -720,25 +718,27 @@ class UAVEnvironment(gym.Env):
         return reward
 
     def _get_observation(self) -> np.ndarray:
-        """Get current observation INCLUDING LINK QUALITY. abulation study"""
-        obs_list = [self.uav.position[0], self.uav.position[1], self.uav.battery]
+        """Return normalized observation in [0, 1] for all features."""
+        W, H = float(self.grid_size[0]), float(self.grid_size[1])
+        obs_list = [
+            self.uav.position[0] / W,
+            self.uav.position[1] / H,
+            self.uav.battery / self.uav.max_battery,
+        ]
 
+        sf_quality = {7: 1.0, 8: 0.8, 9: 0.6, 10: 0.4, 11: 0.2, 12: 0.1}
         for sensor in self.sensors:
             urgency = self._calculate_urgency(sensor)
-
-            # LINK QUALITY CALCULATION
-            # This is the "Ablation" feature
-            sensor.update_spreading_factor(tuple(self.uav.position))  # Physics update
-
+            sensor.update_spreading_factor(tuple(self.uav.position))
             if not sensor.is_in_range(tuple(self.uav.position)):
                 link_quality = 0.0
             else:
-                sf = sensor.spreading_factor
-                # Normalize SF (SF7=Best=1.0, SF12=Worst=0.1)
-                mapping = {7: 1.0, 8: 0.8, 9: 0.6, 10: 0.4, 11: 0.2, 12: 0.1}
-                link_quality = mapping.get(sf, 0.1)
-
-            obs_list.extend([sensor.data_buffer, urgency, link_quality])
+                link_quality = sf_quality.get(sensor.spreading_factor, 0.1)
+            obs_list.extend([
+                sensor.data_buffer / sensor.max_buffer_size,
+                urgency,
+                link_quality,
+            ])
 
         return np.array(obs_list, dtype=np.float32)
 
