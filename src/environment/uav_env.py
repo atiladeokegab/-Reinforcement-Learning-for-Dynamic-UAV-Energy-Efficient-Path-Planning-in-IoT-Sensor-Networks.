@@ -329,6 +329,8 @@ class UAVEnvironment(gym.Env):
         render_mode: Optional[str] = None,
         penalty_data_loss: float = -1.0,
         reward_urgency_reduction: float = 20.0,
+        penalty_battery: float = -0.5,
+        reward_movement: float = 10.0,
     ):
         """Initialize UAV environment with fairness constraints."""
 
@@ -368,6 +370,8 @@ class UAVEnvironment(gym.Env):
         self.reward_fn = RewardFunction(
             penalty_data_loss=penalty_data_loss,
             reward_urgency_reduction=reward_urgency_reduction,
+            penalty_battery=penalty_battery,
+            reward_movement=reward_movement,
         )
 
         self.action_space = spaces.Discrete(5)
