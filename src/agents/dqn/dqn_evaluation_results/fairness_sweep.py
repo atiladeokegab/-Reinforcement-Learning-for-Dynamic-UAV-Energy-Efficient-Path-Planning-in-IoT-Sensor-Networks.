@@ -43,6 +43,8 @@ import matplotlib.gridspec as gridspec
 import seaborn as sns
 import gymnasium
 import json
+import ieee_style
+ieee_style.apply()
 from pathlib import Path
 import time
 
@@ -61,39 +63,39 @@ from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
 
 # ==================== SWEEP CONFIGURATION ====================
 
-SWEEP_SEEDS         = [42, 123, 256]           # 3 layouts per condition
+SWEEP_SEEDS         = [42, 123, 256, 789, 1337]  # 5 layouts per condition
 SWEEP_SENSOR_COUNTS = [10, 20, 30, 40]
 SWEEP_GRID_SIZES    = [(100, 100), (300, 300), (500, 500), (1000, 1000)]
 
 # Physics annotation from iot_sensors.py
 GRID_PHYSICS = {
-    (100,  100): {"sf": "SF7",       "color": "#1B5E20", "label": "100x100\n(SF7)"},
-    (300,  300): {"sf": "SF7/SF9",   "color": "#F9A825", "label": "300x300\n(SF7/SF9)"},
-    (500,  500): {"sf": "SF9/SF11",  "color": "#E65100", "label": "500x500\n(SF9/SF11)"},
-    (1000, 1000):{"sf": "SF11/SF12", "color": "#B71C1C", "label": "1000x1000\n(SF11/SF12)"},
+    (100,  100): {"sf": "SF7",       "color": "#e7298a", "label": "100x100\n(SF7)"},
+    (300,  300): {"sf": "SF7/SF9",   "color": "#66a61e", "label": "300x300\n(SF7/SF9)"},
+    (500,  500): {"sf": "SF9/SF11",  "color": "#e6ab02", "label": "500x500\n(SF9/SF11)"},
+    (1000, 1000):{"sf": "SF11/SF12", "color": "#a6761d", "label": "1000x1000\n(SF11/SF12)"},
 }
 
 BASE_CONFIG = {
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
-    "rssi_threshold":     -120.0,
+    "rssi_threshold":     -85.0,
     "sensor_duty_cycle":  10.0,
     "max_battery":        274.0,
 }
 EVAL_MAX_BATTERY = 274.0
 
 # Paths — adjust if your layout differs
-DQN_MODEL_PATH     = script_dir_results / "models" / "dqn_domain_rand" / "dqn_final.zip"
-DQN_CONFIG_PATH    = script_dir_results / "models" / "dqn_domain_rand" / "training_config.json"
-VEC_NORMALIZE_PATH = script_dir_results / "models" / "dqn_domain_rand" / "vec_normalize.pkl"
+DQN_MODEL_PATH     = script_dir.parent / "models" / "dqn_v4a" / "dqn_final.zip"
+DQN_CONFIG_PATH    = script_dir.parent / "models" / "dqn_v4a" / "training_config.json"
+VEC_NORMALIZE_PATH = script_dir.parent / "models" / "dqn_v4a" / "vec_normalize.pkl"
 
-OUTPUT_DIR = script_dir / "sweep_fairness_results"
+OUTPUT_DIR = script_dir / "sweep_v4a_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 AGENT_STYLES = {
-    "DQN":     {"color": "#1565C0", "marker": "o", "label": "DQN Agent (Proposed)"},
-    "SFGreedy":{"color": "#C62828", "marker": "s", "label": "SF-Aware Greedy V2"},
-    "NNGreedy":{"color": "#555555", "marker": "^", "label": "Nearest Sensor Greedy"},
+    "DQN":     {"color": "#1b9e77", "marker": "o", "linestyle": "-",  "label": "DQN Agent (Proposed)"},
+    "SFGreedy":{"color": "#d95f02", "marker": "s", "linestyle": "--", "label": "SF-Aware Greedy V2"},
+    "NNGreedy":{"color": "#7570b3", "marker": "^", "linestyle": ":",  "label": "Nearest Sensor Greedy"},
 }
 
 # ==================== ENVIRONMENT WRAPPERS ====================
@@ -235,11 +237,13 @@ def run_greedy(agent_class, fixed_pos, seed, grid_size, num_sensors):
         action = agent.select_action(obs)
         obs, _, done, trunc, _ = env.step(action)
         done = done or trunc
-    rates = collection_rates_from_env(env)
+    rates     = collection_rates_from_env(env)
     positions = sensor_positions_from_env(env)
-    j = jains_index(rates)
+    j         = jains_index(rates)
+    min_rate  = min(rates) if rates else 0.0
+    peak_aoi  = max(s.data_buffer / s.max_buffer_size for s in env.sensors)
     env.close()
-    return j, rates, positions
+    return j, rates, positions, min_rate, peak_aoi
 
 
 def run_dqn(model, training_config, fixed_pos, seed, grid_size, num_sensors):
@@ -278,10 +282,11 @@ def run_dqn(model, training_config, fixed_pos, seed, grid_size, num_sensors):
         av = int(action[0]) if hasattr(action, "__len__") else int(action)
 
         pre_snap = [
-            {"sensor_id": int(s.sensor_id),
-             "position":  [float(x) for x in s.position],
-             "generated":  float(s.total_data_generated),
-             "transmitted":float(s.total_data_transmitted)}
+            {"sensor_id":        int(s.sensor_id),
+             "position":         [float(x) for x in s.position],
+             "generated":        float(s.total_data_generated),
+             "transmitted":      float(s.total_data_transmitted),
+             "buffer_occupancy": float(s.data_buffer / s.max_buffer_size)}
             for s in base.sensors
         ]
         pre_pos = [(float(s.position[0]), float(s.position[1])) for s in base.sensors]
@@ -296,13 +301,16 @@ def run_dqn(model, training_config, fixed_pos, seed, grid_size, num_sensors):
     vec.close()
 
     if last_snapshot:
-        rates = collection_rates_from_snapshot(last_snapshot)
+        rates     = collection_rates_from_snapshot(last_snapshot)
         positions = last_positions
+        peak_aoi  = max(s["buffer_occupancy"] for s in last_snapshot)
     else:
-        rates = [0.0] * num_sensors
+        rates     = [0.0] * num_sensors
         positions = fixed_pos
+        peak_aoi  = 1.0
 
-    return jains_index(rates), rates, positions
+    min_rate = min(rates) if rates else 0.0
+    return jains_index(rates), rates, positions, min_rate, peak_aoi
 
 
 # ==================== MAIN SWEEP ====================
@@ -335,12 +343,13 @@ def run_sweep(dqn_model, training_config):
                     print("  [{}/{}] DQN  gs={}x{}  n={}  seed={}".format(
                         run_idx, total * agents_per, gs[0], gs[1], n, seed))
                     try:
-                        j, r, p = run_dqn(dqn_model, training_config, fixed_pos, seed, gs, n)
+                        j, r, p, mr, pa = run_dqn(dqn_model, training_config, fixed_pos, seed, gs, n)
                     except Exception as e:
                         print("    DQN failed: {}  -- using zeros".format(e))
-                        j, r, p = 0.0, [0.0]*n, fixed_pos
-                    cond["DQN"] = (j, r, p)
-                    print("    J={:.4f}  ({:.1f}s)".format(j, time.time()-t0))
+                        j, r, p, mr, pa = 0.0, [0.0]*n, fixed_pos, 0.0, 1.0
+                    cond["DQN"] = (j, r, p, mr, pa)
+                    print("    J={:.4f}  min={:.1f}%  peak_aoi={:.3f}  ({:.1f}s)".format(
+                        j, mr * 100, pa, time.time() - t0))
 
                 for agent_key, agent_class in [("SFGreedy", MaxThroughputGreedyV2),
                                                ("NNGreedy", NearestSensorGreedy)]:
@@ -349,9 +358,10 @@ def run_sweep(dqn_model, training_config):
                     print("  [{}/{}] {}  gs={}x{}  n={}  seed={}".format(
                         run_idx, total * agents_per,
                         agent_key, gs[0], gs[1], n, seed))
-                    j, r, p = run_greedy(agent_class, fixed_pos, seed, gs, n)
-                    cond[agent_key] = (j, r, p)
-                    print("    J={:.4f}  ({:.1f}s)".format(j, time.time()-t0))
+                    j, r, p, mr, pa = run_greedy(agent_class, fixed_pos, seed, gs, n)
+                    cond[agent_key] = (j, r, p, mr, pa)
+                    print("    J={:.4f}  min={:.1f}%  peak_aoi={:.3f}  ({:.1f}s)".format(
+                        j, mr * 100, pa, time.time() - t0))
 
                 results[gs][n][seed] = cond
 
@@ -365,8 +375,7 @@ def plot_jains_summary_matrix(results, has_dqn):
     3-panel heatmap.  Rows = grid sizes, Cols = sensor counts.
     Each cell = mean Jain's index across seeds.
     """
-    sns.set_theme(style="white", font_scale=1.1)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
 
     agents  = (["DQN", "SFGreedy", "NNGreedy"] if has_dqn else ["SFGreedy", "NNGreedy"])
     n_agents = len(agents)
@@ -428,9 +437,8 @@ def plot_jains_summary_matrix(results, has_dqn):
             pass
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "figA_jains_summary_matrix.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "figA_jains_summary_matrix"))
     plt.close()
 
 
@@ -441,8 +449,7 @@ def plot_jains_advantage_gap(results):
     Heatmap: DQN Jain's - best_greedy Jain's at every (grid, sensors) condition.
     Green = DQN fairer, Red = greedy fairer.
     """
-    sns.set_theme(style="white", font_scale=1.1)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
 
     matrix = np.zeros((len(SWEEP_GRID_SIZES), len(SWEEP_SENSOR_COUNTS)))
     std_matrix = np.zeros_like(matrix)
@@ -502,9 +509,8 @@ def plot_jains_advantage_gap(results):
             pass
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "figB_jains_advantage_gap.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "figB_jains_advantage_gap"))
     plt.close()
 
 
@@ -515,8 +521,7 @@ def plot_jains_seed_variance(results, has_dqn):
     For every (grid_size, sensor_count) condition, show a grouped box plot
     of Jain's index across seeds for all three agents.
     """
-    sns.set_theme(style="whitegrid", font_scale=1.05)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
 
     n_gs = len(SWEEP_GRID_SIZES)
     n_nc = len(SWEEP_SENSOR_COUNTS)
@@ -580,9 +585,8 @@ def plot_jains_seed_variance(results, has_dqn):
                     spine.set_edgecolor("blue"); spine.set_linewidth(2.5)
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "figC_jains_seed_variance.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "figC_jains_seed_variance"))
     plt.close()
 
 
@@ -598,8 +602,7 @@ def plot_spatial_fairness_grid(results, gs, has_dqn, seed=42):
     n_nc     = len(SWEEP_SENSOR_COUNTS)
     phys     = GRID_PHYSICS[gs]
 
-    sns.set_theme(style="white", font_scale=1.0)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
 
     fig, axes = plt.subplots(n_agents, n_nc, figsize=(4.5 * n_nc, 4 * n_agents))
     fig.suptitle(
@@ -620,7 +623,7 @@ def plot_spatial_fairness_grid(results, gs, has_dqn, seed=42):
                         transform=ax.transAxes, color="gray")
                 continue
 
-            j, rates, positions = cond[agent_key]
+            j, rates, positions, *_ = cond[agent_key]
             xs = [p[0] for p in positions]
             ys = [p[1] for p in positions]
 
@@ -678,9 +681,8 @@ def plot_spatial_fairness_grid(results, gs, has_dqn, seed=42):
 
     plt.tight_layout()
     label = "{}x{}".format(gs[0], gs[1])
-    out   = OUTPUT_DIR / "figD_spatial_fairness_{}.png".format(label)
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "figD_spatial_fairness_{}".format(label)))
     plt.close()
 
 
@@ -691,8 +693,7 @@ def plot_jains_trend_lines(results, has_dqn):
     Line plots: Jain's index vs sensor count, one line per grid size, separate panel per agent.
     Shows trends with SF regime colour coding.
     """
-    sns.set_theme(style="whitegrid", font_scale=1.1)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
 
     agents   = (["DQN", "SFGreedy", "NNGreedy"] if has_dqn else ["SFGreedy", "NNGreedy"])
     n_agents = len(agents)
@@ -736,9 +737,8 @@ def plot_jains_trend_lines(results, has_dqn):
         ax.grid(True, alpha=0.4, linestyle="--")
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "figE_jains_trend_lines.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "figE_jains_trend_lines"))
     plt.close()
 
 
@@ -754,21 +754,23 @@ def save_results_csv(results, has_dqn):
                     cond = results[gs][n][seed]
                     if ak not in cond:
                         continue
-                    j, rates, _ = cond[ak]
+                    j, rates, _, mr, pa = cond[ak]
                     starved = sum(1 for r in rates if r < 20)
                     rows.append({
-                        "grid_w":        gs[0],
-                        "grid_h":        gs[1],
-                        "sf_regime":     GRID_PHYSICS[gs]["sf"],
-                        "num_sensors":   n,
-                        "seed":          seed,
-                        "agent":         ak,
-                        "agent_label":   AGENT_STYLES[ak]["label"],
-                        "jains_index":   round(j, 5),
-                        "mean_coll_rate":round(float(np.mean(rates)), 2),
-                        "std_coll_rate": round(float(np.std(rates)), 2),
-                        "starved_count": starved,
-                        "starved_pct":   round(starved / n * 100, 1),
+                        "grid_w":             gs[0],
+                        "grid_h":             gs[1],
+                        "sf_regime":          GRID_PHYSICS[gs]["sf"],
+                        "num_sensors":        n,
+                        "seed":               seed,
+                        "agent":              ak,
+                        "agent_label":        AGENT_STYLES[ak]["label"],
+                        "jains_index":        round(j, 5),
+                        "min_collection_rate":round(float(mr) * 100, 2),
+                        "peak_aoi_proxy":     round(float(pa), 4),
+                        "mean_coll_rate":     round(float(np.mean(rates)), 2),
+                        "std_coll_rate":      round(float(np.std(rates)), 2),
+                        "starved_count":      starved,
+                        "starved_pct":        round(starved / n * 100, 1),
                     })
     df = pd.DataFrame(rows)
     out = OUTPUT_DIR / "sweep_fairness_results.csv"
