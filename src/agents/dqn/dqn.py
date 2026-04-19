@@ -75,18 +75,11 @@ CURRICULUM_STAGES = [
     ([(100,100),(200,200),(300,300),(400,400),(500,500)],    [10,20,30,40], "Stage 4 — full feasible range"),
 ]
 
-# Fallback timestep thresholds (one per stage transition, 10M total / 5 stages)
+# Fixed 2M steps per stage — stage advances by timestep only, no performance gate.
 CURRICULUM_THRESHOLDS = [2_000_000, 4_000_000, 6_000_000, 8_000_000]
-
-# Performance-based curriculum gates (relaxed progressively as envs get harder)
-PERF_THRESHOLDS = [
-    {"ndr": 90.0, "jains": 0.65},  # Stage 0 → Stage 1
-    {"ndr": 85.0, "jains": 0.60},  # Stage 1 → Stage 2
-    {"ndr": 80.0, "jains": 0.55},  # Stage 2 → Stage 3
-    {"ndr": 75.0, "jains": 0.50},  # Stage 3 → Stage 4
-]
-PERF_WINDOW        = 50       # rolling episode window for performance gate
-MIN_STEPS_PER_STAGE = 400_000  # minimum steps before any stage can advance
+PERF_THRESHOLDS   = []   # disabled
+PERF_WINDOW       = 50
+MIN_STEPS_PER_STAGE = 2_000_000
 
 # Fixed target config for evaluation during training (matches your baseline)
 EVAL_GRID      = (500, 500)
@@ -503,34 +496,20 @@ class CurriculumCallback(BaseCallback):
         if self._current_stage >= len(CURRICULUM_STAGES) - 1:
             return
 
-        perf_gate  = PERF_THRESHOLDS[self._current_stage]
-        ts_gate    = CURRICULUM_THRESHOLDS[self._current_stage]
-        min_steps  = MIN_STEPS_PER_STAGE
+        ts_gate = CURRICULUM_THRESHOLDS[self._current_stage]
 
-        # Enforce minimum dwell time in current stage
+        # Enforce minimum dwell time (== 2M, same as ts_gate)
         steps_in_stage = self.num_timesteps - self._stage_start_step
-        if steps_in_stage < min_steps:
+        if steps_in_stage < MIN_STEPS_PER_STAGE:
             return
 
-        # --- Performance gate (primary) ---
-        if len(self._episode_ndrs) >= PERF_WINDOW:
-            mean_cov  = np.mean(self._episode_ndrs[-PERF_WINDOW:])
-            mean_jain = np.mean(self._episode_jains[-PERF_WINDOW:])
-            perf_ok   = (mean_cov >= perf_gate["ndr"] and
-                         mean_jain >= perf_gate["jains"])
-        else:
-            perf_ok = False
-
-        # --- Fallback timestep gate ---
-        ts_ok = self.num_timesteps >= ts_gate
-
-        if perf_ok or ts_ok:
-            reason = "performance" if perf_ok else "timestep fallback"
+        # Timestep-only advancement
+        if self.num_timesteps >= ts_gate:
             self._current_stage += 1
             self._stage_start_step = self.num_timesteps
             desc = CURRICULUM_STAGES[self._current_stage][2]
-            print("\n[Curriculum] ({}) Advancing to {} at step {}".format(
-                reason, desc, self.num_timesteps))
+            print("\n[Curriculum] Advancing to {} at step {}".format(
+                desc, self.num_timesteps))
             # Clear window — next gate must be earned under harder conditions
             self._episode_ndrs.clear()
             self._episode_jains.clear()
