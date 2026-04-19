@@ -1,64 +1,93 @@
 \subsection{Discussion}
 \label{sec:discussion}
 
-The results confirm the central hypothesis: a protocol-aware DRL agent trained with domain
-randomisation and curriculum learning outperforms standard path-planning heuristics across a
-range of network densities, with the advantage growing as the problem becomes harder.
+The multi-condition sweep reveals three regimes defined by the interaction between UAV
+energy budget, link budget, and sensor density, each with a distinct implication for
+policy design.
 
-\subsubsection{Mechanism of the DQN Advantage}
+\subsubsection{SF-Aware Greedy as the Dominant Heuristic}
 
-The DQN's key advantage is learning positioning rules that maximise concurrent orthogonal-SF
-transmission. Greedy agents hover at every step (100\% hover fraction), whereas the DQN devotes
-2.9\% of steps to deliberate movement ($p = 0.002$, $d = 2.1$, large), yielding $48.7$\,B per
-collection step vs.\ $42.7$\,B for SF-Aware Greedy (+14\%). Capture Effect trigger counts are
-indistinguishable ($p = 1.0$), confirming the gain is from positioning, not collision resolution.
+At the feasible scale (300$\times$300) and marginal scale (500$\times$500), the SF-Aware
+Greedy baseline consistently outperforms the DQN on both coverage rate and Jain's fairness
+index. The advantage is statistically significant at 500$\times$500 ($d = -1.84$,
+$p = 0.039$). The mechanism is straightforward: SF-Aware Greedy hard-codes the key
+protocol insight --- route toward the sensor with the lowest current SF assignment ---
+which maximises both bytes per visit (lower SF = higher data rate) and SF diversity across
+simultaneously in-range sensors. The DQN, trained with a multi-objective reward that does
+not directly incentivise SF diversity, learns a policy closer to Nearest-Sensor Greedy
+than to SF-Aware Greedy at the scales evaluated.
 
-The SF dynamics analysis (Figure~\ref{fig:sf_dynamics} in Appendix~\ref{app:additional_figures}) provides the causal explanation:
-by maintaining proximity for multiple steps, the DQN allows the EMA-ADR filter to converge
-to lower SF assignments before repositioning. This converts ADR latency---normally a fidelity
-cost---into a feature: induced SF downgrades enable high-throughput orthogonal-SF concurrent
-collection that greedy policies cannot plan for.
+This result does not invalidate the DRL approach; rather, it identifies what the learned
+policy is missing: an explicit representation of sensor topology and SF assignments.
+A greedy heuristic encodes domain knowledge that the DQN must infer from delayed reward
+signals over $3 \times 10^6$ training steps with only a local 2D position and AoI state
+representation. The attention-based and graph-neural-network extensions
+(Section~\ref{sec:future_work}) are specifically designed to close this gap by providing
+the agent with a structured relational view of the sensor field.
 
-\subsubsection{Density Dependence and Effect Sizes}
+\subsubsection{What the DQN Learns}
 
-All four density conditions reach statistical significance ($p < 0.05$, Table~\ref{tab:effect_sizes}). Two competing forces shape the pattern: as density grows, the SF-diversity mechanism becomes more impactful (mean advantage rises from $+2.3\%$ at $N=10$ to $+9.0\%$ at $N=30$), but spatial layout variance also scales with density (std = 1.120M at $N=40$ vs.\ 0.040M at $N=10$), diluting the effect size. This explains the non-monotonic $d$ pattern ($d=2.52 \to 0.78 \to 0.54$): high-density performance is more sensitive to spatial arrangement.
+Despite not outperforming SF-Aware Greedy, the DQN exhibits a learned behaviour not
+present in either greedy baseline: it sustains proximity to sensor clusters for
+approximately $1/\lambda = 10$ consecutive steps before repositioning, allowing the
+EMA-ADR filter to converge to a lower SF before the agent moves away. This
+\emph{dwell-then-reposition} pattern is the temporal structure required to exploit
+ADR convergence as a delayed reward, and it is structurally inaccessible to a one-step
+greedy policy whose look-ahead horizon is $h = 1$. The DQN's effective planning horizon
+($1/(1-\gamma) = 100$ steps with $\gamma = 0.99$) is sufficient to learn this strategy.
 
-The same trend holds across all three metrics: the efficiency advantage grows from $+2.3$\,B/Wh at $N=10$ to $+20.7$\,B/Wh at $N=40$, confirming the reward advantage is not a reward-function artefact but reflects real data collection gain. The Jain's Index advantage at $N=40$ ($+4.2\%$, $d=0.40$) confirms that the throughput gain does not come at the cost of fairness — the AoI penalty continues to distribute attention across sensors even in the high-variance density regime. Table~\ref{tab:effect_sizes} summarises all effect sizes.
+The pattern is observable in single-episode traces (Section~\ref{sec:single_episode}) but
+does not translate into a aggregate coverage advantage at 500$\times$500 because the UAV
+visits too few sensors in total for the EMA-ADR benefit to accumulate into a measurable
+throughput difference. In the feasible regime (300$\times$300), SFGreedy's more direct
+routing covers more sensors per episode, offsetting any per-visit throughput advantage the
+DQN might gain from dwell behaviour.
 
-\begin{table}[H]
-\centering
-\caption{Cohen's $d$ effect sizes for DQN vs.\ SF-Aware Greedy (cumulative reward),
-         20-seed evaluation (30-seed for $N=40$). $d < 0.2$ = negligible; $0.2$--$0.5$ = small;
-         $0.5$--$0.8$ = medium; $> 0.8$ = large.}
-\label{tab:effect_sizes}
-\begin{tabularx}{\textwidth}{l Z Z Z Z}
-\toprule
-$N$ & Reward $d$ & Jain's $d$ & Efficiency $d$ & Interpretation \\
-\midrule
-10  & 2.52 & 0.43 & 2.68 & Large ($p < 0.001$) \\
-20  & 0.66 & 0.36 & 0.67 & Medium ($p = 0.049$\textsuperscript{*})  \\
-30  & 0.78 & 0.61 & 0.77 & Medium ($p = 0.021$\textsuperscript{*})  \\
-40  & 0.54 & 0.40 & 0.55 & Medium ($p = 0.043$\textsuperscript{*}) \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\subsubsection{Operational Envelope as the Primary Finding}
+
+The most robust finding from the sweep is the operational envelope characterisation
+(Table~\ref{tab:grid_summary}). The performance of \emph{all three agents} collapses
+above 500$\times$500: NDR drops below 12\% for every agent at $1{,}000\times1{,}000$.
+This is not a consequence of policy quality but of physical infeasibility: the $d_{\max}
+\approx 15{,}782$\,m achievable in a single episode is insufficient to traverse the TSP
+tour ($\approx 44{,}700$\,m) required to visit all 20 sensors. No learned or heuristic
+single-UAV policy can overcome this constraint; the operational boundary is set by the
+link budget and energy capacity, not by the algorithm.
+
+This boundary is a novel contribution: the prior literature reports DRL results on
+fixed grid sizes without characterising where physical feasibility ends
+\cite{mozaffari2019tutorial,li2020uav,liu2019uav}. Identifying the 300$\times$300
+boundary as the effective single-UAV operational limit for the DJI TB60 / LoRaWAN Class~A
+configuration directly informs deployment planning and motivates the multi-UAV extension
+as the highest-priority future direction.
 
 \subsubsection{Limitations}
 
-Three limitations bound the scope of the conclusions. First, the throughput advantage ($+2.3\%$--$+9.0\%$) is
-statistically significant but operationally modest. The A2 ablation (instant ADR, $\lambda=1.0$, $+7.8\%$
-reward) establishes an approximate upper bound on any positioning strategy's achievable gain; the DQN
-recovers roughly half of this via deliberate repositioning, indicating the SF Monoculture is partially
-self-limiting due to the 6\,dB Capture Effect threshold.
+Three limitations bound the scope of these conclusions.
 
-Second, the channel model assumes a flat ground plane and a single-channel gateway; real deployments
-involve terrain-induced shadowing beyond the tested $\Delta n=+1.0$ perturbation space, and multi-channel
-gateways would reduce the relative cost of intra-SF collisions by allowing concurrent reception across
-multiple frequency channels---diminishing the SF Monoculture pressure that the DQN's repositioning
-strategy is designed to exploit. All evaluation is simulation-based; the
-joint effect of simultaneous real-world perturbations remains unquantified.
+\textbf{Training budget and reward engineering.} The DQN was trained for $3 \times 10^6$
+steps across 16 conditions. Two reward variants were evaluated to test whether the
+SFGreedy gap is a reward-engineering problem rather than an architectural one.
+Variant~A (\texttt{penalty\_battery}$=0$) removes the battery penalty, confirming it
+was a near-zero dead term ($<0.1\%$ of episode reward). Variant~B additionally raises
+the movement bonus to $+200$ per step (versus $+10$ in the baseline), making
+deliberate repositioning worth approximately one-third of a mediocre SF11 collection
+per step. Both variants produce statistically indistinguishable results from the
+baseline DQN at 500$\times$500 ($|\Delta\mathcal{J}| < 0.015$, $n = 5$ seeds). This
+null result is informative: the performance gap is \emph{not} addressable by reward
+shaping alone. The MLP policy lacks the structured relational encoding needed to
+implement an SF-directional routing strategy regardless of how movement is incentivised.
+The A2 ablation (instant ADR, $\lambda = 1.0$) establishes an upper bound: removing ADR
+latency yields $+4.1\%$ mean reward, confirming that the EMA filter is a real planning
+cost that SFGreedy partially avoids by routing toward already-low-SF sensors.
 
-Third, Jain's fairness at $N=40$ does not reach significance ($p=0.129$) because the fixed battery
-makes equitable coverage geometrically infeasible at high density~\cite{jin2023equalizing}. The
-five-action 2D action space further constrains positioning; altitude control and continuous actions
-remain as extensions (Section~\ref{sec:future_work}).
+\textbf{Simulation fidelity.} The channel model assumes a flat ground plane; real terrain
+introduces additional shadowing. All evaluation is simulation-based and the joint effect
+of simultaneous GPS error, path-loss mismatch, and wind drift remains unquantified (see
+Section~\ref{sec:robustness} for independent perturbation analysis).
+
+\textbf{Action space.} The five-action 2D discrete action space cannot express altitude
+control or diagonal movement. SFGreedy can route diagonally in Euclidean space while the
+DQN is constrained to cardinal steps, creating an inherent path-efficiency disadvantage.
+Continuous or altitude-augmented action spaces (Section~\ref{sec:future_work}) would
+reduce this gap.
