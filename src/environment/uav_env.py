@@ -428,7 +428,7 @@ class UAVEnvironment(gym.Env):
         super().reset(seed=seed)
         self.uav.reset()
         for sensor in self.sensors:
-            sensor.reset()
+            sensor.reset(initial_buffer_fill=self.np_random.uniform(0.20, 0.60))
         self.current_step = 0
         self.total_reward = 0.0
         self.total_data_collected = 0.0
@@ -708,6 +708,14 @@ class UAVEnvironment(gym.Env):
         # ===== CRITICAL: Use pre-calculated data loss (passed as parameter) =====
         self.last_step_bytes_collected = total_bytes_collected
         current_buffers = [float(s.data_buffer) for s in self.sensors]
+
+        # Mean urgency of collected sensors (before collection) — weights byte reward
+        if successful_sf_slots:
+            sensor_ids = [s.sensor_id for s in successful_sf_slots.values()]
+            mean_urgency = float(np.mean([urgencies_before[sid] for sid in sensor_ids]))
+        else:
+            mean_urgency = 0.0
+
         reward = self.reward_fn.calculate_collection_reward(
             bytes_collected=total_bytes_collected,
             was_new_sensor=len(new_sensors_collected) > 0,
@@ -719,6 +727,7 @@ class UAVEnvironment(gym.Env):
             data_loss=step_data_loss,
             urgency_reduced=urgency_reduced,
             sensor_buffers=current_buffers,
+            sensor_urgency=mean_urgency,
         )
 
         return reward

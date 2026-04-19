@@ -12,6 +12,7 @@ Author: ATILADE GABRIEL OKE
 
 import sys
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -27,20 +28,14 @@ from stable_baselines3.common.callbacks import (
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from environment.uav_env import UAVEnvironment
-from environment.iot_sensors import IoTSensor
 
-# Re-use curriculum/domain-rand infrastructure from dqn.py
 sys.path.insert(0, str(Path(__file__).parent))
 from dqn import (
     DomainRandEnv,
     CurriculumCallback,
     CURRICULUM_STAGES,
-    CURRICULUM_THRESHOLDS,
     WORKER_SENSOR_COUNTS,
     get_device,
-    _layout_uniform,
-    _layout_two_clusters,
-    _layout_four_corners,
 )
 from gnn_extractor import GNNExtractor
 
@@ -115,7 +110,7 @@ def main():
         raw = env.observation_space.shape[0]
         padded_size = raw + (MAX_SENSORS_LIMIT - EVAL_N_SENSORS) * fps
         env.observation_space = gymnasium.spaces.Box(
-            low=0.0, high=1.0, shape=(padded_size,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(padded_size,), dtype=np.float32
         )
         _fps = fps
         _orig_reset = env.reset
@@ -152,14 +147,15 @@ def main():
     policy_kwargs = {
         "features_extractor_class": GNNExtractor,
         "features_extractor_kwargs": {
-            "features_dim": 256,
-            "k":            N_STACK,
-            "max_sensors":  MAX_SENSORS_LIMIT,
-            "embed_dim":    64,
-            "n_heads":      4,
-            "gru_hidden":   128,
+            "features_dim":    256,
+            "k":               N_STACK,
+            "max_sensors":     MAX_SENSORS_LIMIT,
+            "sensor_features": SENSOR_FEATURES,
+            "embed_dim":       64,
+            "n_heads":         4,
+            "gru_hidden":      128,
         },
-        "net_arch": [256, 256],  # policy head MLP after extractor
+        "net_arch": [256, 256],
     }
 
     model = DQN(
@@ -207,7 +203,6 @@ def main():
     # ── Train ────────────────────────────────────────────────────────────
     total_ts = 10_000_000
     print("Starting training ({:,} steps)...".format(total_ts))
-    import time
     t0 = time.time()
     model.learn(
         total_timesteps = total_ts,
@@ -221,16 +216,18 @@ def main():
     print("Model saved: {}".format(SAVE_DIR / "dqn_final"))
 
     training_config = {
-        "use_frame_stacking":   True,
-        "n_stack":              N_STACK,
-        "max_sensors_limit":    MAX_SENSORS_LIMIT,
-        "features_per_sensor":  SENSOR_FEATURES,
-        "domain_randomisation": True,
-        "curriculum_stages":    [s[2] for s in CURRICULUM_STAGES],
-        "eval_grid":            list(EVAL_GRID),
-        "eval_n_sensors":       EVAL_N_SENSORS,
-        "trained_timesteps":    total_ts,
-        "extractor":            "GNNExtractor",
+        "use_frame_stacking":       True,
+        "n_stack":                  N_STACK,
+        "max_sensors_limit":        MAX_SENSORS_LIMIT,
+        "features_per_sensor":      SENSOR_FEATURES,
+        "include_sensor_positions": False,
+        "domain_randomisation":     True,
+        "curriculum_stages":        [s[2] for s in CURRICULUM_STAGES],
+        "eval_grid":                list(EVAL_GRID),
+        "eval_n_sensors":           EVAL_N_SENSORS,
+        "trained_timesteps":        total_ts,
+        "extractor":                "GNNExtractor",
+        "net_arch":                 [256, 256],
     }
     with open(SAVE_DIR / "training_config.json", "w") as f:
         json.dump(training_config, f, indent=2)

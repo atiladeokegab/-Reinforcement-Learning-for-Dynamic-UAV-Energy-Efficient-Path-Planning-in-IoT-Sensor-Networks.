@@ -126,7 +126,7 @@ def main():
         raw = env.observation_space.shape[0]
         padded_size = raw + (MAX_SENSORS_LIMIT - EVAL_N_SENSORS) * fps
         env.observation_space = gymnasium.spaces.Box(
-            low=-1.0, high=1.0, shape=(padded_size,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(padded_size,), dtype=np.float32
         )
         _orig_reset = env.reset
         _orig_step  = env.step
