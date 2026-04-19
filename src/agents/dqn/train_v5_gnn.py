@@ -2,9 +2,9 @@
 DQN v5 — GNN Feature Extractor + k=10 Frame Stack
 ===================================================
 Key changes from v4b:
-  - include_sensor_positions=True in env  → 5 features per sensor (adds Δx, Δy)
-  - GNNExtractor: sensor self-attention + GRU across 10 frames
+  - GNNExtractor: sensor self-attention (complete-graph GNN) + GRU across 10 frames
   - n_stack=10 (up from 4) for ADR convergence window (~1/λ = 10 steps)
+  - Same 3-feature obs space as v4b (buffer, urgency, link_quality)
   - Saves to models/dqn_v5_gnn/
 
 Author: ATILADE GABRIEL OKE
@@ -53,19 +53,18 @@ EVAL_GRID      = (500, 500)
 EVAL_N_SENSORS = 20
 N_STACK        = 10   # GRU temporal window ≈ 1/λ (ADR convergence)
 
-SENSOR_FEATURES = 5   # buffer, urgency, link_quality, dx, dy
-FRAME_DIM       = 3 + MAX_SENSORS_LIMIT * SENSOR_FEATURES  # 253
+SENSOR_FEATURES = 3   # buffer, urgency, link_quality
+FRAME_DIM       = 3 + MAX_SENSORS_LIMIT * SENSOR_FEATURES  # 153
 
 BASE_ENV_CONFIG = {
-    "max_steps":                2100,
-    "path_loss_exponent":       3.8,
-    "rssi_threshold":           -85.0,
-    "sensor_duty_cycle":        10.0,
-    "max_battery":              274.0,
-    "render_mode":              None,
-    "include_sensor_positions": True,
-    "penalty_battery":          0.0,
-    "reward_movement":          10.0,
+    "max_steps":          2100,
+    "path_loss_exponent": 3.8,
+    "rssi_threshold":     -85.0,
+    "sensor_duty_cycle":  10.0,
+    "max_battery":        274.0,
+    "render_mode":        None,
+    "penalty_battery":    0.0,
+    "reward_movement":    10.0,
 }
 
 SAVE_DIR = Path(__file__).parent.parent.parent.parent / "models" / "dqn_v5_gnn"
@@ -74,22 +73,8 @@ SAVE_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ==================== DOMAIN-RAND ENV WITH POSITION FEATURES ====================
-
-class DomainRandEnvV5(DomainRandEnv):
-    """DomainRandEnv with include_sensor_positions=True baked into base_config."""
-
-    def __init__(self, fixed_num_sensors, max_sensors_limit=MAX_SENSORS_LIMIT,
-                 curriculum_stage=0, base_config=None, **kwargs):
-        cfg = dict(base_config or {})
-        cfg["include_sensor_positions"] = True
-        super().__init__(
-            fixed_num_sensors = fixed_num_sensors,
-            max_sensors_limit = max_sensors_limit,
-            curriculum_stage  = curriculum_stage,
-            base_config       = cfg,
-            **kwargs,
-        )
+# Use DomainRandEnv directly — obs space is unchanged (3 features per sensor)
+DomainRandEnvV5 = DomainRandEnv
 
 
 # ==================== MAIN ====================
@@ -236,17 +221,16 @@ def main():
     print("Model saved: {}".format(SAVE_DIR / "dqn_final"))
 
     training_config = {
-        "use_frame_stacking":       True,
-        "n_stack":                  N_STACK,
-        "max_sensors_limit":        MAX_SENSORS_LIMIT,
-        "features_per_sensor":      SENSOR_FEATURES,
-        "include_sensor_positions": True,
-        "domain_randomisation":     True,
-        "curriculum_stages":        [s[2] for s in CURRICULUM_STAGES],
-        "eval_grid":                list(EVAL_GRID),
-        "eval_n_sensors":           EVAL_N_SENSORS,
-        "trained_timesteps":        total_ts,
-        "extractor":                "GNNExtractor",
+        "use_frame_stacking":   True,
+        "n_stack":              N_STACK,
+        "max_sensors_limit":    MAX_SENSORS_LIMIT,
+        "features_per_sensor":  SENSOR_FEATURES,
+        "domain_randomisation": True,
+        "curriculum_stages":    [s[2] for s in CURRICULUM_STAGES],
+        "eval_grid":            list(EVAL_GRID),
+        "eval_n_sensors":       EVAL_N_SENSORS,
+        "trained_timesteps":    total_ts,
+        "extractor":            "GNNExtractor",
     }
     with open(SAVE_DIR / "training_config.json", "w") as f:
         json.dump(training_config, f, indent=2)

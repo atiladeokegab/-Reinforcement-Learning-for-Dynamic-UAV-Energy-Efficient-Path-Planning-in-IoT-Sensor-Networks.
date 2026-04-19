@@ -6,11 +6,11 @@ Architecture:
   2. GRU across k=10 frames           — captures ADR convergence over ~10-step dwell window
   3. Current-frame UAV context        — appended at output
 
-Observation layout after VecFrameStack(k=10) — 2530-dim flat vector:
+Observation layout after VecFrameStack(k=10) — 1530-dim flat vector:
     [frame_0 | frame_1 | ... | frame_9]
-Each 253-dim frame:
-    [uav_x, uav_y, battery  |  s0_buf, s0_urg, s0_link, s0_dx, s0_dy  | ... | s49_...]
-     ^^--- UAV_FEATURES=3 ---^^  ^^--------- 50 × SENSOR_FEATURES=5 --------------------^^
+Each 153-dim frame:
+    [uav_x, uav_y, battery  |  s0_buf, s0_urg, s0_link  | ... | s49_...]
+     ^^--- UAV_FEATURES=3 ---^^  ^^--- 50 × SENSOR_FEATURES=3 ---^^
 
 Author: ATILADE GABRIEL OKE
 """
@@ -44,7 +44,7 @@ class GNNExtractor(BaseFeaturesExtractor):
     """
 
     UAV_FEATURES    = 3
-    SENSOR_FEATURES = 5   # buffer, urgency, link_quality, dx, dy
+    SENSOR_FEATURES = 3   # buffer, urgency, link_quality
 
     def __init__(
         self,
