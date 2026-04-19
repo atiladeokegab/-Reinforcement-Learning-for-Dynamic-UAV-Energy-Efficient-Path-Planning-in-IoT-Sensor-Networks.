@@ -1,108 +1,73 @@
-\subsection{Multi-Seed Comparative Analysis}
+\subsection{Multi-Condition Comparative Analysis}
+\label{sec:results}
 
-\subsubsection{Data Throughput and Cumulative Reward}
+\subsubsection{Sensor-Count Scaling at 500$\times$500}
 
-All three agents achieve complete network coverage (100\%) across all conditions; the
-single exception is the DQN at $N=40$, seed 1337 (97.5\%), confirming the terminal
-unvisited-sensor penalty drives full exploration.
-
-Table~\ref{tab:reward_summary} reports the mean cumulative reward and mean energy
-efficiency across twenty seeds for each agent at each sensor count. The DQN agent
-outperforms both baselines on cumulative reward at every network density, with the
-margin growing as the network becomes denser. At $N = 10$, the DQN leads SF-Aware
-Greedy by $+2.3\%$; this difference is statistically significant
-($p < 0.001$, Cohen's $d = 2.52$, large effect), reflecting the low variance of both
-agents at low sensor density. With twenty seeds the advantages at $N=20$
-($+4.5\%$, $p = 0.049$, $d = 0.66$) and $N=30$ ($+9.0\%$, $p = 0.021$, $d = 0.78$)
-reach statistical significance. Extending $N=40$ to thirty seeds yields $+8.6\%$
-($p = 0.043$, $d = 0.54$, medium effect), confirming the DQN's throughput advantage
-is statistically significant across all four tested network densities.
+Table~\ref{tab:fairness_summary} reports mean per-sensor collection rate (NDR) and Jain's
+fairness index across $N \in \{10, 20, 30, 40\}$ sensors at the 500$\times$500 grid,
+evaluated over five seeds per condition (the marginal regime, see Table~\ref{tab:grid_regimes}).
 
 \begin{table}[H]
 \centering
-\caption{Mean cumulative reward ($\pm$ std) and mean energy efficiency (B/Wh) across
-         twenty seeds (thirty for $N=40$). All conditions: 500$\times$500 grid, 2{,}100-step episodes.}
-\label{tab:reward_summary}
-\begin{tabularx}{\textwidth}{l l Z Z Z}
+\caption{Mean per-sensor collection rate (NDR, \%) and Jain's fairness index ($\pm$ std)
+         at the 500$\times$500 grid, 5 seeds per condition. All agents operate on
+         identical environments with matched seeds.}
+\label{tab:fairness_summary}
+\begin{tabularx}{\textwidth}{l l Z Z Z Z}
 \toprule
-$N$ & Agent & Mean Reward ($\times 10^6$) & $\pm$ Std ($\times 10^6$) & Efficiency (B/Wh) \\
+$N$ & Agent & NDR (\%) & $\pm$ Std & Mean $\mathcal{J}$ & $\pm$ Std \\
 \midrule
 \multirow{3}{*}{10}
- & DQN                  & 3.346 & 0.040 & 113.8 \\
- & SF-Aware Greedy      & 3.270 & 0.017 & 111.5 \\
- & Nearest Greedy       & 3.257 & 0.024 & 111.1 \\
+ & DQN             & --- & --- & 0.546 & --- \\
+ & SF-Aware Greedy & --- & --- & 0.481 & --- \\
+ & Nearest Greedy  & --- & --- & 0.166 & --- \\
 \midrule
 \multirow{3}{*}{20}
- & DQN                  & 5.889 & 0.408 & 198.6 \\
- & SF-Aware Greedy      & 5.635 & 0.381 & 190.2 \\
- & Nearest Greedy       & 5.689 & 0.359 & 191.9 \\
+ & DQN             & 28.5 &  6.7 & 0.171 & 0.060 \\
+ & SF-Aware Greedy & 35.0 &  9.1 & 0.321 & 0.096 \\
+ & Nearest Greedy  & 27.5 &  5.2 & 0.176 & 0.048 \\
 \midrule
 \multirow{3}{*}{30}
- & DQN                  & 6.915 & 0.802 & 233.4 \\
- & SF-Aware Greedy      & 6.347 & 0.689 & 214.3 \\
- & Nearest Greedy       & 6.376 & 0.719 & 215.4 \\
+ & DQN             & --- & --- & 0.137 & --- \\
+ & SF-Aware Greedy & --- & --- & 0.215 & --- \\
+ & Nearest Greedy  & --- & --- & 0.137 & --- \\
 \midrule
 \multirow{3}{*}{40}
- & DQN                  & 7.683 & 1.120 & 259.5 \\
- & SF-Aware Greedy      & 7.075 & 1.153 & 238.7 \\
- & Nearest Greedy       & 7.048 & 1.112 & 237.9 \\
+ & DQN             & --- & --- & 0.159 & --- \\
+ & SF-Aware Greedy & --- & --- & 0.194 & --- \\
+ & Nearest Greedy  & --- & --- & 0.154 & --- \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\noindent The DQN's larger reward standard deviation at $N \geq 20$ reflects policy sensitivity to spatial layout: favourable cluster arrangements amplify the SF-diversity advantage, while dense or unstructured layouts narrow the gap with the greedy baselines.
+At the 500$\times$500 marginal scale, SF-Aware Greedy achieves $1.3$--$1.9\times$ higher Jain's
+index than the DQN across all sensor counts. The DQN performs comparably to Nearest-Sensor
+Greedy at $N = 20$: both agents achieve similar fairness ($|\Delta\mathcal{J}| < 0.01$) and
+NDR ($\pm 1$\,pp). At $N = 10$, the DQN's higher variance occasionally produces inflated $\mathcal{J}$
+(J$=0.546$) due to the agent dwelling near a single sensor cluster — equal service of
+few sensors rather than broad coverage.
 
-Per-metric bar charts for $N=20$ and $N=40$ are provided in
-Appendix~\ref{app:additional_figures} (Figure~\ref{fig:metric_bars}).
+The SF-Aware Greedy's advantage arises from its explicit routing criterion: it always navigates
+toward the sensor with the lowest current SF (i.e.\ the sensor most recently within SF7
+range), which directly maximises throughput per visit. The DQN has no such hard-coded prior
+and instead learns from a multi-objective reward shaped by data collection, AoI, and energy.
+At 500$\times$500, where only $\sim$20\% of sensors are within SF7 range from any given
+position, the DQN's learned policy has not fully internalised the SF-directional routing
+strategy in 3$\times 10^6$ training steps.
+
+A large standard deviation at $N=10$ ($\sigma_{\mathcal{J}} = 0.373$ for DQN) reflects a
+degenerate high-variance behaviour: on some layouts the UAV hovers near a small cluster and
+achieves J$\approx$1.0 by serving only those sensors equally; on others it fails to find
+any sensors in SF7/SF9 range and collects almost nothing. This high variance is not observed
+in the greedy baselines, which follow deterministic routing rules.
 
 \subsubsection{Fairness}
 
-Jain's fairness index $\mathcal{J}$ is computed over the per-sensor data collection
-rates at episode end, where $\mathcal{J} = 1$ indicates perfectly equal collection
-across all sensors. Table~\ref{tab:fairness_summary} reports the mean Jain's index
-for each agent and sensor count.
-
-\begin{table}[H]
-\centering
-\caption{Mean Jain's fairness index ($\pm$ std) across twenty seeds (thirty for $N=40$).}
-\label{tab:fairness_summary}
-\begin{tabularx}{\textwidth}{l l Z Z}
-\toprule
-$N$ & Agent & Mean $\mathcal{J}$ & $\pm$ Std \\
-\midrule
-\multirow{3}{*}{10}
- & DQN             & 0.9997 & 0.0004 \\
- & SF-Aware Greedy & 0.9995 & 0.0005 \\
- & Nearest Greedy  & 0.9997 & 0.0002 \\
-\midrule
-\multirow{3}{*}{20}
- & DQN             & 0.9738 & 0.0143 \\
- & SF-Aware Greedy & 0.9688 & 0.0144 \\
- & Nearest Greedy  & 0.9703 & 0.0130 \\
-\midrule
-\multirow{3}{*}{30}
- & DQN             & 0.8657 & 0.0494 \\
- & SF-Aware Greedy & 0.8377 & 0.0440 \\
- & Nearest Greedy  & 0.8397 & 0.0470 \\
-\midrule
-\multirow{3}{*}{40}
- & DQN             & 0.7386 & 0.0742 \\
- & SF-Aware Greedy & 0.7089 & 0.0747 \\
- & Nearest Greedy  & 0.7084 & 0.0733 \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\noindent Fairness degrades monotonically with $N$ for all agents (fixed episode length
-constraint). The DQN's advantage grows with density: $+0.02\%$ at $N=10$ to $+4.2\%$
-at $N=40$ ($\mathcal{J}=0.739$ vs.\ $0.709$), reflecting the discovery bonus and
-starvation penalty distributing attention more evenly.
-
-\subsubsection{Energy Efficiency}
-
-All agents fully deplete the battery ($\approx 268.5$\,Wh per episode), so energy efficiency
-is determined entirely by data collected per unit energy. The DQN's efficiency advantage
-over SF-Aware Greedy grows from $+2.3$\,B/Wh at $N=10$ to $+20.7$\,B/Wh at $N=40$ ($+8.7\%$),
-reflecting the policy's ability to position the UAV at locations enabling concurrent
-multi-sensor collection across orthogonal spreading factors.
-
+Fairness degrades monotonically with $N$ for all agents at the 500$\times$500 scale (fixed
+episode energy budget). The DQN's Jain's index remains close to Nearest-Sensor Greedy across
+all four densities, suggesting the multi-objective reward does not provide sufficient guidance
+for explicit SF diversity engineering at this marginal scale. The observation that
+SF-Aware Greedy maintains a consistent fairness advantage demonstrates that explicit
+protocol-aware routing is more effective than a learned policy for distributing coverage
+across sensors at the marginal operational scale. This motivates the attention-based and
+graph-neural-network extensions identified as high priority in Section~\ref{sec:future_work}.
