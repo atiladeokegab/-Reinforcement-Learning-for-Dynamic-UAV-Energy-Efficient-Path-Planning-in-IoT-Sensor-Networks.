@@ -81,10 +81,10 @@ DomainRandEnvV5 = DomainRandEnv
 
 def main():
     print("=" * 70)
-    print("DQN v5 — GNN + k=10 (sensor positions in observation)")
+    print("DQN v5 — GNN + k=10 (self-attention + GRU)")
     print("=" * 70)
-    print("SENSOR_FEATURES: {}  (buffer, urgency, link, dx, dy)".format(SENSOR_FEATURES))
-    print("FRAME_DIM:       {}  (3 UAV + 50×5 sensors)".format(FRAME_DIM))
+    print("SENSOR_FEATURES: {}  (buffer, urgency, link_quality)".format(SENSOR_FEATURES))
+    print("FRAME_DIM:       {}  (3 UAV + 50×3 sensors)".format(FRAME_DIM))
     print("N_STACK:         {}  (temporal GRU window)".format(N_STACK))
     print("Total obs:       {}".format(N_STACK * FRAME_DIM))
     print()
@@ -111,11 +111,11 @@ def main():
             num_sensors = EVAL_N_SENSORS,
             **BASE_ENV_CONFIG,
         )
+        fps = SENSOR_FEATURES  # 3 — matches DomainRandEnv padding
         raw = env.observation_space.shape[0]
-        fps = env._features_per_sensor
         padded_size = raw + (MAX_SENSORS_LIMIT - EVAL_N_SENSORS) * fps
         env.observation_space = gymnasium.spaces.Box(
-            low=-1.0, high=1.0, shape=(padded_size,), dtype=np.float32
+            low=0.0, high=1.0, shape=(padded_size,), dtype=np.float32
         )
         _fps = fps
         _orig_reset = env.reset
@@ -205,7 +205,7 @@ def main():
     )
 
     # ── Train ────────────────────────────────────────────────────────────
-    total_ts = 3_000_000
+    total_ts = 10_000_000
     print("Starting training ({:,} steps)...".format(total_ts))
     import time
     t0 = time.time()
