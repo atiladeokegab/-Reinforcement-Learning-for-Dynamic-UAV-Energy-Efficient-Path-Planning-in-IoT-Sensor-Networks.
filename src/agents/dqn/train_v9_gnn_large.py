@@ -1,17 +1,24 @@
 """
-DQN v8 — GNN + k=10 + Tuned Hyperparameters (no position features)
-===================================================================
-Same tuned hyperparameters as v7 but WITHOUT sensor position features.
-3 features per sensor: (buffer, urgency, link_quality).
-Paired with v7 to isolate the effect of position data.
+DQN v9 — GNN Large: Wider Attention + Deeper GRU
+=================================================
+Builds on v7 (best validated model) with a larger GNN capacity:
+  - embed_dim:   128  (was 64)  — richer per-sensor node representation
+  - n_heads:     8    (was 4)   — finer-grained attention patterns
+  - gru_hidden:  256  (was 128) — longer temporal memory for ADR convergence
+  - net_arch:    [512, 512, 256] (unchanged from v7)
 
+All other hyperparameters identical to v7:
   - buffer_size:            300,000
   - batch_size:             128
   - exploration_fraction:   0.35
   - target_update_interval: 2,500
-  - net_arch:               [512, 512, 256]
+  - include_sensor_positions: True (5 features per sensor)
 
-Saves to models/dqn_v8_tuned_nopos/
+Motivation: Section 2.3.3 identifies clustered-layout failure as an
+architectural bottleneck in the MLP. A larger GNN may close the gap
+by encoding richer inter-sensor spatial relationships.
+
+Saves to models/dqn_v9_gnn_large/
 
 Author: ATILADE GABRIEL OKE
 """
@@ -50,8 +57,8 @@ from gnn_extractor import GNNExtractor
 MAX_SENSORS_LIMIT = 50
 N_ENVS            = 4
 N_STACK           = 10
-SENSOR_FEATURES   = 3   # buffer, urgency, link_quality
-FRAME_DIM         = 3 + MAX_SENSORS_LIMIT * SENSOR_FEATURES  # 153
+SENSOR_FEATURES   = 5   # buffer, urgency, link_quality, dx, dy
+FRAME_DIM         = 3 + MAX_SENSORS_LIMIT * SENSOR_FEATURES  # 253
 
 EVAL_GRID      = (500, 500)
 EVAL_N_SENSORS = 20
@@ -65,26 +72,24 @@ BASE_ENV_CONFIG = {
     "render_mode":              None,
     "penalty_battery":          0.0,
     "reward_movement":          10.0,
-    "include_sensor_positions": False,
+    "include_sensor_positions": True,
 }
 
-SAVE_DIR = Path(__file__).parent.parent.parent.parent / "models" / "dqn_v8_tuned_nopos"
-LOG_DIR  = Path(__file__).parent.parent.parent.parent / "logs"  / "dqn_v8_tuned_nopos"
+SAVE_DIR = Path(__file__).parent.parent.parent.parent / "models" / "dqn_v9_gnn_large"
+LOG_DIR  = Path(__file__).parent.parent.parent.parent / "logs"  / "dqn_v9_gnn_large"
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ==================== ENV ====================
 
-class DomainRandEnvV8(DomainRandEnv):
-    """DomainRandEnv with include_sensor_positions=False (3 features per sensor).
-    Explicit subclass mirrors v7's pattern to guarantee the flag is enforced
-    regardless of what BASE_ENV_CONFIG contains."""
+class DomainRandEnvV9(DomainRandEnv):
+    """DomainRandEnv with include_sensor_positions=True (5 features per sensor)."""
 
     def __init__(self, fixed_num_sensors, max_sensors_limit=MAX_SENSORS_LIMIT,
                  curriculum_stage=0, base_config=None, **kwargs):
         cfg = dict(base_config or {})
-        cfg["include_sensor_positions"] = False  # guarantee — never inherit True by accident
+        cfg["include_sensor_positions"] = True
         super().__init__(
             fixed_num_sensors = fixed_num_sensors,
             max_sensors_limit = max_sensors_limit,
@@ -98,13 +103,15 @@ class DomainRandEnvV8(DomainRandEnv):
 
 def main():
     print("=" * 70)
-    print("DQN v8 — GNN + tuned hyperparameters (no position features)")
+    print("DQN v9 — GNN Large (embed=128, heads=8, gru=256) + positions")
     print("=" * 70)
-    print("buffer_size:            300,000")
-    print("batch_size:             128")
-    print("exploration_fraction:   0.35")
-    print("target_update_interval: 2,500")
-    print("net_arch:               [512, 512, 256]")
+    print("SENSOR_FEATURES: {}  (buffer, urgency, link, dx, dy)".format(SENSOR_FEATURES))
+    print("FRAME_DIM:       {}  (3 UAV + 50x5 sensors)".format(FRAME_DIM))
+    print("N_STACK:         {}  (temporal GRU window)".format(N_STACK))
+    print("Total obs:       {}".format(N_STACK * FRAME_DIM))
+    print("GNN embed_dim:   128  (was 64 in v7)")
+    print("GNN n_heads:     8    (was 4 in v7)")
+    print("GRU hidden:      256  (was 128 in v7)")
     print()
 
     device = get_device()
@@ -113,7 +120,7 @@ def main():
     def make_train_env(rank=0):
         fixed_n = WORKER_SENSOR_COUNTS[rank % len(WORKER_SENSOR_COUNTS)]
         def _init():
-            env = DomainRandEnvV8(
+            env = DomainRandEnvV9(
                 fixed_num_sensors = fixed_n,
                 max_sensors_limit = MAX_SENSORS_LIMIT,
                 curriculum_stage  = 0,
@@ -160,7 +167,8 @@ def main():
 
     print("Obs shape (stacked): {}".format(train_vec.observation_space.shape))
     assert train_vec.observation_space.shape[0] == N_STACK * FRAME_DIM, (
-        "Expected obs dim {}, got {}.".format(
+        "Expected obs dim {}, got {}. "
+        "Check MAX_SENSORS_LIMIT and SENSOR_FEATURES.".format(
             N_STACK * FRAME_DIM, train_vec.observation_space.shape[0]
         )
     )
@@ -173,9 +181,9 @@ def main():
             "k":               N_STACK,
             "max_sensors":     MAX_SENSORS_LIMIT,
             "sensor_features": SENSOR_FEATURES,
-            "embed_dim":       64,
-            "n_heads":         4,
-            "gru_hidden":      128,
+            "embed_dim":       128,
+            "n_heads":         8,
+            "gru_hidden":      256,
         },
         "net_arch": [512, 512, 256],
     }
@@ -203,7 +211,7 @@ def main():
 
     # ── Callbacks ────────────────────────────────────────────────────────
     checkpoint_cb = CheckpointCallback(
-        save_freq=25_000, save_path=str(SAVE_DIR), name_prefix="dqn_v8",
+        save_freq=25_000, save_path=str(SAVE_DIR), name_prefix="dqn_v9",
     )
     curriculum_cb = CurriculumCallback(n_envs=N_ENVS, verbose=1)
 
@@ -238,7 +246,7 @@ def main():
         "n_stack":                  N_STACK,
         "max_sensors_limit":        MAX_SENSORS_LIMIT,
         "features_per_sensor":      SENSOR_FEATURES,
-        "include_sensor_positions": False,
+        "include_sensor_positions": True,
         "domain_randomisation":     True,
         "curriculum_stages":        [s[2] for s in CURRICULUM_STAGES],
         "eval_grid":                list(EVAL_GRID),
@@ -250,6 +258,9 @@ def main():
         "exploration_fraction":     0.35,
         "target_update_interval":   2_500,
         "net_arch":                 [512, 512, 256],
+        "embed_dim":                128,
+        "n_heads":                  8,
+        "gru_hidden":               256,
     }
     with open(SAVE_DIR / "training_config.json", "w") as f:
         json.dump(training_config, f, indent=2)

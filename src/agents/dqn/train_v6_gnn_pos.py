@@ -30,14 +30,12 @@ from stable_baselines3.common.callbacks import (
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from environment.uav_env import UAVEnvironment
-from environment.iot_sensors import IoTSensor
 
 sys.path.insert(0, str(Path(__file__).parent))
 from dqn import (
     DomainRandEnv,
     CurriculumCallback,
     CURRICULUM_STAGES,
-    CURRICULUM_THRESHOLDS,
     WORKER_SENSOR_COUNTS,
     get_device,
 )
@@ -128,7 +126,7 @@ def main():
         raw = env.observation_space.shape[0]
         padded_size = raw + (MAX_SENSORS_LIMIT - EVAL_N_SENSORS) * fps
         env.observation_space = gymnasium.spaces.Box(
-            low=-1.0, high=1.0, shape=(padded_size,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(padded_size,), dtype=np.float32
         )
         _orig_reset = env.reset
         _orig_step  = env.step

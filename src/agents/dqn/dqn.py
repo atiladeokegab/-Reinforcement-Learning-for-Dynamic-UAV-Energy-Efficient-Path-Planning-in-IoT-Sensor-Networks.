@@ -75,11 +75,13 @@ CURRICULUM_STAGES = [
     ([(100,100),(200,200),(300,300),(400,400),(500,500)],    [10,20,30,40], "Stage 4 — full feasible range"),
 ]
 
-# Fixed 2M steps per stage — stage advances by timestep only, no performance gate.
-CURRICULUM_THRESHOLDS = [2_000_000, 4_000_000, 6_000_000, 8_000_000]
+# Front-loaded: easy stages are short, hard stages get more budget.
+# Stage 0 (100): 0-1M | Stage 1 (200): 1-2M | Stage 2 (300): 2-4M
+# Stage 3 (400): 4-7M | Stage 4 (500): 7-10M
+CURRICULUM_THRESHOLDS = [1_000_000, 2_000_000, 4_000_000, 7_000_000]
 PERF_THRESHOLDS   = []   # disabled
 PERF_WINDOW       = 50
-MIN_STEPS_PER_STAGE = 2_000_000
+MIN_STEPS_PER_STAGE = 1_000_000
 
 # Fixed target config for evaluation during training (matches your baseline)
 EVAL_GRID      = (500, 500)
@@ -270,31 +272,21 @@ class DomainRandEnv(UAVEnvironment):
         # Randomise grid_size only — num_sensors is fixed for this worker
         self.grid_size = self._sample_grid()
 
-        # Randomize UAV start position so the agent learns a grid-wide policy,
-        # not a corner-biased one. Keep 10% margin from boundaries.
+        # Randomize UAV start position across the full grid so evaluation
+        # corner starts are in-distribution.
         W, H = float(self.grid_size[0]), float(self.grid_size[1])
         self.uav.start_position = np.array([
-            float(np.random.uniform(0.1 * W, 0.9 * W)),
-            float(np.random.uniform(0.1 * H, 0.9 * H)),
+            float(np.random.uniform(0.0, W)),
+            float(np.random.uniform(0.0, H)),
         ], dtype=np.float32)
 
         obs, info = super().reset(**kwargs)
 
-        # --- Layout diversification ---
-        # Sample a sensor layout every episode so the agent sees clustered and
-        # bimodal arrangements during training, not just uniform random placement.
-        # Probability mix: 70% uniform, 15% two-clusters, 15% four-corners.
+        # --- Layout: uniform random only ---
         rng = np.random.default_rng()
-        r = rng.random()
         W, H = float(self.grid_size[0]), float(self.grid_size[1])
         n = self.num_sensors
-
-        if r < 0.70:
-            new_positions = _layout_uniform(rng, W, H, n)
-        elif r < 0.85:
-            new_positions = _layout_two_clusters(rng, W, H, n)
-        else:
-            new_positions = _layout_four_corners(rng, W, H, n)
+        new_positions = _layout_uniform(rng, W, H, n)
 
         # Copy sensor config from existing sensor (avoids storing redundant attrs on env)
         s0 = self.sensors[0]

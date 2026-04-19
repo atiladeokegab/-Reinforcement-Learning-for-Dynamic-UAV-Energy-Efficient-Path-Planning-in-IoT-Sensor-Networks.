@@ -311,8 +311,10 @@ class IoTSensor:
             "sf_changes": self.get_sf_changes(),
         }
 
-    def reset(self):
-        self.data_buffer = 0.0
+    def reset(self, initial_buffer_fill: float = 1.0):
+        # Sensors start with accumulated data (UAV arrives after sensors have been running).
+        # initial_buffer_fill=1.0 means full buffer → urgency=1.0 → byte reward is live from step 1.
+        self.data_buffer = self.max_buffer_size * np.clip(initial_buffer_fill, 0.0, 1.0)
         self.spreading_factor = 12
         self.data_rate = self.LORA_DATA_RATES[12]
         self.avg_rssi = None
