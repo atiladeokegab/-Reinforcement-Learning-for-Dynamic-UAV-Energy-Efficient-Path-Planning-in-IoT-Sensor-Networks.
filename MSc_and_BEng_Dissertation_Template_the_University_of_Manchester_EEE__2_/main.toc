@@ -13,16 +13,17 @@
 \contentsline {subsubsection}{\numberline {2.1.1}The SF Monoculture and ADR Failure}{14}{subsubsection.2.1.1}%
 \contentsline {subsubsection}{\numberline {2.1.2}The Capture Effect as a Partial Remedy}{14}{subsubsection.2.1.2}%
 \contentsline {subsection}{\numberline {2.2}Existing Optimisation Approaches}{15}{subsection.2.2}%
-\contentsline {subsubsection}{\numberline {2.2.1}Algorithm Selection: DQN versus Policy-Gradient Methods}{17}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.1}Algorithm Selection: DQN versus Policy-Gradient Methods}{16}{subsubsection.2.2.1}%
 \contentsline {subsection}{\numberline {2.3}The Shift to AI-Native Networking}{17}{subsection.2.3}%
 \contentsline {subsubsection}{\numberline {2.3.1}Deep Q-Networks in Communications}{17}{subsubsection.2.3.1}%
-\contentsline {subsubsection}{\numberline {2.3.2}DRL for UAV Path Planning}{18}{subsubsection.2.3.2}%
-\contentsline {subsubsection}{\numberline {2.3.3}Information Freshness and Domain Generalisation}{18}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.2}DRL for UAV Path Planning}{17}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Architecture Selection: MLP versus Attention and Graph Neural Networks}{18}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.4}Information Freshness and Domain Generalisation}{19}{subsubsection.2.3.4}%
 \contentsline {subsection}{\numberline {2.4}Summary and Project Positioning}{19}{subsection.2.4}%
 \contentsline {subsubsection}{\numberline {2.4.1}Simulation Tool Gap}{19}{subsubsection.2.4.1}%
-\contentsline {section}{\numberline {3}Preliminaries}{20}{section.3}%
-\contentsline {subsection}{\numberline {3.1}LoRaWAN Physical Layer}{20}{subsection.3.1}%
-\contentsline {subsubsection}{\numberline {3.1.1}Spreading Factors and Orthogonality}{20}{subsubsection.3.1.1}%
+\contentsline {section}{\numberline {3}Preliminaries}{21}{section.3}%
+\contentsline {subsection}{\numberline {3.1}LoRaWAN Physical Layer}{21}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Spreading Factors and Orthogonality}{21}{subsubsection.3.1.1}%
 \contentsline {subsubsection}{\numberline {3.1.2}The Capture Effect}{21}{subsubsection.3.1.2}%
 \contentsline {subsection}{\numberline {3.2}Channel Propagation Model}{21}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Deep Reinforcement Learning}{22}{subsection.3.3}%
@@ -32,66 +33,76 @@
 \contentsline {subsubsection}{\numberline {4.1.1}UAV Kinematics and Energy Consumption}{24}{subsubsection.4.1.1}%
 \contentsline {subsubsection}{\numberline {4.1.2}Channel Model and Protocol Modelling}{25}{subsubsection.4.1.2}%
 \contentsline {subsubsection}{\numberline {4.1.3}Device Class and Traffic Model}{25}{subsubsection.4.1.3}%
-\contentsline {subsubsection}{\numberline {4.1.4}Collision Resolution via Capture Effect}{25}{subsubsection.4.1.4}%
-\contentsline {subsubsection}{\numberline {4.1.5}Gateway Architecture}{26}{subsubsection.4.1.5}%
-\contentsline {subsection}{\numberline {4.2}Problem Formulation}{26}{subsection.4.2}%
-\contentsline {subsubsection}{\numberline {4.2.1}State Space Definition}{26}{subsubsection.4.2.1}%
-\contentsline {subsubsection}{\numberline {4.2.2}Action Space Definition}{27}{subsubsection.4.2.2}%
-\contentsline {subsection}{\numberline {4.3}Sensor Placement in Simulation}{27}{subsection.4.3}%
-\contentsline {subsubsection}{\numberline {4.3.1}Stochastic Sensor Deployment}{27}{subsubsection.4.3.1}%
-\contentsline {subsubsection}{\numberline {4.3.2}Multi-Objective Reward Function}{27}{subsubsection.4.3.2}%
-\contentsline {paragraph}{Reward scale rationale.}{28}{equation.15}%
-\contentsline {subsection}{\numberline {4.4}Deep Reinforcement Learning Implementation}{28}{subsection.4.4}%
-\contentsline {subsubsection}{\numberline {4.4.1}Deep Q-Network (DQN) Architecture}{28}{subsubsection.4.4.1}%
-\contentsline {subsubsection}{\numberline {4.4.2}Probabilistic Link-Layer Model}{29}{subsubsection.4.4.2}%
-\contentsline {subsubsection}{\numberline {4.4.3}Training Convergence}{29}{subsubsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.5}Architecture and Interface}{29}{subsection.4.5}%
-\contentsline {subsubsection}{\numberline {4.5.1}Training Algorithm}{30}{subsubsection.4.5.1}%
-\contentsline {subsubsection}{\numberline {4.5.2}Hyperparameters}{30}{subsubsection.4.5.2}%
-\contentsline {subsection}{\numberline {4.6}Summary}{30}{subsection.4.6}%
-\contentsline {section}{\numberline {5}Results and Discussion}{30}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Experimental Setup}{31}{subsection.5.1}%
-\contentsline {paragraph}{Evaluation Sweeps.}{31}{subsection.5.1}%
-\contentsline {paragraph}{Baseline Agents.}{31}{subsection.5.1}%
-\contentsline {paragraph}{Evaluation Metrics.}{31}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Single-Episode Trajectory Analysis}{31}{subsection.5.2}%
-\contentsline {subsubsection}{\numberline {5.2.1}Spatial Trajectory Comparison}{32}{subsubsection.5.2.1}%
-\contentsline {subsubsection}{\numberline {5.2.2}Spreading Factor Distribution Over Time}{33}{subsubsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.3}Multi-Seed Comparative Analysis}{33}{subsection.5.3}%
-\contentsline {subsubsection}{\numberline {5.3.1}Data Throughput and Cumulative Reward}{33}{subsubsection.5.3.1}%
-\contentsline {subsubsection}{\numberline {5.3.2}Fairness}{34}{subsubsection.5.3.2}%
-\contentsline {subsubsection}{\numberline {5.3.3}Energy Efficiency}{35}{subsubsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.4}Scalability Analysis}{36}{subsection.5.4}%
-\contentsline {subsubsection}{\numberline {5.4.1}Sensor-Count Scalability}{36}{subsubsection.5.4.1}%
-\contentsline {subsubsection}{\numberline {5.4.2}Grid-Size Scalability}{36}{subsubsection.5.4.2}%
-\contentsline {subsection}{\numberline {5.5}Ablation Study}{37}{subsection.5.5}%
-\contentsline {paragraph}{A1 --- No Capture Effect.}{38}{table.caption.13}%
-\contentsline {paragraph}{A2 --- Instant ADR.}{38}{table.caption.13}%
-\contentsline {paragraph}{A3 --- No AoI Observation.}{39}{table.caption.13}%
-\contentsline {paragraph}{A4 --- No Domain Randomisation.}{39}{table.caption.13}%
-\contentsline {subsection}{\numberline {5.6}Robustness and Generalisation Analysis}{39}{subsection.5.6}%
-\contentsline {subsubsection}{\numberline {5.6.1}Sim-to-Real Perturbation Tests}{39}{subsubsection.5.6.1}%
-\contentsline {subsubsection}{\numberline {5.6.2}Cross-Layout Generalisation}{40}{subsubsection.5.6.2}%
-\contentsline {subsubsection}{\numberline {5.6.3}Hardware-in-the-Loop Preparation Analysis}{41}{subsubsection.5.6.3}%
-\contentsline {subsection}{\numberline {5.7}Discussion}{41}{subsection.5.7}%
-\contentsline {subsubsection}{\numberline {5.7.1}Mechanism of the DQN Advantage}{41}{subsubsection.5.7.1}%
-\contentsline {subsubsection}{\numberline {5.7.2}Density Dependence and Effect Sizes}{42}{subsubsection.5.7.2}%
-\contentsline {subsubsection}{\numberline {5.7.3}Limitations}{42}{subsubsection.5.7.3}%
-\contentsline {section}{\numberline {6}Conclusions and Future Work}{43}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Conclusions}{43}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Summary of Contributions}{43}{subsubsection.6.1.1}%
-\contentsline {subsubsection}{\numberline {6.1.2}Key Findings}{44}{subsubsection.6.1.2}%
-\contentsline {subsubsection}{\numberline {6.1.3}Objectives Revisited}{44}{subsubsection.6.1.3}%
-\contentsline {subsection}{\numberline {6.2}Future Work}{44}{subsection.6.2}%
-\contentsline {section}{\numberline {7}Project Management}{45}{section.7}%
-\contentsline {section}{References}{46}{section.7}%
-\contentsline {section}{Appendices}{49}{section*.16}%
+\contentsline {paragraph}{Propagation delay and ADR convergence latency.}{26}{subsubsection.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.1.4}Collision Resolution via Capture Effect}{26}{subsubsection.4.1.4}%
+\contentsline {paragraph}{Timestep-level collision model and SF independence.}{26}{equation.7}%
+\contentsline {subsubsection}{\numberline {4.1.5}Gateway Architecture}{27}{subsubsection.4.1.5}%
+\contentsline {paragraph}{One channel, one device per SF, one transmission at a time per SF.}{27}{subsubsection.4.1.5}%
+\contentsline {paragraph}{Class~A device constraint.}{27}{subsubsection.4.1.5}%
+\contentsline {paragraph}{Why SF diversity matters.}{28}{Item.10}%
+\contentsline {subsubsection}{\numberline {4.1.6}Link Budget, Collection Radius, and Operational Envelope}{28}{subsubsection.4.1.6}%
+\contentsline {paragraph}{Deriving collection radii.}{28}{subsubsection.4.1.6}%
+\contentsline {paragraph}{Justification of evaluation grid scales.}{29}{table.caption.8}%
+\contentsline {subsection}{\numberline {4.2}Problem Formulation}{30}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}State Space Definition}{30}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Action Space Definition}{31}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.3}Sensor Placement in Simulation}{31}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Stochastic Sensor Deployment}{32}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Multi-Objective Reward Function}{33}{subsubsection.4.3.2}%
+\contentsline {paragraph}{Reward scale rationale.}{33}{equation.18}%
+\contentsline {subsection}{\numberline {4.4}Deep Reinforcement Learning Implementation}{33}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}Deep Q-Network (DQN) Architecture}{33}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Probabilistic Link-Layer Model}{34}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}Training Convergence}{34}{subsubsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.5}Architecture and Interface}{35}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}Training Algorithm}{35}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}Hyperparameters}{35}{subsubsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.6}Summary}{36}{subsection.4.6}%
+\contentsline {section}{\numberline {5}Results and Discussion}{36}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Experimental Setup}{36}{subsection.5.1}%
+\contentsline {paragraph}{Evaluation Sweeps.}{36}{subsection.5.1}%
+\contentsline {paragraph}{Baseline Agents.}{36}{subsection.5.1}%
+\contentsline {paragraph}{Evaluation Metrics.}{37}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Single-Episode Trajectory Analysis}{37}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Spatial Trajectory Comparison}{37}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}Spreading Factor Distribution Over Time}{38}{subsubsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.3}Multi-Condition Comparative Analysis}{38}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}Sensor-Count Scaling at 500$\times $500}{38}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}Fairness}{40}{subsubsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.4}Operational Envelope: Grid-Scale Analysis}{40}{subsection.5.4}%
+\contentsline {paragraph}{Trivial regime (100$\times $100).}{41}{table.caption.13}%
+\contentsline {paragraph}{Feasible regime (300$\times $300).}{41}{table.caption.13}%
+\contentsline {paragraph}{Marginal regime (500$\times $500).}{41}{table.caption.13}%
+\contentsline {paragraph}{Infeasible regime (1,000$\times $1,000).}{41}{table.caption.13}%
+\contentsline {paragraph}{Discussion.}{41}{table.caption.13}%
+\contentsline {subsection}{\numberline {5.5}Ablation Study}{42}{subsection.5.5}%
+\contentsline {paragraph}{Interpretation: physical constraints dominate at the marginal scale.}{42}{table.caption.14}%
+\contentsline {paragraph}{A1 --- No Capture Effect.}{43}{table.caption.14}%
+\contentsline {paragraph}{A2 --- Instant ADR.}{43}{table.caption.14}%
+\contentsline {paragraph}{A3 --- No AoI Observation.}{43}{table.caption.14}%
+\contentsline {subsection}{\numberline {5.6}Robustness and Generalisation Analysis}{43}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}Sim-to-Real Perturbation Tests}{43}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}Cross-Layout Generalisation}{44}{subsubsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.3}Clustered Layout Curriculum: A Negative Result}{45}{subsubsection.5.6.3}%
+\contentsline {subsubsection}{\numberline {5.6.4}Hardware-in-the-Loop Preparation Analysis}{46}{subsubsection.5.6.4}%
+\contentsline {subsection}{\numberline {5.7}Discussion}{46}{subsection.5.7}%
+\contentsline {subsubsection}{\numberline {5.7.1}SF-Aware Greedy as the Dominant Heuristic}{46}{subsubsection.5.7.1}%
+\contentsline {subsubsection}{\numberline {5.7.2}What the DQN Learns}{47}{subsubsection.5.7.2}%
+\contentsline {subsubsection}{\numberline {5.7.3}Operational Envelope as the Primary Finding}{47}{subsubsection.5.7.3}%
+\contentsline {subsubsection}{\numberline {5.7.4}Limitations}{48}{subsubsection.5.7.4}%
+\contentsline {section}{\numberline {6}Conclusions and Future Work}{48}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Conclusions}{48}{subsection.6.1}%
+\contentsline {paragraph}{Key Findings.}{49}{Item.16}%
+\contentsline {subsection}{\numberline {6.2}Future Work}{50}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Project Management}{51}{section.7}%
+\contentsline {section}{References}{51}{section.7}%
+\contentsline {section}{Appendices}{55}{section*.17}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {A}Project Outline}{49}{appendix.1.A}%
-\contentsline {section}{\numberline {B}Project Plan and Gantt Chart}{50}{appendix.1.B}%
-\contentsline {section}{\numberline {C}Risk Assessment}{52}{appendix.1.C}%
-\contentsline {section}{\numberline {D}Continuing Professional Development (CPD) Log}{54}{appendix.1.D}%
-\contentsline {section}{\numberline {E}Code Repository}{57}{appendix.1.E}%
-\contentsline {section}{\numberline {F}DQN Hyperparameters}{60}{appendix.1.F}%
-\contentsline {section}{\numberline {G}Sim-to-Real Perturbation Results}{61}{appendix.1.G}%
-\contentsline {section}{\numberline {H}Additional Results Figures}{63}{appendix.1.H}%
+\contentsline {section}{\numberline {A}Project Outline}{55}{appendix.1.A}%
+\contentsline {section}{\numberline {B}Project Plan and Gantt Chart}{56}{appendix.1.B}%
+\contentsline {section}{\numberline {C}Risk Register and Health \& Safety Risk Assessment}{58}{appendix.1.C}%
+\contentsline {section}{\numberline {D}Continuing Professional Development (CPD) Log}{60}{appendix.1.D}%
+\contentsline {section}{\numberline {E}Code Repository}{63}{appendix.1.E}%
+\contentsline {section}{\numberline {F}DQN Hyperparameters}{66}{appendix.1.F}%
+\contentsline {section}{\numberline {G}Sim-to-Real Perturbation Results}{68}{appendix.1.G}%
+\contentsline {section}{\numberline {H}Additional Results Figures}{70}{appendix.1.H}%

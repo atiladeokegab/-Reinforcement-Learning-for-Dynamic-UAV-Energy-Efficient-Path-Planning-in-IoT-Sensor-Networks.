@@ -10,7 +10,7 @@ single LoRaWAN gateway can theoretically serve thousands of devices, but that th
 is highly sensitive to the SF distribution: if too many devices converge on the same
 high-SF setting, per-device throughput collapses due to intra-SF collisions and the
 resulting long Time-on-Air. These two foundational works establish the protocol constraints
-that every LoRaWAN system designer---and by extension every UAV mission planner---must
+that every LoRaWAN system designer, and by extension every UAV mission planner, must
 respect.
 
 \subsubsection{The SF Monoculture and ADR Failure}
@@ -18,13 +18,13 @@ respect.
 A critical failure mode in mobile LoRaWAN networks is the congestion collapse known as the
 ``Spreading Factor (SF) Monoculture'' or ``SF12 Well.'' Zorbas et
 al.~\cite{zorbas2025revisiting} provide a rigorous mathematical analysis of this phenomenon,
-demonstrating that the standard LoRaWAN Adaptive Data Rate (ADR) mechanism---which adjusts
-each device's SF based on a smoothed RSSI history---fails systematically in dense
+demonstrating that the standard LoRaWAN Adaptive Data Rate (ADR) mechanism, which adjusts
+each device's SF based on a smoothed RSSI history, fails systematically in dense
 deployments. Because ADR reacts to past link quality rather than current conditions, devices
 in a rapidly changing environment (such as one serviced by a moving UAV) accumulate
 outdated RSSI estimates. This latency in the ADR control loop causes devices to converge on
 high SF settings long after the UAV has moved away, eventually driving the entire network
-toward SF12---the slowest, longest Time-on-Air setting. The consequence is a self-reinforcing
+toward SF12, the slowest, longest Time-on-Air setting. The consequence is a self-reinforcing
 congestion collapse: high SF increases collision probability, reducing successful
 transmissions, which in turn prevents devices from receiving ADR downgrade commands. Zorbas
 et al.\ conclude that ``reinforcement learning models could be employed to adapt over time
@@ -43,7 +43,7 @@ Capture Effect. Croce et al.~\cite{croce2020lora} are the first to rigorously
 characterise this phenomenon through controlled software-defined radio (SDR) experiments.
 They demonstrate experimentally that collisions between two LoRa signals on the \emph{same}
 spreading factor can be resolved if the stronger signal exceeds the weaker by a power ratio
-of approximately 6\,dB---the ``capture threshold.'' Below this threshold, both packets are
+of approximately 6\,dB, the ``capture threshold.'' Below this threshold, both packets are
 lost; above it, the stronger packet is decoded successfully. This finding overturns a
 common simplifying assumption in prior LoRaWAN simulators (that any intra-SF collision
 results in mutual destruction) and has significant implications for capacity analysis.
@@ -54,10 +54,10 @@ deployments, because high-SF packets occupy the channel for longer, increasing t
 probability that a second device transmits during the same Time-on-Air window. This creates
 a direct tension between coverage (which demands high SFs at range) and capacity (which
 demands low SFs for throughput). A mobile UAV that can close the physical distance to
-sensors---reducing path loss and enabling SF downgrade via ADR---can resolve this tension
+sensors, reducing path loss and enabling SF downgrade via ADR, can resolve this tension
 dynamically, something no static gateway can achieve.
 
 This work directly incorporates the 6\,dB threshold into the collision resolution logic,
 rewarding the agent for reaching spatial positions that create the power differential
-required for capture---a design distinction from all protocol-blind trajectory planners.
+required for capture, a design distinction from all protocol-blind trajectory planners.
 

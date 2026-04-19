@@ -1,21 +1,15 @@
 \subsection{Single-Episode Trajectory Analysis}
+\label{sec:single_episode}
 
-Figure~\ref{fig:single_episode} shows a representative evaluation episode for the trained
-DQN agent on the 20-sensor, 500$\times$500 condition. The agent achieves 100\% sensor
-coverage by step~200 and sustains data collection until battery depletion at step~1{,}404,
-collecting 57{,}335\,bytes at a mean efficiency of 213.6\,B/Wh. Cumulative reward grows
-monotonically without plateauing, indicating that the agent does not idle once early sensors
-are visited---a direct consequence of the buffer-overflow penalty encouraging continued
-collection from revisited sensors.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.68\textwidth]{sensors_20/fig1_shaded_reward}
-    \caption{Cumulative reward and battery level during a single DQN evaluation episode
-             (20 sensors, 500$\times$500 grid, seed 42). Shaded band shows $\pm 1$ standard
-             deviation across seeds.}
-    \label{fig:single_episode}
-\end{figure}
+The trained DQN agent achieves 100\% sensor coverage by step~200 on the 20-sensor,
+500$\times$500 condition (mean $\pm$1 std across $n=20$ seeds; see
+Appendix~\ref{app:additional_figures}, Figure~\ref{fig:single_episode_app}). The agent
+sustains data collection until battery depletion at approximately step~1{,}400; the
+representative seed (seed~42) reaches depletion at step~1{,}404, collecting 57{,}335\,bytes
+at a mean efficiency of 213.6\,B/Wh. Cumulative reward grows monotonically without
+plateauing, indicating that the agent does not idle once early sensors are visited, a direct
+consequence of the buffer-overflow penalty encouraging continued collection from revisited
+sensors.
 
 \subsubsection{Spatial Trajectory Comparison}
 

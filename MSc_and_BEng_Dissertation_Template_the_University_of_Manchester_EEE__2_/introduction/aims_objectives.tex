@@ -1,16 +1,14 @@
 \subsection{Aims and objectives}
+\label{sec:aims}
 
-The primary aim of this project is to develop a protocol-aware Deep Reinforcement Learning
-(DRL) framework capable of optimising UAV flight trajectories for energy-efficient data
-collection in dense, unsynchronised LoRaWAN networks. The goal is to demonstrate that an
-intelligent agent can resolve the ``Spreading Factor (SF) Monoculture'' bottleneck by using
-its physical position as a direct control input for the radio protocol.
+This project develops a protocol-aware Deep Reinforcement Learning (DRL) framework that
+optimises UAV flight trajectories for energy-efficient data collection in dense, unsynchronised
+LoRaWAN networks. The central claim is that using the UAV's physical position as a direct
+control input for the radio protocol resolves the ``Spreading Factor (SF) Monoculture''
+bottleneck. A Deep Q-Network (DQN) agent is trained within a high-fidelity simulation to
+learn a network-aware policy that maximises data throughput while minimising energy consumption.
 
-Specifically, the project will train a Deep Q-Network (DQN) agent within a high-fidelity
-simulation to learn a non-obvious, network-aware policy that maximises data throughput while
-minimising energy consumption.
-
-The main objectives of the project are summarised below:
+The project objectives are:
 
 \begin{itemize}
     \item To develop a high-fidelity simulation environment compatible with the Gymnasium
@@ -24,24 +22,29 @@ The main objectives of the project are summarised below:
     Adaptive Data Rate (ADR) latency, to replicate the causal link between UAV positioning,
     RSSI, and Spreading Factor allocation.
 
-    \item To formulate the UAV data collection problem as a Markov Decision Process (MDP),
-    designing a multi-objective reward function that balances the competing goals of energy
-    conservation, data freshness (AoI), and collection volume.
+    \item To formulate the UAV data collection problem as a Partially Observable Markov
+    Decision Process (POMDP, where sensor locations and out-of-range channel states are
+    hidden from the agent), and to approximate the resulting POMDP as a tractable MDP via
+    frame stacking ($k{=}4$), designing a multi-objective reward function that balances the
+    competing goals of energy conservation, data freshness (AoI), and collection volume.
 
     \item To train a Deep Q-Network (DQN) agent to learn an emergent flight policy that
     autonomously navigates the ``Starvation vs.\ Throughput'' trade-off without human
     intervention.
 
-    \item To evaluate the performance of the protocol-aware DRL agent by comparing it against
-    two greedy path-planning baselines --- Nearest-Sensor Greedy and SF-Aware Max-Throughput
-    Greedy --- in terms of energy efficiency, fairness (Jain's Index), and total bytes
-    delivered, using rigorous multi-seed statistical testing (Welch's $t$-test, Cohen's $d$).
+    \item To evaluate the protocol-aware DRL agent against two greedy path-planning baselines
+    (Nearest-Sensor Greedy and SF-Aware Max-Throughput Greedy) in terms of energy efficiency,
+    fairness (Jain's Index), and total bytes delivered, using multi-seed statistical testing
+    (Welch's $t$-test, Cohen's $d$).
+
+    \item To characterise the operational envelope of the single-UAV system by evaluating
+    across grid scales from $100{\times}100$ to $1{,}000{\times}1{,}000$ cells, identifying
+    the physical feasibility boundary beyond which link-budget and energy constraints prevent
+    full sensor coverage regardless of policy quality.
 
     \item To assess the trade-offs between computational complexity, policy robustness, and
-    real-world feasibility, identifying the ``Sim-to-Real'' gap as a key area for future
-    research.
+    real-world feasibility, identifying the ``Sim-to-Real'' gap and the transition from
+    feasible to infeasible regimes as key findings for future research.
 \end{itemize}
 
-Collectively, these objectives demonstrate that a protocol-aware agent can generate
-energy-efficient trajectories satisfying both network fairness and throughput requirements
-without relying on pre-specified routing heuristics.
+A protocol-aware agent generates energy-efficient trajectories satisfying network fairness and throughput requirements without pre-specified routing heuristics.
