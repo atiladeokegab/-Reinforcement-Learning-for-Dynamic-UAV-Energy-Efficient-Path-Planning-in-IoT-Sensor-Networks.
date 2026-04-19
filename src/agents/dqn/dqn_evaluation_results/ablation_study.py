@@ -61,6 +61,7 @@ MAX_SENSORS_LIMIT = 50   # must match training — observation is zero-padded to
 
 # Primary model (A1, A2, A3) — DQN-v3 domain-randomised model
 _MAIN_MODEL_CANDIDATES = [
+    src_dir.parent / "models" / "dqn_v4b" / "dqn_final.zip",
     src_dir.parent / "models" / "dqn_v4a" / "dqn_final.zip",
     src_dir.parent / "models" / "dqn_v3" / "dqn_final.zip",
     src_dir.parent / "models" / "dqn_domain_rand" / "dqn_final.zip",

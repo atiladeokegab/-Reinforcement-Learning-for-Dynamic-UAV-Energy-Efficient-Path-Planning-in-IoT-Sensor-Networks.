@@ -86,11 +86,11 @@ EVAL_MAX_BATTERY = 274.0
 
 # Paths — adjust if your layout differs
 _PROJECT_ROOT      = Path(__file__).resolve().parent.parent.parent.parent.parent
-DQN_MODEL_PATH     = _PROJECT_ROOT / "models" / "dqn_v4a" / "dqn_final.zip"
-DQN_CONFIG_PATH    = _PROJECT_ROOT / "models" / "dqn_v4a" / "training_config.json"
-VEC_NORMALIZE_PATH = _PROJECT_ROOT / "models" / "dqn_v4a" / "vec_normalize.pkl"
+DQN_MODEL_PATH     = _PROJECT_ROOT / "models" / "dqn_v4b" / "dqn_final.zip"
+DQN_CONFIG_PATH    = _PROJECT_ROOT / "models" / "dqn_v4b" / "training_config.json"
+VEC_NORMALIZE_PATH = _PROJECT_ROOT / "models" / "dqn_v4b" / "vec_normalize.pkl"
 
-OUTPUT_DIR = script_dir / "sweep_v4a_results"
+OUTPUT_DIR = script_dir / "sweep_v4b_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 AGENT_STYLES = {
