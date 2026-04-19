@@ -24,8 +24,12 @@ import random
 import time
 import argparse
 import traceback
+import multiprocessing
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+# Use spawn to avoid fork+matplotlib/CUDA deadlocks on Linux
+_MP_CTX = multiprocessing.get_context("spawn")
 
 import numpy as np
 import pandas as pd
@@ -824,7 +828,7 @@ def main():
         chunks     = chunk(remaining, n_workers)
         w_args     = [(agent_name, c, str(traj_dir)) for c in chunks]
         all_rows: list = []
-        with ProcessPoolExecutor(max_workers=n_workers) as ex:
+        with ProcessPoolExecutor(max_workers=n_workers, mp_context=_MP_CTX) as ex:
             futs = {ex.submit(greedy_worker, a): a for a in w_args}
             for fut in as_completed(futs):
                 rows = fut.result()
@@ -848,7 +852,7 @@ def main():
         chunks = chunk(remaining, n_workers)
         w_args = [(model_info, c, device, str(traj_dir)) for c in chunks]
         all_rows = []
-        with ProcessPoolExecutor(max_workers=n_workers) as ex:
+        with ProcessPoolExecutor(max_workers=n_workers, mp_context=_MP_CTX) as ex:
             futs = {ex.submit(dqn_worker, a): a for a in w_args}
             for fut in as_completed(futs):
                 rows = fut.result()
