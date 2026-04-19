@@ -292,13 +292,13 @@ OUTPUT_DIR = script_dir / "baseline_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DQN_MODEL_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4a" / "dqn_final.zip"
+    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "dqn_final.zip"
 )
 DQN_CONFIG_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4a" / "training_config.json"
+    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "training_config.json"
 )
 VEC_NORMALIZE_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4a" / "vec_normalize.pkl"
+    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "vec_normalize.pkl"
 )
 
 PLOT_CONFIG = {
