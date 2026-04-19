@@ -1,8 +1,11 @@
 \subsection{Problem Formulation}
 
-We formulate the UAV trajectory optimisation problem as a finite-horizon Markov Decision
-Process (MDP). The objective is to maximise total collected data throughput subject to
-energy, kinematic, and protocol constraints:
+We formulate the UAV trajectory optimisation problem as a finite-horizon Partially
+Observable Markov Decision Process (POMDP). The agent does not observe sensor locations
+directly, and the link-quality signal $Q_{i,t}$ is zero for all out-of-range sensors,
+leaving channel state and SF distributions beyond the UAV's current footprint hidden.
+The objective is to maximise total collected data throughput subject to energy, kinematic,
+and protocol constraints:
 \begin{align}
     \text{(P1):} \quad \max_{\pi} \quad & \sum_{t=0}^{T} \sum_{i=1}^{N} D_{i,t}
         \label{eq:p1_obj} \\
@@ -41,20 +44,30 @@ is the per-sensor buffer occupancy, and $U_t \in [0,1]^N$ is a normalised urgenc
 Urgency captures imminent overflow risk more directly than classical Age of
 Information~\cite{kaul2012realtime}: a sensor with a near-full buffer and a fast
 generation rate has high urgency regardless of how long its data has been waiting.
-The total state dimensionality is $3 + 2N$; spreading factors are not observed
-explicitly --- their effect is captured implicitly through buffer and urgency
-dynamics (high $U_{i,t}$ despite proximity signals SF12 congestion).
+A third per-sensor feature, link quality $Q_{i,t} \in [0,1]$, encodes the sensor's
+current Spreading Factor normalised to $[0,1]$ (SF7 $\mapsto$ 1.0, SF12 $\mapsto$ 0.1),
+providing the agent with a direct signal of spectral efficiency at each sensor:
+\begin{equation}
+    Q_{i,t} = \begin{cases}
+        \text{SF\_norm}(\text{SF}_{i,t}) & \text{if sensor } i \text{ in range} \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{equation}
+The total state dimensionality is therefore $3 + 3N$ (UAV position, battery, and per-sensor
+buffer, urgency, and link quality). The link quality feature allows the agent to observe
+ADR convergence progress directly, complementing the temporal trend information provided
+by frame stacking.
 
-To make the environment effectively Markovian under partial observability, we employ
+To make the environment approximately Markovian under partial observability, we employ
 frame stacking with $k=4$ steps:
 \begin{equation}
     \mathbf{S}_t^{\text{stacked}} = [\mathbf{S}_{t-3},\, \mathbf{S}_{t-2},\, \mathbf{S}_{t-1},\, \mathbf{S}_t]
-    \in \mathbb{R}^{4(3+2N)}
+    \in \mathbb{R}^{4(3+3N)}
     \label{eq:stacked_state}
 \end{equation}
-The temporal window lets the agent observe urgency trends and infer SF dynamics (rapidly
-rising urgency despite proximity indicates SF12 congestion) without explicitly tracking
-spreading factor history.
+The temporal window lets the agent observe urgency and link-quality trends, inferring
+SF convergence dynamics (link quality rising over consecutive steps signals EMA-ADR
+downgrading from SF12 toward SF7) without explicitly tracking the ADR filter state.
 
 \subsubsection{Action Space Definition}
 

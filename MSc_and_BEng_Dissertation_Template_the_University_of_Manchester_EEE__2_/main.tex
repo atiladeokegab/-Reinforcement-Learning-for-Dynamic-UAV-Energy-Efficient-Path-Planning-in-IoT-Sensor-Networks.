@@ -63,6 +63,14 @@
 \usepackage{listings}              % for \lstinline inline code formatting
 % Add your packages here
 
+% Override class font: use Calibri directly (installed on Windows via Office)
+% Placed last in preamble so it overrides the class's \setmainfont{Carlito}
+\setmainfont[
+  Ligatures=TeX,
+  BoldFont={Calibri Bold},
+  ItalicFont={Calibri Italic},
+  BoldItalicFont={Calibri Bold Italic}
+]{Calibri}
 
 % Custom commands
 \newcommand{\degree}{\ensuremath{^\circ}}
@@ -72,6 +80,8 @@
 \newcolumntype{Z}{>{\centering\arraybackslash}X}  % tabularx centered columns 
 % Add your custom commands here
 
+% Handbook §9.2: text must be left-aligned throughout (incl. abstract, front matter)
+\AtBeginDocument{\raggedright}
 
 
 %%%%%%%%%%%%%%%%%% REFERENCES SETUP %%%%%%%%%%%%%%%%%%
@@ -151,7 +161,6 @@
 	
 	%%%%%%%%%%%%%%%%%% Start content %%%%%%%%%%%%%%%%%%
 	\uomstartmainbody % Don't delete. used to flag to the hyperlinks in the PDF that the main content is starting
-	\raggedright       % handbook §9.2: text must be left-aligned, not fully justified
 
 	%%%%%%%%%%%%%%%%%% ABBREVIATIONS %%%%%%%%%%%%%%%%%%
 	\input{abbreviations}
@@ -178,7 +187,6 @@
 	\input{project_management}
 
 	%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%
-	\clearpage
 	\printbibliography[title={References},heading=bibintoc]
 
 	%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%

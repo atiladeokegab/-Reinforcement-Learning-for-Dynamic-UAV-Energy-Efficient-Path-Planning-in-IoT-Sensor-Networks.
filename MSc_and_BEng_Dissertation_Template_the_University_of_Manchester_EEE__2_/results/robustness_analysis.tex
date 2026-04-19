@@ -20,7 +20,7 @@ of only $-0.7\%$, confirming the policy is robust to moderate channel model erro
 \noindent\textbf{Duty-cycle tightening}: Reducing sensor duty cycle from 10\% to 6\%
 degrades reward by $-8.7\%$; tightening to 4\% degrades by $-14.2\%$. This is the most
 significant sensitivity identified and reflects a genuine physical dependency: stricter
-duty cycles reduce the number of transmission windows per step, fundamentally limiting
+duty cycles reduce the number of transmission windows per step, limiting
 achievable throughput regardless of policy quality. The full per-condition breakdown is
 provided in Appendix~\ref{app:sim_to_real}.
 
@@ -38,9 +38,10 @@ $p=0.002$, $d=1.70$): large effects confirm reliable advantage on geometrically 
 difference ($p>0.50$ for all three), consistent with the training distribution covering
 analogous spatial arrangements.
 \emph{Bimodal} (two dense clusters, $-14.0\%$, $p<0.001$, $d=5.33$): the very large effect
-identifies the precise failure boundary — bimodal distributions absent from the training
-curriculum where the Greedy's visit-nearest heuristic is near-optimal. This directly motivates
-the clustered layout curriculum extension (Section~\ref{sec:future_work}).
+identifies the precise failure boundary: bimodal distributions absent from the training
+curriculum where the Greedy's visit-nearest heuristic is near-optimal.
+This motivated the clustered layout curriculum extension described in
+Section~\ref{sec:clustered_curriculum}.
 Full per-layout bar charts are in Appendix~\ref{app:sim_to_real}.
 
 \begin{table}[H]
@@ -62,30 +63,59 @@ Two dense clusters              & $\mathbf{-14.0}$ & $<0.001$\textsuperscript{**
 \end{tabular}
 \end{table}
 
+\subsubsection{Clustered Layout Curriculum: A Negative Result}
+\label{sec:clustered_curriculum}
+
+To test whether the bimodal failure is addressable without architectural changes, the
+domain-randomisation curriculum was extended to include structurally diverse sensor placements.
+During fine-tuning from the 2\,M-step checkpoint, each episode independently samples one of
+three layout distributions: 70\% uniform random (the original training distribution), 15\%
+bimodal two-cluster, and 15\% four-corner clustered, using a reduced learning rate
+$\eta = 10^{-5}$ for 500\,k additional timesteps.
+
+Table~\ref{tab:cross_layout_ft} reports the before/after results for the two-cluster layout.
+
+\begin{table}[H]
+\centering
+\caption{Two-cluster layout performance before and after clustered curriculum fine-tuning
+         ($N=20$, $500\times500$, $n=10$ seeds, Welch's $t$-test vs.\ SF-Aware Greedy).}
+\label{tab:cross_layout_ft}
+\begin{tabular}{lccc}
+\toprule
+Model & DQN Adv.\ (\%) & $p$ & Cohen's $d$ \\
+\midrule
+Original (uniform curriculum)     & $-14.0$ & $<0.001$\textsuperscript{***} & $5.33$ \\
+Fine-tuned (clustered curriculum) & $-15.1$ & $<0.001$\textsuperscript{***} & $4.87$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The curriculum fine-tuning does not close the bimodal gap: the two-cluster disadvantage
+persists at $-15.1\%$ ($d=4.87$), unchanged from the original $-14.0\%$
+($d=5.33$). Performance on the uniform-random layout improves marginally ($+3.6\%$ vs.\
+$+2.7\%$ before fine-tuning), confirming that no catastrophic forgetting of the original
+distribution occurred.
+
+This negative result is itself informative: it demonstrates that the two-cluster failure is
+\emph{not} a training distribution gap correctable by curriculum augmentation alone.
+The root cause is architectural. The bimodal layout requires the agent to partition and
+sequence coverage across two spatially separated clusters, a planning task analogous to the
+Travelling Salesman Problem with two depots. The fixed-capacity MLP with frame stacking has
+no explicit mechanism to encode cluster identity or inter-cluster routing; the
+Greedy's visit-nearest heuristic trivially produces near-optimal behaviour in this regime.
+Resolving this boundary condition requires either an attention-based architecture capable
+of encoding sensor topology~\cite{kool2018attention}, or a graph-neural-network
+policy~\cite{cappart2023combinatorial} that explicitly represents the deployment graph.
+This is identified as a primary architectural extension in Section~\ref{sec:future_work}.
+
 \subsubsection{Hardware-in-the-Loop Preparation Analysis}
 \label{sec:hil}
 
-Two additional domain shifts inherent to physical UAV platforms were evaluated to complete
-the pre-deployment robustness profile.
-
-\noindent\textbf{Systematic wind drift.}
-A constant drift vector (random direction, fixed per episode) of magnitude
-$\delta_w \in \{0, 0.5, 1.0, 2.0\}$ grid-units per step was applied to the UAV's
-position and observation.
-
-\noindent\textbf{Observation latency.}
-The observation seen by the policy was delayed by $k \in \{0, 1, 2, 4\}$ timesteps,
-modelling avionics processing delays of $0$--$400$\,ms (typical DJI SDK round-trip:
-$50$--$200$\,ms).
-
-Results are in Appendix~\ref{app:additional_figures} (Figure~\ref{fig:hil}).
-At $\delta_w = 1.0$ ($10$\,m/step) reward falls by $6.6\%$, identifying one grid cell
-per step as the primary sensitivity threshold; at extreme drift ($\delta_w = 2.0$) the
-impact is small ($-0.5\%$), consistent with the steep $1/d^4$ RSSI gradient beyond
-sensor range. Observation latency at all tested levels ($k = 1$--$4$ steps) produces
-negligible reward change, confirming immunity to delays up to $400$\,ms---a direct
-benefit of the four-frame observation stack.
-
-Together these results define a HIL readiness profile: robust to GPS noise, path-loss
-mismatch, duty-cycle variation, wind drift up to $10$\,m/step, and observation latency
-up to $400$\,ms.
+Two further domain shifts were evaluated (Figure~\ref{fig:hil}, Appendix~\ref{app:additional_figures}).
+Systematic wind drift ($\delta_w \in \{0, 0.5, 1.0, 2.0\}$ grid-units/step) reduces reward by
+$6.6\%$ at $\delta_w = 1.0$ (10\,m/step), identifying one grid cell per step as the primary
+sensitivity threshold; beyond this the steep $1/d^4$ RSSI gradient limits further degradation
+($-0.5\%$ at $\delta_w = 2.0$). Observation latency ($k \in \{1, 2, 4\}$ steps, modelling
+$50$--$400$\,ms DJI SDK round-trips) produces negligible reward change, confirming immunity to
+avionics delays, a direct benefit of the four-frame observation stack. Together with the GPS,
+path-loss, and duty-cycle results, these define the HIL readiness profile.

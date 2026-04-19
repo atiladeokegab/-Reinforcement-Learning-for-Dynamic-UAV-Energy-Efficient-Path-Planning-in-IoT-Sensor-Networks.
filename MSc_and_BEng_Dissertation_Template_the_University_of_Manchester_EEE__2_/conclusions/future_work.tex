@@ -1,7 +1,31 @@
 \subsection{Future Work}
 \label{sec:future_work}
 
-Three extensions are prioritised. (1)~\textbf{Clustered layout curriculum}: the cross-layout analysis identifies bimodal sensor distributions as the primary out-of-distribution failure mode ($-14.0\%$, $d=5.33$); adding clustered and ring placement distributions to the training curriculum would directly address this boundary condition without architectural changes. (2)~\textbf{Sim-to-Real validation}: the HIL profile characterises perturbations independently; the primary remaining uncertainty is their joint effect (GPS noise, wind drift, and duty-cycle variation simultaneously), which requires hardware-in-the-loop testing over a real LoRaWAN testbed to quantify~\cite{tobin2017domain,zhao2021sim2real}. (3)~\textbf{3D trajectory and continuous actions}: fixing altitude at 100\,m abstracts the altitude-dependent RSSI breakpoint; incorporating altitude control and adopting SAC or TD3 would enable fine-grained positioning at the radial distance that maximises the Capture Effect power differential, a trade-off the current 2D discrete action space cannot express.
+Four extensions are motivated directly by the findings of this work.
 
+\begin{enumerate}
+    \item \textbf{Multi-UAV coordination}: the operational envelope analysis establishes
+    that $1{,}000{\times}1{,}000$ grids are physically infeasible for a single UAV.
+    A QMIX~\cite{rashid2018qmix} or MAPPO extension would partition sensor coverage
+    across a fleet, making large-scale deployments tractable and relaxing the fairness
+    ceiling at $N=40$ ($p=0.129$). This is the highest-priority extension.
 
+    \item \textbf{Attention/GNN architecture}: the fixed-capacity MLP with frame stacking
+    has no explicit mechanism to encode sensor topology or inter-cluster routing. An
+    attention-based policy~\cite{kool2018attention} or graph-neural-network
+    policy~\cite{cappart2023combinatorial} operating over a sensor-graph would enable the
+    agent to plan globally across spatially separated clusters, the precise failure mode
+    identified in Section~\ref{sec:clustered_curriculum}.
+
+    \item \textbf{3D trajectory and continuous actions}: the current 2D discrete action
+    space cannot express altitude control. Incorporating altitude with SAC or TD3 would
+    allow the agent to optimise its position along the radial dimension that maximises the
+    Capture Effect power differential, a degree of freedom the current formulation cannot
+    exploit.
+
+    \item \textbf{Sim-to-Real validation}: the HIL profile characterises perturbations
+    independently; quantifying their joint effect under simultaneous GPS error, path-loss
+    mismatch, and wind drift requires hardware-in-the-loop testing over a real LoRaWAN
+    testbed~\cite{tobin2017domain,zhao2021sim2real}.
+\end{enumerate}
 

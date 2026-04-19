@@ -6,44 +6,78 @@ The source code developed for this project is maintained in a version-controlled
 \subsection*{Repository Link}
 
 \begin{center}
-\texttt{https://github.com/atiladeokegab/-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks.}
+{\footnotesize\url{https://github.com/atiladeokegab/}}\\[2pt]
+{\scriptsize\url{-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks}}
 \end{center}
 
 \subsection*{Repository Structure}
 
+{\footnotesize
 \begin{verbatim}
 project/
-├── src/
-│   ├── environment/
-│   │   ├── uav_env.py              # Gymnasium environment (grid, actions, rendering)
-│   │   ├── iot_sensors.py          # LoRa sensor physics (path loss, ADR, buffers)
-│   │   └── uav.py                  # UAV position and battery model
-│   ├── rewards/
-│   │   └── reward_function.py      # Multi-objective reward (data, fairness, energy)
-│   └── agents/dqn/
-│       ├── dqn.py                  # Main training (domain randomisation + curriculum)
-│       ├── evaluate_dqn.py         # Multi-seed evaluation script
-│       ├── train_ablation_a4.py    # Ablation A4 control (fixed env, no DR)
-│       └── dqn_evaluation_results/
-│           ├── compare_agents.py       # DQN vs. greedy baselines
-│           ├── ablation_study.py       # Component ablation (4 ablations)
-│           ├── fairness_sweep.py       # Multi-condition fairness analysis
-│           ├── greedy_agents.py        # Nearest-Sensor + SF-Aware baselines
-│           ├── multi_seed_results/     # Figures for Results chapter
-│           ├── baseline_results/       # Baseline comparison figures
-│           ├── ablation_results/       # Ablation study figures
-│           └── sweep_fairness_results/ # Fairness and scalability figures
-├── models/
-│   ├── dqn_domain_rand/dqn_final.zip   # Trained DQN (domain-randomised)
-│   └── dqn_no_dr/                      # Ablation A4 model (fixed env)
-├── MSc_and_BEng_Dissertation_Template_.../
-│   └── main.tex                    # Dissertation LaTeX source
-└── README.md                       # Setup and reproduction instructions
++-- src/
+|   +-- environment/
+|   |   +-- uav_env.py       # Gymnasium environment (grid, actions, rendering)
+|   |   +-- iot_sensors.py   # LoRa sensor physics (path loss, ADR, buffers)
+|   |   +-- uav.py           # UAV position and battery model
+|   +-- rewards/
+|   |   +-- reward_function.py  # Multi-objective reward (data, fairness, energy)
+|   +-- agents/dqn/
+|       +-- dqn.py           # Main training (domain randomisation + curriculum)
+|       +-- evaluate_dqn.py  # Multi-seed evaluation script
+|       +-- train_ablation_a4.py  # Ablation A4: fixed env, no DR
+|       +-- dqn_evaluation_results/
+|           +-- compare_agents.py     # DQN vs. greedy baselines
+|           +-- ablation_study.py     # Component ablation (4 conditions)
+|           +-- fairness_sweep.py     # Multi-condition fairness analysis
+|           +-- greedy_agents.py      # Nearest-Sensor + SF-Aware baselines
+|           +-- multi_seed_results/   # Figures for Results chapter
+|           +-- baseline_results/     # Baseline comparison figures
+|           +-- ablation_results/     # Ablation study figures
+|           +-- sweep_fairness_results/  # Fairness and scalability figures
++-- models/
+|   +-- dqn_domain_rand/dqn_final.zip  # Trained DQN (domain-randomised)
+|   +-- dqn_no_dr/                     # Ablation A4 model (fixed env)
++-- MSc_and_BEng_Dissertation_Template_.../
+|   +-- main.tex             # Dissertation LaTeX source
++-- README.md                # Setup and reproduction instructions
 \end{verbatim}
+}
+
+\subsection*{Installation Instructions}
+
+The project uses \texttt{uv} for deterministic dependency management. After cloning the repository:
+
+{\footnotesize
+\begin{verbatim}
+# 1. Install uv (cross-platform)
+pip install uv
+
+# 2. Create virtual environment and install all dependencies
+uv sync
+
+# 3. (Optional) GPU acceleration ,  CUDA 12.1
+uv pip install torch==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+
+# 4. Verify installation
+uv run python -c "import gymnasium, stable_baselines3; print('OK')"
+\end{verbatim}
+}
+
+\noindent Key dependencies: \texttt{torch==2.5.1}, \texttt{stable-baselines3>=2.3}, \texttt{gymnasium>=0.29}, \texttt{numpy}, \texttt{matplotlib}, \texttt{seaborn}, \texttt{pandas}.
+
+\subsection*{Technical Details: Path Loss Model}
+
+The simulator implements the Two-Ray Ground Reflection model. The received power $P_r$ at horizontal distance $d$ is:
+\begin{equation}
+P_r = P_t G_t G_r \frac{h_t^2 h_r^2}{d^4},
+\label{eq:two_ray}
+\end{equation}
+where $P_t$ is transmit power, $G_t, G_r$ are antenna gains, and $h_t = 1.5$\,m (sensor), $h_r = 100$\,m (UAV). For $d < d_\text{cross}$ (crossover distance) the free-space Friis model is used instead. Zero-mean Gaussian shadowing $\mathcal{N}(0,\,4\,\text{dB}^2)$ is added independently per link per timestep. The path loss exponent effectively equals~4 in the Two-Ray regime, consistent with standard outdoor LoRa deployments~\cite{alhourani2014optimal}.
 
 \subsection*{Reproduction}
 
-Full instructions for setting up the Python environment, training the DQN agent, and reproducing all evaluation results are provided in the repository \texttt{README.md}. The key dependencies are PyTorch, Stable-Baselines3, Gymnasium, NumPy, and Matplotlib. All random seeds used in the evaluation ($\{42, 123, 256, 789, 1337\}$) are specified in the evaluation script to ensure reproducibility.
+Full instructions for training the DQN agent and reproducing all evaluation results are in the repository \texttt{README.md}. All random seeds used in the evaluation ($\{42, 123, 256, 789, 1337, \ldots\}$, 20 total per condition) are hard-coded in the evaluation scripts to ensure bit-exact reproducibility.
 
 \subsection*{Third-Party Code}
 

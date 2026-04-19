@@ -24,13 +24,13 @@ Condition
   & $d$ (vs.\ Full Model) \\
 \midrule
 Full Model (baseline)
-  & $6.39 \pm 3.94$ & $0.168 \pm 0.063$ & $31.1 \pm 13.5$ & --- \\
+  & $6.39 \pm 3.94$ & $0.168 \pm 0.063$ & $31.1 \pm 13.5$ &, \\
 \midrule
-A1 --- No Capture Effect
+A1: No Capture Effect
   & $6.20 \pm 3.97$ & $0.166 \pm 0.064$ & $30.5 \pm 13.6$ & $-0.049$ (negligible, $p=0.881$) \\
-A2 --- Instant ADR ($\lambda{=}1.0$)
+A2: Instant ADR ($\lambda{=}1.0$)
   & $6.73 \pm 4.08$ & $0.170 \pm 0.064$ & $32.4 \pm 13.9$ & $+0.086$ (negligible, $p=0.769$) \\
-A3 --- No AoI Observation
+A3: No AoI Observation
   & $6.39 \pm 3.94$ & $0.168 \pm 0.063$ & $31.1 \pm 13.5$ & $0.000$ (negligible, $p=1.000$) \\
 \bottomrule
 \end{tabularx}
@@ -48,7 +48,7 @@ configuration (see Table~\ref{tab:grid_regimes}). In this regime the reward vari
 random sensor layouts ($\sigma \approx 3.9 \times 10^5$) swamps the protocol-level signal,
 producing near-zero effect sizes.
 
-\paragraph{A1 --- No Capture Effect.}
+\paragraph{A1: No Capture Effect.}
 Disabling the Capture Effect produces a consistent but statistically insignificant
 reduction of $2.8\%$ in mean reward and $0.4\%$ in mean Jain's index ($d = -0.045$,
 $p = 0.888$). The directional sign is correct: the Capture Effect does rescue packets that
@@ -56,7 +56,7 @@ would otherwise be lost when multiple sensors share a Spreading Factor. However,
 500$\times$500 the agent visits too few sensors per episode for intra-SF collisions to
 accumulate into a measurable throughput difference.
 
-\paragraph{A2 --- Instant ADR.}
+\paragraph{A2: Instant ADR.}
 Replacing the EMA-ADR filter ($\lambda = 0.1$) with instantaneous RSSI-to-SF mapping
 ($\lambda = 1.0$) yields the largest observed improvement: $+6.9\%$ mean reward and
 $+4.8\%$ energy efficiency ($d = +0.110$, $p = 0.730$). Although not statistically
@@ -64,9 +64,9 @@ significant at this scale, the direction confirms that EMA-ADR latency is a real
 cost. Instant ADR is an \emph{upper bound}, not a target: it is physically unrealisable in
 deployed LoRaWAN networks. The Full-Model agent must commit to a position for
 $\sim$10 steps to allow the EMA filter to converge before the SF assignment drops to the
-lower, higher-throughput value — a dwell cost that the A2 oracle eliminates.
+lower, higher-throughput value ,  a dwell cost that the A2 oracle eliminates.
 
-\paragraph{A3 --- No AoI Observation.}
+\paragraph{A3: No AoI Observation.}
 Zeroing all urgency features is effectively indistinguishable from the Full Model
 ($d = 0.005$, $p = 0.987$). This confirms that AoI is a \emph{training shaping signal},
 not an inference-time dependency: the penalty prevents the degenerate hovering policy

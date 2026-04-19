@@ -1,8 +1,8 @@
 \subsection{The Shift to AI-Native Networking}
 
 Nguyen et al.~\cite{nguyen20226g} outline the 6G vision of AI-native networks where DRL
-manages massive, heterogeneous IoT connectivity in real time---conditions under which
-hand-crafted optimisation policies are fundamentally insufficient.
+manages massive, heterogeneous IoT connectivity in real time, conditions under which
+hand-crafted optimisation policies cannot scale.
 
 \subsubsection{Deep Q-Networks in Communications}
 
@@ -15,34 +15,73 @@ shaping and state-space design are critical: poorly chosen representations preve
 from learning the temporal patterns needed to anticipate future congestion. This directly
 motivates the frame-stacking and urgency-proxy design choices in~\autoref{sec:method}.
 
+The non-stationary reward landscape introduced by EMA-ADR convergence presents a
+particular stability challenge that on-policy methods struggle to handle. Because the
+same state--action pair yields different rewards depending on the accumulated ADR history,
+on-policy algorithms such as PPO discard relevant transitions before the ADR feedback loop
+has resolved. DQN's experience replay retains these transitions across ADR timescales,
+allowing the agent to correlate dwell behaviour with the delayed SF-downgrade reward
+that follows, a temporal gap of approximately $1/\lambda = 10$ steps that one-step
+lookahead cannot bridge. This property is central to why off-policy value-based learning
+is preferred over policy-gradient alternatives in the LoRaWAN setting.
+
 \subsubsection{DRL for UAV Path Planning}
 
 No prior work applies DRL specifically to UAV path planning in LoRaWAN networks with
-explicit ADR and Capture Effect modelling. The closest precedents operate in the cellular
-domain, where interference models are stationary and the MAC-layer dynamics (EMA-ADR,
-duty cycles) that dominate LoRaWAN throughput are absent.
+explicit ADR and Capture Effect modelling. The closest precedents (Challita et
+al.~\cite{challita2018interference}, Nemer et al.~\cite{nemer2022energyefficient}) operate
+in the cellular domain where interference models are stationary and the non-stationary
+EMA-ADR feedback loop is absent. This gap is the primary motivation for this dissertation.
 
-Challita et al.~\cite{challita2018interference} apply DRL to interference-aware path
-planning for cellular-connected UAVs, showing that a learned policy can trade off wireless
-latency against ground-user interference---achieving up to 33\% latency reduction over
-shortest-path navigation and generalising to unseen network states. This trade-off is
-directly analogous to the starvation--throughput balance addressed here, but their
-stationary interference model does not capture the non-stationary EMA-ADR feedback
-loop that makes the LoRaWAN setting harder.
+A further structural difference from prior DRL path-planning work is the coupling between
+physical positioning and MAC-layer protocol state. In cellular interference avoidance, the
+interference field is determined solely by geometry and can be estimated from a single
+observation. In LoRaWAN, the SF assignment of each sensor depends on its RSSI history
+filtered through the EMA-ADR loop: the same geometric configuration can yield entirely
+different SF distributions depending on the UAV's prior trajectory. This history-dependence
+violates the Markov property and means the agent must infer latent protocol state from
+temporal sequences rather than instantaneous observations, a qualitatively harder
+learning problem than the stationary interference settings considered by Challita et al.\
+and Nemer et al.
 
-Nemer et al.~\cite{nemer2022energyefficient} demonstrate that fairness-constrained DRL
-(SBG-AC algorithm, Jain's Fairness Index as objective) outperforms energy-only DRL,
-confirming that the reward function must explicitly penalise unequal service to prevent the
-agent converging on policies that neglect underserved nodes. This finding directly motivates
-the Age-of-Information penalty term in this work. However, Nemer et al.\ use fixed sensor
-positions and a simplified channel model, leaving open whether the fairness gains transfer
-to the stochastic, topology-varying LoRaWAN conditions that domain randomisation is
-designed to address.
+\subsubsection{Architecture Selection: MLP versus Attention and Graph Neural Networks}
+\label{sec:arch_selection}
 
-The absence of LoRaWAN-specific DRL prior work is not an oversight in this review: it
-reflects a genuine gap in the literature, confirmed by the simulation tool analysis
-(Section~\ref{sec:lit}), and constitutes the primary motivation for this
-dissertation.
+The choice of a fixed-capacity Multi-Layer Perceptron (MLP) as the policy backbone warrants
+explicit justification, since attention-based and graph neural network (GNN) architectures
+have demonstrated advantages in combinatorial routing tasks that share structural
+similarities with UAV coverage planning.
+
+Kool et al.~\cite{kool2018attention} show that attention mechanisms can learn
+permutation-invariant policies over variable-length sets of locations, a natural fit for
+problems where the agent must sequence visits across an unordered sensor deployment.
+Cappart et al.~\cite{cappart2023combinatorial} demonstrate that GNN policies that
+explicitly represent the deployment graph can generalise across topology changes that
+defeat fixed-input architectures. In principle, either approach could encode inter-sensor
+spatial relationships that the MLP with concatenated per-sensor features cannot.
+
+However, several properties of the primary evaluation regime favour the MLP. First, the
+UAV's five-action discrete space is low-dimensional; the representational bottleneck lies
+in the temporal protocol state, which frame stacking addresses without architectural
+complexity. Second, the training distribution (uniformly random sensor positions sampled
+each episode) does not impose consistent inter-sensor topology, so a graph-structured
+inductive bias offers no stable structure to exploit. The cross-layout generalisation
+analysis (\autoref{sec:robustness}) confirms this: the MLP achieves statistically
+significant advantages on geometrically regular layouts (grid-aligned, ring) and matches
+or exceeds greedy performance on dispersed layouts analogous to the training distribution.
+Third, MLP compatibility with the Stable-Baselines3 DQN implementation avoids the
+engineering overhead of custom graph-batch collation in the replay buffer, which would
+complicate the training pipeline without clear benefit for the primary regime.
+
+The failure boundary is precisely identified: bimodal two-cluster deployments ($-14.0\%$,
+$d = 5.33$, \autoref{sec:robustness}) represent a topological regime where
+inter-cluster routing decisions cannot be inferred from local positional features. A
+curriculum fine-tuning experiment (\autoref{sec:clustered_curriculum}) confirms the gap is
+architectural rather than distributional: the MLP cannot encode cluster identity or
+inter-cluster routing priority regardless of training exposure. This establishes attention
+or GNN architectures as a motivated next step rather than a speculative one, and the
+performance gap quantifies the representational cost of the MLP choice in this specific
+failure regime.
 
 \subsubsection{Information Freshness and Domain Generalisation}
 
@@ -53,7 +92,7 @@ trade-off in IoT networks, supporting the multi-term weighted reward design adop
 
 Tobin et al.~\cite{tobin2017domain} introduce Domain Randomisation to bridge the sim-to-real
 gap, subsequently validated by OpenAI~\cite{openai2019dexterous} at scale in robotic
-manipulation. Bengio et al.~\cite{bengio2009curriculum} show that curriculum learning---presenting
-training examples by increasing difficulty---produces faster convergence and better
+manipulation. Bengio et al.~\cite{bengio2009curriculum} show that curriculum learning, which presents
+training examples in order of increasing difficulty, produces faster convergence and better
 generalisation. Both techniques are combined in this work to produce a single policy
 deployable across a 100$\times$ variation in operational area without retraining.

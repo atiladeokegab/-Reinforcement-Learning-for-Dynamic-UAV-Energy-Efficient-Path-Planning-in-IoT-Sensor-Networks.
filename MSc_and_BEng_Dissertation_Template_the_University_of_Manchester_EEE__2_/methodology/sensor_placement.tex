@@ -1,5 +1,23 @@
 \subsection{Sensor Placement in Simulation}
 
+Figure~\ref{fig:system_model} illustrates the complete system model for the
+$500\times500$ evaluation condition. The UAV (DJI TB60) flies at 100\,m altitude and
+the concentric rings show the SF-specific collection radii derived in
+Section~\ref{sec:link_budget}. The charging station marks the return-to-base point
+(Assumption~4); a relay UAV is dispatched upon landing to maintain continuous coverage.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\linewidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.png}
+    \caption{System model for the $500\times500$ evaluation condition ($N=20$ sensors,
+    $h_r=100$\,m). Sensor markers are coloured by their current Spreading Factor
+    assignment. Concentric rings show the link-budget collection radius for each SF
+    (Table~\ref{tab:sf_range}). The dashed arrow indicates the UAV trajectory; the
+    dotted arrow the return-to-base path on reaching the 20\% battery reserve threshold.
+    A relay UAV is dispatched from the charging station to continue the mission.}
+    \label{fig:system_model}
+\end{figure}
+
 \subsubsection{Stochastic Sensor Deployment}
 
 Sensor coordinates are sampled from $\mathcal{U}(0, L) \times \mathcal{U}(0, W)$,
@@ -30,7 +48,7 @@ preventing information starvation.
 
 \noindent\textbf{Hover penalty} ($C_{\text{hover}} = \mathbb{I}(a_t = \text{HOVER})\cdot\lambda_{\text{hover}}$):
 a small fixed cost applied to all action types (including movement) to prevent the agent
-from idling indefinitely over a single high-rate sensor --- a failure mode observed in
+from idling indefinitely over a single high-rate sensor, a failure mode observed in
 earlier reward formulations.
 
 This shaped structure provides immediate step-level feedback that guides the agent

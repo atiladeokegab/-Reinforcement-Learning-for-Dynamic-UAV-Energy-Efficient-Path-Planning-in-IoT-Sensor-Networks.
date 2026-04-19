@@ -8,7 +8,7 @@ map the high-dimensional state vector
 \(\mathbf{S}_t\) to Q-values for the five discrete actions.
 
 The network is a 3-layer MLP with hidden dimensions [512, 512, 256] and ReLU activations.
-The input dimension is $4(3+2N)$ (frame-stacked state) and the output is 5 Q-values,
+The input dimension is $4(3+3N)$ (frame-stacked state, Section~4.2.1) and the output is 5 Q-values,
 one per action in $\mathcal{A}$.
 
 The network weights \(\theta\) are optimised using the Adam optimiser to minimise the temporal
@@ -18,14 +18,25 @@ parameters \(\theta^{-}\) is maintained and updated periodically (every \(C\) st
 
 \subsubsection{Probabilistic Link-Layer Model}
 
-Rather than binary ``in-range'' abstractions, the environment models each sensor's transmission
-success as the product of its protocol-mandated duty cycle and a sigmoid-mapped SNR.
-The instantaneous success probability $P_{\text{overall}}$ is computed by comparing the RSSI
-(derived from the Two-Ray Ground Reflection model) against the noise
-floor and the SF-specific SNR threshold. Setting a threshold of $P_{\text{overall}} > 0.5$
-forces the DQN agent to navigate the trade-off between proximity-induced signal strength and
-the stochastic availability of sensor nodes, enabling active management of link quality
-through positioning.
+Packet reception is modelled as a stochastic Bernoulli trial rather than a binary range
+predicate. The link success probability is a sigmoid function of the received SNR margin:
+\begin{equation}
+    P_{\text{link}} = \sigma\!\left(\text{SNR}_{\text{dB}} - \text{SNR}_{\text{req}}(\text{SF})\right)
+    = \frac{1}{1 + \exp\!\bigl(-(\text{SNR}_{\text{dB}} - \text{SNR}_{\text{req}}(\text{SF}))\bigr)}
+    \label{eq:p_link}
+\end{equation}
+where $\text{SNR}_{\text{dB}} = \text{RSSI} - N_0$ is the instantaneous signal-to-noise
+ratio derived from the Two-Ray path-loss model, and $\text{SNR}_{\text{req}}(\text{SF})$ is
+the SF-specific demodulation threshold~\cite{augustin2016lora}. The overall per-step
+transmission probability combines the link margin with the protocol duty-cycle constraint:
+\begin{equation}
+    P_{\text{overall}} = P_{\text{link}} \cdot P_{\text{cycle}}
+\end{equation}
+A transmission is deemed successful if $P_{\text{overall}} > u$, where $u \sim
+\mathcal{U}(0,1)$ is drawn independently at each step. This formulation ensures that
+collection yield depends continuously on SNR margin: sensors at the edge of the UAV's
+footprint contribute probabilistically rather than being admitted or excluded by a hard
+range boundary, coupling physical positioning directly to link-layer throughput.
 
 \subsubsection{Training Convergence}
 
@@ -37,10 +48,10 @@ policy learns to collect data, converging to a stable plateau. Later stages conv
 progressively higher absolute rewards ($3$--$5\times10^6$), confirming that the curriculum
 successfully bootstraps the agent from easy to hard conditions.
 
-The TD loss exhibits a spike-then-converge profile at each stage transition---the spike
+The TD loss exhibits a spike-then-converge profile at each stage transition: the spike
 reflects the temporary distribution shift as new grid sizes and sensor counts enter the
 training mix, while convergence confirms the replay buffer and target network stabilise
-learning despite this non-stationarity. Critically, no divergence occurs across any stage
+learning despite this non-stationarity. No divergence occurs across any stage
 transition, validating the curriculum ordering (small grids with few sensors first,
 progressing to large grids with dense deployments). Full convergence curves for both reward
 and TD loss across all stages are provided in Appendix~\ref{app:training}

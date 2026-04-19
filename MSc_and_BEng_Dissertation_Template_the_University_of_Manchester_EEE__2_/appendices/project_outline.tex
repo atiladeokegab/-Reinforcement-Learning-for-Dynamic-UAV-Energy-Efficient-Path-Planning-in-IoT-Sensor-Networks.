@@ -14,8 +14,11 @@ Factors and collapsing packet delivery rates.
 \subsection*{Objectives}
 \begin{enumerate}
     \item Develop a high-fidelity, Gymnasium-compatible simulation environment incorporating
-          Two-Ray Ground Reflection propagation, log-normal shadowing, EMA-based ADR latency,
-          asynchronous duty cycles, and the LoRa Capture Effect.
+          Two-Ray Ground Reflection propagation, log-normal shadowing, asynchronous duty
+          cycles, and the LoRa Capture Effect.
+    \item Model the LoRaWAN protocol constraints, specifically EMA-based ADR latency, to
+          replicate the causal link between UAV positioning, RSSI, and Spreading Factor
+          allocation.
     \item Formulate the UAV data collection task as a Markov Decision Process with a
           multi-objective reward function balancing energy efficiency, data throughput,
           and Age-of-Information urgency.

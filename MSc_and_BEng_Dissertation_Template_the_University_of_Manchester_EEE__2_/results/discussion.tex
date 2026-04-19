@@ -11,7 +11,7 @@ At the feasible scale (300$\times$300) and marginal scale (500$\times$500), the 
 Greedy baseline consistently outperforms the DQN on both coverage rate and Jain's fairness
 index. The advantage is statistically significant at 500$\times$500 ($d = -1.84$,
 $p = 0.039$). The mechanism is straightforward: SF-Aware Greedy hard-codes the key
-protocol insight --- route toward the sensor with the lowest current SF assignment ---
+protocol insight, route toward the sensor with the lowest current SF assignment , 
 which maximises both bytes per visit (lower SF = higher data rate) and SF diversity across
 simultaneously in-range sensors. The DQN, trained with a multi-objective reward that does
 not directly incentivise SF diversity, learns a policy closer to Nearest-Sensor Greedy

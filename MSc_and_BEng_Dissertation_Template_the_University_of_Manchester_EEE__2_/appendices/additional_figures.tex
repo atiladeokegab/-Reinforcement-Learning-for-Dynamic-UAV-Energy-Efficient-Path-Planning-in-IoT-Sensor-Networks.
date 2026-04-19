@@ -10,11 +10,42 @@
     \caption{Training convergence per curriculum stage (8 stages with $\geq50$ logged
              episodes shown; short interrupted stages omitted). Each line is one stage,
              coloured light-to-dark with stage index. \textbf{Left:} mean episode reward
-             --- early stages (4--6) converge at large negative values; later stages
+            , early stages (4--6) converge at large negative values; later stages
              (7, 10, 13, 15, 16) converge to $3$--$5\times10^6$.
-             \textbf{Right:} TD loss --- all stages show the spike-then-converge profile.
+             \textbf{Right:} TD loss, all stages show the spike-then-converge profile.
              Raw values in transparent colour; EMA ($w=0.9$) in bold.}
     \label{fig:training_convergence}
+\end{figure}
+
+\subsection*{Effect Size Summary}
+
+\begin{table}[H]
+\centering
+\caption{Cohen's $d$ effect sizes for DQN vs.\ SF-Aware Greedy (cumulative reward),
+         20-seed evaluation (30-seed for $N=40$). $d < 0.2$ = negligible; $0.2$--$0.5$ = small;
+         $0.5$--$0.8$ = medium; $> 0.8$ = large.}
+\label{tab:effect_sizes}
+\begin{tabularx}{\textwidth}{l Z Z Z Z}
+\toprule
+$N$ & Reward $d$ & Jain's $d$ & Efficiency $d$ & Interpretation \\
+\midrule
+10  & 2.52 & 0.43 & 2.68 & Large ($p < 0.001$) \\
+20  & 0.66 & 0.36 & 0.67 & Medium ($p = 0.049$\textsuperscript{*})  \\
+30  & 0.78 & 0.61 & 0.77 & Medium ($p = 0.021$\textsuperscript{*})  \\
+40  & 0.54 & 0.40 & 0.55 & Medium ($p = 0.043$\textsuperscript{*}) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Single-Episode Reward Curve}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{sensors_20/fig1_shaded_reward}
+    \caption{Mean cumulative reward ($\pm 1$ std, $n=20$ seeds) for the trained DQN agent
+             (20 sensors, 500$\times$500 grid). The shaded band shows inter-seed variance;
+             battery depletion occurs at approximately step~1{,}400.}
+    \label{fig:single_episode_app}
 \end{figure}
 
 \subsection*{Multi-Seed Comparative Figures}
