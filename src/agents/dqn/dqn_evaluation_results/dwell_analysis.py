@@ -75,6 +75,8 @@ OUTPUT_DIR   = script_dir / "dwell_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 CANDIDATE_MODELS = [
+    ("DQN-Movement (best)",  PROJECT_ROOT / "models/dqn_movement/best_model/best_model.zip",
+                              PROJECT_ROOT / "models/dqn_movement/training_config.json"),
     ("DQN-7 (Attn best)",    PROJECT_ROOT / "models/dqn_attention/best_model/best_model.zip",
                               PROJECT_ROOT / "models/dqn_attention/training_config.json"),
     ("DQN DR-v2 (best)",     PROJECT_ROOT / "models/dqn_domain_rand/best_model/best_model.zip",

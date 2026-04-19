@@ -8,6 +8,10 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# ieee_style lives in dqn_evaluation_results/
+sys.path.insert(0, str(Path(__file__).parent / "dqn_evaluation_results"))
+import ieee_style
+ieee_style.apply()
 from environment.uav_env import UAVEnvironment
 
 # ==================== CONFIGURATION ====================
@@ -17,7 +21,7 @@ ENV_CONFIG = {
     "num_sensors": 20,
     "max_steps": 2100,  # 2100 steps
     "path_loss_exponent": 3.8,  # Urban
-    "rssi_threshold": -120.0,
+    "rssi_threshold": -85.0,
     "render_mode": "human",  # Enable visualization window
 }
 
@@ -127,9 +131,9 @@ def plot_results(history):
 
     plt.title("DQN Agent Evaluation: Reward vs. Battery Sustainability")
     fig.tight_layout()
-    plt.savefig("evaluation_result_graph.png", dpi=300)
-    print("Graph saved to evaluation_result_graph.png")
-    plt.show()
+    ieee_style.clean_figure(fig)
+    ieee_style.save(fig, "evaluation_result_graph")
+    plt.close()
 
 
 if __name__ == "__main__":

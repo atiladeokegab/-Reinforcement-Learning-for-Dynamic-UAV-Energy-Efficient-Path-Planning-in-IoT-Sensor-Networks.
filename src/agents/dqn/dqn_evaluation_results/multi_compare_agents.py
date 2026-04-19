@@ -22,6 +22,7 @@ Author: ATILADE GABRIEL OKE
 """
 
 import sys
+import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,6 +33,8 @@ import json
 from pathlib import Path
 import time
 from scipy import stats
+import ieee_style
+ieee_style.apply()
 from stable_baselines3 import DQN
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack, VecNormalize
 
@@ -60,11 +63,12 @@ GRID_SIZES = [
 ]
 
 # Physics annotations from iot_sensors.py (grid unit=10m, UAV alt=100m)
+# Colors use Dark2[3-6] to avoid clash with AGENT_STYLES (which uses Dark2[0-2])
 GRID_PHYSICS = {
-    (100,  100): {"label": "100x100\n(1 km2)",   "sf": "SF7",        "color": "#1B5E20"},
-    (300,  300): {"label": "300x300\n(9 km2)",   "sf": "SF7/SF9",    "color": "#F9A825"},
-    (500,  500): {"label": "500x500\n(25 km2)",  "sf": "SF9/SF11",   "color": "#E65100"},
-    (1000, 1000):{"label": "1000x1000\n(100km2)","sf": "SF11/SF12",  "color": "#B71C1C"},
+    (100,  100): {"label": "100x100\n(1 km2)",   "sf": "SF7",        "color": "#e7298a"},
+    (300,  300): {"label": "300x300\n(9 km2)",   "sf": "SF7/SF9",    "color": "#66a61e"},
+    (500,  500): {"label": "500x500\n(25 km2)",  "sf": "SF9/SF11",   "color": "#e6ab02"},
+    (1000, 1000):{"label": "1000x1000\n(100km2)","sf": "SF11/SF12",  "color": "#a6761d"},
 }
 
 GRID_SWEEP_NUM_SENSORS = 20  # fixed sensor count during grid sweep
@@ -73,7 +77,7 @@ PLOT_CONFIG = {
     "grid_size":          (500, 500),
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
-    "rssi_threshold":     -120.0,
+    "rssi_threshold":     -85.0,
     "sensor_duty_cycle":  10.0,
 }
 
@@ -520,11 +524,11 @@ def interpolate_to_common_steps(histories, n_points=200):
 # ==================== STYLE ====================
 
 AGENT_STYLES = {
-    "DQN":                  {"color": "#1565C0", "linestyle": "-",  "marker": "o",
+    "DQN":                  {"color": "#1b9e77", "linestyle": "-",  "marker": "o",
                               "label": "DQN Agent (Proposed)"},
-    "SF-Aware Greedy V2":   {"color": "#C62828", "linestyle": "--", "marker": "s",
+    "SF-Aware Greedy V2":   {"color": "#d95f02", "linestyle": "--", "marker": "s",
                               "label": "SF-Aware Greedy V2"},
-    "Nearest Sensor Greedy":{"color": "#555555", "linestyle": ":",  "marker": "^",
+    "Nearest Sensor Greedy":{"color": "#7570b3", "linestyle": ":",  "marker": "^",
                               "label": "Nearest Sensor Greedy"},
 }
 AGENT_COLORS = {k: v["color"] for k, v in AGENT_STYLES.items()}
@@ -541,8 +545,7 @@ def _shaded_line(ax, steps, mean, std, style):
 
 
 def plot_shaded_reward(interp_data, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(14, 8))
     for agent, d in interp_data.items():
         _shaded_line(ax, d["steps"], d["mean_reward"], d["std_reward"],
@@ -555,15 +558,13 @@ def plot_shaded_reward(interp_data, seeds, out_dir):
     ax.set_title("Comparative Performance (Mean +- Std, n={} seeds)".format(len(seeds)),
                  fontsize=15, fontweight="bold", pad=12)
     plt.tight_layout()
-    out = out_dir / "fig1_shaded_reward.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig1_shaded_reward"))
     plt.close()
 
 
 def plot_shaded_coverage(interp_data, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(12, 6))
     for agent, d in interp_data.items():
         _shaded_line(ax, d["steps"], d["mean_coverage"], d["std_coverage"],
@@ -575,9 +576,8 @@ def plot_shaded_coverage(interp_data, seeds, out_dir):
     ax.set_title("Coverage Rate (n={} seeds, +- 1 std)".format(len(seeds)),
                  fontsize=13, fontweight="bold", pad=12)
     plt.tight_layout()
-    out = out_dir / "fig2_shaded_coverage.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig2_shaded_coverage"))
     plt.close()
 
 
@@ -588,8 +588,7 @@ def plot_summary_bars(all_summaries, seeds, out_dir):
         ("jains_index",       "Jain's Fairness Index",         "",    True),
         ("energy_efficiency", "Energy Efficiency (bytes/Wh)",  "",    True),
     ]
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, axes = plt.subplots(1, 4, figsize=(22, 7))
     fig.suptitle("Multi-Metric Summary (n={} seeds)".format(len(seeds)),
                  fontsize=16, fontweight="bold", y=1.02)
@@ -622,9 +621,8 @@ def plot_summary_bars(all_summaries, seeds, out_dir):
         ax.text(best, means[best] + stds[best] * 0.1,
                 "*", ha="center", va="bottom", fontsize=18, color="goldenrod")
     plt.tight_layout()
-    out = out_dir / "fig3_metric_bars.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig3_metric_bars"))
     plt.close()
     rows = []
     for agent, style in AGENT_STYLES.items():
@@ -640,8 +638,7 @@ def plot_summary_bars(all_summaries, seeds, out_dir):
 
 
 def plot_per_seed_variance(all_histories, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.1)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(13, 7))
     for agent, hist_list in all_histories.items():
         if not hist_list:
@@ -662,15 +659,13 @@ def plot_per_seed_variance(all_histories, out_dir):
     ax.set_title("Per-Seed Reward Traces (faint=individual, bold=mean)",
                  fontsize=13, fontweight="bold", pad=12)
     plt.tight_layout()
-    out = out_dir / "fig4_per_seed_variance.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig4_per_seed_variance"))
     plt.close()
 
 
 def plot_shaded_data_throughput(interp_data, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(12, 6))
     for agent, d in interp_data.items():
         _shaded_line(ax, d["steps"], d["mean_data"], d["std_data"], AGENT_STYLES[agent])
@@ -681,15 +676,13 @@ def plot_shaded_data_throughput(interp_data, seeds, out_dir):
     ax.set_title("Data Throughput (n={} seeds, +- 1 std)".format(len(seeds)),
                  fontsize=13, fontweight="bold", pad=12)
     plt.tight_layout()
-    out = out_dir / "fig5_data_throughput.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig5_data_throughput"))
     plt.close()
 
 
 def plot_box_plots(all_summaries, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.1)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",      "Cumulative Reward",        "1e"),
         ("final_coverage",    "Final Coverage (%)",       "%"),
@@ -735,15 +728,13 @@ def plot_box_plots(all_summaries, seeds, out_dir):
         if unit == "1e":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     plt.tight_layout()
-    out = out_dir / "fig6_box_violin.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig6_box_violin"))
     plt.close()
 
 
 def plot_convergence_stability(interp_data, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(12, 6))
     for agent, d in interp_data.items():
         style = AGENT_STYLES[agent]
@@ -756,15 +747,13 @@ def plot_convergence_stability(interp_data, seeds, out_dir):
     ax.set_title("Convergence Stability (lower = more robust, n={} seeds)".format(len(seeds)),
                  fontsize=13, fontweight="bold", pad=12)
     plt.tight_layout()
-    out = out_dir / "fig7_convergence_stability.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig7_convergence_stability"))
     plt.close()
 
 
 def plot_jains_over_time(all_histories, all_summaries, seeds, out_dir):
-    sns.set_theme(style="whitegrid", font_scale=1.15)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle("Fairness & Coverage Dynamics", fontsize=13, fontweight="bold")
 
@@ -807,9 +796,8 @@ def plot_jains_over_time(all_histories, all_summaries, seeds, out_dir):
     ax2.legend(fontsize=9, loc="lower right"); ax2.grid(axis="y", alpha=0.4, linestyle="--")
 
     plt.tight_layout()
-    out = out_dir / "fig8_jains_dynamics.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("  {}".format(out.relative_to(OUTPUT_DIR)))
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(out_dir / "fig8_jains_dynamics"))
     plt.close()
 
 
@@ -850,8 +838,7 @@ def save_raw_data(all_summaries, seeds, out_dir, label):
 
 
 def plot_scalability_metrics(results):
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",      "Cumulative Reward",             "sci"),
         ("final_coverage",    "Final Coverage (%)",            "plain"),
@@ -890,14 +877,13 @@ def plot_scalability_metrics(results):
         if fmt == "sci":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig10_sensor_scalability.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("\nSaved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig10_sensor_scalability"))
+    plt.close()
 
 
 def plot_dqn_advantage_gap(results):
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",   "Reward Advantage"),
         ("final_coverage", "Coverage Advantage (pp)"),
@@ -922,7 +908,7 @@ def plot_dqn_advantage_gap(results):
             )
             gaps.append(dqn_mean - best_g)
             errs.append(np.std([s[mk] for s in dqn_s]))
-        colors = ["#1565C0" if (g >= 0 if not np.isnan(g) else True) else "#C62828"
+        colors = ["#1b9e77" if (g >= 0 if not np.isnan(g) else True) else "#d95f02"
                   for g in gaps]
         ax.bar(SENSOR_COUNTS, gaps, color=colors, alpha=0.75, edgecolor="white",
                linewidth=1.2, width=4, zorder=3)
@@ -938,14 +924,13 @@ def plot_dqn_advantage_gap(results):
         if mk == "final_reward":
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig11_sensor_dqn_advantage.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig11_sensor_dqn_advantage"))
+    plt.close()
 
 
 def plot_scalability_heatmap(results):
-    sns.set_theme(style="white", font_scale=1.05)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",      "Cumulative\nReward"),
         ("final_coverage",    "Coverage\n(%)"),
@@ -983,9 +968,9 @@ def plot_scalability_heatmap(results):
             ax.set_ylabel("Agent", fontsize=10, fontweight="bold")
         ax.tick_params(axis="x", rotation=0); ax.tick_params(axis="y", rotation=0)
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig12_sensor_heatmap.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig12_sensor_heatmap"))
+    plt.close()
 
 
 def save_scalability_csv(results):
@@ -1004,8 +989,7 @@ def save_scalability_csv(results):
 
 
 def plot_grid_scalability_metrics(grid_results):
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",      "Cumulative Reward",             "sci"),
         ("final_coverage",    "Final Coverage (%)",            "plain"),
@@ -1058,14 +1042,13 @@ def plot_grid_scalability_metrics(grid_results):
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig13_grid_scalability.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("\nSaved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig13_grid_scalability"))
+    plt.close()
 
 
 def plot_grid_dqn_advantage(grid_results):
-    sns.set_theme(style="whitegrid", font_scale=1.3)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",   "Reward Advantage"),
         ("final_coverage", "Coverage Advantage (pp)"),
@@ -1094,7 +1077,7 @@ def plot_grid_dqn_advantage(grid_results):
             )
             gap = dqn_mean - best_g
             gaps.append(gap); errs.append(np.std([s[mk] for s in dqn_s]))
-            bar_colors.append("#1565C0" if gap >= 0 else "#C62828")
+            bar_colors.append("#1b9e77" if gap >= 0 else "#d95f02")
 
         ax.bar(x, gaps, color=bar_colors, alpha=0.75, edgecolor="white",
                linewidth=1.2, width=0.55, zorder=3)
@@ -1118,14 +1101,13 @@ def plot_grid_dqn_advantage(grid_results):
             ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig14_grid_dqn_advantage.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig14_grid_dqn_advantage"))
+    plt.close()
 
 
 def plot_grid_heatmap(grid_results):
-    sns.set_theme(style="white", font_scale=1.05)
-    plt.rcParams["font.family"] = "serif"
+    ieee_style.apply()
     metrics = [
         ("final_reward",      "Cumulative\nReward"),
         ("final_coverage",    "Coverage\n(%)"),
@@ -1170,9 +1152,9 @@ def plot_grid_heatmap(grid_results):
         ax.tick_params(axis="y", rotation=0)
 
     plt.tight_layout()
-    out = OUTPUT_DIR / "fig15_grid_heatmap.png"
-    plt.savefig(out, dpi=300, bbox_inches="tight")
-    print("Saved: {}".format(out.name)); plt.close()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(OUTPUT_DIR / "fig15_grid_heatmap"))
+    plt.close()
 
 
 def save_grid_csv(grid_results):
@@ -1191,8 +1173,15 @@ def save_grid_csv(grid_results):
 
 
 def main():
+    figures_only = "--figures-only" in sys.argv
+
+    CACHE_A = OUTPUT_DIR / "cache_sensor_sweep.pkl"
+    CACHE_B = OUTPUT_DIR / "cache_grid_sweep.pkl"
+
     print("=" * 70)
     print("MULTI-SEED x MULTI-SENSOR x MULTI-GRID EVALUATION")
+    if figures_only:
+        print("MODE: --figures-only  (loading cached results, skipping eval)")
     print("Seeds:         {}".format(SEEDS))
     print("Sensor counts: {}  (Sweep A, grid=500x500)".format(SENSOR_COUNTS))
     print("Grid sizes:    {}  (Sweep B, sensors={})".format(
@@ -1207,31 +1196,40 @@ def main():
     dqn_model       = None
     training_config = {"use_frame_stacking": True, "n_stack": 4, "max_sensors_limit": 50}
 
-    if DQN_MODEL_PATH.exists():
-        print("\nLoading DQN model from {}...".format(DQN_MODEL_PATH))
-        dqn_model       = DQN.load(DQN_MODEL_PATH)
-        training_config = load_training_config(DQN_CONFIG_PATH)
-        max_limit       = training_config.get("max_sensors_limit", 50)
-        print("  Loaded | n_stack={} | max_sensors_limit={}".format(
-            training_config.get("n_stack", 4), max_limit
-        ))
-        if any(n > max_limit for n in SENSOR_COUNTS):
-            bad = [n for n in SENSOR_COUNTS if n > max_limit]
-            print("  WARNING: sensor counts {} exceed max_sensors_limit={}".format(bad, max_limit))
-        if VEC_NORMALIZE_PATH.exists():
-            print("  vec_normalize.pkl found (auto-skipped if shape changed)")
+    if not figures_only:
+        if DQN_MODEL_PATH.exists():
+            print("\nLoading DQN model from {}...".format(DQN_MODEL_PATH))
+            dqn_model       = DQN.load(DQN_MODEL_PATH)
+            training_config = load_training_config(DQN_CONFIG_PATH)
+            max_limit       = training_config.get("max_sensors_limit", 50)
+            print("  Loaded | n_stack={} | max_sensors_limit={}".format(
+                training_config.get("n_stack", 4), max_limit
+            ))
+            if any(n > max_limit for n in SENSOR_COUNTS):
+                bad = [n for n in SENSOR_COUNTS if n > max_limit]
+                print("  WARNING: sensor counts {} exceed max_sensors_limit={}".format(bad, max_limit))
+            if VEC_NORMALIZE_PATH.exists():
+                print("  vec_normalize.pkl found (auto-skipped if shape changed)")
+            else:
+                print("  vec_normalize.pkl not found -- obs won't be normalised")
         else:
-            print("  vec_normalize.pkl not found -- obs won't be normalised")
-    else:
-        print("  DQN model not found -- running greedy baselines only.")
+            print("  DQN model not found -- running greedy baselines only.")
 
     # ── Sweep A: Sensor count ───────────────────────────────────────────
     print("\n" + "=" * 70)
     print("SWEEP A -- SENSOR COUNT  (grid=500x500)")
     print("=" * 70)
-    t0 = time.time()
-    results = run_all(dqn_model, training_config)
-    print("Sweep A done: {:.1f} min".format((time.time()-t0)/60))
+    if figures_only and CACHE_A.exists():
+        print("Loading cached Sweep A results from {}".format(CACHE_A))
+        with open(CACHE_A, "rb") as f:
+            results = pickle.load(f)
+    else:
+        t0 = time.time()
+        results = run_all(dqn_model, training_config)
+        print("Sweep A done: {:.1f} min".format((time.time()-t0)/60))
+        with open(CACHE_A, "wb") as f:
+            pickle.dump(results, f)
+        print("Cached Sweep A -> {}".format(CACHE_A))
 
     print("\n" + "=" * 70)
     print("GENERATING PER-SENSOR-COUNT FIGURES")
@@ -1266,9 +1264,17 @@ def main():
     print("\n" + "=" * 70)
     print("SWEEP B -- GRID SIZE  (sensors={})".format(GRID_SWEEP_NUM_SENSORS))
     print("=" * 70)
-    t0 = time.time()
-    grid_results = run_grid_sweep(dqn_model, training_config)
-    print("Sweep B done: {:.1f} min".format((time.time()-t0)/60))
+    if figures_only and CACHE_B.exists():
+        print("Loading cached Sweep B results from {}".format(CACHE_B))
+        with open(CACHE_B, "rb") as f:
+            grid_results = pickle.load(f)
+    else:
+        t0 = time.time()
+        grid_results = run_grid_sweep(dqn_model, training_config)
+        print("Sweep B done: {:.1f} min".format((time.time()-t0)/60))
+        with open(CACHE_B, "wb") as f:
+            pickle.dump(grid_results, f)
+        print("Cached Sweep B -> {}".format(CACHE_B))
 
     print("\n" + "=" * 70)
     print("GENERATING PER-GRID-SIZE FIGURES")

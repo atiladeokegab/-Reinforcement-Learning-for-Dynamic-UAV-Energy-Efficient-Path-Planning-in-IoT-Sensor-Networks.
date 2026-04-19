@@ -12,9 +12,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib.colors import LinearSegmentedColormap
 from scipy.interpolate import griddata
 from pathlib import Path
+import ieee_style
+ieee_style.apply()
 
 # ==================== PATHS ====================
 script_dir = Path(__file__).resolve().parent
@@ -156,7 +157,7 @@ def plot_buffer_heatmap(sensor_df, agent_name, use_voronoi=True):
     Red = Full buffers (starved sensors)
     Blue = Empty buffers (well-serviced sensors)
     """
-    plt.style.use("seaborn-v0_8-white")
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(12, 10))
 
     # Generate heatmap data
@@ -169,10 +170,9 @@ def plot_buffer_heatmap(sensor_df, agent_name, use_voronoi=True):
         )
         interpolation = "bilinear"
 
-    # Custom colormap: Blue (good) -> Yellow (warning) -> Red (critical)
-    colors = ["#0000FF", "#00FFFF", "#FFFF00", "#FF8C00", "#FF0000"]
-    n_bins = 100
-    cmap = LinearSegmentedColormap.from_list("buffer_state", colors, N=n_bins)
+    # ColorBrewer YlOrRd: yellow (low/good) → orange → red (high/critical)
+    # Sequential, colorblind-safe, print-friendly
+    cmap = plt.get_cmap("YlOrRd")
 
     # Plot heatmap
     im = ax.imshow(
@@ -262,24 +262,20 @@ def plot_buffer_heatmap(sensor_df, agent_name, use_voronoi=True):
     ax.set_aspect("equal")
 
     plt.tight_layout()
-    output_file = (
-        results_dir / f"buffer_heatmap_{agent_name.lower().replace(' ', '_')}.png"
-    )
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Heatmap saved to {output_file}")
-    plt.show()
+    stem = str(results_dir / f"buffer_heatmap_{agent_name.lower().replace(' ', '_')}")
+    ieee_style.save(plt.gcf(), stem)
+    plt.close()
 
 
 def plot_comparative_heatmaps(dqn_df, smart_df, nearest_df):
     """
     Generate side-by-side heatmaps for all agents.
     """
-    plt.style.use("seaborn-v0_8-white")
+    ieee_style.apply()
     fig, axes = plt.subplots(1, 3, figsize=(22, 7))
 
-    # Custom colormap
-    colors = ["#0000FF", "#00FFFF", "#FFFF00", "#FF8C00", "#FF0000"]
-    cmap = LinearSegmentedColormap.from_list("buffer_state", colors, N=100)
+    # ColorBrewer YlOrRd: yellow (low/good) → orange → red (high/critical)
+    cmap = plt.get_cmap("YlOrRd")
 
     agents = [
         (dqn_df, "DQN Agent", axes[0]),
@@ -371,10 +367,8 @@ def plot_comparative_heatmaps(dqn_df, smart_df, nearest_df):
     )
 
     plt.tight_layout()
-    output_file = results_dir / "buffer_heatmap_comparison.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Comparative heatmap saved to {output_file}")
-    plt.show()
+    ieee_style.save(plt.gcf(), str(results_dir / "buffer_heatmap_comparison"))
+    plt.close()
 
 
 def plot_buffer_statistics(dqn_df, smart_df, nearest_df):
@@ -386,9 +380,9 @@ def plot_buffer_statistics(dqn_df, smart_df, nearest_df):
     # 1. Buffer Fullness Distribution
     ax1 = axes[0, 0]
     for df, label, color in [
-        (dqn_df, "DQN", "#1f77b4"),
-        (smart_df, "Smart Greedy", "#d62728"),
-        (nearest_df, "Nearest Greedy", "#808080"),
+        (dqn_df, "DQN", "#1b9e77"),
+        (smart_df, "Smart Greedy", "#d95f02"),
+        (nearest_df, "Nearest Greedy", "#7570b3"),
     ]:
         if df is not None and not df.empty:
             ax1.hist(
@@ -413,7 +407,7 @@ def plot_buffer_statistics(dqn_df, smart_df, nearest_df):
     ax2 = axes[0, 1]
     agents = ["DQN", "Smart Greedy", "Nearest Greedy"]
     data_loss = []
-    colors_list = ["#1f77b4", "#d62728", "#808080"]
+    colors_list = ["#1b9e77", "#d95f02", "#7570b3"]
 
     for df in [dqn_df, smart_df, nearest_df]:
         if df is not None and not df.empty:
@@ -491,10 +485,9 @@ def plot_buffer_statistics(dqn_df, smart_df, nearest_df):
     plt.suptitle("Buffer State Statistics Summary", fontsize=15, fontweight="bold")
     plt.tight_layout()
 
-    output_file = results_dir / "buffer_statistics.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Buffer statistics plot saved to {output_file}")
-    plt.show()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(results_dir / "buffer_statistics"))
+    plt.close()
 
 
 # ==================== MAIN ====================
