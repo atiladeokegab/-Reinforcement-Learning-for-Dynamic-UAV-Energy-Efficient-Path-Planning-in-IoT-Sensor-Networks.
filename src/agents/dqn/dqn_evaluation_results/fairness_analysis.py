@@ -13,6 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+import ieee_style
+ieee_style.apply()
 
 # ==================== PATHS ====================
 script_dir = Path(__file__).resolve().parent
@@ -125,7 +127,7 @@ def plot_fairness_comparison(dqn_sensors, greedy_smart_sensors, greedy_nearest_s
     Generate comprehensive fairness comparison bar chart.
     Shows side-by-side collection rates for each sensor across all agents.
     """
-    plt.style.use("seaborn-v0_8-whitegrid")
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(16, 7))
 
     # Prepare data
@@ -145,7 +147,7 @@ def plot_fairness_comparison(dqn_sensors, greedy_smart_sensors, greedy_nearest_s
         dqn_rates,
         width,
         label="DQN Agent (Proposed)",
-        color="#1f77b4",
+        color="#1b9e77",
         edgecolor="black",
         linewidth=1.5,
         alpha=0.85,
@@ -155,7 +157,7 @@ def plot_fairness_comparison(dqn_sensors, greedy_smart_sensors, greedy_nearest_s
         smart_rates,
         width,
         label="SF-Aware Greedy V2",
-        color="#d62728",
+        color="#d95f02",
         edgecolor="black",
         linewidth=1.5,
         alpha=0.85,
@@ -165,7 +167,7 @@ def plot_fairness_comparison(dqn_sensors, greedy_smart_sensors, greedy_nearest_s
         nearest_rates,
         width,
         label="Nearest Sensor Greedy",
-        color="#808080",
+        color="#7570b3",
         edgecolor="black",
         linewidth=1.5,
         alpha=0.85,
@@ -206,20 +208,19 @@ def plot_fairness_comparison(dqn_sensors, greedy_smart_sensors, greedy_nearest_s
 
     # Add average lines for each agent
     ax.axhline(
-        y=np.mean(dqn_rates), color="#1f77b4", linestyle=":", linewidth=2, alpha=0.5
+        y=np.mean(dqn_rates), color="#1b9e77", linestyle=":", linewidth=2, alpha=0.5
     )
     ax.axhline(
-        y=np.mean(smart_rates), color="#d62728", linestyle=":", linewidth=2, alpha=0.5
+        y=np.mean(smart_rates), color="#d95f02", linestyle=":", linewidth=2, alpha=0.5
     )
     ax.axhline(
-        y=np.mean(nearest_rates), color="#808080", linestyle=":", linewidth=2, alpha=0.5
+        y=np.mean(nearest_rates), color="#7570b3", linestyle=":", linewidth=2, alpha=0.5
     )
 
     plt.tight_layout()
-    output_file = results_dir / "fairness_bar_chart.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Fairness bar chart saved to {output_file}")
-    plt.show()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(results_dir / "fairness_bar_chart"))
+    plt.close()
 
 
 def plot_fairness_metrics_table(dqn_metrics, smart_metrics, nearest_metrics):
@@ -314,10 +315,8 @@ def plot_fairness_metrics_table(dqn_metrics, smart_metrics, nearest_metrics):
 
     plt.title("Fairness Metrics Comparison", fontsize=14, fontweight="bold", pad=20)
 
-    output_file = results_dir / "fairness_metrics_table.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Fairness metrics table saved to {output_file}")
-    plt.show()
+    ieee_style.save(plt.gcf(), str(results_dir / "fairness_metrics_table"))
+    plt.close()
 
 
 # ==================== MAIN ====================

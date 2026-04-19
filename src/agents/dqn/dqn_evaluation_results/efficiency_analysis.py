@@ -13,6 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from pathlib import Path
+import ieee_style
+ieee_style.apply()
 
 # ==================== PATHS ====================
 script_dir = Path(__file__).resolve().parent
@@ -108,14 +110,14 @@ def plot_efficiency_scatter(dqn_df, smart_df, nearest_df):
     """
     Generate Pareto front scatter plot showing efficiency trade-offs.
     """
-    plt.style.use("seaborn-v0_8-whitegrid")
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(14, 9))
 
     # Plot data points with progression coloring
     agents = [
-        (dqn_df, "DQN Agent (Proposed)", "#1f77b4", "o"),
-        (smart_df, "SF-Aware Greedy V2", "#d62728", "s"),
-        (nearest_df, "Nearest Sensor Greedy", "#808080", "^"),
+        (dqn_df, "DQN Agent (Proposed)", "#1b9e77", "o"),
+        (smart_df, "SF-Aware Greedy V2", "#d95f02", "s"),
+        (nearest_df, "Nearest Sensor Greedy", "#7570b3", "^"),
     ]
 
     all_pareto_indices = []
@@ -228,23 +230,22 @@ def plot_efficiency_scatter(dqn_df, smart_df, nearest_df):
     ax.grid(True, alpha=0.4, linestyle="--")
 
     plt.tight_layout()
-    output_file = results_dir / "efficiency_pareto_front.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Efficiency scatter plot saved to {output_file}")
-    plt.show()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(results_dir / "efficiency_pareto_front"))
+    plt.close()
 
 
 def plot_efficiency_progression(dqn_df, smart_df, nearest_df):
     """
     Plot efficiency (bytes/Wh) over time for each agent.
     """
-    plt.style.use("seaborn-v0_8-whitegrid")
+    ieee_style.apply()
     fig, ax = plt.subplots(figsize=(14, 7))
 
     agents = [
-        (dqn_df, "DQN Agent (Proposed)", "#1f77b4", "-", "o"),
-        (smart_df, "SF-Aware Greedy V2", "#d62728", "-", "s"),
-        (nearest_df, "Nearest Sensor Greedy", "#808080", ":", "^"),
+        (dqn_df, "DQN Agent (Proposed)", "#1b9e77", "-",  "o"),
+        (smart_df, "SF-Aware Greedy V2", "#d95f02", "--", "s"),
+        (nearest_df, "Nearest Sensor Greedy", "#7570b3", ":", "^"),
     ]
 
     for df, label, color, linestyle, marker in agents:
@@ -282,10 +283,9 @@ def plot_efficiency_progression(dqn_df, smart_df, nearest_df):
     ax.grid(True, alpha=0.5, linestyle="--")
 
     plt.tight_layout()
-    output_file = results_dir / "efficiency_progression.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Efficiency progression plot saved to {output_file}")
-    plt.show()
+    ieee_style.clean_figure(plt.gcf())
+    ieee_style.save(plt.gcf(), str(results_dir / "efficiency_progression"))
+    plt.close()
 
 
 def plot_efficiency_comparison_table(dqn_df, smart_df, nearest_df):
@@ -379,10 +379,8 @@ def plot_efficiency_comparison_table(dqn_df, smart_df, nearest_df):
 
     plt.title("Efficiency Metrics Summary", fontsize=14, fontweight="bold", pad=20)
 
-    output_file = results_dir / "efficiency_metrics_table.png"
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"✓ Efficiency metrics table saved to {output_file}")
-    plt.show()
+    ieee_style.save(plt.gcf(), str(results_dir / "efficiency_metrics_table"))
+    plt.close()
 
 
 # ==================== MAIN ====================

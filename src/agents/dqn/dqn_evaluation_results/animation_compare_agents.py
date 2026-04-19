@@ -30,6 +30,8 @@ import time
 from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import ieee_style
+ieee_style.apply()
 
 # ==================== PATH SETUP ====================
 script_dir         = Path(__file__).resolve().parent
@@ -49,7 +51,7 @@ PLOT_CONFIG = {
     "num_sensors":        20,
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
-    "rssi_threshold": -120.0,
+    "rssi_threshold": -85.0,
     "sensor_duty_cycle":  10.0,
     "seed":               42,
 }
@@ -67,18 +69,18 @@ DQN_CONFIG_PATH = (
 
 # ==================== VISUAL THEME ====================
 COLORS = {
-    "dqn":            "#2196F3",
-    "smart_greedy":   "#F44336",
-    "dumb_greedy":    "#9E9E9E",
+    "dqn":            "#1b9e77",
+    "smart_greedy":   "#d95f02",
+    "dumb_greedy":    "#7570b3",
     "sensor":         "#FF6F00",    # amber  = unvisited
     "sensor_visited": "#00C853",    # green  = visited
     "uav":            "#FFFFFF",
     "bg":             "#0D1117",
     "grid":           "#1A2332",
     "text":           "#E0E0E0",
-    "border_dqn":     "#1565C0",
-    "border_smart":   "#C62828",
-    "border_dumb":    "#616161",
+    "border_dqn":     "#1b9e77",
+    "border_smart":   "#d95f02",
+    "border_dumb":    "#7570b3",
 }
 
 AGENT_META = [
