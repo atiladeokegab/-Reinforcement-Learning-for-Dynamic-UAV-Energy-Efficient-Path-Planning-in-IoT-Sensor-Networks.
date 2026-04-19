@@ -43,25 +43,26 @@ class GNNExtractor(BaseFeaturesExtractor):
         GRU hidden dimension.
     """
 
-    UAV_FEATURES    = 3
-    SENSOR_FEATURES = 3   # buffer, urgency, link_quality
+    UAV_FEATURES = 3
 
     def __init__(
         self,
         observation_space,
-        features_dim: int = 256,
-        k: int            = 10,
-        max_sensors: int  = 50,
-        embed_dim: int    = 64,
-        n_heads: int      = 4,
-        gru_hidden: int   = 128,
+        features_dim: int    = 256,
+        k: int               = 10,
+        max_sensors: int     = 50,
+        sensor_features: int = 3,   # 3 = (buffer, urgency, link_quality); 5 = adds (dx, dy)
+        embed_dim: int       = 64,
+        n_heads: int         = 4,
+        gru_hidden: int      = 128,
     ):
         super().__init__(observation_space, features_dim)
-        self.k           = k
-        self.max_sensors = max_sensors
-        self.embed_dim   = embed_dim
-        self.gru_hidden  = gru_hidden
-        self.frame_dim   = self.UAV_FEATURES + max_sensors * self.SENSOR_FEATURES  # 253
+        self.k               = k
+        self.max_sensors     = max_sensors
+        self.SENSOR_FEATURES = sensor_features
+        self.embed_dim       = embed_dim
+        self.gru_hidden      = gru_hidden
+        self.frame_dim       = self.UAV_FEATURES + max_sensors * sensor_features
 
         # Sensor node encoder: 5 → embed_dim
         self.sensor_proj = nn.Sequential(
