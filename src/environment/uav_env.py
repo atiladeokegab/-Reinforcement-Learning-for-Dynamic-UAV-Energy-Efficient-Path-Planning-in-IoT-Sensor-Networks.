@@ -331,6 +331,7 @@ class UAVEnvironment(gym.Env):
         reward_urgency_reduction: float = 20.0,
         penalty_battery: float = -0.5,
         reward_movement: float = 10.0,
+        include_sensor_positions: bool = False,
     ):
         """Initialize UAV environment with fairness constraints."""
 
@@ -375,11 +376,14 @@ class UAVEnvironment(gym.Env):
         )
 
         self.action_space = spaces.Discrete(5)
+        self.include_sensor_positions = include_sensor_positions
 
-        # All features normalized to [0, 1]: uav_x/W, uav_y/H, battery/max,
-        # buffer/max, urgency (already clipped), link_quality (already [0,1]).
-        obs_low  = np.zeros(3 + 3 * self.num_sensors, dtype=np.float32)
-        obs_high = np.ones(3 + 3 * self.num_sensors, dtype=np.float32)
+        # Features per sensor: 3 base (buffer, urgency, link_quality)
+        # + optional 2 position (dx, dy) when include_sensor_positions=True.
+        self._features_per_sensor = 5 if include_sensor_positions else 3
+        obs_dim = 3 + self._features_per_sensor * self.num_sensors
+        obs_low  = np.full(obs_dim, -1.0, dtype=np.float32)
+        obs_high = np.ones(obs_dim, dtype=np.float32)
         self.observation_space = spaces.Box(
             low=obs_low, high=obs_high, dtype=np.float32
         )
@@ -722,11 +726,13 @@ class UAVEnvironment(gym.Env):
         return reward
 
     def _get_observation(self) -> np.ndarray:
-        """Return normalized observation in [0, 1] for all features."""
+        """Return normalized observation for all features."""
         W, H = float(self.grid_size[0]), float(self.grid_size[1])
+        uav_x = self.uav.position[0]
+        uav_y = self.uav.position[1]
         obs_list = [
-            self.uav.position[0] / W,
-            self.uav.position[1] / H,
+            uav_x / W,
+            uav_y / H,
             self.uav.battery / self.uav.max_battery,
         ]
 
@@ -743,6 +749,10 @@ class UAVEnvironment(gym.Env):
                 urgency,
                 link_quality,
             ])
+            if self.include_sensor_positions:
+                # Relative displacement from UAV, normalised to [-1, 1]
+                obs_list.append((sensor.position[0] - uav_x) / W)
+                obs_list.append((sensor.position[1] - uav_y) / H)
 
         return np.array(obs_list, dtype=np.float32)
 
