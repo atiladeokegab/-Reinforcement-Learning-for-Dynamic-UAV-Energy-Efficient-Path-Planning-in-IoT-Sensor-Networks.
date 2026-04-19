@@ -61,13 +61,13 @@ MAX_SENSORS_LIMIT = 50   # must match training — observation is zero-padded to
 
 # Primary model (A1, A2, A3) — DQN-v3 domain-randomised model
 _MAIN_MODEL_CANDIDATES = [
-    script_dir.parent / "models" / "dqn_v4a" / "dqn_final.zip",
-    script_dir.parent / "models" / "dqn_v3" / "dqn_final.zip",
+    src_dir.parent / "models" / "dqn_v4a" / "dqn_final.zip",
+    src_dir.parent / "models" / "dqn_v3" / "dqn_final.zip",
     src_dir.parent / "models" / "dqn_domain_rand" / "dqn_final.zip",
 ]
 
 # A4 model — trained by train_ablation_a4.py
-A4_MODEL_PATH = script_dir.parent / "models" / "dqn_no_dr" / "dqn_final.zip"
+A4_MODEL_PATH = src_dir.parent / "models" / "dqn_no_dr" / "dqn_final.zip"
 
 OUTPUT_DIR = script_dir / "ablation_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
