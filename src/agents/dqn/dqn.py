@@ -68,9 +68,11 @@ def get_device():
 
 CURRICULUM_STAGES = [
     # (grid_sizes,                     sensor_counts,  description)
-    ([(100, 100), (300, 300)],          [10, 20],       "Stage 0 — SF7/SF9, small nets"),
-    ([(100, 100), (300, 300),(500,500)],[10, 20, 30],   "Stage 1 — up to SF11, mid nets"),
-    ([(100,100),(300,300),(500,500),(1000,1000)],[10,20,30,40], "Stage 2 — full distribution"),
+    # 1000×1000 removed — physically infeasible (TSP 44,700m vs d_max 15,782m),
+    # no policy can achieve >12% NDR there so it contributes only noise.
+    ([(100, 100), (300, 300)],           [10, 20],        "Stage 0 — SF7/SF9, small nets"),
+    ([(100, 100), (300, 300), (500,500)],[10, 20, 30],    "Stage 1 — up to SF11, mid nets"),
+    ([(100, 100), (300, 300), (500,500)],[10, 20, 30, 40],"Stage 2 — feasible distribution"),
 ]
 
 # Timestep thresholds to advance the curriculum (fallback — performance gates below take priority)
