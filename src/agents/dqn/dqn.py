@@ -67,23 +67,23 @@ def get_device():
 #   Stage 2  (full training)   — all conditions, including 1000x1000 / SF11/SF12
 
 CURRICULUM_STAGES = [
-    # (grid_sizes,                     sensor_counts,  description)
-    # 1000×1000 removed — physically infeasible (TSP 44,700m vs d_max 15,782m),
-    # no policy can achieve >12% NDR there so it contributes only noise.
-    ([(100,100), (200,200), (300,300)],                     [10,20,30,40], "Stage 0 — SF7/SF9, small nets"),
-    ([(100,100), (200,200), (300,300), (400,400)],          [10,20,30,40], "Stage 1 — up to SF11, mid nets"),
-    ([(100,100), (200,200), (300,300), (400,400),(500,500)],[10,20,30,40], "Stage 2 — feasible distribution"),
+    # One new grid size unlocked per stage. Sensors [10,20,30,40] throughout.
+    ([(100,100)],                                           [10,20,30,40], "Stage 0 — 100×100 only"),
+    ([(100,100),(200,200)],                                 [10,20,30,40], "Stage 1 — up to 200×200"),
+    ([(100,100),(200,200),(300,300)],                       [10,20,30,40], "Stage 2 — up to 300×300"),
+    ([(100,100),(200,200),(300,300),(400,400)],              [10,20,30,40], "Stage 3 — up to 400×400"),
+    ([(100,100),(200,200),(300,300),(400,400),(500,500)],    [10,20,30,40], "Stage 4 — full feasible range"),
 ]
 
-# Timestep thresholds to advance the curriculum (fallback — performance gates below take priority)
-CURRICULUM_THRESHOLDS = [1_000_000, 2_000_000]
+# Fallback timestep thresholds (one per stage transition, 10M total / 5 stages)
+CURRICULUM_THRESHOLDS = [2_000_000, 4_000_000, 6_000_000, 8_000_000]
 
-# Performance-based curriculum gates: agent must sustain these metrics over
-# PERF_WINDOW consecutive episodes before the stage advances.
-# Stage N criteria must be met to unlock Stage N+1.
+# Performance-based curriculum gates (relaxed progressively as envs get harder)
 PERF_THRESHOLDS = [
-    {"ndr": 90.0, "jains": 0.60},  # Stage 0 → Stage 1
-    {"ndr": 80.0, "jains": 0.55},  # Stage 1 → Stage 2 (lower bar: harder env)
+    {"ndr": 90.0, "jains": 0.65},  # Stage 0 → Stage 1
+    {"ndr": 85.0, "jains": 0.60},  # Stage 1 → Stage 2
+    {"ndr": 80.0, "jains": 0.55},  # Stage 2 → Stage 3
+    {"ndr": 75.0, "jains": 0.50},  # Stage 3 → Stage 4
 ]
 PERF_WINDOW        = 50       # rolling episode window for performance gate
 MIN_STEPS_PER_STAGE = 400_000  # minimum steps before any stage can advance
