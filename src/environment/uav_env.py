@@ -454,12 +454,12 @@ class UAVEnvironment(gym.Env):
         if self.current_step >= self.max_steps:
             truncated = True
 
-        # Terminal penalty for unvisited sensors
+        # Terminal penalties
         if truncated:
             unvisited = self.num_sensors - len(self.sensors_visited)
             if unvisited > 0:
-                terminal_penalty = self.reward_fn.penalty_unvisited * unvisited
-                reward += terminal_penalty
+                reward += self.reward_fn.penalty_unvisited * unvisited
+            reward += self.reward_fn.calculate_terminal_starvation_penalty(self.sensors)
 
         self.total_reward += reward
         return self._get_observation(), reward, terminated, truncated, self._get_info()
@@ -582,9 +582,10 @@ class UAVEnvironment(gym.Env):
         current_buffers = [float(s.data_buffer) for s in self.sensors]
 
         if successful_sf_slots:
-            sensor_ids   = [s.sensor_id for s in successful_sf_slots.values()]
+            # Use _calculate_urgency (clipped [0,1]) not _get_sensor_urgencies
+            # (which returns AoI in time-units and would inflate the byte reward ~250x)
             mean_urgency = float(
-                np.mean([urgencies_before[sid] for sid in sensor_ids])
+                np.mean([self._calculate_urgency(s) for s in successful_sf_slots.values()])
             )
         else:
             mean_urgency = 0.0

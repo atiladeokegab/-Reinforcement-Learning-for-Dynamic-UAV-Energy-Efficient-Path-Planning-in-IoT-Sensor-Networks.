@@ -319,7 +319,10 @@ class IoTSensor:
         self.data_rate = self.LORA_DATA_RATES[12]
         self.avg_rssi = None
         self.current_rssi = None
-        self.total_data_generated = 0.0
+        # Initialise generated counter to include the pre-filled buffer so that
+        # collection_rate = transmitted / total_available stays in [0, 1].
+        # Without this, CR > 100% when the UAV collects the initial backlog.
+        self.total_data_generated = float(self.data_buffer)
         self.total_data_transmitted = 0.0
         self.total_data_lost = 0.0
         self.sf_history = []
