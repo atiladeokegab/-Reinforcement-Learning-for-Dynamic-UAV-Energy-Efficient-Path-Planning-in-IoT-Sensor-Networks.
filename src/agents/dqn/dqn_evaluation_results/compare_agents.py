@@ -5,7 +5,8 @@ All agents run on the EXACT SAME ENVIRONMENT with the same seed.
 CRITICAL: DQN uses VecFrameStack to match training conditions.
 NEW: Automatically saves sensor-level data for fairness & heatmap analysis.
 NEW: Battery / Steps / Data collected panel plot added.
-UPDATED: Zero-padding support so the trained model can run on any num_sensors ≤ max_sensors_limit.
+UPDATED: Zero-padding support so the trained model can run on any num_sensors <= max_sensors_limit.
+UPDATED: Random UAV start position support (handled in compare_agents, not passed to env).
 
 Author: ATILADE GABRIEL OKE
 Modified: 27 February 2026
@@ -34,7 +35,18 @@ print(f"Script location: {script_dir}")
 print(f"Source directory: {src_dir}")
 print(f"Results directory: {script_dir_results}")
 
+sys.path.insert(0, str(script_dir.parent))
 sys.path.insert(0, str(src_dir))
+_gnn_candidates = list(Path(script_dir.parent).rglob("gnn_extractor.py"))
+if not _gnn_candidates:
+    _gnn_candidates = list(src_dir.rglob("gnn_extractor.py"))
+if _gnn_candidates:
+    _gnn_dir = str(_gnn_candidates[0].parent)
+    if _gnn_dir not in sys.path:
+        sys.path.insert(0, _gnn_dir)
+    print(f"✓ gnn_extractor found: {_gnn_candidates[0]}")
+else:
+    print("⚠ WARNING: gnn_extractor.py not found — DQN.load() will likely fail")
 
 from environment.uav_env import UAVEnvironment
 from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
@@ -48,7 +60,7 @@ class AnalysisUAVEnv(UAVEnvironment):
       1. Saves the final state of the simulation the instant before the env resets.
       2. Zero-pads the observation vector to a fixed length so the DQN neural
          network (trained with max_sensors_limit) can evaluate on any num_sensors
-         that is ≤ max_sensors_limit without reloading or retraining.
+         that is <= max_sensors_limit without reloading or retraining.
 
     features_per_sensor is AUTO-DETECTED from the parent observation_space at
     init time — no hardcoded constants that can silently mismatch the env layout.
@@ -291,24 +303,20 @@ BASELINES_DIR = src_dir / "agents" / "baselines"
 OUTPUT_DIR = script_dir / "baseline_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-DQN_MODEL_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "dqn_final.zip"
-)
-DQN_CONFIG_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "training_config.json"
-)
-VEC_NORMALIZE_PATH = (
-    script_dir.parent.parent.parent.parent / "models" / "dqn_v4b" / "vec_normalize.pkl"
-)
+_MODEL_DIR = script_dir.parent / "models" / "dqn_v3"
+DQN_MODEL_PATH     = _MODEL_DIR / "dqn_final.zip"
+DQN_CONFIG_PATH    = _MODEL_DIR / "training_config.json"
+VEC_NORMALIZE_PATH = _MODEL_DIR / "vec_normalize.pkl"
 
 PLOT_CONFIG = {
     "grid_size":          (500, 500),
-    "num_sensors":        20,
+    "num_sensors":        40,
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
     "rssi_threshold":     -85.0,
     "sensor_duty_cycle":  10.0,
-    "seed":               42,
+    "seed":               423,
+    "random_uav_start":   True,   # handled here in compare_agents, NOT passed to env
 }
 
 EVAL_MAX_BATTERY = 274.0
@@ -336,16 +344,11 @@ def load_training_config(config_path):
         "use_frame_stacking": True,
         "n_stack": 4,
         "max_sensors_limit": 50,
-        # features_per_sensor is auto-detected at runtime from the env obs space;
-        # it is NOT stored as a class constant any more. The value in the JSON
-        # (written by train_dqn_zero_padding.py) is used when available; the
-        # default here is only a placeholder and is never read by AnalysisUAVEnv.
         "features_per_sensor": None,
     }
     try:
         with open(config_path, "r") as f:
             loaded = json.load(f)
-        # Merge: loaded values override defaults
         return {**defaults, **loaded}
     except FileNotFoundError:
         print(f"⚠ Config not found at {config_path} — using defaults")
@@ -392,7 +395,6 @@ def create_stacked_dqn_env(env_kwargs, training_config, seed=PLOT_CONFIG["seed"]
     Build the stacked/normalised VecEnv for DQN evaluation.
     env_kwargs must include max_sensors_limit so AnalysisUAVEnv can pad correctly.
     """
-    # Seed global RNG before env construction so sensor positions match greedy envs
     np.random.seed(seed)
     random.seed(seed)
     vec_env = DummyVecEnv([lambda: AnalysisUAVEnv(**env_kwargs)])
@@ -405,9 +407,6 @@ def create_stacked_dqn_env(env_kwargs, training_config, seed=PLOT_CONFIG["seed"]
         print(f"✓ Frame stacking disabled")
 
     if VEC_NORMALIZE_PATH.exists():
-        # Guard against stale vec_normalize.pkl from a previous training run whose
-        # obs shape no longer matches (e.g. saved before zero-padding was added).
-        # If the shapes disagree we skip normalisation rather than crashing.
         try:
             vec_env = VecNormalize.load(str(VEC_NORMALIZE_PATH), vec_env)
             vec_env.training = False
@@ -652,11 +651,9 @@ def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_
                 trajectory if isinstance(trajectory, np.ndarray) else np.array(trajectory)
             )
             if len(traj_array) > 0:
-                # Step drawstyle shows discrete grid movements
                 ax.step(traj_array[:, 0], traj_array[:, 1], where="post",
                         color=color, linewidth=1.2, alpha=0.65,
                         label="UAV Path", zorder=2)
-                # Waypoint dots — hover points at low alpha
                 ax.scatter(traj_array[:, 0], traj_array[:, 1],
                            c=color, s=8, alpha=0.30, zorder=1)
                 ax.scatter(traj_array[0, 0], traj_array[0, 1], c="#2ca02c", s=150,
@@ -1161,22 +1158,42 @@ def main():
     print(f"\nOutput Directory: {OUTPUT_DIR}")
     print(f"Seed: {PLOT_CONFIG['seed']}\n")
 
-    # Load config — now reads training_config.json which includes max_sensors_limit
+    # ── Load training config ──────────────────────────────────────────────────
     training_config = load_training_config(DQN_CONFIG_PATH)
     max_sensors_limit = training_config["max_sensors_limit"]
     print(f"  max_sensors_limit from config: {max_sensors_limit}")
     print(f"  frame_stacking: n_stack={training_config.get('n_stack', 4)}")
 
+    # ── Generate shared UAV start position ───────────────────────────────────
+    # Use a seeded RNG so the position is deterministic but different from (0,0).
+    # ALL three agents use the exact same start position for a fair comparison.
+    # Initialize the seed
+    # Use the generator without a seed for true randomness
+    rng = np.random.default_rng()
+
+    if PLOT_CONFIG.get("random_uav_start", False):
+        gw, gh = PLOT_CONFIG["grid_size"]
+        # These will now be different every time the script is executed
+        _start_x = float(rng.uniform(0, gw))
+        _start_y = float(rng.uniform(0, gh))
+        uav_start = (_start_x, _start_y)
+        print(f"  True Random UAV start position: ({_start_x:.1f}, {_start_y:.1f})")
+    else:
+        uav_start = (0.0, 0.0)
+        print(f"  UAV start position: (0.0, 0.0)")
+
+    # ── Build env_kwargs (no random_uav_start key — env doesn't know about it) ─
     env_kwargs = {
-        "grid_size":          PLOT_CONFIG["grid_size"],
-        "num_sensors":        PLOT_CONFIG["num_sensors"],
-        "max_sensors_limit":  max_sensors_limit,   # ← zero-padding limit
-        "max_steps":          PLOT_CONFIG["max_steps"],
-        "path_loss_exponent": PLOT_CONFIG["path_loss_exponent"],
-        "rssi_threshold":     PLOT_CONFIG["rssi_threshold"],
-        "sensor_duty_cycle":  PLOT_CONFIG["sensor_duty_cycle"],
-        "max_battery":        274.0,
-        "render_mode":        "human",
+        "grid_size":            PLOT_CONFIG["grid_size"],
+        "num_sensors":          PLOT_CONFIG["num_sensors"],
+        "max_sensors_limit":    max_sensors_limit,
+        "max_steps":            PLOT_CONFIG["max_steps"],
+        "path_loss_exponent":   PLOT_CONFIG["path_loss_exponent"],
+        "rssi_threshold":       PLOT_CONFIG["rssi_threshold"],
+        "sensor_duty_cycle":    PLOT_CONFIG["sensor_duty_cycle"],
+        "max_battery":          274.0,
+        "uav_start_position":   uav_start,   # uses the real UAVEnvironment param name
+        "render_mode":          "human",
     }
 
     agents_config = []
@@ -1225,12 +1242,13 @@ def main():
         print(f"⚠ WARNING: DQN model not found at {DQN_MODEL_PATH}")
 
     # ========== STEP 2 & 3: Run Greedy Agents ==========
-    # Greedy agents use the base UAVEnvironment — no padding needed
     print("\n" + "-" * 100)
     print("Setting up environment for greedy agents...")
+
+    # Strip max_sensors_limit (AnalysisUAVEnv-only) before passing to plain UAVEnvironment
     greedy_env_kwargs = {k: v for k, v in env_kwargs.items()
-                         if k not in ("max_sensors_limit", "render_mode")}
-    greedy_env_kwargs["render_mode"] = "human"
+                         if k != "max_sensors_limit"}
+
     # Seed global RNG to match DQN env so sensor positions are identical
     np.random.seed(PLOT_CONFIG["seed"])
     random.seed(PLOT_CONFIG["seed"])

@@ -22,7 +22,11 @@ class RewardFunction:
       penalty_step          -0.5   per step (base time cost)
       penalty_hover         -5.0   extra cost for hover vs move (power differential)
       penalty_starvation    up to -250/step based on buffer variance (fairness)
-      penalty_unvisited     -15000 per sensor never visited (terminal)
+      penalty_unvisited    -100000 per sensor never visited (terminal;
+                                   = opportunity cost: 1000 bytes × 100/byte ×
+                                   urgency=1.0 + new_sensor_bonus 5000)
+      penalty_starved       -10000 per sensor visited but CR < 20% (terminal;
+                                   graduated — less severe than fully unvisited)
       penalty_boundary      -50    per boundary collision
       penalty_revisit       -2     per empty revisit
     """
@@ -45,7 +49,9 @@ class RewardFunction:
         penalty_step: float             = -0.5,
         penalty_data_loss: float        = -1.0,
         penalty_starvation: float       = -1000.0,
-        penalty_unvisited: float        = -15000.0,
+        penalty_unvisited: float        = -100000.0,
+        penalty_starved: float          = -10000.0,
+        starvation_cr_threshold: float  = 0.20,
     ):
         self.reward_per_byte          = reward_per_byte
         self.reward_new_sensor        = reward_new_sensor
@@ -61,8 +67,10 @@ class RewardFunction:
         self.penalty_hover      = penalty_hover
         self.penalty_step       = penalty_step
         self.penalty_data_loss  = penalty_data_loss
-        self.penalty_starvation = penalty_starvation
-        self.penalty_unvisited  = penalty_unvisited
+        self.penalty_starvation        = penalty_starvation
+        self.penalty_unvisited         = penalty_unvisited
+        self.penalty_starved           = penalty_starved
+        self.starvation_cr_threshold   = starvation_cr_threshold
 
     # ------------------------------------------------------------------ #
     # Fairness helper                                                      #
@@ -85,6 +93,27 @@ class RewardFunction:
         normalized = np.array([b / max_buffer for b in sensor_buffers])
         variance   = float(np.var(normalized))
         return self.penalty_starvation * variance
+
+    # ------------------------------------------------------------------ #
+    # Terminal starvation penalty                                          #
+    # ------------------------------------------------------------------ #
+
+    def calculate_terminal_starvation_penalty(self, sensors) -> float:
+        """
+        Per-sensor terminal penalty for visited sensors whose collection rate
+        is below starvation_cr_threshold (default 20%).
+
+        Separate from penalty_unvisited (which fires for never-visited sensors).
+        Justification: a sensor visited but left at 5% CR has partially failed
+        its mission — penalised proportionally less than a completely skipped one.
+        """
+        penalty = 0.0
+        for s in sensors:
+            if s.total_data_generated > 0:
+                cr = s.total_data_transmitted / s.total_data_generated
+                if cr < self.starvation_cr_threshold:
+                    penalty += self.penalty_starved
+        return penalty
 
     # ------------------------------------------------------------------ #
     # Movement reward                                                      #
