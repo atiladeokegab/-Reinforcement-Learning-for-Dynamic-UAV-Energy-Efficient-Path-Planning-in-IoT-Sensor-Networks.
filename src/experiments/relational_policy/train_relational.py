@@ -122,9 +122,9 @@ TOTAL_ENV_STEPS     = 10_000_000
 
 # ── Model hyperparameters ─────────────────────────────────────────────────────
 MODULE_CONFIG: dict[str, Any] = {
-    "d_model":     128,   # attention embedding dimension
-    "n_heads":     4,     # must divide d_model evenly
-    "gru_hidden":  256,   # GTrXL-inspired GRU hidden size
+    "d_model":     256,   # was 128 — doubled for 4090 (24 GB VRAM)
+    "n_heads":     8,     # must divide d_model evenly
+    "gru_hidden":  512,   # was 256 — larger temporal memory
     "dropout":     0.1,
     "max_seq_len": 20,    # required by RLlib for stateful RLModules (BPTT window)
 }
@@ -169,9 +169,9 @@ def build_config(
         .training(
             gamma=GAMMA,          # must match env_wrapper.GAMMA
             lr=3e-4,
-            train_batch_size=8192,
+            train_batch_size=32768,   # was 8192 — 4x larger for 4090
             num_epochs=10,
-            minibatch_size=256,
+            minibatch_size=1024,      # was 256
             clip_param=0.2,
             vf_clip_param=10.0,
             vf_loss_coeff=0.5,
@@ -180,12 +180,9 @@ def build_config(
             grad_clip=0.5,
         )
         # ── Rollout workers ───────────────────────────────────────────────
-        # num_env_runners=0: env runs in the main process.
-        # On Windows, Ray's multiprocessing child workers crash with an access
-        # violation when algo.stop() kills them between curriculum stages.
-        # Running in the main process avoids all inter-process communication.
+        # num_env_runners=4: safe on Linux (no Windows raylet crash).
         .env_runners(
-            num_env_runners=0,
+            num_env_runners=4,
             rollout_fragment_length="auto",
         )
         # ── Framework ─────────────────────────────────────────────────────
