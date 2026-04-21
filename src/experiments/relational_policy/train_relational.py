@@ -8,7 +8,7 @@ Design choices
   Exploration: PPO explores via stochastic action sampling controlled by
                entropy_coeff.  The coefficient follows a two-phase schedule:
                  Phase 1 (small grids)  : entropy_coeff = 0.05  — broad search
-                 Phase 2 (500×500)      : entropy_coeff = 0.001 — near-deterministic
+                 Phase 2 (500×500)      : entropy_coeff = 0.003 — near-deterministic
                This is the PPO equivalent of setting exploration_final_eps=0.03
                for DQN: by the final curriculum stage the policy is highly
                exploitative (low entropy ≈ low effective ε).
@@ -27,25 +27,14 @@ Curriculum
   Grid is capped at 500×500 (upper limit of single-UAV battery feasibility
   at 274 Wh / 500 W per the dissertation energy analysis).
 
-Fixes vs. original remote-cluster version
-------------------------------------------
-  1. train_batch_size  : 32768 → 8192   (sparse signal preservation)
-  2. minibatch_size    : 1024  → 256    (match proven local config)
-  3. lr                : 3e-4  → 1e-4   (stable for transformer at this batch size)
-  4. d_model           : 256   → 128    (match proven local architecture)
-  5. n_heads           : 8     → 4      (match proven local)
-  6. gru_hidden        : 512   → 256    (match proven local)
-  7. num_env_runners   : 4     → 10     (use available CPUs for throughput)
-  8. rollout_fragment_length: 128 → "auto"  (fixes RLlib batch-size validator)
-  9. num_envs_per_env_runner: added = 2
-  10. Entropy per stage: flat → linear decay within each stage
-
 Usage
 -----
-  uv run python src/experiments/relational_policy/train_relational.py
+  # Install Ray first (isolated from main project dependencies):
+  #   pip install "ray[rllib]>=2.10" gymnasium torch
+  #   — or —
+  #   uv add "ray[rllib]>=2.10"  (adds to pyproject.toml)
 
-  Override worker count via env var (default = 10):
-    RLLIB_NUM_WORKERS=8 uv run python ...
+  uv run python src/experiments/relational_policy/train_relational.py
 
   Checkpoints are saved to:
     src/experiments/relational_policy/results/checkpoints/
@@ -65,7 +54,7 @@ from typing import Any
 _HERE = Path(__file__).resolve().parent
 _SRC  = _HERE.parent.parent
 _ROOT = _SRC.parent
-for _p in (str(_HERE), str(_SRC), str(_ROOT)):
+for _p in (str(_HERE), str(_SRC), str(_ROOT)):   # _HERE first so local imports resolve
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
@@ -74,8 +63,8 @@ from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
 
-from env_wrapper       import RelationalUAVEnv, EpisodeMetricsStore, GAMMA, N_MAX  # noqa: E402
-from relational_module import RelationalUAVModule                                   # noqa: E402
+from env_wrapper      import RelationalUAVEnv, EpisodeMetricsStore, GAMMA, N_MAX  # noqa: E402
+from relational_module import RelationalUAVModule                                  # noqa: E402
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -94,28 +83,29 @@ CKPT_DIR.mkdir(parents=True, exist_ok=True)
 TB_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Curriculum ────────────────────────────────────────────────────────────────
-# (grid_W, grid_H, n_sensors, entropy_start, entropy_end, label)
-# Two entropy values per stage: high at stage start → low at gate threshold.
-# This gives exploration early in the stage and exploitation as NDR climbs,
-# mirroring the epsilon-decay pattern from the DQN baseline.
+# (grid_W, grid_H, n_sensors, entropy_coeff, label)
 CURRICULUM: list[tuple] = [
-    (100, 100, 10,    0.05,  0.01,  "100x100 N=10"),
-    (200, 200, 15,    0.04,  0.01,  "200x200 N=15"),
-    (300, 300, 20,    0.02,  0.005, "300x300 N=20"),
-    (400, 400, 35,    0.01,  0.003, "400x400 N=35"),
-    (500, 500, N_MAX, 0.005, 0.001, "500x500 N=50"),
+    (100, 100, 10,  0.05,  "100x100 N=10"),
+    (200, 200, 15,  0.04,  "200x200 N=15"),
+    (300, 300, 20,  0.02,  "300x300 N=20"),
+    (400, 400, 35,  0.008, "400x400 N=35"),
+    (500, 500, N_MAX, 0.003, "500x500 N=50"),
 ]
 
 # ── Curriculum gating criteria ────────────────────────────────────────────────
 # Each gate is a callable(metrics_dict) → bool.
 # Metrics dict keys: "ndr", "jains", "efficiency", "n_episodes".
 #
-# Stage 0–1  NDR ≥ 95%                Basic collection mastery
-# Stage 2–3  NDR ≥ 90% + Jain ≥ 0.80 Link-budget + fairness
-# Stage 4    Efficiency ≥ 200 B/Wh    Optimal energy–throughput mix
+# Stage 0–1  NDR ≥ 95 %          Basic collection mastery (all sensors visited)
+# Stage 2–3  NDR ≥ 90 % + Jain's ≥ 0.80  Link-budget + fairness (SF12 range test)
+# Stage 4    Efficiency ≥ 200 B/Wh        Optimal energy–throughput mix
+#
+# Rationale (dissertation coherence): NDR and Jain's Index are the primary
+# evaluation metrics in the DQN results chapter.  Gating the curriculum with
+# the same metrics creates a direct narrative link between training and evaluation.
 
-def _gate_ndr95(m):      return m["ndr"]        >= 0.95
-def _gate_ndr90_jain(m): return m["ndr"]        >= 0.90 and m["jains"] >= 0.80
+def _gate_ndr95(m):  return m["ndr"]        >= 0.95
+def _gate_ndr90_jain(m): return m["ndr"]    >= 0.90 and m["jains"] >= 0.80
 def _gate_efficiency(m): return m["efficiency"] >= 200.0
 
 STAGE_GATES = [
@@ -127,36 +117,27 @@ STAGE_GATES = [
 ]
 
 # Training budget
-MAX_ITERS_PER_STAGE = 200
+MAX_ITERS_PER_STAGE = 200   # hard cap per stage
 TOTAL_ENV_STEPS     = 10_000_000
 
-# ── Model ─────────────────────────────────────────────────────────────────────
-# Proven local config — do NOT increase d_model/n_heads until NDR > 0.5
-# is confirmed on the remote cluster. Scale one variable at a time after that.
+# ── Model hyperparameters ─────────────────────────────────────────────────────
+# Reverted to local-success values: the larger (256/8) model overfits the
+# survival-reward local optimum under sparse delivery rewards and takes 4x
+# more gradient steps to see its first useful signal.
 MODULE_CONFIG: dict[str, Any] = {
-    "d_model":     128,   # proven locally — was 256 on failing remote run
-    "n_heads":     4,     # must divide d_model evenly — was 8 on failing remote run
-    "gru_hidden":  256,   # proven locally — was 512 on failing remote run
+    "d_model":     128,
+    "n_heads":     4,     # must divide d_model evenly
+    "gru_hidden":  256,
     "dropout":     0.1,
-    "max_seq_len": 20,    # required by RLlib for stateful RLModules (BPTT window)
+    "max_seq_len": 20,
 }
 
 # ── Environment config ────────────────────────────────────────────────────────
 BASE_ENV_CONFIG: dict[str, Any] = {
-    "max_steps":   2100,    # ~7 min flight at 2 s/step
-    "max_battery": 274.0,   # Wh (single-UAV feasibility ceiling at 500×500)
-    "n_max":       N_MAX,
+    "max_steps":    2100,    # ~7 min flight at 2 s/step
+    "max_battery":  274.0,   # Wh (single-UAV feasibility ceiling at 500×500)
+    "n_max":        N_MAX,
 }
-
-# ── Worker count ──────────────────────────────────────────────────────────────
-# GPU utilisation comes from parallelism (many workers → full batches fast),
-# NOT from larger batch sizes (which dilute sparse delivery rewards).
-#
-# Formula: leave 2 CPUs for the Ray driver + learner process.
-#   13 available CPUs → 13 - 2 = 11, round down to 10 for safety.
-#
-# Override via env var:  RLLIB_NUM_WORKERS=8 uv run python ...
-NUM_WORKERS = int(os.environ.get("RLLIB_NUM_WORKERS", "10"))
 
 
 def build_config(
@@ -165,17 +146,12 @@ def build_config(
     n_sensors: int,
     entropy_coeff: float,
 ) -> PPOConfig:
-    """
-    Construct a PPOConfig for one curriculum stage iteration.
+    """Construct a PPOConfig for one curriculum stage."""
 
-    entropy_coeff is passed in pre-computed by the training loop so that
-    the caller controls the annealing schedule without rebuilding the full
-    config object every iteration (only the coefficient is hot-updated).
-    """
     env_config = {
         **BASE_ENV_CONFIG,
-        "grid_size":   (grid_w, grid_h),
-        "num_sensors": n_sensors,
+        "grid_size":    (grid_w, grid_h),
+        "num_sensors":  n_sensors,
     }
 
     return (
@@ -193,12 +169,17 @@ def build_config(
             )
         )
         # ── PPO training hyperparams ──────────────────────────────────────
+        # train_batch_size=8192 matches local success. Sparse reward requires
+        # fast iteration: ~4 episodes per update instead of ~16, giving 4x
+        # more chances to amplify the first delivery signal.
+        # GPU utilisation: compensate with num_epochs=20 (2x local) so the
+        # GPU does more work per batch without hurting exploration.
         .training(
-            gamma=GAMMA,              # must match env_wrapper.GAMMA
-            lr=1e-4,                  # reduced from 3e-4 — stable for transformer
-            train_batch_size=8192,    # CRITICAL: match local — sparse signal preservation
-            num_epochs=10,
-            minibatch_size=256,       # CRITICAL: match local
+            gamma=GAMMA,
+            lr=3e-4,
+            train_batch_size=8192,
+            num_epochs=20,          # 2x local — extract more signal per batch on GPU
+            minibatch_size=256,
             clip_param=0.2,
             vf_clip_param=10.0,
             vf_loss_coeff=0.5,
@@ -207,17 +188,11 @@ def build_config(
             grad_clip=0.5,
         )
         # ── Rollout workers ───────────────────────────────────────────────
-        # GPU utilisation via parallelism: 10 workers × 2 envs = 20 parallel
-        # environments continuously filling 8k-step batches.
-        #
-        # rollout_fragment_length="auto" lets RLlib compute the exact fragment
-        # size needed (≈409 steps) so the batch-size validator passes.
-        # Fixed fragment=128 with these worker counts does NOT divide into 8192
-        # evenly and causes a ValueError at build_algo().
+        # 8 workers × ~1024 steps each = 8192 batch, filled faster than 4
+        # workers so the GPU learner stays busy.
         .env_runners(
-            num_env_runners=NUM_WORKERS,
-            num_envs_per_env_runner=2,
-            rollout_fragment_length="auto",   # fixes batch-size validator error
+            num_env_runners=8,
+            rollout_fragment_length="auto",
         )
         # ── Framework ─────────────────────────────────────────────────────
         .framework("torch")
@@ -241,26 +216,22 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     """
     Run one curriculum stage in a fresh Ray session.
 
-    Each iteration hot-updates the entropy coefficient on the existing algo
-    object rather than rebuilding the config, which avoids re-spawning workers.
-
     Returns (updated_total_steps, completed_successfully).
-    Isolating each stage in its own Ray init/shutdown prevents the raylet
-    access-violation that can occur when workers are killed between stages.
+    Isolating each stage in its own Ray init/shutdown prevents the Windows
+    raylet access-violation that occurs when workers are killed between stages.
     """
-    grid_w, grid_h, n_sensors, ent_start, ent_end, label = CURRICULUM[stage_idx]
+    grid_w, grid_h, n_sensors, ent, label = CURRICULUM[stage_idx]
 
     log.info("=" * 60)
     log.info(f"CURRICULUM STAGE {stage_idx}: {label}")
-    log.info(f"  entropy: {ent_start:.4f} → {ent_end:.4f} over {MAX_ITERS_PER_STAGE} iters")
+    log.info(f"  entropy_coeff = {ent}  (≈ ε_final={ent:.3f} equiv.)")
     log.info("=" * 60)
 
-    EpisodeMetricsStore.reset()
+    EpisodeMetricsStore.reset()   # clear any residual history from previous stage
     ray.init(ignore_reinit_error=True)
     tune.register_env("RelationalUAV", lambda cfg: RelationalUAVEnv(**cfg))
 
-    # Build with starting entropy (iteration 0 = maximum exploration)
-    config = build_config(grid_w, grid_h, n_sensors, ent_start)
+    config = build_config(grid_w, grid_h, n_sensors, ent)
     algo   = config.build_algo()
 
     # Warm-start from previous stage checkpoint
@@ -272,21 +243,16 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     stage_ckpt_dir = CKPT_DIR / f"stage_{stage_idx}"
     stage_ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    gate     = STAGE_GATES[stage_idx]
+    gate = STAGE_GATES[stage_idx]
+
     advanced = False
-
     for iteration in range(MAX_ITERS_PER_STAGE):
-
-        # Linear entropy annealing within the stage
-        # iter 0 → ent_start,  iter MAX-1 → ent_end
-        progress     = iteration / max(MAX_ITERS_PER_STAGE - 1, 1)
-        entropy_now  = ent_start + progress * (ent_end - ent_start)
-        algo.config.training(entropy_coeff=entropy_now)
-
-        result         = algo.train()
-        ep_ret         = result.get("env_runners", {}).get("episode_return_mean", float("nan"))
+        result  = algo.train()
+        ep_ret  = result.get("env_runners", {}).get("episode_return_mean", float("nan"))
+        ep_len  = result.get("env_runners", {}).get("episode_len_mean", 0)
         lifetime_steps = result.get("num_env_steps_sampled_lifetime", 0)
-        total_steps    = lifetime_steps
+        steps_this_iter = lifetime_steps - (total_steps if total_steps > 0 else 0)
+        total_steps = lifetime_steps  # track lifetime, not cumulative sum of lifetime
 
         m = EpisodeMetricsStore.rolling_means()
         log.info(
@@ -294,8 +260,7 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
             f"NDR={m['ndr']:.3f}  Jain={m['jains']:.3f}  "
             f"Eff={m['efficiency']:.1f}B/Wh  "
             f"(n={m['n_episodes']:2d} eps)  "
-            f"ret={ep_ret:.0f}  ent={entropy_now:.4f}  "
-            f"steps={int(lifetime_steps):,}"
+            f"ret={ep_ret:.0f}  steps={int(lifetime_steps):,}"
         )
 
         if (iteration + 1) % 10 == 0:
@@ -318,7 +283,7 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     log.info(f"Stage {stage_idx} final checkpoint → {final_ckpt}")
 
     algo.stop()
-    ray.shutdown()   # clean teardown before next stage spawns workers
+    ray.shutdown()          # clean teardown before next stage spawns workers
 
     return total_steps, advanced
 
@@ -328,7 +293,6 @@ def train() -> None:
 
     for stage_idx in range(len(CURRICULUM)):
         if total_steps >= TOTAL_ENV_STEPS:
-            log.info(f"Total env step budget ({TOTAL_ENV_STEPS:,}) reached — stopping.")
             break
         total_steps, _ = _run_stage(stage_idx, total_steps)
 
