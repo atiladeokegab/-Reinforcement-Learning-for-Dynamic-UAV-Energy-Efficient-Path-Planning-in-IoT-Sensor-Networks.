@@ -596,7 +596,6 @@ class UAVEnvironment(gym.Env):
             was_empty=attempted_empty,
             all_sensors_collected=all_sensors_collected,
             battery_used=battery_used,
-            num_sensors_collected=len(successful_sf_slots),
             collision_count=collision_count,
             data_loss=step_data_loss,
             urgency_reduced=urgency_reduced,
@@ -671,6 +670,10 @@ class UAVEnvironment(gym.Env):
             "high_urgency_sensors":    int(np.sum(urgencies > 0.8)),
             "capture_effect_triggers": self.capture_effect_triggers,
             "last_step_bytes_collected": self.last_step_bytes_collected,
+            "sensor_collection_ratios": [
+                s.total_data_transmitted / max(s.total_data_generated, 1e-6)
+                for s in self.sensors
+            ],
         }
 
     # ─────────────────────────────────────────────────────────────────────
