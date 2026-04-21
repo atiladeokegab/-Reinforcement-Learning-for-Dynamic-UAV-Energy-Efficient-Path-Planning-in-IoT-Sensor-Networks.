@@ -1,0 +1,9 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+models/
+*.zip
+*.png
+*.pdf
+MSc_and_BEng_Dissertation_Template_the_University_of_Manchester_EEE__2_/
