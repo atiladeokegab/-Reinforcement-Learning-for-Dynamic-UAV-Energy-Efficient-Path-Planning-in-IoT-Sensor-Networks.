@@ -45,7 +45,15 @@ from stable_baselines3.common.callbacks import (
 )
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+_SRC = Path(__file__).resolve().parent.parent.parent  # …/src
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
+# Evict any stale environment package that gymnasium/gym may have registered
+# with a wrong __path__ before our sys.path fix was in place.
+for _k in [k for k in sys.modules if k == "environment" or k.startswith("environment.")]:
+    del sys.modules[_k]
+
 from environment.uav_env import UAVEnvironment
 from environment.iot_sensors import IoTSensor
 
