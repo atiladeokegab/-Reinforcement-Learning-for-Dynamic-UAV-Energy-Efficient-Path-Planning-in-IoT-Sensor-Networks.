@@ -29,6 +29,13 @@ Author: ATILADE GABRIEL OKE
 
 import sys
 from pathlib import Path
+
+# Must be first: add src/ to sys.path before any third-party import can
+# register a stale or wrong 'environment' package.
+_SRC = Path(__file__).resolve().parent.parent.parent  # …/src
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -44,15 +51,6 @@ from stable_baselines3.common.callbacks import (
     CheckpointCallback, BaseCallback, CallbackList, EvalCallback,
 )
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
-
-_SRC = Path(__file__).resolve().parent.parent.parent  # …/src
-if str(_SRC) not in sys.path:
-    sys.path.insert(0, str(_SRC))
-
-# Evict any stale environment package that gymnasium/gym may have registered
-# with a wrong __path__ before our sys.path fix was in place.
-for _k in [k for k in sys.modules if k == "environment" or k.startswith("environment.")]:
-    del sys.modules[_k]
 
 from environment.uav_env import UAVEnvironment
 from environment.iot_sensors import IoTSensor
