@@ -123,6 +123,8 @@ class AnalysisUAVEnv(UAVEnvironment):
                     "total_data_lost":        float(sensor.total_data_lost),
                     "data_buffer":            float(sensor.data_buffer),
                     "max_buffer_size":        float(sensor.max_buffer_size),
+                    "spreading_factor":       int(sensor.spreading_factor),
+                    "sf_changes":             len(sensor.sf_history) if hasattr(sensor, "sf_history") else 0,
                 }
                 for sensor in self.sensors
             ]
@@ -219,6 +221,8 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
                 "total_data_transmitted": float(sensor.total_data_transmitted),
                 "total_data_lost":        float(sensor.total_data_lost),
                 "data_buffer":            float(sensor.data_buffer),
+                "spreading_factor":       int(sensor.spreading_factor),
+                "sf_changes":             len(sensor.sf_history) if hasattr(sensor, "sf_history") else 0,
             }
             for sensor in env.sensors
         ]
@@ -270,6 +274,8 @@ def save_sensor_snapshot(env, filepath, agent_name, is_wrapper=False,
             "buffer_occupancy":       float(sensor_data["data_buffer"]) / max_buf,
             "collection_rate": float((transmitted / generated * 100) if generated > 0 else 0.0),
             "loss_rate":       float((lost / generated * 100)        if generated > 0 else 0.0),
+            "spreading_factor": int(sensor_data.get("spreading_factor", 12)),
+            "sf_changes":       int(sensor_data.get("sf_changes", 0)),
         })
 
     filepath = Path(filepath)
@@ -309,8 +315,8 @@ DQN_CONFIG_PATH    = _MODEL_DIR / "training_config.json"
 VEC_NORMALIZE_PATH = _MODEL_DIR / "vec_normalize.pkl"
 
 PLOT_CONFIG = {
-    "grid_size":          (300, 300),
-    "num_sensors":        20,
+    "grid_size":          (100, 100),
+    "num_sensors":        10,
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
     "rssi_threshold":     -85.0,
@@ -453,6 +459,54 @@ def load_fairness_from_snapshot(snapshot_path):
     s2 = sum(r ** 2 for r in rates)
     jains = (sum(rates) ** 2 / (n * s2)) if s2 > 0 else 0.0
     return jains, min(rates), max(rates)
+
+
+def compute_gini(rates):
+    """Gini coefficient for collection rate inequality. 0 = perfect equality, 1 = maximum inequality."""
+    if not rates or len(rates) == 0:
+        return 0.0
+    arr = np.array(sorted(rates), dtype=float)
+    n = len(arr)
+    total = arr.sum()
+    if total == 0:
+        return 0.0
+    cumsum = np.cumsum(arr)
+    return float((2 * np.dot(np.arange(1, n + 1), arr) - (n + 1) * total) / (n * total))
+
+
+def load_snapshot_metrics(snapshot_path):
+    """Return a dict of all fairness/coverage metrics from a saved sensor snapshot JSON."""
+    path = Path(snapshot_path)
+    if not path.exists():
+        return {"jains": None, "gini": None, "min_rate": None, "max_rate": None,
+                "mean_rate": None, "starved": None, "n_sensors": 0,
+                "urgency_min": None, "urgency_max": None,
+                "urgency_mean": None, "urgency_std": None}
+    with open(path) as f:
+        data = json.load(f)
+    rates = [s["collection_rate"] for s in data["sensor_data"]]
+    if not rates:
+        return {"jains": None, "gini": None, "min_rate": None, "max_rate": None,
+                "mean_rate": None, "starved": None, "n_sensors": 0,
+                "urgency_min": None, "urgency_max": None,
+                "urgency_mean": None, "urgency_std": None}
+    n  = len(rates)
+    s2 = sum(r ** 2 for r in rates)
+    jains = (sum(rates) ** 2 / (n * s2)) if s2 > 0 else 0.0
+    urgency = [s.get("buffer_occupancy", 0.0) for s in data["sensor_data"]]
+    return {
+        "jains":        jains,
+        "gini":         compute_gini(rates),
+        "min_rate":     min(rates),
+        "max_rate":     max(rates),
+        "mean_rate":    float(np.mean(rates)),
+        "starved":      sum(1 for r in rates if r < 20.0),
+        "n_sensors":    n,
+        "urgency_min":  float(np.min(urgency)),
+        "urgency_max":  float(np.max(urgency)),
+        "urgency_mean": float(np.mean(urgency)),
+        "urgency_std":  float(np.std(urgency)),
+    }
 
 
 def save_comparison_metadata(agents_config):
@@ -629,6 +683,8 @@ def run_dqn_agent_for_plot(
                 "total_data_transmitted": float(s.total_data_transmitted),
                 "total_data_lost":        float(s.total_data_lost),
                 "data_buffer":            float(s.data_buffer),
+                "spreading_factor":       int(s.spreading_factor),
+                "sf_changes":             len(s.sf_history) if hasattr(s, "sf_history") else 0,
             }
             for s in base_env.sensors
         ]
@@ -883,7 +939,8 @@ def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=No
     plt.close()
 
 
-def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None):
+def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None,
+                          dqn_snap=None, smart_snap=None, dumb_snap=None, tsp_snap=None):
     AGENT_COLORS = {
         "DQN Agent":       "#1b9e77",
         "Smart Greedy V2": "#d95f02",
@@ -891,42 +948,63 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None):
         "TSP Oracle":      "#e7298a",
     }
 
-    def get_stats(df, name):
+    def get_stats(df, name, snap_path):
         if df is None or df.empty:
-            return name, 0.0, 0, 0.0, 0.0, 0.0
+            return None
         energy    = EVAL_MAX_BATTERY - df["battery_wh"].iloc[-1]
         data      = df["total_data_collected"].iloc[-1]
+        ndr       = df["coverage_percent"].iloc[-1]
         final_eff = data / energy if energy > 0 else 0.0
         avg_eff   = df["efficiency"].mean() if "efficiency" in df.columns else 0.0
-        peak_eff  = df["efficiency"].max()  if "efficiency" in df.columns else 0.0
-        return name, energy, int(data), final_eff, avg_eff, peak_eff
+        fm        = load_snapshot_metrics(snap_path) if snap_path else {}
+        jains     = fm.get("jains") or 0.0
+        gini      = fm.get("gini") or 0.0
+        starved   = fm.get("starved", 0) or 0
+        return {
+            "name": name, "energy": energy, "data": int(data), "ndr": ndr,
+            "final_eff": final_eff, "avg_eff": avg_eff, "jains": jains,
+            "gini": gini, "starved": starved,
+        }
 
-    rows_raw = [
-        get_stats(dqn_df,   "DQN Agent"),
-        get_stats(smart_df, "Smart Greedy V2"),
-        get_stats(dumb_df,  "Nearest Greedy"),
+    entries = [
+        get_stats(dqn_df,   "DQN Agent",       dqn_snap),
+        get_stats(smart_df, "Smart Greedy V2",  smart_snap),
+        get_stats(dumb_df,  "Nearest Greedy",   dumb_snap),
     ]
     if tsp_df is not None and not tsp_df.empty:
-        rows_raw.append(get_stats(tsp_df, "TSP Oracle"))
+        entries.append(get_stats(tsp_df, "TSP Oracle", tsp_snap))
+    rows_raw = [e for e in entries if e is not None]
 
     columns = [
-        "Agent", "Final Energy\nConsumed (Wh)", "Final Data\nCollected (Bytes)",
-        "Final Efficiency\n(Bytes/Wh)", "Average Efficiency\n(Bytes/Wh)",
-        "Peak Efficiency\n(Bytes/Wh)",
+        "Agent", "NDR\n(%)", "Data\n(Bytes)", "Energy\n(Wh)",
+        "Efficiency\n(B/Wh)", "Avg Eff\n(B/Wh)",
+        "Jain's\nIndex", "Gini\nCoeff", "Starved\nSensors",
     ]
     rows_display = [
-        [n, f"{e:.2f}", f"{d}", f"{fe:.2f}", f"{ae:.2f}", f"{pe:.2f}"]
-        for n, e, d, fe, ae, pe in rows_raw
+        [
+            r["name"],
+            f"{r['ndr']:.1f}",
+            f"{r['data']:,}",
+            f"{r['energy']:.2f}",
+            f"{r['final_eff']:.2f}",
+            f"{r['avg_eff']:.2f}",
+            f"{r['jains']:.4f}",
+            f"{r['gini']:.4f}",
+            str(r["starved"]),
+        ]
+        for r in rows_raw
     ]
-    best_higher = [True, False, True, True, True, True]
+    # higher-is-better flags (skip col 0 = Agent name)
+    higher_better = [True, True, False, True, True, True, False, False]
+    numeric_keys  = ["ndr", "data", "energy", "final_eff", "avg_eff", "jains", "gini", "starved"]
     best_idx = {}
-    for col_i in range(1, len(columns)):
-        vals = [rows_raw[r][col_i] for r in range(len(rows_raw))]
-        best_idx[col_i] = int(np.argmax(vals)) if best_higher[col_i] else int(np.argmin(vals))
+    for ci, (key, hb) in enumerate(zip(numeric_keys, higher_better)):
+        vals = [r[key] for r in rows_raw]
+        best_idx[ci + 1] = int(np.argmax(vals)) if hb else int(np.argmin(vals))
 
     n_rows = len(rows_raw)
-    fig_h  = max(3.2, 1.5 + n_rows * 0.7)
-    fig, ax = plt.subplots(figsize=(13, fig_h))
+    fig_h  = max(3.5, 1.8 + n_rows * 0.75)
+    fig, ax = plt.subplots(figsize=(16, fig_h))
     ax.axis("off")
     tbl = ax.table(cellText=rows_display, colLabels=columns, loc="center", cellLoc="center")
     tbl.auto_set_font_size(False)
@@ -939,21 +1017,23 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None):
         cell.set_text_props(color="white", fontweight="bold", fontsize=9)
         cell.set_edgecolor("white")
 
-    for i, (name, *_) in enumerate(rows_raw):
+    for i, r in enumerate(rows_raw):
         row_bg = "white" if i % 2 == 0 else "#F5F5F5"
         for j in range(len(columns)):
             cell = tbl[i + 1, j]
             cell.set_facecolor(row_bg)
             cell.set_edgecolor("#DDDDDD")
             if j == 0:
-                cell.set_text_props(color=AGENT_COLORS.get(name, "black"), fontweight="bold")
+                cell.set_text_props(color=AGENT_COLORS.get(r["name"], "black"),
+                                    fontweight="bold")
         for col_i, best_row in best_idx.items():
             if best_row == i:
                 cell = tbl[i + 1, col_i]
                 cell.set_facecolor("#A5D6A7")
                 cell.set_text_props(fontweight="bold")
 
-    ax.set_title("Efficiency Metrics Summary", fontweight="bold", pad=14)
+    ax.set_title("Efficiency & Fairness Metrics Summary\n(green = best in column)",
+                 fontweight="bold", pad=14)
     plt.tight_layout()
     ieee_style.save(fig, str(OUTPUT_DIR / "efficiency_metrics_table"))
     print(f"  Saved: efficiency_metrics_table.pdf / .eps")
@@ -1310,6 +1390,561 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None):
     plt.close()
 
 
+# ==================== NEW DISSERTATION PLOTS ====================
+
+
+def plot_ndr_progression(dqn_df, smart_df, dumb_df, tsp_df=None):
+    """
+    Plot NDR (sensor coverage %) and unique sensors visited over simulation time.
+    Key dissertation figure: shows DQN visits sensors more systematically than heuristics.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig.suptitle("Sensor Coverage (NDR) Progression Over Mission Time",
+                 fontsize=13, fontweight="bold")
+
+    agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
+    if tsp_df is not None and not tsp_df.empty:
+        agents.append(("TSP Oracle", tsp_df))
+
+    ax = axes[0]
+    for name, df in agents:
+        if df is None or df.empty:
+            continue
+        style = AGENT_STYLES.get(name, {"color": "#e7298a", "marker": "D"})
+        ax.plot(df["step"], df["coverage_percent"],
+                color=style["color"], linewidth=2.5, label=name,
+                marker=style["marker"], markersize=4, markevery=5)
+    ax.axhline(100, color="gray", linestyle=":", linewidth=1.2, alpha=0.5,
+               label="Full coverage (100%)")
+    ax.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
+    ax.set_ylabel("Network Data Retrieval (%)", fontsize=11, fontweight="bold")
+    ax.set_title("NDR Progression", fontsize=11, fontweight="bold")
+    ax.set_ylim(0, 115)
+    ax.legend(fontsize=9, loc="lower right")
+    ax.grid(True, alpha=0.4, linestyle="--")
+    ieee_style.clean_axes(ax)
+
+    ax2 = axes[1]
+    for name, df in agents:
+        if df is None or df.empty:
+            continue
+        style = AGENT_STYLES.get(name, {"color": "#e7298a", "marker": "D"})
+        ax2.plot(df["step"], df["sensors_visited"],
+                 color=style["color"], linewidth=2.5, label=name,
+                 marker=style["marker"], markersize=4, markevery=5)
+    ax2.axhline(PLOT_CONFIG["num_sensors"], color="gray", linestyle=":",
+                linewidth=1.2, alpha=0.5,
+                label=f"All {PLOT_CONFIG['num_sensors']} sensors")
+    ax2.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
+    ax2.set_ylabel("Unique Sensors Visited", fontsize=11, fontweight="bold")
+    ax2.set_title("Cumulative Unique Sensor Visits", fontsize=11, fontweight="bold")
+    ax2.set_ylim(0, PLOT_CONFIG["num_sensors"] + 3)
+    ax2.legend(fontsize=9, loc="lower right")
+    ax2.grid(True, alpha=0.4, linestyle="--")
+    ieee_style.clean_axes(ax2)
+
+    plt.tight_layout()
+    out = OUTPUT_DIR / "ndr_progression"
+    ieee_style.save(fig, str(out))
+    print(f"  Saved: ndr_progression.pdf / .eps")
+    plt.close()
+
+
+def plot_comprehensive_summary_table(dqn_df, smart_df, dumb_df, tsp_df,
+                                      dqn_snap, smart_snap, dumb_snap, tsp_snap,
+                                      tsp_agent=None):
+    """
+    Single dissertation-ready table: NDR, Jain's, Gini, starved sensors, data,
+    efficiency, battery remaining, oracle gap, min collection rate — all agents.
+    """
+    AGENT_COLORS_TABLE = {
+        "DQN Agent":       "#1b9e77",
+        "Smart Greedy V2": "#d95f02",
+        "Nearest Greedy":  "#7570b3",
+        "TSP Oracle":      "#e7298a",
+    }
+
+    all_agents = [
+        ("DQN Agent",       dqn_df,   dqn_snap),
+        ("Smart Greedy V2", smart_df, smart_snap),
+        ("Nearest Greedy",  dumb_df,  dumb_snap),
+    ]
+    if tsp_df is not None and not tsp_df.empty:
+        all_agents.append(("TSP Oracle", tsp_df, tsp_snap))
+
+    tsp_data = (tsp_df["total_data_collected"].iloc[-1]
+                if tsp_df is not None and not tsp_df.empty else None)
+
+    rows_raw = []
+    for name, df, snap_path in all_agents:
+        if df is None or df.empty:
+            continue
+        energy  = EVAL_MAX_BATTERY - df["battery_wh"].iloc[-1]
+        data    = df["total_data_collected"].iloc[-1]
+        ndr     = df["coverage_percent"].iloc[-1]
+        batt    = df["battery_percent"].iloc[-1]
+        eff     = data / energy if energy > 0 else 0.0
+        fm      = load_snapshot_metrics(snap_path)
+        oracle_gap = (data / tsp_data * 100) if tsp_data else 100.0
+        rows_raw.append({
+            "name":         name,
+            "ndr":          ndr,
+            "jains":        fm.get("jains") or 0.0,
+            "gini":         fm.get("gini") or 0.0,
+            "starved":      fm.get("starved", 0) or 0,
+            "data_kb":      data / 1000.0,
+            "eff":          eff,
+            "batt":         batt,
+            "oracle_gap":   oracle_gap,
+            "min_rate":     fm.get("min_rate") or 0.0,
+            "urgency_min":  fm.get("urgency_min") or 0.0,
+            "urgency_max":  fm.get("urgency_max") or 0.0,
+            "urgency_mean": fm.get("urgency_mean") or 0.0,
+            "urgency_std":  fm.get("urgency_std") or 0.0,
+        })
+
+    columns = [
+        "Agent", "NDR\n(%)", "Jain's\nIndex", "Gini\nCoeff",
+        "Starved\nSensors", "Data\n(kB)", "Efficiency\n(B/Wh)",
+        "Battery\nLeft (%)", "Oracle\nGap (%)", "Min Rate\n(%)",
+        "Urgency\nMin", "Urgency\nMax", "Urgency\nMean", "Urgency\nStd",
+    ]
+    rows_display = []
+    for r in rows_raw:
+        rows_display.append([
+            r["name"],
+            f"{r['ndr']:.1f}",
+            f"{r['jains']:.4f}",
+            f"{r['gini']:.4f}",
+            str(r["starved"]),
+            f"{r['data_kb']:.1f}",
+            f"{r['eff']:.2f}",
+            f"{r['batt']:.1f}",
+            f"{r['oracle_gap']:.1f}",
+            f"{r['min_rate']:.1f}",
+            f"{r['urgency_min']:.3f}",
+            f"{r['urgency_max']:.3f}",
+            f"{r['urgency_mean']:.3f}",
+            f"{r['urgency_std']:.3f}",
+        ])
+
+    # higher-is-better for each numeric column (col 0 = Agent name skipped)
+    numeric_keys  = ["ndr", "jains", "gini", "starved", "data_kb", "eff", "batt", "oracle_gap", "min_rate",
+                     "urgency_min", "urgency_max", "urgency_mean", "urgency_std"]
+    higher_better = [True,   True,    False,  False,     True,      True,  True,   True,         True,
+                     False,  False,   False,  False]
+    best_idx = {}
+    for ci, (key, hb) in enumerate(zip(numeric_keys, higher_better)):
+        vals = [r[key] for r in rows_raw]
+        best_idx[ci + 1] = int(np.argmax(vals)) if hb else int(np.argmin(vals))
+
+    n_rows = len(rows_raw)
+    fig_h  = max(3.8, 2.0 + n_rows * 0.85)
+    fig, ax = plt.subplots(figsize=(26, fig_h))
+    ax.axis("off")
+    tbl = ax.table(cellText=rows_display, colLabels=columns, loc="center", cellLoc="center")
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(9)
+    tbl.scale(1, 2.3)
+
+    for j in range(len(columns)):
+        cell = tbl[0, j]
+        cell.set_facecolor("#1b9e77")
+        cell.set_text_props(color="white", fontweight="bold", fontsize=8.5)
+        cell.set_edgecolor("white")
+
+    for i, r in enumerate(rows_raw):
+        row_bg = "white" if i % 2 == 0 else "#F5F5F5"
+        for j in range(len(columns)):
+            cell = tbl[i + 1, j]
+            cell.set_facecolor(row_bg)
+            cell.set_edgecolor("#DDDDDD")
+            if j == 0:
+                cell.set_text_props(
+                    color=AGENT_COLORS_TABLE.get(r["name"], "black"), fontweight="bold"
+                )
+        for col_j, best_row in best_idx.items():
+            if best_row == i:
+                cell = tbl[i + 1, col_j]
+                cell.set_facecolor("#A5D6A7")
+                cell.set_text_props(fontweight="bold")
+
+    ax.set_title(
+        "Comprehensive Agent Performance Summary\n"
+        "(green = best in column | Oracle Gap: % of TSP Oracle data collected | Urgency = buffer occupancy at episode end, lower = better)",
+        fontweight="bold", pad=14, fontsize=11,
+    )
+    plt.tight_layout()
+    ieee_style.save(fig, str(OUTPUT_DIR / "comprehensive_summary_table"))
+    print(f"  Saved: comprehensive_summary_table.pdf / .eps")
+    plt.close()
+
+
+def plot_improvement_breakdown(dqn_df, smart_df, dumb_df,
+                                dqn_snap, smart_snap, dumb_snap):
+    """
+    Grouped bar chart: DQN's % improvement over SF-Aware Greedy and Nearest Greedy
+    on five key dissertation metrics. The 'so what' figure.
+    """
+    if dqn_df is None or dqn_df.empty:
+        print("  ⚠ Skipping improvement breakdown: DQN data missing")
+        return
+
+    def get_agent_metrics(df, snap_path):
+        if df is None or df.empty:
+            return {}
+        energy = EVAL_MAX_BATTERY - df["battery_wh"].iloc[-1]
+        data   = df["total_data_collected"].iloc[-1]
+        ndr    = df["coverage_percent"].iloc[-1]
+        eff    = data / energy if energy > 0 else 0.0
+        fm     = load_snapshot_metrics(snap_path)
+        return {
+            "Data Throughput\n(Bytes)":  data,
+            "NDR\n(Coverage %)":         ndr,
+            "Jain's Fairness\n(×100)":  (fm.get("jains") or 0.0) * 100,
+            "Energy Efficiency\n(B/Wh)": eff,
+            "Min Collection\nRate (%)":  fm.get("min_rate") or 0.0,
+        }
+
+    dqn_m   = get_agent_metrics(dqn_df,   dqn_snap)
+    smart_m = get_agent_metrics(smart_df, smart_snap)
+    dumb_m  = get_agent_metrics(dumb_df,  dumb_snap)
+
+    if not dqn_m:
+        return
+
+    metrics = list(dqn_m.keys())
+
+    def pct_improvement(dqn_val, base_val):
+        if base_val == 0:
+            return 0.0
+        return (dqn_val - base_val) / abs(base_val) * 100.0
+
+    smart_impr = [pct_improvement(dqn_m[m], smart_m.get(m, 0)) for m in metrics]
+    dumb_impr  = [pct_improvement(dqn_m[m], dumb_m.get(m, 0))  for m in metrics]
+
+    x     = np.arange(len(metrics))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(13, 6))
+    bars1 = ax.bar(x - width / 2, smart_impr, width,
+                   label="vs SF-Aware Greedy V2",
+                   color="#d95f02", alpha=0.85, edgecolor="white", linewidth=0.5)
+    bars2 = ax.bar(x + width / 2, dumb_impr, width,
+                   label="vs Nearest Sensor Greedy",
+                   color="#7570b3", alpha=0.85, edgecolor="white", linewidth=0.5)
+
+    ax.axhline(0, color="black", linewidth=1.2)
+
+    for bar, color in [(bars1, "#d95f02"), (bars2, "#7570b3")]:
+        for b in bar:
+            h = b.get_height()
+            offset = 1.5 if h >= 0 else -3.5
+            va     = "bottom" if h >= 0 else "top"
+            ax.text(b.get_x() + b.get_width() / 2, h + offset,
+                    f"{h:+.1f}%", ha="center", va=va,
+                    fontsize=9, fontweight="bold", color=color)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics, fontsize=10, fontweight="bold")
+    ax.set_ylabel("Relative Improvement Over Baseline (%)", fontsize=11, fontweight="bold")
+    ax.set_title(
+        "DQN Agent: Relative Improvement Over Greedy Baselines\n"
+        "(positive = DQN superior, negative = DQN underperforms)",
+        fontsize=12, fontweight="bold", pad=10,
+    )
+    ax.legend(fontsize=10, loc="upper right")
+    ax.grid(True, axis="y", alpha=0.4, linestyle="--")
+    ieee_style.clean_axes(ax)
+    plt.tight_layout()
+    out = OUTPUT_DIR / "improvement_breakdown"
+    ieee_style.save(fig, str(out))
+    print(f"  Saved: improvement_breakdown.pdf / .eps")
+    plt.close()
+
+
+# ==================== SF MONOCULTURE ANALYSIS ====================
+
+
+def _load_sf_data(snapshot_path):
+    """
+    Return list of dicts with keys: sensor_id, spreading_factor, collection_rate, sf_changes.
+    Returns [] if snapshot does not exist or has no SF field.
+    """
+    path = Path(snapshot_path)
+    if not path.exists():
+        return []
+    with open(path) as f:
+        data = json.load(f)
+    result = []
+    for s in data.get("sensor_data", []):
+        result.append({
+            "sensor_id":       s["sensor_id"],
+            "spreading_factor": s.get("spreading_factor", 12),
+            "collection_rate":  s["collection_rate"],
+            "sf_changes":       s.get("sf_changes", 0),
+        })
+    return result
+
+
+def _sf_entropy(sf_counts):
+    """Shannon entropy of an SF distribution dict {sf: count}. Higher = more diverse."""
+    total = sum(sf_counts.values())
+    if total == 0:
+        return 0.0
+    entropy = 0.0
+    for count in sf_counts.values():
+        if count > 0:
+            p = count / total
+            entropy -= p * np.log2(p)
+    return entropy
+
+
+def plot_sf_distribution_vs_collection(
+    dqn_snap, smart_snap, dumb_snap, tsp_snap=None
+):
+    """
+    Two-panel SF analysis figure for the dissertation 'protocol-aware vs blind' argument.
+
+    Left  — SF distribution at episode end: how many sensors ended at each SF level
+            per agent.  SF7 = UAV visited nearby; SF12 = UAV never got close.
+            Greedy → piled at SF7 (monoculture). DQN → more spread (diversity).
+
+    Right — Mean collection rate broken down by SF tier (SF7–8 / SF9–10 / SF11–12)
+            per agent.  Greedy performs well only for the easiest tier; DQN stays
+            competitive across the hard tiers.
+    """
+    SF_ALL = [7, 8, 9, 10, 11, 12]
+    SF_TIERS = {"SF 7–8": [7, 8], "SF 9–10": [9, 10], "SF 11–12": [11, 12]}
+
+    snap_map = {"DQN Agent": dqn_snap, "Smart Greedy V2": smart_snap, "Nearest Greedy": dumb_snap}
+    if tsp_snap is not None:
+        snap_map["TSP Oracle"] = tsp_snap
+
+    agent_sf_data = {name: _load_sf_data(p) for name, p in snap_map.items()}
+    # Drop agents with no data
+    agent_sf_data = {k: v for k, v in agent_sf_data.items() if v}
+
+    if not agent_sf_data:
+        print("  ⚠ No SF data in snapshots — skipping SF distribution plot")
+        return
+
+    n_agents = len(agent_sf_data)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig.suptitle(
+        "Spreading Factor Analysis: Protocol-Aware DQN vs Blind Greedy Baselines",
+        fontsize=13, fontweight="bold",
+    )
+
+    # ── Left panel: SF distribution at episode end ─────────────────────────
+    ax = axes[0]
+    x     = np.arange(len(SF_ALL))
+    width = 0.8 / n_agents
+    sf_colors = {7: "#1a9641", 8: "#a6d96a", 9: "#ffffbf", 10: "#fdae61", 11: "#d7191c", 12: "#7b2d00"}
+
+    for i, (agent_name, sensors) in enumerate(agent_sf_data.items()):
+        sf_counts = {sf: sum(1 for s in sensors if s["spreading_factor"] == sf) for sf in SF_ALL}
+        vals   = [sf_counts[sf] for sf in SF_ALL]
+        offset = (i - n_agents / 2 + 0.5) * width
+        bar_color = AGENT_STYLES.get(agent_name, {}).get("color", "#e7298a")
+        bars = ax.bar(x + offset, vals, width * 0.9, label=agent_name,
+                      color=bar_color, alpha=0.85, edgecolor="white")
+        for bar, val in zip(bars, vals):
+            if val > 0:
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.1,
+                        str(val), ha="center", va="bottom", fontsize=7.5,
+                        fontweight="bold", color=bar_color)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"SF{sf}" for sf in SF_ALL], fontsize=10, fontweight="bold")
+    ax.set_xlabel("Spreading Factor (SF7 = close/fast  →  SF12 = far/slow)", fontsize=10, fontweight="bold")
+    ax.set_ylabel("Number of Sensors", fontsize=10, fontweight="bold")
+    ax.set_title("SF Distribution at Episode End\n(SF7 pile-up = SF monoculture)", fontsize=11, fontweight="bold")
+    ax.legend(fontsize=9)
+    ax.grid(True, axis="y", alpha=0.35, linestyle="--")
+    ieee_style.clean_axes(ax)
+
+    # Annotate monoculture concentration
+    for i, (agent_name, sensors) in enumerate(agent_sf_data.items()):
+        n = len(sensors)
+        sf7_count = sum(1 for s in sensors if s["spreading_factor"] <= 8)
+        entropy_val = _sf_entropy(
+            {sf: sum(1 for s in sensors if s["spreading_factor"] == sf) for sf in SF_ALL}
+        )
+        print(f"  [{agent_name}] SF7-8 sensors: {sf7_count}/{n} ({sf7_count/max(n,1)*100:.0f}%)  "
+              f"SF entropy: {entropy_val:.3f} bits")
+
+    # ── Right panel: collection rate by SF tier ────────────────────────────
+    ax2 = axes[1]
+    tier_names = list(SF_TIERS.keys())
+    x2    = np.arange(len(tier_names))
+    width2 = 0.8 / n_agents
+
+    for i, (agent_name, sensors) in enumerate(agent_sf_data.items()):
+        tier_rates = []
+        for tier_label, sf_group in SF_TIERS.items():
+            group_sensors = [s for s in sensors if s["spreading_factor"] in sf_group]
+            mean_rate = float(np.mean([s["collection_rate"] for s in group_sensors])) \
+                if group_sensors else 0.0
+            tier_rates.append(mean_rate)
+        offset = (i - n_agents / 2 + 0.5) * width2
+        bar_color = AGENT_STYLES.get(agent_name, {}).get("color", "#e7298a")
+        bars = ax2.bar(x2 + offset, tier_rates, width2 * 0.9, label=agent_name,
+                       color=bar_color, alpha=0.85, edgecolor="white")
+        for bar, val in zip(bars, tier_rates):
+            ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                     f"{val:.0f}%", ha="center", va="bottom", fontsize=8,
+                     fontweight="bold", color=bar_color)
+
+    ax2.axhline(20, color="red", linestyle="--", linewidth=1.2, alpha=0.7,
+                label="Starvation threshold (20%)")
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(tier_names, fontsize=10, fontweight="bold")
+    ax2.set_xlabel("Spreading Factor Tier", fontsize=10, fontweight="bold")
+    ax2.set_ylabel("Mean Collection Rate (%)", fontsize=10, fontweight="bold")
+    ax2.set_ylim(0, 115)
+    ax2.set_title("Collection Rate by SF Tier\n(shows bias toward easy SF7–8 sensors)",
+                  fontsize=11, fontweight="bold")
+    ax2.legend(fontsize=9, loc="upper right")
+    ax2.grid(True, axis="y", alpha=0.35, linestyle="--")
+    ieee_style.clean_axes(ax2)
+
+    plt.tight_layout()
+    out = OUTPUT_DIR / "sf_distribution_vs_collection"
+    ieee_style.save(fig, str(out))
+    print(f"  Saved: sf_distribution_vs_collection.pdf / .eps")
+    plt.close()
+
+
+def plot_sf_monoculture_index(dqn_snap, smart_snap, dumb_snap, tsp_snap=None):
+    """
+    'Breaking the SF Monoculture' headline figure — three panels:
+
+    (A) SF Diversity Score (Shannon entropy of the final SF distribution per agent).
+        Higher entropy = broader SF coverage = breaks the monoculture.
+
+    (B) Per-SF starvation heatmap: row=SF level, col=agent, cell=% of sensors at
+        that SF that are starved (<20% collection rate).
+        Greedy → high starvation at SF11–12; DQN → lower across the board.
+
+    (C) SF Monoculture Concentration: fraction of total data collected that came
+        from the easiest tier (SF7–8) per agent.  DQN should have a lower fraction
+        because it also collects from harder sensors.
+    """
+    SF_ALL = [7, 8, 9, 10, 11, 12]
+
+    snap_map = {"DQN Agent": dqn_snap, "Smart Greedy V2": smart_snap, "Nearest Greedy": dumb_snap}
+    if tsp_snap is not None:
+        snap_map["TSP Oracle"] = tsp_snap
+
+    agent_sf_data = {name: _load_sf_data(p) for name, p in snap_map.items()}
+    agent_sf_data = {k: v for k, v in agent_sf_data.items() if v}
+
+    if not agent_sf_data:
+        print("  ⚠ No SF data — skipping SF monoculture index plot")
+        return
+
+    agent_names = list(agent_sf_data.keys())
+    n_agents    = len(agent_names)
+
+    # Pre-compute metrics
+    entropies       = []
+    easy_fractions  = []     # fraction of sensors in SF7-8
+    starvation_grid = []     # n_agents × 6  (one col per SF level)
+
+    for agent_name in agent_names:
+        sensors = agent_sf_data[agent_name]
+        n = len(sensors)
+        sf_counts = {sf: sum(1 for s in sensors if s["spreading_factor"] == sf) for sf in SF_ALL}
+        entropies.append(_sf_entropy(sf_counts))
+        easy_count = sf_counts.get(7, 0) + sf_counts.get(8, 0)
+        easy_fractions.append(easy_count / max(n, 1) * 100)
+        row = []
+        for sf in SF_ALL:
+            sf_group = [s for s in sensors if s["spreading_factor"] == sf]
+            starved_pct = (
+                sum(1 for s in sf_group if s["collection_rate"] < 20.0)
+                / max(len(sf_group), 1) * 100
+            )
+            row.append(starved_pct)
+        starvation_grid.append(row)
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    fig.suptitle(
+        "Breaking the SF Monoculture: DQN Protocol Awareness vs Greedy Heuristics",
+        fontsize=13, fontweight="bold",
+    )
+
+    # ── Panel A: SF Diversity (entropy) ───────────────────────────────────
+    ax = axes[0]
+    colors = [AGENT_STYLES.get(n, {}).get("color", "#e7298a") for n in agent_names]
+    bars = ax.bar(agent_names, entropies, color=colors, alpha=0.85,
+                  edgecolor="white", linewidth=0.5)
+    for idx, (bar, val) in enumerate(zip(bars, entropies)):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
+                f"{val:.2f}", ha="center", va="bottom",
+                fontsize=10, fontweight="bold",
+                color=AGENT_STYLES.get(agent_names[idx], {"color": "#333"}).get("color", "#333"))
+    ax.set_ylabel("Shannon Entropy (bits)", fontsize=10, fontweight="bold")
+    ax.set_title("SF Diversity Score\n(higher = broader protocol coverage)",
+                 fontsize=11, fontweight="bold")
+    ax.set_ylim(0, max(entropies) * 1.3 + 0.2)
+    ax.tick_params(axis="x", labelsize=9)
+    ax.grid(True, axis="y", alpha=0.35, linestyle="--")
+    ieee_style.clean_axes(ax)
+    # Add a "perfect diversity" reference line (log2(6) ≈ 2.58 for 6 SF levels)
+    max_entropy = np.log2(len(SF_ALL))
+    ax.axhline(max_entropy, color="gray", linestyle=":", linewidth=1.2, alpha=0.6,
+               label=f"Max diversity ({max_entropy:.2f} bits)")
+    ax.legend(fontsize=8)
+
+    # ── Panel B: Starvation heatmap by SF level ────────────────────────────
+    ax2 = axes[1]
+    heat_data = np.array(starvation_grid)   # shape: n_agents × 6
+    im = ax2.imshow(heat_data, aspect="auto", cmap="RdYlGn_r", vmin=0, vmax=100)
+    plt.colorbar(im, ax=ax2, label="% Sensors Starved (<20% CR)", fraction=0.046, pad=0.04)
+    ax2.set_xticks(range(len(SF_ALL)))
+    ax2.set_xticklabels([f"SF{sf}" for sf in SF_ALL], fontsize=9, fontweight="bold")
+    ax2.set_yticks(range(n_agents))
+    ax2.set_yticklabels(agent_names, fontsize=9)
+    for i in range(n_agents):
+        for j in range(len(SF_ALL)):
+            val = heat_data[i, j]
+            text_color = "white" if val > 60 else "black"
+            ax2.text(j, i, f"{val:.0f}%", ha="center", va="center",
+                     fontsize=9, fontweight="bold", color=text_color)
+    ax2.set_xlabel("Spreading Factor", fontsize=10, fontweight="bold")
+    ax2.set_title("Sensor Starvation Rate by SF Level\n"
+                  "(greedy leaves high-SF sensors starved)",
+                  fontsize=11, fontweight="bold")
+
+    # ── Panel C: SF7–8 concentration (monoculture fraction) ───────────────
+    ax3 = axes[2]
+    bars3 = ax3.bar(agent_names, easy_fractions, color=colors, alpha=0.85,
+                    edgecolor="white", linewidth=0.5)
+    for bar, val in zip(bars3, easy_fractions):
+        ax3.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                 f"{val:.0f}%", ha="center", va="bottom",
+                 fontsize=10, fontweight="bold")
+    ax3.set_ylabel("% Sensors Ending at SF 7–8", fontsize=10, fontweight="bold")
+    ax3.set_title("SF Monoculture Concentration\n"
+                  "(high % = UAV fixated on nearby/easy sensors)",
+                  fontsize=11, fontweight="bold")
+    ax3.set_ylim(0, 110)
+    ax3.axhline(100 / len(SF_ALL) * 2, color="gray", linestyle=":",
+                linewidth=1.2, alpha=0.6, label="Uniform baseline (33%)")
+    ax3.legend(fontsize=8)
+    ax3.tick_params(axis="x", labelsize=9)
+    ax3.grid(True, axis="y", alpha=0.35, linestyle="--")
+    ieee_style.clean_axes(ax3)
+
+    plt.tight_layout()
+    out = OUTPUT_DIR / "sf_monoculture_index"
+    ieee_style.save(fig, str(out))
+    print(f"  Saved: sf_monoculture_index.pdf / .eps")
+    plt.close()
+
+
 # ==================== MAIN ====================
 
 
@@ -1471,88 +2106,166 @@ def main():
     print("\n" + "-" * 100)
     plot_trajectories(env, dqn_trajectory, smart_trajectory, dumb_trajectory,
                       tsp_trajectory=tsp_trajectory, tsp_agent=tsp_agent)
+    # Snapshot paths used by multiple plots — define once
+    snap_dqn   = OUTPUT_DIR / "dqn_sensor_snapshot.json"
+    snap_smart = OUTPUT_DIR / "greedy_smart_sensor_snapshot.json"
+    snap_dumb  = OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json"
+    snap_tsp   = OUTPUT_DIR / "tsp_sensor_snapshot.json"
+
     print("\n" + "-" * 100)
     plot_comparative_analysis(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
-    plot_efficiency_table(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_efficiency_table(df_dqn, df_smart, df_dumb, tsp_df=df_tsp,
+                          dqn_snap=snap_dqn, smart_snap=snap_smart,
+                          dumb_snap=snap_dumb, tsp_snap=snap_tsp)
     print("\n" + "-" * 100)
-    plot_fairness_heatmap(
-        OUTPUT_DIR / "dqn_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
-        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
-    )
+    plot_fairness_heatmap(snap_dqn, snap_smart, snap_dumb, tsp_snapshot_path=snap_tsp)
     print("\n" + "-" * 100)
     plot_pareto_scatter(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
-    plot_per_sensor_bar(
-        OUTPUT_DIR / "dqn_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
-        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
-    )
+    plot_per_sensor_bar(snap_dqn, snap_smart, snap_dumb, tsp_snapshot_path=snap_tsp)
     print("\n" + "-" * 100)
     plot_radar_chart(
         df_dqn, df_smart, df_dumb,
-        OUTPUT_DIR / "dqn_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
-        OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
-        tsp_df=df_tsp,
-        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
+        snap_dqn, snap_smart, snap_dumb,
+        tsp_df=df_tsp, tsp_snapshot_path=snap_tsp,
     )
     print("\n" + "-" * 100)
     plot_buffer_dynamics(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
     plot_battery_steps_data(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    # ── New dissertation plots ────────────────────────────────────────────────
+    print("\n" + "-" * 100)
+    plot_ndr_progression(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    print("\n" + "-" * 100)
+    plot_comprehensive_summary_table(
+        df_dqn, df_smart, df_dumb, df_tsp,
+        snap_dqn, snap_smart, snap_dumb, snap_tsp,
+        tsp_agent=tsp_agent,
+    )
+    print("\n" + "-" * 100)
+    plot_improvement_breakdown(
+        df_dqn, df_smart, df_dumb,
+        snap_dqn, snap_smart, snap_dumb,
+    )
+    # ── SF monoculture analysis (key dissertation contribution) ──────────────
+    print("\n" + "-" * 100)
+    plot_sf_distribution_vs_collection(snap_dqn, snap_smart, snap_dumb, tsp_snap=snap_tsp)
+    print("\n" + "-" * 100)
+    plot_sf_monoculture_index(snap_dqn, snap_smart, snap_dumb, tsp_snap=snap_tsp)
 
-    # ========== SUMMARY ==========
-    print("\n" + "=" * 100)
-    print("COMPARISON SUMMARY STATISTICS")
-    print("=" * 100)
+    # ========== SUMMARY TABLE ==========
+    def _load_fm(snapshot_path):
+        fm = load_snapshot_metrics(snapshot_path)
+        return fm if fm["jains"] is not None else {}
 
-    def _print_fairness(snapshot_path):
-        jains, min_r, max_r = load_fairness_from_snapshot(snapshot_path)
-        if jains is not None:
-            print(f"  Jain's Fairness Index: {jains:>11.4f}")
-            print(f"  Min Collection Rate:   {min_r:>10.1f}%")
-            print(f"  Max Collection Rate:   {max_r:>10.1f}%")
+    fm_dqn     = _load_fm(OUTPUT_DIR / "dqn_sensor_snapshot.json")
+    fm_smart   = _load_fm(OUTPUT_DIR / "greedy_smart_sensor_snapshot.json")
+    fm_nearest = _load_fm(OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json")
+    fm_tsp     = _load_fm(OUTPUT_DIR / "tsp_sensor_snapshot.json")
 
-    if df_dqn is not None and not df_dqn.empty:
-        print(f"\nDQN Agent:")
-        print(f"  Final Reward:          {df_dqn['cumulative_reward'].iloc[-1]:>15.1f}")
-        print(f"  Final Battery:         {df_dqn['battery_percent'].iloc[-1]:>13.1f}%")
-        print(f"  Final NDR:             {df_dqn['coverage_percent'].iloc[-1]:>12.1f}%")
-        print(f"  Data Collected:        {df_dqn['total_data_collected'].iloc[-1]:>11.0f} bytes")
-        print(f"  Efficiency:            {df_dqn['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
-        _print_fairness(OUTPUT_DIR / "dqn_sensor_snapshot.json")
+    def _fmt_val(val, fmt=".1f", suffix=""):
+        return f"{val:{fmt}}{suffix}" if val is not None else "—"
 
-    for label, df, snap in [
-        ("Smart Greedy V2",    df_smart, OUTPUT_DIR / "greedy_smart_sensor_snapshot.json"),
-        ("Nearest Sensor Greedy", df_dumb, OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json"),
-    ]:
-        print(f"\n{label}:")
-        print(f"  Final Reward:          {df['cumulative_reward'].iloc[-1]:>15.1f}")
-        print(f"  Final Battery:         {df['battery_percent'].iloc[-1]:>13.1f}%")
-        print(f"  Final NDR:             {df['coverage_percent'].iloc[-1]:>12.1f}%")
-        print(f"  Data Collected:        {df['total_data_collected'].iloc[-1]:>11.0f} bytes")
-        print(f"  Efficiency:            {df['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
-        _print_fairness(snap)
+    def _row(label, vals, fmt=".1f", suffix="", col_w=16):
+        cells = "".join(f"{v:>{col_w}}" for v in vals)
+        print(f"  {label:<30}{cells}")
 
-    print(f"\nTSP Oracle:")
-    print(f"  Final Reward:          {df_tsp['cumulative_reward'].iloc[-1]:>15.1f}")
-    print(f"  Final Battery:         {df_tsp['battery_percent'].iloc[-1]:>13.1f}%")
-    print(f"  Final NDR:             {df_tsp['coverage_percent'].iloc[-1]:>12.1f}%")
-    print(f"  Data Collected:        {df_tsp['total_data_collected'].iloc[-1]:>11.0f} bytes")
-    print(f"  Efficiency:            {df_tsp['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
-    print(f"  TSP Min Tour:          {tsp_agent.tsp_tour_length_units:>13.1f} grid units")
-    print(f"  Actual Flown:          {tsp_agent.actual_path_length:>13.1f} grid units")
-    print(f"  Path Efficiency:       {tsp_agent.path_efficiency_pct:>13.1f}%")
-    _print_fairness(OUTPUT_DIR / "tsp_sensor_snapshot.json")
+    def _divider(char="─", width=98):
+        print("  " + char * width)
+
+    COL_W = 16
+    HEADERS = ["DQN Agent", "Smart Greedy V2", "Nearest Greedy", "TSP Oracle"]
+
+    print("\n" + "=" * 102)
+    print("  COMPARISON SUMMARY STATISTICS")
+    print("=" * 102)
+    print()
+    print(f"  {'Metric':<30}" + "".join(f"{h:>{COL_W}}" for h in HEADERS))
+    _divider()
+
+    # ── Performance ──────────────────────────────────────────────────────────
+    def _r(df, col):
+        return df[col].iloc[-1] if df is not None and not df.empty else None
+
+    rows_perf = [
+        ("Final Reward",
+         [_fmt_val(_r(df_dqn, 'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_smart, 'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_dumb,  'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_tsp,   'cumulative_reward'), ",.1f")]),
+        ("Final Battery (%)",
+         [_fmt_val(_r(df_dqn, 'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_smart, 'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_dumb,  'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_tsp,   'battery_percent'), ".1f", "%")]),
+        ("Final NDR (%)",
+         [_fmt_val(_r(df_dqn, 'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_smart, 'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_dumb,  'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_tsp,   'coverage_percent'), ".1f", "%")]),
+        ("Data Collected (bytes)",
+         [_fmt_val(_r(df_dqn, 'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_smart, 'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_dumb,  'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_tsp,   'total_data_collected'), ",.0f")]),
+        ("Efficiency (bytes/Wh)",
+         [_fmt_val(_r(df_dqn, 'efficiency'), ".2f"),
+          _fmt_val(_r(df_smart, 'efficiency'), ".2f"),
+          _fmt_val(_r(df_dumb,  'efficiency'), ".2f"),
+          _fmt_val(_r(df_tsp,   'efficiency'), ".2f")]),
+    ]
+    for label, vals in rows_perf:
+        _row(label, vals, col_w=COL_W)
+
+    _divider()
+    # ── Fairness ─────────────────────────────────────────────────────────────
+    def _fm_get(fm, key, fmt=".4f", suffix=""):
+        v = fm.get(key)
+        return _fmt_val(v, fmt, suffix) if v is not None else "—"
+
+    rows_fair = [
+        ("Jain's Fairness Index",
+         [_fm_get(fm_dqn, 'jains'), _fm_get(fm_smart, 'jains'),
+          _fm_get(fm_nearest, 'jains'), _fm_get(fm_tsp, 'jains')]),
+        ("Gini Coefficient  [0=eq, 1=ineq]",
+         [_fm_get(fm_dqn, 'gini'), _fm_get(fm_smart, 'gini'),
+          _fm_get(fm_nearest, 'gini'), _fm_get(fm_tsp, 'gini')]),
+        ("Min Collection Rate (%)",
+         [_fm_get(fm_dqn, 'min_rate', ".1f", "%"), _fm_get(fm_smart, 'min_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'min_rate', ".1f", "%"), _fm_get(fm_tsp, 'min_rate', ".1f", "%")]),
+        ("Max Collection Rate (%)",
+         [_fm_get(fm_dqn, 'max_rate', ".1f", "%"), _fm_get(fm_smart, 'max_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'max_rate', ".1f", "%"), _fm_get(fm_tsp, 'max_rate', ".1f", "%")]),
+        ("Mean Collection Rate (%)",
+         [_fm_get(fm_dqn, 'mean_rate', ".1f", "%"), _fm_get(fm_smart, 'mean_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'mean_rate', ".1f", "%"), _fm_get(fm_tsp, 'mean_rate', ".1f", "%")]),
+        ("Starved Sensors (<20%)",
+         [f"{fm_dqn.get('starved','—')}/{fm_dqn.get('n_sensors','—')}",
+          f"{fm_smart.get('starved','—')}/{fm_smart.get('n_sensors','—')}",
+          f"{fm_nearest.get('starved','—')}/{fm_nearest.get('n_sensors','—')}",
+          f"{fm_tsp.get('starved','—')}/{fm_tsp.get('n_sensors','—')}"]),
+    ]
+    for label, vals in rows_fair:
+        _row(label, vals, col_w=COL_W)
+
+    _divider()
+    # ── TSP-only metrics ──────────────────────────────────────────────────────
+    print(f"  {'TSP Min Tour (grid units)':<30}"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
+          + f"{tsp_agent.tsp_tour_length_units:>{COL_W},.1f}")
+    print(f"  {'Actual Flown (grid units)':<30}"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
+          + f"{tsp_agent.actual_path_length:>{COL_W},.1f}")
+    print(f"  {'Path Efficiency (%)':<30}"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
+          + f"{tsp_agent.path_efficiency_pct:>{COL_W}.1f}%")
 
     env.close()
-    print("\n" + "=" * 100)
-    print("✓ EVALUATION COMPLETE")
-    print("=" * 100 + "\n")
+    print()
+    print("=" * 102)
+    print("  EVALUATION COMPLETE")
+    print("=" * 102 + "\n")
 
 
 if __name__ == "__main__":
