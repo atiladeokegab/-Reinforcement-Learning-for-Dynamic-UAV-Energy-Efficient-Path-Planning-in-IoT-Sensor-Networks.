@@ -45,7 +45,7 @@ from stable_baselines3.common.callbacks import (
 )
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from environment.uav_env import UAVEnvironment
 from environment.iot_sensors import IoTSensor
 
