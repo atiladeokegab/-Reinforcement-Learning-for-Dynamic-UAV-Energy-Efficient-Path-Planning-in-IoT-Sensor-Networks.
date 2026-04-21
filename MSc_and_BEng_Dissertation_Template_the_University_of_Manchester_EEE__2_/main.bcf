@@ -2442,35 +2442,36 @@
     <bcf:citekey order="69" intorder="2">zorbas2025revisiting</bcf:citekey>
     <bcf:citekey order="70" intorder="1">rappaport2002wireless</bcf:citekey>
     <bcf:citekey order="71" intorder="1">alhourani2014optimal</bcf:citekey>
-    <bcf:citekey order="72" intorder="1">mnih2015humanlevel</bcf:citekey>
-    <bcf:citekey order="73" intorder="1">mozaffari2019tutorial</bcf:citekey>
-    <bcf:citekey order="74" intorder="1">rappaport2002wireless</bcf:citekey>
-    <bcf:citekey order="75" intorder="1">alhourani2014optimal</bcf:citekey>
-    <bcf:citekey order="76" intorder="1">augustin2016lora</bcf:citekey>
-    <bcf:citekey order="77" intorder="1">croce2020lora</bcf:citekey>
+    <bcf:citekey order="72" intorder="1">luong2019drl</bcf:citekey>
+    <bcf:citekey order="73" intorder="1">luong2019drl</bcf:citekey>
+    <bcf:citekey order="74" intorder="1">mnih2015humanlevel</bcf:citekey>
+    <bcf:citekey order="75" intorder="1">mozaffari2019tutorial</bcf:citekey>
+    <bcf:citekey order="76" intorder="1">rappaport2002wireless</bcf:citekey>
+    <bcf:citekey order="77" intorder="1">alhourani2014optimal</bcf:citekey>
     <bcf:citekey order="78" intorder="1">augustin2016lora</bcf:citekey>
-    <bcf:citekey order="78" intorder="2">croce2020lora</bcf:citekey>
-    <bcf:citekey order="79" intorder="1">augustin2016lora</bcf:citekey>
+    <bcf:citekey order="79" intorder="1">croce2020lora</bcf:citekey>
     <bcf:citekey order="80" intorder="1">augustin2016lora</bcf:citekey>
-    <bcf:citekey order="81" intorder="1">kaul2012realtime</bcf:citekey>
-    <bcf:citekey order="82" intorder="1">kaul2012realtime</bcf:citekey>
-    <bcf:citekey order="82" intorder="2">abdelmagid2019aoi</bcf:citekey>
-    <bcf:citekey order="83" intorder="1">mnih2015humanlevel</bcf:citekey>
-    <bcf:citekey order="84" intorder="1">augustin2016lora</bcf:citekey>
-    <bcf:citekey order="85" intorder="1">towers2024gymnasium</bcf:citekey>
-    <bcf:citekey order="86" intorder="1">raffin2021stable</bcf:citekey>
-    <bcf:citekey order="87" intorder="1">jain1984quantitative</bcf:citekey>
-    <bcf:citekey order="88" intorder="1">kool2018attention</bcf:citekey>
-    <bcf:citekey order="89" intorder="1">cappart2023combinatorial</bcf:citekey>
-    <bcf:citekey order="90" intorder="1">mozaffari2019tutorial</bcf:citekey>
-    <bcf:citekey order="90" intorder="2">li2020uav</bcf:citekey>
-    <bcf:citekey order="90" intorder="3">liu2019uav</bcf:citekey>
-    <bcf:citekey order="91" intorder="1">rashid2018qmix</bcf:citekey>
+    <bcf:citekey order="80" intorder="2">croce2020lora</bcf:citekey>
+    <bcf:citekey order="81" intorder="1">augustin2016lora</bcf:citekey>
+    <bcf:citekey order="82" intorder="1">augustin2016lora</bcf:citekey>
+    <bcf:citekey order="83" intorder="1">kaul2012realtime</bcf:citekey>
+    <bcf:citekey order="84" intorder="1">kaul2012realtime</bcf:citekey>
+    <bcf:citekey order="84" intorder="2">abdelmagid2019aoi</bcf:citekey>
+    <bcf:citekey order="85" intorder="1">mnih2015humanlevel</bcf:citekey>
+    <bcf:citekey order="86" intorder="1">augustin2016lora</bcf:citekey>
+    <bcf:citekey order="87" intorder="1">towers2024gymnasium</bcf:citekey>
+    <bcf:citekey order="88" intorder="1">raffin2021stable</bcf:citekey>
+    <bcf:citekey order="89" intorder="1">jain1984quantitative</bcf:citekey>
+    <bcf:citekey order="90" intorder="1">kool2018attention</bcf:citekey>
+    <bcf:citekey order="91" intorder="1">cappart2023combinatorial</bcf:citekey>
     <bcf:citekey order="92" intorder="1">kool2018attention</bcf:citekey>
     <bcf:citekey order="93" intorder="1">cappart2023combinatorial</bcf:citekey>
-    <bcf:citekey order="94" intorder="1">tobin2017domain</bcf:citekey>
-    <bcf:citekey order="94" intorder="2">zhao2021sim2real</bcf:citekey>
-    <bcf:citekey order="95" intorder="1">alhourani2014optimal</bcf:citekey>
+    <bcf:citekey order="94" intorder="1">rashid2018qmix</bcf:citekey>
+    <bcf:citekey order="95" intorder="1">kool2018attention</bcf:citekey>
+    <bcf:citekey order="96" intorder="1">cappart2023combinatorial</bcf:citekey>
+    <bcf:citekey order="97" intorder="1">tobin2017domain</bcf:citekey>
+    <bcf:citekey order="97" intorder="2">zhao2021sim2real</bcf:citekey>
+    <bcf:citekey order="98" intorder="1">alhourani2014optimal</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

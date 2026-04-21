@@ -1,7 +1,61 @@
 \section{Continuing Professional Development (CPD) Log}
 \label{app:cpd}
 
-This log records self-directed learning and skills development activities undertaken during the project. Activities are grouped by domain and listed in approximate chronological order.
+This log records self-directed learning and skills development activities undertaken during the project, following the CPD framework introduced in Lecture 2 (Semester 1, Week 2).
+
+\subsection*{Current and Recent CPD Activity}
+
+\begin{table}[H]
+\centering
+\caption{Current and recent CPD activities.}
+\label{tab:cpd_current}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm} X p{2.0cm} p{1.5cm}}
+\toprule
+\textbf{CPD Activity Title} & \textbf{Description} & \textbf{Dates} & \textbf{CPD Hours} \\
+\midrule
+LoRaWAN specification study & Studied LoRaWAN 1.0.4 spec (LoRa Alliance): ADR algorithm, duty cycle enforcement, MAC-layer confirmation. Informed EMA-ADR implementation. & S1 W2--W3 & 8 \\
+\midrule
+RF propagation modelling & Studied Two-Ray Ground Reflection model (Rappaport). Derived breakpoint formula; implemented piecewise path loss; calibrated $\sigma=4$\,dB from UAV field data. & S1 W4 & 6 \\
+\midrule
+DQN and Deep RL study & Studied Mnih et al.\ (2015) DQN paper and Sutton \& Barto Ch.\ 6, 9--10. Understood experience replay, target network, and temporal-difference learning. & S1 W1--W2 & 10 \\
+\midrule
+Domain Randomisation literature & Read Tobin et al.\ (2017) and Andrychowicz et al.\ (2020). Applied sensor position and count randomisation to reduce Sim-to-Real gap. & S1 W10--W11 & 5 \\
+\midrule
+Statistical analysis (Welch's $t$-test) & Self-study of two-sample unequal-variance $t$-test and effect size analysis. Applied to 20-seed multi-condition evaluation. & S2 W6 & 4 \\
+\midrule
+Academic Malpractice Awareness training & Completed Short Course, Driving Test, Self Declaration Form, and Tutorial Questions on CANVAS as required by Handbook Section~4. & S1 W12 & 2 \\
+\midrule
+LaTeX and mathematical writing & Attended Lecture 2 (S1 W2). Set up LuaLaTeX pipeline; learnt correct mathematical notation for MDP and reward function formulations. & S1 W2 & 2 \\
+\midrule
+Git version control & Maintained version-controlled repository throughout the project with separate branches for environment, training, and evaluation. & S1--S2 & 6 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Planned and Future CPD Activity}
+
+\begin{table}[H]
+\centering
+\caption{Planned and future CPD activities.}
+\label{tab:cpd_planned}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm} X p{2.8cm} p{2.0cm}}
+\toprule
+\textbf{CPD Activity Title} & \textbf{Description} & \textbf{Skills addressed} & \textbf{Dates} \\
+\midrule
+Multi-agent RL study & Study multi-agent extensions of DQN (QMIX, MADDPG) to support planned future work on cooperative multi-UAV data collection. & Advanced RL algorithms; cooperative decision-making & May--Jun 2026 \\
+\midrule
+Hardware-in-the-Loop validation & Learn to interface Python simulation with ROS2 and a physical UAV (ArduPilot). Addresses the Sim-to-Real gap identified in this project. & Embedded systems; robotics middleware & Jun--Aug 2026 \\
+\midrule
+Academic paper writing & Write and submit a conference paper based on this project's results to IEEE WCNC or similar venue. & Scientific writing; peer-review process & Jul 2026 \\
+\midrule
+GNN for UAV path planning & Study Graph Neural Networks for modelling sensor graph topology, as identified in the future work section of this dissertation. & Deep learning; graph-structured data & May--Jun 2026 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent The following sections provide more detailed records of CPD activities grouped by technical domain.
 
 \subsection*{Domain 1: LoRaWAN Protocol and RF Propagation}
 

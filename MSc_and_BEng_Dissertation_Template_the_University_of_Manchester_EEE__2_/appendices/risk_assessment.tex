@@ -1,93 +1,83 @@
-\section{Risk Register and Health \& Safety Risk Assessment}
+\section{Risk Register}
 \label{app:risk}
 
-The following table identifies the principal risks associated with this project, together
-with their likelihood, potential impact, and the mitigation strategies employed.
+The following table identifies the principal project risks, scored using the standard
+likelihood-severity matrix (L\,=\,1, M\,=\,2, H\,=\,3; Score\,=\,Likelihood\,$\times$\,Severity).
 
 \begin{table}[H]
 \centering
 \caption{Project Risk Register}
 \label{tab:risk}
-\begin{tabularx}{\textwidth}{p{3cm} p{1.5cm} p{1.5cm} X}
+\small
+\begin{tabularx}{\textwidth}{p{3.6cm} c c c X}
 \toprule
-\textbf{Risk} & \textbf{Likelihood} & \textbf{Impact} & \textbf{Mitigation} \\
+\textbf{Project Risk} &
+\multicolumn{2}{c}{\textbf{Likelihood}} &
+\multicolumn{2}{c}{\hspace{-1cm}} \\
+\cmidrule(lr){2-3}
+ & \textbf{L\;M\;H} & \textbf{L\;M\;H} & \textbf{Score} & \textbf{Mitigation Measures} \\
+ & \small(Likelihood) & \small(Severity) & \small(L$\times$S) & \\
 \midrule
-\textbf{Simulation instability}: The custom Gymnasium environment contains bugs
-that cause non-physical state transitions or incorrect reward computation.
-& Medium & High &
-Extensive unit testing of each environment component (propagation model, ADR logic,
-Capture Effect) in isolation before integration. Episode step counters and boundary
-clipping enforce physically plausible states. \\
+\textbf{Simulation instability:} environment bugs cause non-physical state transitions or incorrect reward computation.
+& M & H & 6 &
+Unit-test each component (propagation, ADR, Capture Effect) in isolation. Episode step counters and boundary clipping enforce plausible states. \\
 \midrule
-\textbf{Training divergence}: The DQN agent fails to converge due to reward
-scale mismatch, exploding gradients, or excessive exploration.
-& Medium & High &
-Reward normalisation and clipping; gradient clipping; target network stabilisation;
-hyperparameter sweep on learning rate and batch size. \\
+\textbf{Training divergence:} DQN fails to converge due to reward scale mismatch or exploding gradients.
+& M & H & 6 &
+Reward normalisation; gradient clipping; target network stabilisation; hyperparameter sweep on learning rate and batch size. \\
 \midrule
-\textbf{Overfitting to training scenarios}: The trained policy memorises fixed
-sensor layouts and fails to generalise to unseen configurations.
-& High & High &
-Domain Randomisation: sensor positions, grid sizes, and sensor counts are randomised
-every episode during training. Curriculum Learning ensures gradual exposure to
-increasing difficulty. \\
+\textbf{Overfitting to training scenarios:} policy memorises fixed layouts, fails to generalise.
+& H & H & 9 &
+Domain Randomisation: sensor positions, grid sizes, and counts randomised every episode. Curriculum Learning ensures gradual exposure to difficulty. \\
 \midrule
-\textbf{Computational resource constraints}: Training requires GPU resources
-not available on personal hardware.
-& Low & Medium &
-Primary training conducted on NVIDIA RTX 3050 Ti GPU (personal laptop). Long training
-runs ($2 \times 10^6$ steps) scheduled overnight. Stable-Baselines3 used for
-efficient GPU-accelerated training. \\
+\textbf{Computational resource constraints:} long training runs exceed available GPU time.
+& L & M & 2 &
+Primary training on personal RTX 3050 Ti; long runs scheduled overnight. Stable-Baselines3 provides efficient GPU-accelerated training. \\
 \midrule
-\textbf{Sim-to-Real gap}: The trained policy performs well in simulation but
-fails to transfer to a physical UAV due to unmodelled dynamics.
-& Medium & Medium &
-The simulation incorporates high-fidelity models (Two-Ray, log-normal shadowing,
-EMA-ADR) specifically to reduce this gap. Domain Randomisation further improves
-robustness. Acknowledged as a limitation; HIL validation proposed as future work. \\
+\textbf{Sim-to-Real gap:} policy performs well in simulation but fails on a physical UAV.
+& M & M & 4 &
+High-fidelity models (Two-Ray, log-normal shadowing, EMA-ADR) reduce the gap. Domain Randomisation adds robustness. Acknowledged as limitation; HIL validation proposed as future work. \\
 \midrule
-\textbf{Time overrun}: Experimental evaluation and dissertation write-up take
-longer than planned.
-& Medium & Medium &
-Modular dissertation structure with individual \texttt{.tex} files per section allows
-parallel writing and incremental compilation. Regular supervisor meetings to track
-progress and adjust scope if necessary. \\
+\textbf{Time overrun:} evaluation and write-up take longer than planned.
+& M & M & 4 &
+Modular dissertation structure allows parallel writing. Regular supervisor meetings track progress. Scope adjusted if needed. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\subsection*{Health \& Safety Risk Assessment}
+\section{Health \& Safety Risk Assessment}
+\label{app:hs}
 
-This project is entirely computational and involves no physical experiments, hazardous
-materials, human participants, or off-campus fieldwork. The following table constitutes
-the formal H\&S Risk Assessment, completed in accordance with the university's online
-health and safety induction.
+This project is entirely computational and involves no physical experiments, hazardous materials, human participants, or off-campus fieldwork. The assessment below was completed in accordance with the University's online health and safety induction.
 
 \begin{table}[H]
 \centering
 \caption{Health \& Safety Risk Assessment}
 \label{tab:hs_risk}
-\begin{tabularx}{\textwidth}{p{3.2cm} p{1.5cm} p{1.5cm} p{1.5cm} X}
+\small
+\begin{tabularx}{\textwidth}{p{2.4cm} p{2.2cm} p{2.0cm} X p{1.1cm} p{0.8cm}}
 \toprule
-\textbf{Hazard} & \textbf{Who at risk} & \textbf{Likelihood} & \textbf{Severity} & \textbf{Control measures} \\
+\textbf{Activity} & \textbf{Hazard} & \textbf{Who might be harmed and how} & \textbf{Existing measures to control risk} & \textbf{Risk rating} & \textbf{Result} \\
 \midrule
-Extended computer use (display screen equipment): eye strain, musculoskeletal discomfort, fatigue
-& Student & Medium & Low &
-Follow DSE guidance: screen at arm's length and eye height; 5--10 min break every hour;
-ergonomic seating. No special equipment required. \\
+Regular computer use (coding, training, writing)
+& Display screen equipment (DSE): eye strain, musculoskeletal discomfort, fatigue
+& Student: prolonged screen exposure and poor posture
+& Follow DSE guidance: screen at arm's length, top of screen at eye height; take 5--10 min break every hour; use ergonomic seating; adjust screen brightness to ambient lighting.
+& Low & A \\
 \midrule
-Electrical equipment (laptop/workstation power supply)
-& Student & Low & Low &
-Use only PAT-tested equipment; do not use damaged cables; follow standard lab electrical safety rules. \\
+Use of electrical equipment (laptop, workstation, monitors)
+& Electrical faults: electric shock, fire risk from damaged cables
+& Student and others nearby
+& Use only PAT-tested equipment; inspect cables before use; do not use damaged cables or adaptors; do not overload sockets; switch off equipment when not in use.
+& Low & A \\
 \midrule
-Lone working / off-campus work
-& Student & Low & Low &
-All work conducted at home or in university buildings during staffed hours.
-University lone-worker policy followed where applicable. \\
+Lone and off-campus working (home and university library)
+& Difficulty obtaining help in an emergency; isolation
+& Student
+& Carry a charged mobile phone at all times; work in staffed university buildings during core hours where possible; inform a contact of working location; follow University lone-worker policy.
+& Low & A \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\noindent\textbf{Overall risk level:} Low. No hazardous materials, fieldwork, human
-participants, or physical experiments are involved. No special permits or ethical approval
-are required.
+\noindent\textbf{Overall risk level:} Low. No hazardous materials, fieldwork, human participants, or physical experiments are involved. No special permits or ethical approval are required.

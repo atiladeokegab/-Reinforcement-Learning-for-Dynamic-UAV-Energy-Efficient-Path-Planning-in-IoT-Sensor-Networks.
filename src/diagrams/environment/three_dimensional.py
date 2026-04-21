@@ -3,11 +3,18 @@ Two-Ray Ground Reflection Model - 3D Visualization
 For Thesis Figure 3.3
 """
 
+import sys
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d.proj3d import proj_transform
+
+# ieee_style lives in src/agents/dqn/dqn_evaluation_results/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "agents" / "dqn" / "dqn_evaluation_results"))
+import ieee_style
+ieee_style.apply()
 
 
 class Arrow3D(FancyArrowPatch):
@@ -332,12 +339,11 @@ fig.suptitle(
 
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 
-# Save high-resolution figure
-plt.savefig("two_ray_model_3d.png", dpi=300, bbox_inches="tight")
-plt.savefig("two_ray_model_3d.pdf", dpi=300, bbox_inches="tight")  # For LaTeX
+# Save high-resolution figure (pdf.fonttype=42 set by ieee_style for full font embedding)
+ieee_style.save(plt.gcf(), "two_ray_model_3d")
 
 print("✓ Figure saved as:")
 print(" - two_ray_model_3d.png (for presentations)")
 print(" - two_ray_model_3d.pdf (for thesis)")
 
-plt.show()
+plt.close()

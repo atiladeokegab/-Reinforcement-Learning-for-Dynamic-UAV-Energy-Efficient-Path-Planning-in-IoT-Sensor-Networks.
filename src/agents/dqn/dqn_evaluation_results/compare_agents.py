@@ -49,7 +49,7 @@ else:
     print("⚠ WARNING: gnn_extractor.py not found — DQN.load() will likely fail")
 
 from environment.uav_env import UAVEnvironment
-from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
+from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, TSPOracleAgent
 
 # ==================== ANALYSIS ENV WRAPPER (WITH ZERO PADDING) ====================
 
@@ -309,8 +309,8 @@ DQN_CONFIG_PATH    = _MODEL_DIR / "training_config.json"
 VEC_NORMALIZE_PATH = _MODEL_DIR / "vec_normalize.pkl"
 
 PLOT_CONFIG = {
-    "grid_size":          (500, 500),
-    "num_sensors":        40,
+    "grid_size":          (300, 300),
+    "num_sensors":        20,
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
     "rssi_threshold":     -85.0,
@@ -325,6 +325,7 @@ AGENT_STYLES = {
     "DQN Agent":       {"color": ieee_style.AGENT_COLORS["DQN Agent"],       "marker": "o"},
     "Smart Greedy V2": {"color": ieee_style.AGENT_COLORS["Smart Greedy V2"], "marker": "s"},
     "Nearest Greedy":  {"color": ieee_style.AGENT_COLORS["Nearest Greedy"],  "marker": "^"},
+    "TSP Oracle":      {"color": "#e7298a",                                   "marker": "D"},
 }
 
 print(f"Output directory: {OUTPUT_DIR}")
@@ -438,6 +439,22 @@ def save_baseline_data(agent_name, history_df):
     return output_file
 
 
+def load_fairness_from_snapshot(snapshot_path):
+    """Return (jains_index, min_rate, max_rate) from a saved sensor snapshot JSON."""
+    path = Path(snapshot_path)
+    if not path.exists():
+        return None, None, None
+    with open(path) as f:
+        data = json.load(f)
+    rates = [s["collection_rate"] for s in data["sensor_data"]]
+    if not rates:
+        return None, None, None
+    n  = len(rates)
+    s2 = sum(r ** 2 for r in rates)
+    jains = (sum(rates) ** 2 / (n * s2)) if s2 > 0 else 0.0
+    return jains, min(rates), max(rates)
+
+
 def save_comparison_metadata(agents_config):
     metadata = {
         "timestamp":        time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -506,6 +523,63 @@ def run_greedy_agent_for_plot(agent, env, name="Agent", seed=PLOT_CONFIG["seed"]
             break
 
     return pd.DataFrame(history), step_count, trajectory.get_array()
+
+
+def run_tsp_agent_for_plot(env, name="TSP Oracle", seed=PLOT_CONFIG["seed"]):
+    print(f"\nRunning {name}...")
+    obs, info = env.reset(seed=seed)
+    agent = TSPOracleAgent(env)
+    agent.reset()
+    done = False
+    trajectory = TrajectoryTracker()
+
+    history = {
+        "step": [], "cumulative_reward": [], "battery_percent": [],
+        "battery_wh": [], "coverage_percent": [], "sensors_visited": [],
+        "total_data_collected": [], "efficiency": [],
+    }
+
+    cumulative_reward = 0
+    step_count = 0
+
+    while not done:
+        action = agent.select_action(obs)
+        obs, reward, done, truncated, info = env.step(action)
+        cumulative_reward += reward
+        step_count += 1
+        trajectory.record(env.uav.position[0], env.uav.position[1])
+
+        if env.current_step % 50 == 0 or done or truncated:
+            battery_pct  = env.uav.get_battery_percentage()
+            coverage_pct = (
+                (len(env.sensors_visited) / env.num_sensors) * 100
+                if hasattr(env, "sensors_visited") else 0
+            )
+            energy_consumed = EVAL_MAX_BATTERY - env.uav.battery
+            efficiency = (env.total_data_collected / energy_consumed) if energy_consumed > 0 else 0
+            history["step"].append(env.current_step)
+            history["cumulative_reward"].append(cumulative_reward)
+            history["battery_percent"].append(battery_pct)
+            history["battery_wh"].append(env.uav.battery)
+            history["coverage_percent"].append(coverage_pct)
+            history["sensors_visited"].append(len(env.sensors_visited))
+            history["total_data_collected"].append(env.total_data_collected)
+            history["efficiency"].append(efficiency)
+            print(
+                f"  Step {env.current_step:>4}: Reward={cumulative_reward:>10.1f}, "
+                f"Battery={battery_pct:>5.1f}%, NDR={coverage_pct:>5.1f}%, "
+                f"Data={env.total_data_collected:>8.0f}bytes"
+            )
+
+        if done or truncated:
+            break
+
+    print(
+        f"  [TSPOracle] Tour length (theoretical min): {agent.tsp_tour_length_units:.1f} units | "
+        f"Actual flown: {agent.actual_path_length:.1f} units | "
+        f"Path efficiency: {agent.path_efficiency_pct:.1f}%"
+    )
+    return pd.DataFrame(history), step_count, trajectory.get_array(), agent
 
 
 def run_dqn_agent_for_plot(
@@ -619,63 +693,119 @@ def run_dqn_agent_for_plot(
 # ==================== PLOTTING ====================
 
 
-def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_trajectory):
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+def _draw_trajectory_panel(ax, trajectory, title, color, grid_size, sensor_positions,
+                            extra_text=None):
+    """Shared rendering for a single trajectory panel."""
+    ax.set_xlim(0, grid_size)
+    ax.set_ylim(0, grid_size)
+    ax.set_aspect("equal")
+    ax.scatter(
+        sensor_positions[:, 0], sensor_positions[:, 1],
+        s=100, c="#d95f02", marker="s", edgecolors="#a03a00",
+        linewidth=1.0, label="Sensor Locations", zorder=3,
+    )
+    for i, pos in enumerate(sensor_positions):
+        ax.annotate(
+            f"S{i}", (pos[0], pos[1]), fontsize=7,
+            bbox=dict(boxstyle="round,pad=0.2", fc="lightyellow", alpha=0.7),
+            xytext=(4, 4), textcoords="offset points",
+        )
+
+    info_lines = []
+    if trajectory is not None and len(trajectory) > 0:
+        traj_array = (
+            trajectory if isinstance(trajectory, np.ndarray) else np.array(trajectory)
+        )
+        ax.step(traj_array[:, 0], traj_array[:, 1], where="post",
+                color=color, linewidth=1.2, alpha=0.65, label="UAV Path", zorder=2)
+        ax.scatter(traj_array[:, 0], traj_array[:, 1],
+                   c=color, s=8, alpha=0.30, zorder=1)
+        ax.scatter(traj_array[0, 0], traj_array[0, 1], c="#2ca02c", s=150,
+                   marker="^", edgecolors="darkgreen", linewidth=1.2,
+                   label="Start", zorder=4)
+        ax.scatter(traj_array[-1, 0], traj_array[-1, 1], c="#1b9e77", s=150,
+                   marker="*", edgecolors="#0d5c44", linewidth=1.2,
+                   label="End", zorder=4)
+        total_distance = float(np.sum(
+            np.sqrt(np.sum(np.diff(traj_array, axis=0) ** 2, axis=1))
+        ))
+        info_lines.append(f"Path: {total_distance:.0f} m")
+        info_lines.append(f"Waypoints: {len(traj_array)}")
+
+    if extra_text:
+        info_lines.extend(extra_text)
+
+    if info_lines:
+        ax.text(0.02, 0.98, "\n".join(info_lines),
+                transform=ax.transAxes, fontsize=8, verticalalignment="top",
+                bbox=dict(boxstyle="round", facecolor="white",
+                          edgecolor="#CCCCCC", alpha=0.85))
+
+    ax.set_xlabel("$x$ Position (m)", fontweight="bold")
+    ax.set_ylabel("$y$ Position (m)", fontweight="bold")
+    ax.set_title(title, fontweight="bold")
+    ax.legend(loc="lower right", fontsize=8)
+    ieee_style.clean_axes(ax)
+
+
+def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_trajectory,
+                      tsp_trajectory=None, tsp_agent=None):
+    fig, axes = plt.subplots(1, 4, figsize=(24, 5))
     sensor_positions = np.array([sensor.position for sensor in env.sensors])
     grid_size = PLOT_CONFIG["grid_size"][0]
 
-    trajectories = [
-        (dqn_trajectory, "DQN Agent (Proposed)", "#1b9e77", axes[0]),
-        (greedy_smart_trajectory, "SF-Aware Greedy V2", "#d95f02", axes[1]),
-        (greedy_dumb_trajectory, "Nearest Sensor Greedy", "#7570b3", axes[2]),
-    ]
+    # ── Panels 1-3: existing agents ─────────────────────────────────────────
+    for trajectory, title, color, ax in [
+        (dqn_trajectory,          "DQN Agent (Proposed)",   "#1b9e77", axes[0]),
+        (greedy_smart_trajectory, "SF-Aware Greedy V2",     "#d95f02", axes[1]),
+        (greedy_dumb_trajectory,  "Nearest Sensor Greedy",  "#7570b3", axes[2]),
+    ]:
+        _draw_trajectory_panel(ax, trajectory, title, color, grid_size, sensor_positions)
 
-    for trajectory, title, color, ax in trajectories:
-        ax.set_xlim(0, grid_size)
-        ax.set_ylim(0, grid_size)
-        ax.set_aspect("equal")
-        ax.scatter(
-            sensor_positions[:, 0], sensor_positions[:, 1],
-            s=100, c="#d95f02", marker="s", edgecolors="#a03a00",
-            linewidth=1.0, label="Sensor Locations", zorder=3,
-        )
-        for i, pos in enumerate(sensor_positions):
-            ax.annotate(
-                f"S{i}", (pos[0], pos[1]), fontsize=7,
-                bbox=dict(boxstyle="round,pad=0.2", fc="lightyellow", alpha=0.7),
-                xytext=(4, 4), textcoords="offset points",
+    # ── Panel 4: TSP Oracle ──────────────────────────────────────────────────
+    ax_tsp = axes[3]
+    tsp_color = "#e7298a"
+
+    tsp_extra = []
+    if tsp_agent is not None:
+        tsp_extra = [
+            f"TSP min: {tsp_agent.tsp_tour_length_units:.0f} u",
+            f"Actual:  {tsp_agent.actual_path_length:.0f} u",
+            f"Efficiency: {tsp_agent.path_efficiency_pct:.1f}%",
+        ]
+
+    _draw_trajectory_panel(ax_tsp, tsp_trajectory, "TSP Oracle (Upper Bound)",
+                           tsp_color, grid_size, sensor_positions,
+                           extra_text=tsp_extra)
+
+    # Overlay the planned TSP tour as straight lines (visit order)
+    if tsp_agent is not None and tsp_agent._plan_computed:
+        all_sensor_pos = np.array([s.position for s in env.sensors])
+        uav_start = (tsp_trajectory[0] if tsp_trajectory is not None and len(tsp_trajectory) > 0
+                     else np.array([0.0, 0.0]))
+        tour_nodes = [np.array(uav_start)]
+        for idx in tsp_agent._tour_sensor_order:
+            tour_nodes.append(all_sensor_pos[idx])
+        tour_nodes.append(np.array(uav_start))  # return to origin
+        tour_arr = np.array(tour_nodes)
+
+        ax_tsp.plot(tour_arr[:, 0], tour_arr[:, 1],
+                    color=tsp_color, linewidth=1.8, linestyle="--", alpha=0.55,
+                    label="TSP Plan (optimal order)", zorder=5)
+
+        # Number the visit order at each sensor waypoint
+        for order_i, sensor_idx in enumerate(tsp_agent._tour_sensor_order):
+            pos = all_sensor_pos[sensor_idx]
+            ax_tsp.annotate(
+                str(order_i + 1), (pos[0], pos[1]),
+                fontsize=7, fontweight="bold", color=tsp_color,
+                ha="center", va="center",
+                bbox=dict(boxstyle="circle,pad=0.15", facecolor="white",
+                          edgecolor=tsp_color, linewidth=1.2, alpha=0.9),
+                zorder=6,
             )
 
-        if trajectory is not None and len(trajectory) > 0:
-            traj_array = (
-                trajectory if isinstance(trajectory, np.ndarray) else np.array(trajectory)
-            )
-            if len(traj_array) > 0:
-                ax.step(traj_array[:, 0], traj_array[:, 1], where="post",
-                        color=color, linewidth=1.2, alpha=0.65,
-                        label="UAV Path", zorder=2)
-                ax.scatter(traj_array[:, 0], traj_array[:, 1],
-                           c=color, s=8, alpha=0.30, zorder=1)
-                ax.scatter(traj_array[0, 0], traj_array[0, 1], c="#2ca02c", s=150,
-                           marker="^", edgecolors="darkgreen", linewidth=1.2,
-                           label="Start", zorder=4)
-                ax.scatter(traj_array[-1, 0], traj_array[-1, 1], c="#1b9e77", s=150,
-                           marker="*", edgecolors="#0d5c44", linewidth=1.2,
-                           label="End", zorder=4)
-                total_distance = np.sum(
-                    np.sqrt(np.sum(np.diff(traj_array, axis=0) ** 2, axis=1))
-                )
-                ax.text(0.02, 0.98,
-                        f"Path: {total_distance:.0f} m\nWaypoints: {len(traj_array)}",
-                        transform=ax.transAxes, fontsize=8, verticalalignment="top",
-                        bbox=dict(boxstyle="round", facecolor="white",
-                                  edgecolor="#CCCCCC", alpha=0.85))
-
-        ax.set_xlabel("$x$ Position (m)", fontweight="bold")
-        ax.set_ylabel("$y$ Position (m)", fontweight="bold")
-        ax.set_title(title, fontweight="bold")
-        ax.legend(loc="lower right", fontsize=8)
-        ieee_style.clean_axes(ax)
+        ax_tsp.legend(loc="lower right", fontsize=8)
 
     plt.tight_layout()
     output_file = OUTPUT_DIR / "agent_trajectories"
@@ -684,7 +814,7 @@ def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_
     plt.close()
 
 
-def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df):
+def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=None):
     fig, ax1 = plt.subplots(figsize=(12, 5.5))
 
     ax1.set_xlabel("Simulation Step (t)", fontsize=12, fontweight="bold")
@@ -708,6 +838,11 @@ def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df):
     ax1.plot(greedy_dumb_df["step"], greedy_dumb_df["cumulative_reward"],
              color="#7570b3", linewidth=2, linestyle=":", alpha=0.8,
              label="Nearest Sensor Greedy", marker="^", markersize=4)
+
+    if tsp_df is not None and not tsp_df.empty:
+        ax1.plot(tsp_df["step"], tsp_df["cumulative_reward"],
+                 color="#e7298a", linewidth=2, linestyle="-.",
+                 label="TSP Oracle (Upper Bound)", marker="D", markersize=4)
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Battery Level (%)", fontsize=12, fontweight="bold", color="black")
@@ -748,11 +883,12 @@ def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df):
     plt.close()
 
 
-def plot_efficiency_table(dqn_df, smart_df, dumb_df):
+def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None):
     AGENT_COLORS = {
         "DQN Agent":       "#1b9e77",
         "Smart Greedy V2": "#d95f02",
         "Nearest Greedy":  "#7570b3",
+        "TSP Oracle":      "#e7298a",
     }
 
     def get_stats(df, name):
@@ -770,6 +906,9 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df):
         get_stats(smart_df, "Smart Greedy V2"),
         get_stats(dumb_df,  "Nearest Greedy"),
     ]
+    if tsp_df is not None and not tsp_df.empty:
+        rows_raw.append(get_stats(tsp_df, "TSP Oracle"))
+
     columns = [
         "Agent", "Final Energy\nConsumed (Wh)", "Final Data\nCollected (Bytes)",
         "Final Efficiency\n(Bytes/Wh)", "Average Efficiency\n(Bytes/Wh)",
@@ -785,7 +924,9 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df):
         vals = [rows_raw[r][col_i] for r in range(len(rows_raw))]
         best_idx[col_i] = int(np.argmax(vals)) if best_higher[col_i] else int(np.argmin(vals))
 
-    fig, ax = plt.subplots(figsize=(13, 3.2))
+    n_rows = len(rows_raw)
+    fig_h  = max(3.2, 1.5 + n_rows * 0.7)
+    fig, ax = plt.subplots(figsize=(13, fig_h))
     ax.axis("off")
     tbl = ax.table(cellText=rows_display, colLabels=columns, loc="center", cellLoc="center")
     tbl.auto_set_font_size(False)
@@ -819,13 +960,20 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df):
     plt.close()
 
 
-def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path):
+def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
+                          tsp_snapshot_path=None):
     paths = {
         "DQN Agent":       dqn_snapshot_path,
         "Smart Greedy V2": smart_snapshot_path,
         "Nearest Greedy":  dumb_snapshot_path,
     }
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    if tsp_snapshot_path is not None:
+        paths["TSP Oracle"] = tsp_snapshot_path
+
+    n_panels = len(paths)
+    fig, axes = plt.subplots(1, n_panels, figsize=(6 * n_panels, 5))
+    if n_panels == 1:
+        axes = [axes]
     fig.suptitle("Spatial Fairness Heatmap — Collection Rate per Sensor (%)",
                  fontsize=13, fontweight="bold", y=1.02)
 
@@ -857,8 +1005,8 @@ def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_
         ax.set_ylim(0, PLOT_CONFIG["grid_size"][1])
         ax.set_xlabel("X (m)", fontsize=10)
         ax.set_ylabel("Y (m)", fontsize=10)
-        ax.set_title(agent_name, fontsize=11, fontweight="bold",
-                     color=AGENT_STYLES[agent_name]["color"])
+        title_color = AGENT_STYLES.get(agent_name, {}).get("color", "#e7298a")
+        ax.set_title(agent_name, fontsize=11, fontweight="bold", color=title_color)
         ax.text(0.02, 0.98, f"Jain's Index: {jains:.3f}\nStarved (<20%): {starved}/{n}",
                 transform=ax.transAxes, fontsize=9, va="top",
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
@@ -869,10 +1017,13 @@ def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_
     plt.close()
 
 
-def plot_pareto_scatter(dqn_df, smart_df, dumb_df):
+def plot_pareto_scatter(dqn_df, smart_df, dumb_df, tsp_df=None):
     import matplotlib.patheffects as pe
     fig, ax = plt.subplots(figsize=(9, 6))
-    for name, df in [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]:
+    agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
+    if tsp_df is not None and not tsp_df.empty:
+        agents.append(("TSP Oracle", tsp_df))
+    for name, df in agents:
         if df is None or df.empty:
             continue
         energy = EVAL_MAX_BATTERY - df["battery_wh"].iloc[-1]
@@ -897,12 +1048,15 @@ def plot_pareto_scatter(dqn_df, smart_df, dumb_df):
     plt.close()
 
 
-def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path):
+def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
+                        tsp_snapshot_path=None):
     paths = {
         "DQN Agent":       dqn_snapshot_path,
         "Smart Greedy V2": smart_snapshot_path,
         "Nearest Greedy":  dumb_snapshot_path,
     }
+    if tsp_snapshot_path is not None:
+        paths["TSP Oracle"] = tsp_snapshot_path
     all_data = {}
     sensor_ids = None
     for name, path in paths.items():
@@ -925,8 +1079,9 @@ def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_pa
     for i, (name, rates) in enumerate(all_data.items()):
         vals   = [rates.get(sid, 0) for sid in sensor_ids]
         offset = (i - n_agents / 2 + 0.5) * bar_h
+        bar_color = AGENT_STYLES.get(name, {}).get("color", "#e7298a")
         ax.barh(y + offset, vals, bar_h * 0.9, label=name,
-                color=AGENT_STYLES[name]["color"], alpha=0.85, edgecolor="white")
+                color=bar_color, alpha=0.85, edgecolor="white")
     ax.axvline(20, color="red", linestyle="--", linewidth=1.2, alpha=0.7,
                label="Starvation threshold (20%)")
     ax.set_yticks(y)
@@ -944,7 +1099,8 @@ def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_pa
 
 
 def plot_radar_chart(dqn_df, smart_df, dumb_df,
-                     dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path):
+                     dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
+                     tsp_df=None, tsp_snapshot_path=None):
     def load_jains(path):
         if not Path(path).exists():
             return 0.0
@@ -971,6 +1127,9 @@ def plot_radar_chart(dqn_df, smart_df, dumb_df,
         ("Smart Greedy V2", smart_df, smart_snapshot_path),
         ("Nearest Greedy",  dumb_df,  dumb_snapshot_path),
     ]
+    if tsp_df is not None and not tsp_df.empty and tsp_snapshot_path is not None:
+        agents.append(("TSP Oracle", tsp_df, tsp_snapshot_path))
+
     raw_metrics = {name: get_metrics(df, sp) for name, df, sp in agents}
     categories  = ["Data\nThroughput", "Jain's\nFairness", "Battery\nRemaining",
                    "Sensor\nCoverage", "Energy\nEfficiency"]
@@ -988,7 +1147,7 @@ def plot_radar_chart(dqn_df, smart_df, dumb_df,
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
     for name, vals in norm_metrics.items():
         vals_plot = vals + vals[:1]
-        style = AGENT_STYLES[name]
+        style = AGENT_STYLES.get(name, {"color": "#e7298a"})
         ax.plot(angles, vals_plot, color=style["color"], linewidth=2.5, label=name)
         ax.fill(angles, vals_plot, color=style["color"], alpha=0.12)
 
@@ -1020,16 +1179,18 @@ def plot_radar_chart(dqn_df, smart_df, dumb_df,
     plt.close()
 
 
-def plot_buffer_dynamics(dqn_df, smart_df, dumb_df):
+def plot_buffer_dynamics(dqn_df, smart_df, dumb_df, tsp_df=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle("Network Data Backlog Clearance Over Time", fontsize=13, fontweight="bold")
     agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
+    if tsp_df is not None and not tsp_df.empty:
+        agents.append(("TSP Oracle", tsp_df))
 
     ax = axes[0]
     for name, df in agents:
         if df is None or df.empty:
             continue
-        style = AGENT_STYLES[name]
+        style = AGENT_STYLES.get(name, {"color": "#e7298a", "marker": "D"})
         ax.plot(df["step"], df["total_data_collected"], color=style["color"],
                 linewidth=2.5, label=name, marker=style["marker"], markersize=4, markevery=5)
     ax.set_xlabel("Simulation Step (t)", fontsize=11, fontweight="bold")
@@ -1043,7 +1204,7 @@ def plot_buffer_dynamics(dqn_df, smart_df, dumb_df):
     for name, df in agents:
         if df is None or df.empty:
             continue
-        style   = AGENT_STYLES[name]
+        style   = AGENT_STYLES.get(name, {"color": "#e7298a", "marker": "D"})
         data    = df["total_data_collected"].values
         steps   = df["step"].values
         d_data  = np.diff(data,  prepend=data[0])
@@ -1065,7 +1226,7 @@ def plot_buffer_dynamics(dqn_df, smart_df, dumb_df):
     plt.close()
 
 
-def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
+def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None):
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
     fig.suptitle(
         "Battery Depletion, Data Throughput & Combined Overview by Agent",
@@ -1077,6 +1238,8 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df):
         ("SF-Aware Greedy (V2)",  smart_df, AGENT_STYLES["Smart Greedy V2"]),
         ("Nearest Sensor Greedy", dumb_df,  AGENT_STYLES["Nearest Greedy"]),
     ]
+    if tsp_df is not None and not tsp_df.empty:
+        agents.append(("TSP Oracle", tsp_df, AGENT_STYLES["TSP Oracle"]))
 
     ax = axes[0]
     for name, df, style in agents:
@@ -1285,28 +1448,48 @@ def main():
         "final_coverage": float(df_dumb["coverage_percent"].iloc[-1]),
     })
 
+    # ========== STEP 4: Run TSP Oracle ==========
+    print("\n" + "-" * 100)
+    df_tsp, steps_tsp, tsp_trajectory, tsp_agent = run_tsp_agent_for_plot(
+        env, "TSP Oracle", seed=PLOT_CONFIG["seed"]
+    )
+    save_baseline_data("tsp_oracle", df_tsp)
+    save_sensor_snapshot(env, OUTPUT_DIR / "tsp_sensor_snapshot.json",
+                         "TSP Oracle", is_wrapper=False)
+    agents_config.append({
+        "name":           "TSP Oracle",
+        "steps":          steps_tsp,
+        "final_reward":   float(df_tsp["cumulative_reward"].iloc[-1]),
+        "final_coverage": float(df_tsp["coverage_percent"].iloc[-1]),
+        "tsp_tour_length": float(tsp_agent.tsp_tour_length_units),
+        "path_efficiency":  float(tsp_agent.path_efficiency_pct),
+    })
+
     save_comparison_metadata(agents_config)
 
     # ========== PLOTTING ==========
     print("\n" + "-" * 100)
-    plot_trajectories(env, dqn_trajectory, smart_trajectory, dumb_trajectory)
+    plot_trajectories(env, dqn_trajectory, smart_trajectory, dumb_trajectory,
+                      tsp_trajectory=tsp_trajectory, tsp_agent=tsp_agent)
     print("\n" + "-" * 100)
-    plot_comparative_analysis(df_dqn, df_smart, df_dumb)
+    plot_comparative_analysis(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
-    plot_efficiency_table(df_dqn, df_smart, df_dumb)
+    plot_efficiency_table(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
     plot_fairness_heatmap(
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
+        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
     )
     print("\n" + "-" * 100)
-    plot_pareto_scatter(df_dqn, df_smart, df_dumb)
+    plot_pareto_scatter(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
     plot_per_sensor_bar(
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
+        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
     )
     print("\n" + "-" * 100)
     plot_radar_chart(
@@ -1314,32 +1497,57 @@ def main():
         OUTPUT_DIR / "dqn_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_smart_sensor_snapshot.json",
         OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json",
+        tsp_df=df_tsp,
+        tsp_snapshot_path=OUTPUT_DIR / "tsp_sensor_snapshot.json",
     )
     print("\n" + "-" * 100)
-    plot_buffer_dynamics(df_dqn, df_smart, df_dumb)
+    plot_buffer_dynamics(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
     print("\n" + "-" * 100)
-    plot_battery_steps_data(df_dqn, df_smart, df_dumb)
+    plot_battery_steps_data(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
 
     # ========== SUMMARY ==========
     print("\n" + "=" * 100)
     print("COMPARISON SUMMARY STATISTICS")
     print("=" * 100)
 
+    def _print_fairness(snapshot_path):
+        jains, min_r, max_r = load_fairness_from_snapshot(snapshot_path)
+        if jains is not None:
+            print(f"  Jain's Fairness Index: {jains:>11.4f}")
+            print(f"  Min Collection Rate:   {min_r:>10.1f}%")
+            print(f"  Max Collection Rate:   {max_r:>10.1f}%")
+
     if df_dqn is not None and not df_dqn.empty:
         print(f"\nDQN Agent:")
-        print(f"  Final Reward:   {df_dqn['cumulative_reward'].iloc[-1]:>15.1f}")
-        print(f"  Final Battery:  {df_dqn['battery_percent'].iloc[-1]:>13.1f}%")
-        print(f"  Final NDR: {df_dqn['coverage_percent'].iloc[-1]:>12.1f}%")
-        print(f"  Data Collected: {df_dqn['total_data_collected'].iloc[-1]:>11.0f} bytes")
-        print(f"  Efficiency:     {df_dqn['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+        print(f"  Final Reward:          {df_dqn['cumulative_reward'].iloc[-1]:>15.1f}")
+        print(f"  Final Battery:         {df_dqn['battery_percent'].iloc[-1]:>13.1f}%")
+        print(f"  Final NDR:             {df_dqn['coverage_percent'].iloc[-1]:>12.1f}%")
+        print(f"  Data Collected:        {df_dqn['total_data_collected'].iloc[-1]:>11.0f} bytes")
+        print(f"  Efficiency:            {df_dqn['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+        _print_fairness(OUTPUT_DIR / "dqn_sensor_snapshot.json")
 
-    for label, df in [("Smart Greedy V2", df_smart), ("Nearest Sensor Greedy", df_dumb)]:
+    for label, df, snap in [
+        ("Smart Greedy V2",    df_smart, OUTPUT_DIR / "greedy_smart_sensor_snapshot.json"),
+        ("Nearest Sensor Greedy", df_dumb, OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json"),
+    ]:
         print(f"\n{label}:")
-        print(f"  Final Reward:   {df['cumulative_reward'].iloc[-1]:>15.1f}")
-        print(f"  Final Battery:  {df['battery_percent'].iloc[-1]:>13.1f}%")
-        print(f"  Final NDR: {df['coverage_percent'].iloc[-1]:>12.1f}%")
-        print(f"  Data Collected: {df['total_data_collected'].iloc[-1]:>11.0f} bytes")
-        print(f"  Efficiency:     {df['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+        print(f"  Final Reward:          {df['cumulative_reward'].iloc[-1]:>15.1f}")
+        print(f"  Final Battery:         {df['battery_percent'].iloc[-1]:>13.1f}%")
+        print(f"  Final NDR:             {df['coverage_percent'].iloc[-1]:>12.1f}%")
+        print(f"  Data Collected:        {df['total_data_collected'].iloc[-1]:>11.0f} bytes")
+        print(f"  Efficiency:            {df['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+        _print_fairness(snap)
+
+    print(f"\nTSP Oracle:")
+    print(f"  Final Reward:          {df_tsp['cumulative_reward'].iloc[-1]:>15.1f}")
+    print(f"  Final Battery:         {df_tsp['battery_percent'].iloc[-1]:>13.1f}%")
+    print(f"  Final NDR:             {df_tsp['coverage_percent'].iloc[-1]:>12.1f}%")
+    print(f"  Data Collected:        {df_tsp['total_data_collected'].iloc[-1]:>11.0f} bytes")
+    print(f"  Efficiency:            {df_tsp['efficiency'].iloc[-1]:>21.4f} bytes/Wh")
+    print(f"  TSP Min Tour:          {tsp_agent.tsp_tour_length_units:>13.1f} grid units")
+    print(f"  Actual Flown:          {tsp_agent.actual_path_length:>13.1f} grid units")
+    print(f"  Path Efficiency:       {tsp_agent.path_efficiency_pct:>13.1f}%")
+    _print_fairness(OUTPUT_DIR / "tsp_sensor_snapshot.json")
 
     env.close()
     print("\n" + "=" * 100)
