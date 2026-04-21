@@ -190,6 +190,11 @@ def build_config(
         )
         # ── Framework ─────────────────────────────────────────────────────
         .framework("torch")
+        # ── GPU ───────────────────────────────────────────────────────────
+        .learners(
+            num_learners=1,
+            num_gpus_per_learner=1,   # use the RTX 3050 Ti for gradient updates
+        )
         # ── Reporting ─────────────────────────────────────────────────────
         .reporting(
             metrics_num_episodes_for_smoothing=20,
