@@ -61,7 +61,10 @@
 \usepackage{algorithm}             % for algorithm floats
 \usepackage{algpseudocode}         % for algorithmic pseudocode
 \usepackage{listings}              % for \lstinline inline code formatting
-% Add your packages here
+% TikZ for inline diagrams
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.geometric, positioning, calc,
+                decorations.markings, backgrounds, fit}
 
 % Override class font: use Calibri directly (installed on Windows via Office)
 % Placed last in preamble so it overrides the class's \setmainfont{Carlito}
@@ -191,14 +194,14 @@
 
 	%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%
 	\begin{uomappendix}
-		\input{appendices/project_outline}
-		\input{appendices/gantt_chart}
-		\input{appendices/risk_assessment}
-		\input{appendices/cpd_log}
-		\input{appendices/repository}
-		\input{appendices/hyperparams}
-		\input{appendices/sim_to_real}
-		\input{appendices/additional_figures}
+		\input{appendices/project_outline}    % A: Preliminary Project Proposal
+		\input{appendices/gantt_chart}        % B: Project Plan and Gantt Chart
+		\input{appendices/risk_assessment}    % C: Risk Register + D: H&S Assessment
+		\input{appendices/cpd_log}            % E: CPD Log
+		\input{appendices/repository}         % F: Code Repository
+		\input{appendices/hyperparams}        % G: Hyperparameters
+		\input{appendices/sim_to_real}        % H: Sim-to-Real Analysis
+		\input{appendices/additional_figures} % I: Additional Figures
 	\end{uomappendix}
 
 	%%%%%%%%%%%%%%%%%% END MATTER %%%%%%%%%%%%%%%%%%

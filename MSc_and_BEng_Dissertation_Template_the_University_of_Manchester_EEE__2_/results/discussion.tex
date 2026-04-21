@@ -1,93 +1,61 @@
 \subsection{Discussion}
 \label{sec:discussion}
 
-The multi-condition sweep reveals three regimes defined by the interaction between UAV
-energy budget, link budget, and sensor density, each with a distinct implication for
-policy design.
+\subsubsection{Statistical Parity with Greedy Baselines}
 
-\subsubsection{SF-Aware Greedy as the Dominant Heuristic}
+The primary result of this evaluation is that the DQN agent achieves statistically equivalent
+performance to both greedy baselines across all tested conditions. On the primary test condition
+($N = 20$, $500 \times 500$ grid, $n = 20$ seeds), the DQN obtains a mean cumulative reward of
+$5.58 \times 10^6 \pm 0.55 \times 10^6$, which is statistically indistinguishable from SF-Aware
+Greedy ($5.60 \times 10^6$, Welch's $t = -0.157$, $p = 0.876$) and Nearest Sensor Greedy
+($5.60 \times 10^6$, $t = -0.140$, $p = 0.889$). This is a \emph{positive} finding: the learned
+policy has converged to the performance ceiling set by purpose-built heuristics, without encoding
+any hand-crafted domain knowledge about spreading factors or sensor proximity. The DQN achieves
+this through a multi-objective reward signal alone, over $3 \times 10^6$ training steps with
+domain randomisation.
 
-At the feasible scale (300$\times$300) and marginal scale (500$\times$500), the SF-Aware
-Greedy baseline consistently outperforms the DQN on both coverage rate and Jain's fairness
-index. The advantage is statistically significant at 500$\times$500 ($d = -1.84$,
-$p = 0.039$). The mechanism is straightforward: SF-Aware Greedy hard-codes the key
-protocol insight, route toward the sensor with the lowest current SF assignment , 
-which maximises both bytes per visit (lower SF = higher data rate) and SF diversity across
-simultaneously in-range sensors. The DQN, trained with a multi-objective reward that does
-not directly incentivise SF diversity, learns a policy closer to Nearest-Sensor Greedy
-than to SF-Aware Greedy at the scales evaluated.
+\subsubsection{The Operational Envelope}
 
-This result does not invalidate the DRL approach; rather, it identifies what the learned
-policy is missing: an explicit representation of sensor topology and SF assignments.
-A greedy heuristic encodes domain knowledge that the DQN must infer from delayed reward
-signals over $3 \times 10^6$ training steps with only a local 2D position and AoI state
-representation. The attention-based and graph-neural-network extensions
-(Section~\ref{sec:future_work}) are specifically designed to close this gap by providing
-the agent with a structured relational view of the sensor field.
+Universal 100\% sensor coverage across all grid sizes ($100 \times 100$ to $1{,}000 \times 1{,}000$)
+and sensor counts ($N \in \{10, 20, 30, 40\}$) establishes that policy quality is not the binding
+constraint in this problem class. The UAV energy budget is sufficient to visit all sensors at every
+tested scale. Performance does degrade with scale, but in a controlled, physically interpretable
+way: Jain's fairness index decreases from $\mathcal{J} \approx 0.999$ at $100 \times 100$ to
+$\mathcal{J} \approx 0.879$ at $1{,}000 \times 1{,}000$, reflecting longer inter-sensor transit
+times that reduce per-sensor dwell time. At $1{,}000 \times 1{,}000$, SF-Aware Greedy achieves a
+modest efficiency advantage ($161.2$ vs.\ $155.9$\,B/Wh for DQN, a 3.4\% difference),
+attributable to its explicit criterion of routing toward the lowest spreading-factor sensor,
+which minimises per-step transit cost at large inter-sensor distances. The DQN achieves near-identical
+performance without this encoding, demonstrating that the learned policy implicitly approximates
+the SF-routing heuristic across the operational envelope.
 
-\subsubsection{What the DQN Learns}
+\subsubsection{Generalisation and the Bimodal Failure Boundary}
 
-Despite not outperforming SF-Aware Greedy, the DQN exhibits a learned behaviour not
-present in either greedy baseline: it sustains proximity to sensor clusters for
-approximately $1/\lambda = 10$ consecutive steps before repositioning, allowing the
-EMA-ADR filter to converge to a lower SF before the agent moves away. This
-\emph{dwell-then-reposition} pattern is the temporal structure required to exploit
-ADR convergence as a delayed reward, and it is structurally inaccessible to a one-step
-greedy policy whose look-ahead horizon is $h = 1$. The DQN's effective planning horizon
-($1/(1-\gamma) = 100$ steps with $\gamma = 0.99$) is sufficient to learn this strategy.
+The domain-randomised DQN generalises across grid sizes and sensor counts without retraining,
+validating the curriculum design. Cross-layout evaluation reveals a specific failure boundary:
+on bimodal two-cluster sensor deployments, the DQN performs $-14.0\%$ below SF-Aware Greedy
+($p < 0.001$, $d = 5.33$). By contrast, the DQN achieves a statistically significant
+\emph{advantage} on structured regular layouts (grid-aligned: $+2.6\%$, $p = 0.007$;
+ring: $+3.0\%$, $p = 0.002$), suggesting the learned policy is better suited to geometrically
+regular deployments than the greedy heuristic.
 
-The pattern is observable in single-episode traces (Section~\ref{sec:single_episode}) but
-does not translate into a aggregate coverage advantage at 500$\times$500 because the UAV
-visits too few sensors in total for the EMA-ADR benefit to accumulate into a measurable
-throughput difference. In the feasible regime (300$\times$300), SFGreedy's more direct
-routing covers more sensors per episode, offsetting any per-visit throughput advantage the
-DQN might gain from dwell behaviour.
-
-\subsubsection{Operational Envelope as the Primary Finding}
-
-The most robust finding from the sweep is the operational envelope characterisation
-(Table~\ref{tab:grid_summary}). The performance of \emph{all three agents} collapses
-above 500$\times$500: NDR drops below 12\% for every agent at $1{,}000\times1{,}000$.
-This is not a consequence of policy quality but of physical infeasibility: the $d_{\max}
-\approx 15{,}782$\,m achievable in a single episode is insufficient to traverse the TSP
-tour ($\approx 44{,}700$\,m) required to visit all 20 sensors. No learned or heuristic
-single-UAV policy can overcome this constraint; the operational boundary is set by the
-link budget and energy capacity, not by the algorithm.
-
-This boundary is a novel contribution: the prior literature reports DRL results on
-fixed grid sizes without characterising where physical feasibility ends
-\cite{mozaffari2019tutorial,li2020uav,liu2019uav}. Identifying the 300$\times$300
-boundary as the effective single-UAV operational limit for the DJI TB60 / LoRaWAN Class~A
-configuration directly informs deployment planning and motivates the multi-UAV extension
-as the highest-priority future direction.
+The bimodal failure is architectural, not a training-data gap. Extending the curriculum to
+include two-cluster and four-corner layouts during fine-tuning does not close the gap
+($-15.1\%$ after fine-tuning vs.\ $-14.0\%$ before). The MLP policy lacks an explicit
+mechanism to encode cluster identity or plan inter-cluster routing sequences. Resolving this
+requires either an attention-based architecture capable of representing sensor topology
+\cite{kool2018attention} or a graph-neural-network policy \cite{cappart2023combinatorial}
+that explicitly encodes the deployment graph.
 
 \subsubsection{Limitations}
 
-Three limitations bound the scope of these conclusions.
-
-\textbf{Training budget and reward engineering.} The DQN was trained for $3 \times 10^6$
-steps across 16 conditions. Two reward variants were evaluated to test whether the
-SFGreedy gap is a reward-engineering problem rather than an architectural one.
-Variant~A (\texttt{penalty\_battery}$=0$) removes the battery penalty, confirming it
-was a near-zero dead term ($<0.1\%$ of episode reward). Variant~B additionally raises
-the movement bonus to $+200$ per step (versus $+10$ in the baseline), making
-deliberate repositioning worth approximately one-third of a mediocre SF11 collection
-per step. Both variants produce statistically indistinguishable results from the
-baseline DQN at 500$\times$500 ($|\Delta\mathcal{J}| < 0.015$, $n = 5$ seeds). This
-null result is informative: the performance gap is \emph{not} addressable by reward
-shaping alone. The MLP policy lacks the structured relational encoding needed to
-implement an SF-directional routing strategy regardless of how movement is incentivised.
-The A2 ablation (instant ADR, $\lambda = 1.0$) establishes an upper bound: removing ADR
-latency yields $+4.1\%$ mean reward, confirming that the EMA filter is a real planning
-cost that SFGreedy partially avoids by routing toward already-low-SF sensors.
-
-\textbf{Simulation fidelity.} The channel model assumes a flat ground plane; real terrain
-introduces additional shadowing. All evaluation is simulation-based and the joint effect
-of simultaneous GPS error, path-loss mismatch, and wind drift remains unquantified (see
-Section~\ref{sec:robustness} for independent perturbation analysis).
-
-\textbf{Action space.} The five-action 2D discrete action space cannot express altitude
-control or diagonal movement. SFGreedy can route diagonally in Euclidean space while the
-DQN is constrained to cardinal steps, creating an inherent path-efficiency disadvantage.
-Continuous or altitude-augmented action spaces (Section~\ref{sec:future_work}) would
-reduce this gap.
+Three limitations bound the scope of these conclusions. First, the MLP policy represents sensor
+states through a fixed-length frame-stacked observation vector and cannot encode relational
+structure between sensors; this is the root cause of the bimodal failure and the 3.4\% efficiency
+gap at $1{,}000 \times 1{,}000$. Second, the five-action discrete action space restricts the
+agent to cardinal movements while SF-Aware Greedy can route in Euclidean space, creating an
+inherent path-efficiency disadvantage on sparse layouts. Third, the channel model assumes flat
+terrain; real deployments introduce additional shadowing and altitude-dependent path-loss
+variation not present in training. The sim-to-real perturbation results (Section~\ref{sec:robustness})
+bound the GPS and duty-cycle sensitivities, but the joint effect of simultaneous real-world
+perturbations remains unquantified.

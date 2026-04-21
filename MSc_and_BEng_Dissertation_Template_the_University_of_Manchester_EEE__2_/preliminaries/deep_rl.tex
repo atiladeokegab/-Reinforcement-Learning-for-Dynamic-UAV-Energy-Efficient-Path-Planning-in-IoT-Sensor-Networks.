@@ -1,9 +1,76 @@
 \subsection{Deep Reinforcement Learning}
 
-Reinforcement Learning (RL) formalises the decision-making problem as a Markov Decision
-Process (MDP), defined by the tuple \((\mathcal{S}, \mathcal{A}, P, R, \gamma)\), where
-\(\mathcal{S}\) is the state space, \(\mathcal{A}\) is the action space, \(P\) is the
-transition probability, \(R\) is the reward function, and \(\gamma\) is the discount factor.
+\subsubsection{Markov Decision Process}
+
+Reinforcement Learning (RL) formalises sequential decision-making as a Markov Decision
+Process (MDP)~\cite{luong2019drl}, defined by the tuple \((\mathcal{S}, \mathcal{A}, P, R, \gamma)\), where
+\(\mathcal{S}\) is the finite set of states, \(\mathcal{A}\) is the finite set of actions,
+\(P(s'|s,a)\) is the transition probability of moving to state \(s'\) from state \(s\) after
+executing action \(a\), \(R(s,a)\) is the immediate reward, and \(\gamma \in [0,1]\) is the
+discount factor that weights future rewards relative to immediate ones.
+
+At each timestep \(t\), the agent observes the current state \(s_t \in \mathcal{S}\),
+selects an action \(a_t \in \mathcal{A}\) according to a policy \(\pi : \mathcal{S}
+\rightarrow \mathcal{A}\), receives reward \(r_t = R(s_t, a_t)\), and transitions to
+\(s_{t+1}\). The goal is to find the optimal policy \(\pi^*\) that maximises the expected
+discounted cumulative reward:
+\begin{equation}
+    \pi^* = \arg\max_{\pi} \; \mathbb{E}\!\left[\sum_{t=0}^{\infty} \gamma^t R(s_t, a_t)\right]
+    \label{eq:mdp_objective}
+\end{equation}
+
+The state-value function \(\mathcal{V}^{\pi}(s)\) quantifies the long-run return obtained
+by following policy \(\pi\) from state \(s\):
+\begin{equation}
+    \mathcal{V}^{\pi}(s) = \mathbb{E}_{\pi}\!\left[\sum_{t=0}^{\infty} \gamma^t R(s_t, a_t)
+    \;\Big|\; s_0 = s\right]
+    \label{eq:value_function}
+\end{equation}
+The optimal value function satisfies the Bellman optimality equation
+\(\mathcal{V}^*(s) = \max_{a}\left\{\mathbb{E}\left[R(s,a) + \gamma\mathcal{V}^*(s')\right]\right\}\).
+Defining the optimal action-value (Q) function as
+\(Q^*(s,a) \triangleq R(s,a) + \gamma\,\mathbb{E}[\mathcal{V}^*(s')]\),
+the optimal policy reduces to greedy selection:
+\(\pi^*(s) = \arg\max_{a} Q^*(s,a)\).
+
+\subsubsection{Partially Observable Markov Decision Process}
+
+In many real-world problems the agent cannot observe the full system state; it receives
+only a noisy or incomplete observation. Such settings are modelled as Partially Observable
+Markov Decision Processes (POMDPs)~\cite{luong2019drl}, defined by the 6-tuple
+\((\mathcal{S}, \mathcal{A}, P, R, \Omega, \mathcal{O})\), where \(\mathcal{S}\),
+\(\mathcal{A}\), \(P\), and \(R\) retain their MDP meanings, \(\Omega\) is the set of
+possible observations, and \(\mathcal{O}(o \mid s, a, s')\) is the probability of receiving
+observation \(o \in \Omega\) after transitioning from \(s\) to \(s'\) via action \(a\).
+
+At each step the agent does not see \(s\) directly; it receives \(o_t \sim \mathcal{O}(\cdot
+\mid s_{t-1}, a_{t-1}, s_t)\) and must act on this partial information. Despite this, the
+agent's goal remains the same: find the policy \(\pi^*\) that maximises the expected
+long-term discounted reward \(\sum_{t=0}^{\infty} \gamma^t r(s_t, \pi^*(o_t))\).
+
+The UAV data-collection task in this work is inherently a POMDP: the agent observes its own
+position and battery level exactly, but sensor buffer states and LoRa channel conditions for
+out-of-range nodes are hidden. Frame stacking (Section~\ref{sec:methodology}) is used to
+approximate the belief state by aggregating the last \(k=4\) observations, restoring an
+approximate Markov property and enabling standard DQN training on what is formally a
+partially observable problem.
+
+Figure~\ref{fig:drl_architecture} illustrates the three core components of the DRL framework
+used in this work: the RL interaction loop, the DQN network architecture, and the full
+Deep Q-Learning system with experience replay.
+
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{\input{figures/drl_architecture_tikz}}
+    \caption{Deep reinforcement learning framework. (a) The RL interaction loop: the DQN
+    agent selects actions (N/S/E/W/Hover) based on the current state and receives a reward
+    signal encoding data throughput, fairness, and energy consumption. (b) The DQN
+    network architecture with fully connected layers [512, 512, 256] and ReLU activations,
+    mapping a 1530-dimensional frame-stacked state to Q-values for five actions. (c) The
+    complete Deep Q-Learning system, combining the RL loop with experience replay buffer
+    and a frozen target network $\hat{Q}(s,a;\theta^{-})$ for training stability.}
+    \label{fig:drl_architecture}
+\end{figure}
 
 \subsubsection{Deep Q-Networks (DQN)}
 

@@ -44,9 +44,10 @@ from greedy_agents import MaxThroughputGreedyV2
 OUTPUT_DIR = script_dir / "baseline_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-MODEL_V1_DIR = dqn_dir / "models" / "dqn_400_reposition_test"
-MODEL_V2_DIR = dqn_dir / "models" / "dqn_400_reposition_test_v2"
-MODEL_V3_DIR = dqn_dir / "models" / "dqn_400_reposition_test_v3"
+MODEL_V1_DIR  = dqn_dir / "models" / "dqn_400_reposition_test"
+MODEL_V2_DIR  = dqn_dir / "models" / "dqn_400_reposition_test_v2"
+MODEL_V3_DIR  = dqn_dir / "models" / "dqn_400_reposition_test_v3"
+MODEL_V3F_DIR = dqn_dir / "models" / "dqn_smoke_test"
 
 # ── Eval config ───────────────────────────────────────────────────────────────
 GRID        = (400, 400)
@@ -371,7 +372,7 @@ def plot_trajectories(all_results, seeds, labels, colors):
 
 # ── CLI table ─────────────────────────────────────────────────────────────────
 
-def print_table(seeds, results_v1, results_v2, results_v3, results_g):
+def print_table(seeds, results_v1, results_v2, results_v3, results_v3f, results_g):
     SEP  = "├──────┼──────────────────────────┼──────────┼────────┼───────┼────────┼───────┼───────┼─────────┤"
     TOP  = "┌──────┬──────────────────────────┬──────────┬────────┬───────┬────────┬───────┬───────┬─────────┐"
     BOT  = "└──────┴──────────────────────────┴──────────┴────────┴───────┴────────┴───────┴───────┴─────────┘"
@@ -382,14 +383,13 @@ def print_table(seeds, results_v1, results_v2, results_v3, results_g):
         ("DQN-v1 (no pen, def HP)", results_v1),
         ("DQN-v2 (pen, small HP) ", results_v2),
         ("DQN-v3 (pen, def HP)   ", results_v3),
+        ("DQN-smoke (500k, curr.) ", results_v3f),
         ("Smart Greedy V2        ", results_g),
     ]
 
     print(TOP)
     print(HDR)
     print(BSEP)
-
-    all_results = list(zip(results_v1, results_v2, results_v3, results_g))
 
     for i, seed in enumerate(seeds):
         for j, (label, res_list) in enumerate(agents):
@@ -410,15 +410,14 @@ def print_table(seeds, results_v1, results_v2, results_v3, results_g):
 
     print(BSEP)
 
-    # Averages
     for j, (label, res_list) in enumerate(agents):
-        avg_cov  = np.mean([r['coverage'] for r in res_list])
-        avg_b    = np.mean([r['bytes']    for r in res_list])
-        avg_bph  = np.mean([r['bph']      for r in res_list])
-        avg_j    = np.mean([r['jains']    for r in res_list])
-        avg_min  = np.mean([r['min_cr']   for r in res_list])
-        avg_max  = np.mean([r['max_cr']   for r in res_list])
-        avg_st   = np.mean([r['starved']  for r in res_list])
+        avg_cov = np.mean([r['coverage'] for r in res_list])
+        avg_b   = np.mean([r['bytes']    for r in res_list])
+        avg_bph = np.mean([r['bph']      for r in res_list])
+        avg_j   = np.mean([r['jains']    for r in res_list])
+        avg_min = np.mean([r['min_cr']   for r in res_list])
+        avg_max = np.mean([r['max_cr']   for r in res_list])
+        avg_st  = np.mean([r['starved']  for r in res_list])
         seed_col = " AVG  " if j == 0 else "      "
         print(
             f"│{seed_col}│ {label} │"
@@ -433,29 +432,31 @@ def print_table(seeds, results_v1, results_v2, results_v3, results_g):
 
     print(BOT)
     print(
-        "\nv1 = no starvation penalty, default HP (buffer=150k, batch=256)"
-        "\nv2 = starvation penalty -30k, small HP  (buffer=50k,  batch=64)"
-        "\nv3 = starvation penalty -30k, default HP (buffer=150k, batch=256)"
+        "\nv1    = no starvation penalty, default HP (buffer=150k, batch=256)"
+        "\nv2    = starvation penalty -30k, small HP  (buffer=50k,  batch=64)"
+        "\nv3    = starvation penalty -30k, default HP (buffer=150k, batch=256)"
+        "\nsmoke = curriculum 100→400×400, 500k steps (this smoke test)"
     )
 
 
 # ── Starved bar chart ─────────────────────────────────────────────────────────
 
-def plot_starved_bars(seeds, results_v1, results_v2, results_v3, results_g):
+def plot_starved_bars(seeds, results_v1, results_v2, results_v3, results_v3f, results_g):
     x = np.arange(len(seeds))
-    w = 0.20
-    fig, ax = plt.subplots(figsize=(14, 4))
+    w = 0.16
+    fig, ax = plt.subplots(figsize=(16, 4))
 
-    ax.bar(x - 1.5*w, [r["starved"] for r in results_v1], w, label="DQN-v1 (no penalty, default HP)", color="#4e79a7")
-    ax.bar(x - 0.5*w, [r["starved"] for r in results_v2], w, label="DQN-v2 (penalty, small HP)",      color="#f28e2b")
-    ax.bar(x + 0.5*w, [r["starved"] for r in results_v3], w, label="DQN-v3 (penalty, default HP)",    color="#e15759")
-    ax.bar(x + 1.5*w, [r["starved"] for r in results_g],  w, label="Smart Greedy V2",                 color="#59a14f")
+    ax.bar(x - 2*w, [r["starved"] for r in results_v1],  w, label="DQN-v1 (no penalty, default HP)", color="#4e79a7")
+    ax.bar(x - 1*w, [r["starved"] for r in results_v2],  w, label="DQN-v2 (penalty, small HP)",      color="#f28e2b")
+    ax.bar(x + 0*w, [r["starved"] for r in results_v3],  w, label="DQN-v3 (penalty, default HP)",    color="#e15759")
+    ax.bar(x + 1*w, [r["starved"] for r in results_v3f], w, label="DQN-smoke (500k, curriculum)",     color="#9467bd")
+    ax.bar(x + 2*w, [r["starved"] for r in results_g],   w, label="Smart Greedy V2",                 color="#59a14f")
 
     ax.set_xticks(x)
     ax.set_xticklabels([str(s) for s in seeds], rotation=30, fontsize=9)
     ax.set_xlabel("Random Seed")
     ax.set_ylabel("Sensors with CR < 20%")
-    ax.set_title("Starved Sensors (<20% CR) — v1 vs v2 vs v3 vs Smart Greedy V2")
+    ax.set_title("Starved Sensors (<20% CR) — v1 vs v2 vs v3 vs v3-3M vs Smart Greedy V2")
     ax.legend(fontsize=8)
     ax.set_ylim(0, N_SENSORS + 1)
     plt.tight_layout()
@@ -470,71 +471,79 @@ def plot_starved_bars(seeds, results_v1, results_v2, results_v3, results_g):
 
 def main():
     print("=" * 70)
-    print("THREE-WAY COMPARISON: DQN-v1 vs DQN-v2 vs Smart Greedy V2")
+    print("FIVE-WAY COMPARISON: DQN-v1/v2/v3/v3-3M vs Smart Greedy V2")
     print(f"Grid: {GRID}  |  Sensors: {N_SENSORS}  |  Seeds: {len(SEEDS)}")
     print("=" * 70)
 
-    # Load both DQN models
     print("\n[1/3] Loading DQN models...")
     model_v1, n_stack_v1 = load_dqn(MODEL_V1_DIR)
-    if not MODEL_V2_DIR.exists():
-        print(f"\n⚠  {MODEL_V2_DIR.name} does not exist yet — training still running?")
-        print("   Re-run this script once training completes.")
-        return
 
+    if not MODEL_V2_DIR.exists():
+        print(f"\n⚠  {MODEL_V2_DIR.name} not found — training still running?")
+        return
     model_v2, n_stack_v2 = load_dqn(MODEL_V2_DIR)
 
-    print("\n[2/4] Loading DQN-v3...")
     if not MODEL_V3_DIR.exists():
-        print(f"  ⚠  {MODEL_V3_DIR.name} does not exist yet — training still running?")
-        print("     Re-run once training completes.")
+        print(f"\n⚠  {MODEL_V3_DIR.name} not found — training still running?")
         return
     model_v3, n_stack_v3 = load_dqn(MODEL_V3_DIR)
 
-    print("\n[3/4] Running evaluations across 10 seeds...")
-    results_v1, results_v2, results_v3, results_g = [], [], [], []
+    if not MODEL_V3F_DIR.exists():
+        print(f"\n⚠  {MODEL_V3F_DIR.name} not found.")
+        return
+    model_v3f, n_stack_v3f = load_dqn(MODEL_V3F_DIR)
+
+    print("\n[2/3] Running evaluations across seeds...")
+    results_v1, results_v2, results_v3, results_v3f, results_g = [], [], [], [], []
 
     for i, seed in enumerate(SEEDS):
         print(f"\n  Seed {seed} ({i+1}/{len(SEEDS)})")
-        print(f"    DQN-v1...", end=" ", flush=True)
+
+        print(f"    DQN-v1...",   end=" ", flush=True)
         r1 = run_dqn(model_v1, n_stack_v1, seed)
         print(f"Cov={r1['coverage']:.0f}%  Bytes={r1['bytes']:.0f}  Starved={r1['starved']}")
 
-        print(f"    DQN-v2...", end=" ", flush=True)
+        print(f"    DQN-v2...",   end=" ", flush=True)
         r2 = run_dqn(model_v2, n_stack_v2, seed)
         print(f"Cov={r2['coverage']:.0f}%  Bytes={r2['bytes']:.0f}  Starved={r2['starved']}")
 
-        print(f"    DQN-v3...", end=" ", flush=True)
+        print(f"    DQN-v3...",   end=" ", flush=True)
         r3 = run_dqn(model_v3, n_stack_v3, seed)
         print(f"Cov={r3['coverage']:.0f}%  Bytes={r3['bytes']:.0f}  Starved={r3['starved']}")
 
-        print(f"    Greedy...", end=" ", flush=True)
+        print(f"    DQN-v3-3M...", end=" ", flush=True)
+        r3f = run_dqn(model_v3f, n_stack_v3f, seed)
+        print(f"Cov={r3f['coverage']:.0f}%  Bytes={r3f['bytes']:.0f}  Starved={r3f['starved']}")
+
+        print(f"    Greedy...",   end=" ", flush=True)
         rg = run_greedy(seed)
         print(f"Cov={rg['coverage']:.0f}%  Bytes={rg['bytes']:.0f}  Starved={rg['starved']}")
 
         results_v1.append(r1)
         results_v2.append(r2)
         results_v3.append(r3)
+        results_v3f.append(r3f)
         results_g.append(rg)
 
-    print("\n[4/4] Generating outputs...")
-    print_table(SEEDS, results_v1, results_v2, results_v3, results_g)
+    print("\n[3/3] Generating outputs...")
+    print_table(SEEDS, results_v1, results_v2, results_v3, results_v3f, results_g)
 
-    plot_starved_bars(SEEDS, results_v1, results_v2, results_v3, results_g)
+    plot_starved_bars(SEEDS, results_v1, results_v2, results_v3, results_v3f, results_g)
     plot_trajectories(
-        [results_v1, results_v2, results_v3, results_g],
+        [results_v1, results_v2, results_v3, results_v3f, results_g],
         SEEDS,
         labels=[
             "DQN-v1\n(no penalty, default HP)",
             "DQN-v2\n(penalty, small HP)",
             "DQN-v3\n(penalty, default HP)",
+            "DQN-smoke\n(500k, curr.)",
             "Smart Greedy V2",
         ],
-        colors=["#4e79a7", "#f28e2b", "#e15759", "#59a14f"],
+        colors=["#4e79a7", "#f28e2b", "#e15759", "#9467bd", "#59a14f"],
     )
 
     print("\nDone. Output files:")
-    print(f"  {OUTPUT_DIR / 'reposition_3way_trajectories.png'}")
+    print(f"  {OUTPUT_DIR / 'reposition_4way_trajectories.png'}")
     print(f"  {OUTPUT_DIR / 'reposition_starved_bars.png'}")
 
 

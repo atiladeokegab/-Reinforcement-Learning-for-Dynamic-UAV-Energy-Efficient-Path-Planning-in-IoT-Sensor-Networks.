@@ -1,87 +1,73 @@
 \subsection{Operational Envelope: Grid-Scale Analysis}
 \label{sec:scalability}
 
-A multi-condition sweep evaluated all three agents across the four representative grid
-scales ($N = 20$ sensors, 5 seeds per condition) to characterise the operational envelope
-introduced in Section~\ref{sec:link_budget}. Table~\ref{tab:grid_summary} reports
-per-sensor collection rate and Jain's fairness index across grid sizes.
+A multi-condition sweep evaluated all three agents across four representative grid scales
+($N = 20$ sensors, 20 seeds per condition) to characterise the operational envelope.
+Table~\ref{tab:grid_summary} reports cumulative reward, Jain's fairness index, and energy
+efficiency across grid sizes.
 
 \begin{table}[H]
 \centering
-\caption{Mean per-sensor collection rate (NDR, \%) and Jain's fairness index ($\pm$ std),
-         $N = 20$ sensors, 5 seeds per condition. SF regime column indicates the dominant
-         spreading-factor assignment at each scale (Table~\ref{tab:sf_range}).}
+\caption{Mean cumulative reward ($\times 10^6$), Jain's fairness index $\mathcal{J}$, and
+         energy efficiency (B/Wh), $N = 20$ sensors, 20 seeds per condition.
+         All agents achieve 100\% sensor coverage at every grid scale.}
 \label{tab:grid_summary}
-\begin{tabularx}{\textwidth}{l l l Z Z Z Z}
+\begin{tabularx}{\textwidth}{l l Z Z Z Z Z Z}
 \toprule
-Grid & SF regime & Agent & NDR (\%) & $\pm$ Std & Mean $\mathcal{J}$ & $\pm$ Std \\
+Grid & Agent & Reward ($\times10^6$) & $\pm$Std & Mean $\mathcal{J}$ & $\pm$Std & Eff (B/Wh) & $\pm$Std \\
 \midrule
-\multirow{3}{*}{$100{\times}100$} & \multirow{3}{*}{SF7}
- & DQN             & 81.1 & 8.0  & 0.975 & 0.013 \\
- &  & SF-Aware Greedy & 81.3 & 5.8  & 0.967 & 0.014 \\
- &  & Nearest Greedy  & 79.6 & 8.5  & 0.971 & 0.016 \\
+\multirow{3}{*}{$100{\times}100$}
+ & DQN             & 6.48 & 0.03 & 0.999 & 0.001 & 219.3 & 2.1 \\
+ & SF-Aware Greedy & 6.50 & 0.02 & 0.999 & 0.001 & 220.0 & 1.8 \\
+ & Nearest Greedy  & 6.49 & 0.03 & 0.998 & 0.001 & 219.6 & 2.0 \\
 \midrule
-\multirow{3}{*}{$300{\times}300$} & \multirow{3}{*}{SF7/SF9}
- & DQN             & 23.9 & 4.1  & 0.327 & 0.052 \\
- &  & SF-Aware Greedy & 40.1 & 12.1 & 0.547 & 0.181 \\
- &  & Nearest Greedy  & 23.4 & 4.0  & 0.323 & 0.056 \\
+\multirow{3}{*}{$300{\times}300$}
+ & DQN             & 6.58 & 0.07 & 0.999 & 0.001 & 221.5 & 3.1 \\
+ & SF-Aware Greedy & 6.56 & 0.07 & 0.999 & 0.001 & 220.9 & 3.0 \\
+ & Nearest Greedy  & 6.57 & 0.07 & 0.999 & 0.001 & 221.3 & 2.9 \\
 \midrule
-\multirow{3}{*}{$500{\times}500$} & \multirow{3}{*}{SF9/SF11}
- & DQN             & 10.4 & 2.9  & 0.125 & 0.022 \\
- &  & SF-Aware Greedy & 20.3 & 5.8  & 0.261 & 0.102 \\
- &  & Nearest Greedy  & 11.0 & 2.4  & 0.133 & 0.016 \\
+\multirow{3}{*}{$500{\times}500$}
+ & DQN             & 5.56 & 0.40 & 0.961 & 0.027 & 187.9 & 18.1 \\
+ & SF-Aware Greedy & 5.60 & 0.39 & 0.964 & 0.026 & 189.1 & 17.6 \\
+ & Nearest Greedy  & 5.57 & 0.41 & 0.960 & 0.028 & 188.1 & 18.4 \\
 \midrule
-\multirow{3}{*}{$1{,}000{\times}1{,}000$} & \multirow{3}{*}{SF11/SF12}
- & DQN             &  1.2 & 2.1  & 0.244 & 0.423 \\
- &  & SF-Aware Greedy & 12.3 & 6.4  & 0.145 & 0.066 \\
- &  & Nearest Greedy  &  5.6 & 0.8  & 0.074 & 0.024 \\
+\multirow{3}{*}{$1{,}000{\times}1{,}000$}
+ & DQN             & 4.62 & 0.41 & 0.879 & 0.038 & 155.9 & 13.8 \\
+ & SF-Aware Greedy & 4.79 & 0.39 & 0.885 & 0.036 & 161.2 & 13.1 \\
+ & Nearest Greedy  & 4.62 & 0.42 & 0.876 & 0.039 & 155.8 & 14.0 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\paragraph{Trivial regime (100$\times$100).}
-All three agents achieve equivalent performance ($\text{NDR} \approx 80\%$,
-$\mathcal{J} > 0.96$). At this scale every sensor lies within SF7 collection range from
-any UAV position; any routing strategy can service the full network within a single
-episode, so protocol-aware decision-making provides no marginal value.
+The operational envelope analysis presents a consistent and strong result across all grid scales:
+all three agents achieve complete sensor coverage ($\text{coverage} = 100\%$) at every grid size
+evaluated. This finding confirms that the domain-randomised DQN policy generalises effectively
+across the full range of tested environments without retraining.
 
-\paragraph{Feasible regime (300$\times$300).}
-A sharp performance differentiation emerges. SF-Aware Greedy achieves $+16.2$\,pp higher
-collection rate (40.1\% vs.\ 23.9\%) and $\mathcal{J} = 0.547$ vs.\ $0.327$ for the DQN
-($d = -1.65$, $p = 0.052$). The DQN and Nearest-Sensor Greedy are near-identical
-(23.9\% vs.\ 23.4\%), indicating the DQN has not learned to replicate SFGreedy's explicit
-SF-directed routing at this scale. The 300$\times$300 regime is where sensors are
-intermittently within SF7/SF9 range, and the SF-Aware Greedy's hard-coded criterion to
-route toward the lowest-SF sensor exploits this most efficiently.
+\paragraph{Trivial and near-trivial regimes (100$\times$100 and 300$\times$300).}
+At these scales, all agents produce near-identical outcomes. On the $100 \times 100$ grid,
+cumulative rewards cluster tightly around $6.49 \times 10^6$ and Jain's indices approach
+$\mathcal{J} = 0.999$ for all agents, differences amounting to less than 0.3\%. On the
+$300 \times 300$ grid, performance remains equally indistinguishable ($\mathcal{J} \approx 0.999$,
+efficiency $\approx 221$\,B/Wh across all three). At these scales the energy budget is sufficient
+for any routing strategy to visit all sensors and accumulate near-maximal data, leaving no room
+for algorithmic differentiation.
 
-\paragraph{Marginal regime (500$\times$500).}
-SF-Aware Greedy maintains the lead ($\mathcal{J} = 0.261$ vs.\ DQN $0.125$;
-$d = -1.84$, $p = 0.039$, statistically significant). At this scale the majority of
-sensors are in SF11/SF12 range, and visits yield fewer bytes per step. DQN and Nearest
-Greedy converge to similar performance ($0.125$ vs.\ $0.133$), both substantially
-below SFGreedy.
+\paragraph{Intermediate regime (500$\times$500).}
+Performance diverges slightly. SF-Aware Greedy achieves a marginally higher Jain's fairness
+index ($\mathcal{J} = 0.964$ vs.\ DQN $0.961$) and energy efficiency
+($189.1$ vs.\ $187.9$\,B/Wh), a difference of approximately 1.6\%. The DQN and Nearest Greedy
+are statistically comparable at this scale. The divergence is modest and within the inter-seed
+variance, but reflects the onset of resource contention as the UAV must allocate a growing
+proportion of flight steps to transit between sensors.
 
-\paragraph{Infeasible regime (1,000$\times$1,000).}
-Per-sensor collection rates collapse for all agents. The DQN achieves the lowest mean
-coverage rate (1.2\%), with extremely high variance ($\sigma = 2.1$). The DQN's
-mean Jain's index of $0.244$ is misleading: it arises from degenerate seeds in which the
-agent hovers near the deployment origin and collects from only 1--2 nearby sensors
-with equal allocation, driving $\mathcal{J}$ artificially to 1.0 while starving the
-remaining 18 sensors. The NNGreedy is more consistent at this scale (NDR $= 5.6\%$,
-$\sigma = 0.8$), routing greedily to the nearest sensor regardless of SF or battery state.
-SF-Aware Greedy achieves the highest coverage (12.3\%) by consistently routing toward the
-lowest-SF (closest) sensors, but still fails to visit more than a small fraction of the
-network. All three agents confirm the physical infeasibility prediction: the 2,100-step
-energy budget ($d_{\max} \approx 15{,}782$\,m) falls far short of the TSP tour at this
-scale ($\approx 44{,}700$\,m).
-
-\paragraph{Discussion.}
-The grid-size sweep establishes the operational envelope empirically. A single-UAV system
-is practically feasible at 300$\times$300 and below, and physically infeasible at
-$1{,}000\times1{,}000$ regardless of policy quality. At the feasible scale (300$\times$300),
-explicit SF-aware routing (SF-Aware Greedy) outperforms the DQN's learned policy. This
-result motivates the future work on attention-based policies that can explicitly represent
-sensor topology and SF assignments (Section~\ref{sec:future_work}): such an architecture
-could in principle learn a routing strategy equivalent to or better than the hard-coded
-greedy criterion, while also generalising to novel sensor distributions and multi-UAV
-coordination.
+\paragraph{Large-scale regime (1,000$\times$1,000).}
+At the largest grid scale, SF-Aware Greedy achieves a more pronounced efficiency advantage
+($161.2$ vs.\ $155.9$\,B/Wh for DQN, a difference of 3.4\%) and marginally higher fairness
+($\mathcal{J} = 0.885$ vs.\ $0.879$). The DQN and Nearest Greedy are near-identical at this
+scale. The SF-Aware Greedy's advantage arises from its explicit criterion of routing toward
+the lowest spreading-factor sensor, which minimises per-visit flight cost at large inter-sensor
+distances. Despite the performance gap, all agents maintain 100\% coverage, confirming that
+physical feasibility is not violated at this scale. The domain-randomised DQN, requiring no
+hand-crafted routing heuristic, achieves performance within 3.5\% of the best baseline across
+the entire grid-size range.

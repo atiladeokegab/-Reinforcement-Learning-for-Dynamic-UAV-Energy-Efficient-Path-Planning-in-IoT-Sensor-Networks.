@@ -1,58 +1,42 @@
 \section{Project Outline}
+\label{app:project_outline}
 
 \subsection*{Project Title}
-Energy-Efficient UAV Path Planning in IoT Networks: A Deep Reinforcement Learning Aided Approach
 
-\subsection*{Project Summary}
-This project develops a protocol-aware Deep Reinforcement Learning framework for optimising
-the trajectory of an Unmanned Aerial Vehicle (UAV) acting as a mobile LoRaWAN gateway over
-a field of static IoT sensors. The central problem addressed is the ``SF Monoculture''
-congestion collapse, wherein standard Adaptive Data Rate mechanisms fail when link qualities
-change rapidly due to UAV mobility, causing all sensors to converge on identical Spreading
-Factors and collapsing packet delivery rates.
+\textit{Energy-Efficient UAV Path Planning in IoT Networks: A Deep Reinforcement Learning Aided Approach}
+
+\subsection*{Project Aim}
+
+To develop a protocol-aware Deep Reinforcement Learning framework that enables an Unmanned Aerial Vehicle (UAV) to autonomously plan energy-efficient trajectories over a field of LoRaWAN IoT sensors, maximising data collection throughput and fairness while avoiding the SF Monoculture congestion collapse caused by standard Adaptive Data Rate mechanisms under UAV mobility.
 
 \subsection*{Objectives}
+
 \begin{enumerate}
-    \item Develop a high-fidelity, Gymnasium-compatible simulation environment incorporating
-          Two-Ray Ground Reflection propagation, log-normal shadowing, asynchronous duty
-          cycles, and the LoRa Capture Effect.
-    \item Model the LoRaWAN protocol constraints, specifically EMA-based ADR latency, to
-          replicate the causal link between UAV positioning, RSSI, and Spreading Factor
-          allocation.
-    \item Formulate the UAV data collection task as a Markov Decision Process with a
-          multi-objective reward function balancing energy efficiency, data throughput,
-          and Age-of-Information urgency.
-    \item Train a Deep Q-Network (DQN) agent using Domain Randomisation and Curriculum
-          Learning to produce a single generalisable policy across a wide operational envelope.
-    \item Evaluate the DQN agent against two greedy baseline heuristics (Nearest-Sensor
-          Greedy and SF-Aware Max-Throughput Greedy) using a rigorous multi-seed evaluation
-          with Welch's $t$-test significance testing.
-    \item Characterise the Sim-to-Real gap and identify directions for hardware-in-the-loop
-          validation and multi-UAV extension.
+    \item \textbf{Environment Development:} Design and implement a high-fidelity, Gymnasium-compatible UAV simulation environment incorporating Two-Ray Ground Reflection propagation, log-normal shadowing, asynchronous duty cycles, and the LoRa Capture Effect.
+    \item \textbf{Protocol Modelling:} Model LoRaWAN protocol constraints, specifically EMA-based ADR latency ($\lambda = 0.1$), to replicate the causal link between UAV positioning, RSSI, and Spreading Factor allocation.
+    \item \textbf{Problem Formulation:} Formulate the UAV data collection task as a finite-horizon POMDP with a multi-objective reward function balancing energy efficiency, data throughput, and Age-of-Information urgency.
+    \item \textbf{DQN Training:} Train a Deep Q-Network agent using Domain Randomisation across 16 (grid size, sensor count) conditions and Curriculum Learning to produce a single generalisable policy across a wide operational envelope.
+    \item \textbf{Evaluation:} Evaluate the DQN agent against two greedy baseline heuristics (Nearest-Sensor Greedy and SF-Aware Max-Throughput Greedy) using a rigorous multi-seed evaluation (20 seeds) with Welch's $t$-test significance testing.
+    \item \textbf{Ablation Study:} Conduct a four-condition ablation study to quantify the individual contribution of each system component to overall performance.
 \end{enumerate}
 
-\subsection*{Deliverables}
+\subsection*{Expected Deliverables}
+
 \begin{itemize}
     \item Custom Gymnasium environment implementing the full LoRaWAN physics stack.
-    \item Trained DQN policy generalising across grid sizes $100\times100$ to
-          $1{,}000\times1{,}000$ and sensor counts $N \in \{10, 20, 30, 40\}$.
-    \item Evaluation results across 5 seeds and 8 (grid, $N$) conditions with statistical
-          significance testing.
+    \item Trained DQN policy generalising across grid sizes $100\times100$ to $1{,}000\times1{,}000$ and sensor counts $N \in \{10, 20, 30, 40\}$.
+    \item Multi-seed evaluation results (20 seeds, 8 conditions) with statistical significance testing.
+    \item Ablation study quantifying contributions of Capture Effect, EMA-ADR, AoI observation, and Domain Randomisation.
+    \item Version-controlled code repository with full reproduction instructions.
     \item This dissertation report.
 \end{itemize}
 
-\subsection*{Timeline}
-\begin{center}
-\begin{tabular}{ll}
-\toprule
-\textbf{Milestone} & \textbf{Target} \\
-\midrule
-Simulation environment design and implementation & Semester 1, Week 8 \\
-Initial DQN training (fixed scenario)            & Semester 1, Week 12 \\
-Domain Randomisation and Curriculum Learning     & Semester 2, Week 4 \\
-Multi-seed evaluation and baseline comparison    & Semester 2, Week 8 \\
-Dissertation write-up                            & Semester 2, Week 12 \\
-Submission                                       & Semester 2, Week 14 \\
-\bottomrule
-\end{tabular}
-\end{center}
+\subsection*{Success Criteria}
+
+\begin{itemize}
+    \item DQN agent achieves statistically significant improvement over both greedy baselines on throughput and fairness metrics ($p < 0.05$, Welch's $t$-test).
+    \item Trained policy generalises across all 8 evaluation conditions without retraining.
+    \item Ablation study confirms that Domain Randomisation and EMA-ADR modelling each contribute meaningfully to performance.
+    \item Simulation environment correctly replicates the SF Monoculture failure mode under rapid UAV mobility.
+    \item Dissertation submitted by the 1 May 2026 deadline.
+\end{itemize}
