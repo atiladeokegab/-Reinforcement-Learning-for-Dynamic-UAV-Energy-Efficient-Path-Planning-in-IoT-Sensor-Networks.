@@ -3,7 +3,7 @@ name = "final-year"
 version = "0.2.0"
 description = "To develop and evaluate a reinforcement learning algorithm for energy-efficient UAV path planning in IoT sensor networks, focusing on minimizing energy consumption during data collection missions in a two-dimensional environment with fixed sensor locations."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "box2d>=2.3.10",
     "diagrams>=0.24.4",
