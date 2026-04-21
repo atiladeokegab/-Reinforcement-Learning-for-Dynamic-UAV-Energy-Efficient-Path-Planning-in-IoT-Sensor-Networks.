@@ -45,6 +45,12 @@ Usage
 from __future__ import annotations
 
 import os
+# Must be set BEFORE ray is imported so that Ray Train workers inherit this
+# via Windows CreateProcess (runtime_env alone doesn't reach _RayTrainWorker).
+# torch 2.5.1+cu121 on Windows is built without libuv; setting this to "0"
+# makes Ray fall back to a compatible gloo/nccl process-group backend.
+os.environ.setdefault("RAY_TRAIN_ENABLE_LIBUV", "0")
+
 import sys
 import logging
 from pathlib import Path
@@ -63,8 +69,10 @@ from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
 
-from env_wrapper      import RelationalUAVEnv, EpisodeMetricsStore, GAMMA, N_MAX  # noqa: E402
-from relational_module import RelationalUAVModule                                  # noqa: E402
+# Use package-style imports so Ray workers (separate processes without the
+# local directory on sys.path) can resolve these via PYTHONPATH = _SRC.
+from experiments.relational_policy.env_wrapper      import RelationalUAVEnv, EpisodeMetricsStore, GAMMA, N_MAX  # noqa: E402
+from experiments.relational_policy.relational_module import RelationalUAVModule                                  # noqa: E402
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -228,11 +236,22 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     log.info("=" * 60)
 
     EpisodeMetricsStore.reset()   # clear any residual history from previous stage
-    ray.init(ignore_reinit_error=True)
+    # runtime_env propagates both PYTHONPATH (so package imports resolve in
+    # workers) and RAY_TRAIN_ENABLE_LIBUV=0 (torch 2.5.1+cu121 on Windows is
+    # built without libuv; the env var must reach the worker subprocess).
+    ray.init(
+        ignore_reinit_error=True,
+        runtime_env={
+            "env_vars": {
+                "PYTHONPATH":             str(_SRC),
+                "RAY_TRAIN_ENABLE_LIBUV": "0",
+            }
+        },
+    )
     tune.register_env("RelationalUAV", lambda cfg: RelationalUAVEnv(**cfg))
 
     config = build_config(grid_w, grid_h, n_sensors, ent)
-    algo   = config.build_algo()
+    algo   = config.build_algo()   # build_algo() is the Ray 2.x new-API equivalent of build()
 
     # Warm-start from previous stage checkpoint
     prev_ckpt = CKPT_DIR / f"stage_{stage_idx - 1}" / "final"
