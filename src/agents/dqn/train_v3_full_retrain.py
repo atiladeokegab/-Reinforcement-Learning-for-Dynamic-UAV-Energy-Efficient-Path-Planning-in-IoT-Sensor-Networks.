@@ -46,7 +46,14 @@ Bug fixes inherited from retrain branch
   Fix 4 — IoTSensor.reset() initialises total_data_generated = initial_buffer_fill
 """
 
+import sys
 from pathlib import Path
+
+# Ensure src/ is on sys.path before any local imports
+_SRC = Path(__file__).resolve().parent.parent.parent
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
 import dqn as _dqn
 
 # ── Output directories ────────────────────────────────────────────────────────
