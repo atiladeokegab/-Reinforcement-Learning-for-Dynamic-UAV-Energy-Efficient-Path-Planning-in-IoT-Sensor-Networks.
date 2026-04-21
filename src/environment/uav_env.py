@@ -40,28 +40,29 @@ from enum import IntEnum
 # imports fail.  We detect that case and fall back to absolute imports by
 # inserting the parent `src/` directory on sys.path.
 # ─────────────────────────────────────────────────────────────────────────────
+# Always ensure the environment/ dir and src/ are on sys.path so absolute
+# imports work regardless of how this module was found.
+_HERE = Path(__file__).resolve().parent   # …/src/environment
+_SRC  = _HERE.parent                      # …/src
+_ROOT = _SRC.parent                       # project root
+for _p in [str(_HERE), str(_SRC), str(_ROOT)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 if __package__ is None or __package__ == "":
-    # Running as a plain script – make absolute imports work
-    _HERE = Path(__file__).resolve().parent          # …/src/environment
-    _SRC  = _HERE.parent                             # …/src
-    _ROOT = _SRC.parent                              # project root
-
-    for _p in [str(_HERE), str(_SRC), str(_ROOT)]:
-        if _p not in sys.path:
-            sys.path.insert(0, _p)
-
-    from iot_sensors import IoTSensor        # absolute (environment/)
-    from uav import UAV                      # absolute (environment/)
-
-    # rewards/ lives one level up in src/
+    # Running as a plain script – use absolute imports.
+    from iot_sensors import IoTSensor
+    from uav import UAV
     from rewards.reward_function import RewardFunction
-
 else:
-    # Imported as part of a package – use relative imports as before
-    from .iot_sensors import IoTSensor
-    from .uav import UAV
-
-    sys.path.insert(0, str(Path(__file__).parent.parent))
+    # Imported as part of a package – try relative first, fall back to absolute
+    # if the environment package __path__ was initialised from the wrong location.
+    try:
+        from .iot_sensors import IoTSensor
+        from .uav import UAV
+    except ImportError:
+        from iot_sensors import IoTSensor
+        from uav import UAV
     from rewards.reward_function import RewardFunction
 
 
