@@ -116,6 +116,12 @@ STAGE_TARGET_KPIS = {
 }
 
 
+# ── 4090 overrides (24 GB VRAM — remove these if running on laptop GPU) ──────
+_dqn.N_ENVS               = 8
+_dqn.WORKER_SENSOR_COUNTS = [10, 15, 20, 25, 30, 35, 40, 40]  # 8 workers, diverse coverage
+_dqn.HYPERPARAMS["buffer_size"] = 500_000   # was 150k — ~2.3 GB on 24 GB VRAM
+_dqn.HYPERPARAMS["batch_size"]  = 512       # was 256 — larger minibatch for stable gradients
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def _print_kpi_table():
