@@ -1,9 +1,10 @@
 """
 Greedy baseline agents for UAV data collection evaluation.
 
-Two baselines used across all evaluation scripts:
-  1. NearestSensorGreedy  — distance-based (SF-agnostic)
-  2. MaxThroughputGreedyV2 — SF-aware with multi-objective scoring
+Agents in this module:
+  1. NearestSensorGreedy    — distance-based (SF-agnostic)
+  2. MaxThroughputGreedyV2  — SF-aware with multi-objective scoring
+  3. TSPOracleAgent         — near-optimal TSP tour (NN + 2-opt), upper-bound benchmark
 
 Author: ATILADE GABRIEL OKE
 """
@@ -199,17 +200,188 @@ class MaxThroughputGreedyV2(GreedyAgent):
             return 12
 
 
+# ==================== TSP ORACLE ====================
+
+def _tsp_nearest_neighbour(positions: np.ndarray, start_idx: int = 0) -> List[int]:
+    """
+    Nearest-neighbour construction heuristic.
+    Returns a list of indices into `positions`, starting and ending at `start_idx`.
+    """
+    n = len(positions)
+    unvisited = set(range(n))
+    tour = [start_idx]
+    unvisited.remove(start_idx)
+    while unvisited:
+        last = tour[-1]
+        nearest = min(unvisited,
+                      key=lambda j: np.linalg.norm(positions[last] - positions[j]))
+        tour.append(nearest)
+        unvisited.remove(nearest)
+    tour.append(start_idx)  # return to origin
+    return tour
+
+
+def _tour_length(positions: np.ndarray, tour: List[int]) -> float:
+    return sum(
+        np.linalg.norm(positions[tour[i]] - positions[tour[i + 1]])
+        for i in range(len(tour) - 1)
+    )
+
+
+def _two_opt_improve(positions: np.ndarray, tour: List[int]) -> List[int]:
+    """
+    2-opt local search.  Iterates until no improving swap is found.
+    The first and last elements of `tour` are the depot (start/end) and are kept fixed.
+    """
+    best = tour[:]
+    best_len = _tour_length(positions, best)
+    improved = True
+    inner = best[1:-1]  # don't touch depot endpoints
+    n = len(inner)
+    while improved:
+        improved = False
+        for i in range(n - 1):
+            for j in range(i + 1, n):
+                new_inner = inner[:i] + inner[i:j + 1][::-1] + inner[j + 1:]
+                candidate = [best[0]] + new_inner + [best[-1]]
+                cand_len = _tour_length(positions, candidate)
+                if cand_len < best_len - 1e-9:
+                    best = candidate
+                    best_len = cand_len
+                    inner = best[1:-1]
+                    improved = True
+                    break
+            if improved:
+                break
+    return best
+
+
+class TSPOracleAgent(GreedyAgent):
+    """
+    TSP Oracle — near-optimal distance upper-bound benchmark.
+
+    At the start of each episode the agent:
+      1. Builds a node list: [UAV start] + [all sensor positions]
+      2. Solves the TSP with nearest-neighbour + 2-opt local search
+         (polynomial, finds near-optimal tours for N ≤ ~100 sensors)
+      3. Stores the ordered sensor visit list as its policy
+
+    During the episode it follows that fixed tour, navigating to each sensor
+    in order and collecting data (action COLLECT) at each waypoint.
+
+    Key metrics exposed after an episode:
+      tsp_tour_length_units : Euclidean tour length in grid units (theoretical min)
+      actual_path_length    : Euclidean distance of actual steps taken (always ≥ TSP)
+      path_efficiency_pct   : tsp_tour_length / actual * 100  (100% = perfect)
+
+    The TSP Oracle ignores dynamic factors (battery, SF, buffer urgency) by design.
+    Its value is as a distance-optimal *lower bound* on path length, letting you
+    measure how much extra distance the DQN (or greedy agents) fly and why.
+    """
+
+    def __init__(self, env: UAVEnvironment):
+        super().__init__(env)
+        self._tour_sensor_order: List[int] = []   # indices into env.sensors
+        self._current_waypoint: int = 0
+        self.tsp_tour_length_units: float = 0.0
+        self.actual_path_length: float = 0.0
+        self._prev_uav_pos: Optional[np.ndarray] = None
+        self._plan_computed: bool = False
+
+    # ── Public interface ─────────────────────────────────────────────────────
+
+    def reset(self):
+        """Call after env.reset() to rebuild the TSP tour for the new layout."""
+        self._plan_computed = False
+        self.actual_path_length = 0.0
+        self._prev_uav_pos = None
+
+    @property
+    def path_efficiency_pct(self) -> float:
+        if self.actual_path_length < 1e-6:
+            return 100.0
+        return min(100.0, self.tsp_tour_length_units / self.actual_path_length * 100.0)
+
+    # ── Core logic ───────────────────────────────────────────────────────────
+
+    def _ensure_plan(self):
+        """Lazily compute TSP tour on first call (after env has been reset)."""
+        if self._plan_computed:
+            return
+
+        uav_start = self.env.uav.position.copy()
+        sensor_positions = np.array([s.position for s in self.env.sensors])
+
+        # Node 0 = UAV start;  nodes 1..N = sensors
+        all_positions = np.vstack([uav_start[np.newaxis, :], sensor_positions])
+
+        nn_tour = _tsp_nearest_neighbour(all_positions, start_idx=0)
+        opt_tour = _two_opt_improve(all_positions, nn_tour)
+
+        self.tsp_tour_length_units = _tour_length(all_positions, opt_tour)
+
+        # Convert tour node indices (which include depot=0) to sensor indices (0-based)
+        self._tour_sensor_order = [idx - 1 for idx in opt_tour if idx > 0]
+        self._current_waypoint = 0
+        self._prev_uav_pos = uav_start.copy()
+        self._plan_computed = True
+
+        print(
+            f"  [TSPOracle] Tour planned: {len(self._tour_sensor_order)} sensors, "
+            f"tour length = {self.tsp_tour_length_units:.1f} grid units"
+        )
+
+    def select_action(self, observation: np.ndarray) -> int:
+        self._ensure_plan()
+
+        uav_pos = self.env.uav.position
+        if self._prev_uav_pos is not None:
+            self.actual_path_length += float(
+                np.linalg.norm(uav_pos - self._prev_uav_pos)
+            )
+        self._prev_uav_pos = uav_pos.copy()
+
+        if self._current_waypoint >= len(self._tour_sensor_order):
+            return self.ACTION_COLLECT  # all sensors visited — hover/collect
+
+        target_sensor_idx = self._tour_sensor_order[self._current_waypoint]
+        target_sensor = self.env.sensors[target_sensor_idx]
+        target_pos = target_sensor.position
+
+        dx = target_pos[0] - uav_pos[0]
+        dy = target_pos[1] - uav_pos[1]
+        at_waypoint = abs(dx) <= 0.5 and abs(dy) <= 0.5
+
+        if at_waypoint:
+            # Collect while there is data; advance waypoint once drained or on first arrival
+            if target_sensor.data_buffer > 0:
+                return self.ACTION_COLLECT
+            # Buffer empty — move on
+            self._current_waypoint += 1
+            if self._current_waypoint >= len(self._tour_sensor_order):
+                return self.ACTION_COLLECT
+            target_sensor_idx = self._tour_sensor_order[self._current_waypoint]
+            target_sensor = self.env.sensors[target_sensor_idx]
+
+        return self._move_toward(target_sensor.position)
+
+
 # ==================== QUICK SMOKE TEST ====================
 
 if __name__ == "__main__":
     env = UAVEnvironment(grid_size=(500, 500), num_sensors=20, max_steps=2100)
     obs, _ = env.reset(seed=0)
 
-    for name, AgentClass in [("NearestSensorGreedy", NearestSensorGreedy),
-                              ("MaxThroughputGreedyV2", MaxThroughputGreedyV2)]:
-        env.reset(seed=0)
+    for name, AgentClass in [
+        ("NearestSensorGreedy",   NearestSensorGreedy),
+        ("MaxThroughputGreedyV2", MaxThroughputGreedyV2),
+        ("TSPOracleAgent",        TSPOracleAgent),
+    ]:
+        obs, _ = env.reset(seed=0)
         agent = AgentClass(env)
-        done  = False
+        if hasattr(agent, "reset"):
+            agent.reset()
+        done = False
         total_reward = 0.0
         while not done:
             action = agent.select_action(obs)
@@ -217,6 +389,13 @@ if __name__ == "__main__":
             total_reward += reward
             done = term or trunc
         ndr = len(env.sensors_visited) / env.num_sensors * 100
-        print(f"{name}: reward={total_reward:.0f}  NDR={ndr:.1f}%")
+        extra = ""
+        if isinstance(agent, TSPOracleAgent):
+            extra = (
+                f"  TSP_tour={agent.tsp_tour_length_units:.0f}u  "
+                f"actual={agent.actual_path_length:.0f}u  "
+                f"efficiency={agent.path_efficiency_pct:.1f}%"
+            )
+        print(f"{name}: reward={total_reward:.0f}  NDR={ndr:.1f}%{extra}")
 
     env.close()
