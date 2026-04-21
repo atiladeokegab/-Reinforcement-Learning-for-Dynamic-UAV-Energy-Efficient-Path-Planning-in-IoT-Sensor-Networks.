@@ -23,7 +23,7 @@ dependencies = [
     "seaborn>=0.13.2",
     "stable-baselines3[extra]>=2.7.0",
     "tqdm>=4.67.1",
-    "torch==2.6.0+cu128",
+    "torch==2.7.0+cu128",
     "absl-py==2.1.0",
     "tensorboard>=2.20.0",
     "ray[rllib]>=2.10",
