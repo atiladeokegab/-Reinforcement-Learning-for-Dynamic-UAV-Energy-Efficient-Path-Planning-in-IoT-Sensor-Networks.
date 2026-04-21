@@ -33,37 +33,35 @@ import time
 import random
 from enum import IntEnum
 
-# ─────────────────────────────────────────────────────────────────────────────
-# FIX 1: Support BOTH direct execution AND package import.
-#
-# When run directly (`uv run uav_env.py`) __package__ is None so relative
-# imports fail.  We detect that case and fall back to absolute imports by
-# inserting the parent `src/` directory on sys.path.
-# ─────────────────────────────────────────────────────────────────────────────
-# Always ensure the environment/ dir and src/ are on sys.path so absolute
-# imports work regardless of how this module was found.
+# ---------------------------------------------------------------------------
+# Robust local imports: load sibling modules by file path so that sys.path
+# state, package __path__ mismatches, and Docker volume quirks cannot
+# interfere.  Modules are registered under their canonical package names so
+# that isinstance() checks work correctly across the codebase.
+# ---------------------------------------------------------------------------
+import importlib.util as _ilu
+
+def _load_by_path(canonical_name: str, file_path: Path):
+    """Import a module by absolute file path, registering it under canonical_name."""
+    if canonical_name in sys.modules:
+        return sys.modules[canonical_name]
+    spec = _ilu.spec_from_file_location(canonical_name, file_path)
+    mod  = _ilu.module_from_spec(spec)
+    sys.modules[canonical_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
 _HERE = Path(__file__).resolve().parent   # …/src/environment
 _SRC  = _HERE.parent                      # …/src
-_ROOT = _SRC.parent                       # project root
-for _p in [str(_HERE), str(_SRC), str(_ROOT)]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
 
-if __package__ is None or __package__ == "":
-    # Running as a plain script – use absolute imports.
-    from iot_sensors import IoTSensor
-    from uav import UAV
-    from rewards.reward_function import RewardFunction
-else:
-    # Imported as part of a package – try relative first, fall back to absolute
-    # if the environment package __path__ was initialised from the wrong location.
-    try:
-        from .iot_sensors import IoTSensor
-        from .uav import UAV
-    except ImportError:
-        from iot_sensors import IoTSensor
-        from uav import UAV
-    from rewards.reward_function import RewardFunction
+_iot_mod = _load_by_path("environment.iot_sensors", _HERE / "iot_sensors.py")
+_uav_mod  = _load_by_path("environment.uav",         _HERE / "uav.py")
+IoTSensor = _iot_mod.IoTSensor
+UAV       = _uav_mod.UAV
+
+# rewards lives one level up from environment/
+_rwd_mod      = _load_by_path("rewards.reward_function", _SRC / "rewards" / "reward_function.py")
+RewardFunction = _rwd_mod.RewardFunction
 
 
 # ─────────────────────────────────────────────────────────────────────────────
