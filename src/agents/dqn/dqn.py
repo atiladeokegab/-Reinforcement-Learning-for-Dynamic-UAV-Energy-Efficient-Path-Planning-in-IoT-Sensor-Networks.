@@ -30,11 +30,13 @@ Author: ATILADE GABRIEL OKE
 import sys
 from pathlib import Path
 
-# Must be first: add src/ to sys.path before any third-party import can
-# register a stale or wrong 'environment' package.
+# Must be first: add src/ and src/environment/ to sys.path before any
+# third-party import can register a stale 'environment' package.
 _SRC = Path(__file__).resolve().parent.parent.parent  # …/src
-if str(_SRC) not in sys.path:
-    sys.path.insert(0, str(_SRC))
+_ENV = _SRC / "environment"
+for _p in [str(_ENV), str(_SRC)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import numpy as np
 import torch

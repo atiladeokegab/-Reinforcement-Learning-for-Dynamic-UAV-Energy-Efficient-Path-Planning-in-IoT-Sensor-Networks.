@@ -33,12 +33,14 @@ import time
 import random
 from enum import IntEnum
 
-_HERE = Path(__file__).resolve().parent  # …/src/environment
-_SRC  = _HERE.parent                     # …/src
-
-for _p in [str(_HERE), str(_SRC)]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+# src/ and src/environment/ are pre-inserted by dqn.py before this module is
+# imported.  Recompute here only as a fallback for direct script execution.
+if not any("environment" in p for p in sys.path):
+    _HERE = Path(__file__).resolve().parent
+    _SRC  = _HERE.parent
+    for _p in [str(_HERE), str(_SRC)]:
+        if _p not in sys.path:
+            sys.path.insert(0, _p)
 
 from iot_sensors import IoTSensor
 from uav import UAV
