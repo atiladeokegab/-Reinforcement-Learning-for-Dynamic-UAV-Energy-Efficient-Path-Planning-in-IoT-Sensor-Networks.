@@ -227,11 +227,13 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict) -> Any:
         # ── env runners (.rollouts() is removed in Ray 2.55; use .env_runners()) ──
         .env_runners(
             num_env_runners=NUM_ROLLOUT_WORKERS,
-            rollout_fragment_length="auto",
-            # Attention-based models require entire episodes rather than
-            # fixed-length fragments to maintain recurrent state integrity.
-            batch_mode="complete_episodes",
-            sample_timeout_s=300,  # 5 min; episodes are 2100 steps and CPU is shared
+            rollout_fragment_length=512,
+            # truncate_episodes lets workers return every 512 steps.
+            # RLlib carries GTrXL attention memory state across fragment
+            # boundaries, so training is equivalent to complete_episodes
+            # but workers don't stall waiting for 2100-step episode end.
+            batch_mode="truncate_episodes",
+            sample_timeout_s=300,
         )
         # ── resources ─────────────────────────────────────────────────────
         # num_gpus drives data-parallel multi-GPU training on the old learner
