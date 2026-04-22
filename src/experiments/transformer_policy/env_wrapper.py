@@ -152,7 +152,44 @@ class TransformerObsWrapper(gym.Wrapper):
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
         obs, reward, terminated, truncated, info = self.env.step(action)
+
+        # Inject episode-end metrics so the MetricsCallback can read them from
+        # info[].  Without this, NDR/Jain are always 0 because the base
+        # UAVEnvironment does not populate "sensor_collection_ratios".
+        if terminated or truncated:
+            ndr, jains, eff = self._compute_episode_metrics()
+            info["ndr"]        = ndr
+            info["jains"]      = jains
+            info["efficiency"] = eff
+
         return self._pad(obs), reward * REWARD_SCALE, terminated, truncated, info
+
+    def _compute_episode_metrics(self) -> tuple[float, float, float]:
+        """
+        NDR  = Σ transmitted / Σ generated   (fraction of generated data collected)
+        Jain = (Σ CR_i)² / (N · Σ CR_i²)     (fairness over per-sensor CRs)
+        Eff  = total bytes collected / battery used (Wh)
+        """
+        sensors    = self.env.sensors
+        total_gen  = sum(s.total_data_generated   for s in sensors)
+        total_tx   = sum(s.total_data_transmitted for s in sensors)
+        ndr        = float(total_tx / total_gen) if total_gen > 0 else 0.0
+
+        cr_list = [
+            s.total_data_transmitted / max(s.total_data_generated, 1e-9)
+            for s in sensors
+        ]
+        n       = len(cr_list)
+        sum_cr  = sum(cr_list)
+        sum_cr2 = sum(c * c for c in cr_list)
+        jains   = float((sum_cr ** 2) / (n * sum_cr2)) if sum_cr2 > 0 else 0.0
+
+        battery_used_wh = self.env.uav.max_battery - self.env.uav.battery
+        efficiency = (
+            float(self.env.total_data_collected / battery_used_wh)
+            if battery_used_wh > 0 else 0.0
+        )
+        return ndr, jains, efficiency
 
     # ------------------------------------------------------------------
     # Internal helpers
