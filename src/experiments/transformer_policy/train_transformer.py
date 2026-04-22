@@ -283,18 +283,32 @@ def _extract_metrics(result: dict) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 
 def train() -> None:
-    # Set env vars on the parent process so Ray workers inherit them directly.
-    # Using runtime_env causes Ray to spawn workers with system Python and
-    # rebuild the entire venv, which times out in containers.
+    # Set env vars on the parent process so the raylet inherits them directly
+    # (runtime_env env_vars reach worker *Python* processes but not the raylet's
+    # uv invocation that happens before workers start).
     os.environ["PYTHONPATH"] = str(_SRC)
     os.environ["RAY_TRAIN_ENABLE_LIBUV"] = "0"
     os.environ.pop("VIRTUAL_ENV", None)  # prevent uv venv-detection confusion in workers
+    # UV_PROJECT_ENVIRONMENT tells uv to reuse the existing venv instead of
+    # creating a fresh copy in the raylet's temp dir (avoids the 500 MB copy
+    # that exhausts disk quota and causes worker startup timeouts).
+    os.environ["UV_PROJECT_ENVIRONMENT"] = "/workspace/uav/.venv"
+    os.environ["UV_NO_SYNC"] = "1"  # skip uv sync entirely in the temp dir
 
     ray.init(
         ignore_reinit_error=True,
         num_cpus=8,
         num_gpus=NUM_GPUS,
         _temp_dir="/workspace/ray_tmp",
+        runtime_env={
+            # Propagate to worker Python processes as a belt-and-suspenders
+            # measure (the os.environ above covers the raylet's uv phase).
+            "env_vars": {
+                "PYTHONPATH": str(_SRC),
+                "UV_PROJECT_ENVIRONMENT": "/workspace/uav/.venv",
+                "UV_NO_SYNC": "1",
+            }
+        },
     )
     tune.register_env(
         "UAVTransformerEnv",
