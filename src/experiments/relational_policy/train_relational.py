@@ -306,11 +306,26 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     config = build_config(grid_w, grid_h, n_sensors, ent)
     algo   = config.build_algo()   # build_algo() is the Ray 2.x new-API equivalent of build()
 
-    # Warm-start from previous stage checkpoint
+    # Warm-start from previous stage checkpoint — RLModule weights only.
+    # Restoring the full optimizer state (algo.restore) hits a PyTorch bug:
+    #   "beta1 as a Tensor is not supported for capturable=False and foreach=True"
+    # Adam serialises betas as 0-d Tensors; the new optimiser with foreach=True
+    # (PyTorch 2.x default) rejects them. A fresh optimiser per stage is also
+    # the correct semantics: env and entropy_coeff change at every transition,
+    # so the running Adam moments from the previous stage would be misleading.
     prev_ckpt = CKPT_DIR / f"stage_{stage_idx - 1}" / "final"
     if stage_idx > 0 and prev_ckpt.exists():
-        log.info(f"Restoring weights from {prev_ckpt}")
-        algo.restore(str(prev_ckpt))
+        log.info(f"Restoring RLModule weights from {prev_ckpt} (optimizer reset)")
+        try:
+            algo.restore_from_path(
+                path=str(prev_ckpt),
+                component="learner_group/learner/rl_module",
+            )
+        except Exception as e:
+            log.warning(
+                f"Selective restore failed ({e!r}); falling back to full restore"
+            )
+            algo.restore(str(prev_ckpt))
 
     stage_ckpt_dir = CKPT_DIR / f"stage_{stage_idx}"
     stage_ckpt_dir.mkdir(parents=True, exist_ok=True)
