@@ -241,6 +241,9 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     # built without libuv; the env var must reach the worker subprocess).
     ray.init(
         ignore_reinit_error=True,
+        num_cpus=8,
+        num_gpus=1,
+        _temp_dir="/workspace/ray_tmp",
         runtime_env={
             "env_vars": {
                 "PYTHONPATH":             str(_SRC),
