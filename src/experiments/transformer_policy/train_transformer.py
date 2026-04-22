@@ -136,7 +136,7 @@ GAE_LAMBDA        = 0.95
 ENTROPY_COEFF     = 0.01
 VF_LOSS_COEFF     = 0.5
 GRAD_CLIP         = 1.0
-NUM_ROLLOUT_WORKERS = 8    # increase if more CPUs available
+NUM_ROLLOUT_WORKERS = 4    # 4 keeps CPU headroom when running alongside relational + DQN
 
 CHECKPOINT_ROOT = _ROOT / "models" / "transformer_gtrxl"
 
