@@ -214,8 +214,8 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict) -> Any:
         .training(
             model=model_cfg,
             train_batch_size=TRAIN_BATCH_SIZE,
-            minibatch_size=MINIBATCH_SIZE,
-            num_epochs=NUM_SGD_ITER,      # num_sgd_iter renamed to num_epochs in Ray 2.55
+            sgd_minibatch_size=MINIBATCH_SIZE,   # old-API name; new API uses minibatch_size
+            num_sgd_iter=NUM_SGD_ITER,
             clip_param=CLIP_PARAM,
             lr=LR,
             gamma=GAMMA,
@@ -362,6 +362,14 @@ def train() -> None:
                 jain, mean_jain,
                 result.get("episode_reward_mean", float("nan")),
             )
+            # Periodic checkpoint — keep only the newest subdir to avoid
+            # disk exhaustion (each save creates a new checkpoint_XXXXXX dir).
+            import shutil
+            stage_ckpt = CHECKPOINT_ROOT / f"stage_{stage_idx}_progress"
+            stage_ckpt.mkdir(parents=True, exist_ok=True)
+            algo.save(str(stage_ckpt))
+            for old in sorted(stage_ckpt.glob("checkpoint_*"))[:-1]:
+                shutil.rmtree(old, ignore_errors=True)
 
         # ── Competence gate ────────────────────────────────────────────
         window_full     = len(ndr_window)  >= window_size
