@@ -380,7 +380,7 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     # Always save final checkpoint before tearing down Ray
     final_ckpt = stage_ckpt_dir / "final"
     final_ckpt.mkdir(parents=True, exist_ok=True)
-    algo.save(str(final_ckpt))
+    algo.save_to_path(str(final_ckpt))
     log.info(f"Stage {stage_idx} final checkpoint → {final_ckpt}")
 
     algo.stop()
