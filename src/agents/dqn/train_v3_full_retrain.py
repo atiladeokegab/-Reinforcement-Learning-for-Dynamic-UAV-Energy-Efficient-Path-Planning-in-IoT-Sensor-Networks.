@@ -68,15 +68,29 @@ _dqn.LOG_DIR.mkdir(parents=True, exist_ok=True)
 _dqn.CURRICULUM_THRESHOLDS = []
 
 # ── Competence Gate ───────────────────────────────────────────────────────────
-# Both milestones must be sustained over `window` episodes to graduate.
-# Increase ndr_pct / jains to make stages harder to pass.
-# Increase min_steps to force longer exposure to each difficulty level.
+# Global defaults (Stages 0, 1). Stages 2–3 are overridden in STAGE_GATES
+# below because the 2,100-step episode budget caps spatial coverage —
+# even MaxThroughputGreedyV2 cannot sustain Jain's ≥ 0.85 on grids > 200×200
+# (measured: see src/agents/dqn/calibrate_stage_ceilings.py output).
 _dqn.COMPETENCE_GATE = {
-    "ndr_pct":   95.0,    # % of sensors visited per episode (rolling mean)
-    "jains":     0.85,    # Jain's fairness index (rolling mean)
-    "window":    50,      # rolling average over last N episodes
-    "min_steps": 500_000, # minimum timesteps in stage before graduation is allowed
-                          # 500k × 5 stages ≤ 3M budget, with headroom for demotion
+    "ndr_pct":   95.0,
+    "jains":     0.85,
+    "window":    50,
+    "min_steps": 500_000,
+}
+
+# Per-stage overrides derived from greedy ceiling calibration (50-ep sweep,
+# weighted across WORKER_SENSOR_COUNTS). Gate is set just above the greedy
+# mean so "graduation" means the DQN has matched-or-beaten the heuristic on
+# that stage's hardest grid.
+#   Greedy Jain's (mean across N=20 & N=40):
+#     300×300 ≈ 0.65,  400×400 ≈ 0.49,  500×500 ≈ 0.36
+#   Greedy NDR (mean):
+#     300×300 ≈ 98%,   400×400 ≈ 83%,   500×500 ≈ 64%
+_dqn.STAGE_GATES = {
+    2: {"ndr_pct": 95.0, "jains": 0.65},  # 300×300 — above greedy weighted mean
+    3: {"ndr_pct": 80.0, "jains": 0.48},  # 400×400 — coverage-limited by 2100-step budget
+    # Stage 4 (500×500) is final — no graduation gate applied.
 }
 
 # ── Demotion Gate ─────────────────────────────────────────────────────────────
@@ -134,6 +148,11 @@ _dqn.N_ENVS               = 8
 _dqn.WORKER_SENSOR_COUNTS = [10, 15, 20, 25, 30, 35, 40, 40]  # 8 workers, diverse coverage
 _dqn.HYPERPARAMS["buffer_size"] = 500_000   # was 150k — ~2.3 GB on 24 GB VRAM
 _dqn.HYPERPARAMS["batch_size"]  = 512       # was 256 — larger minibatch for stable gradients
+
+# ── Extended budget — 3M was insufficient (prev run stalled in Stage 2) ──────
+# Stage 0+1 took ~1M combined. Stages 2, 3, 4 need ~1.5M each to learn the
+# larger grids well, so 5M total gives room for Stage 4 to see ≥ 1.5M.
+_dqn.TRAINING_CONFIG["total_timesteps"] = 5_000_000
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 

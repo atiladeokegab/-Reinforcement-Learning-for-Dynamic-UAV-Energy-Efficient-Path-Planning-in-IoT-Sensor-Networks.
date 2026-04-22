@@ -100,6 +100,13 @@ COMPETENCE_GATE = {
     "min_steps": 50_000, # minimum timesteps in current stage before graduation
 }
 
+# Optional per-stage overrides. Keys are stage indices, values override
+# (ndr_pct, jains) from COMPETENCE_GATE for that stage only. Used as the
+# fallback path in _get_stage_thresholds when GREEDY_BENCHMARK is disabled.
+# Larger grids are harder to cover uniformly in a fixed 2,100-step budget,
+# so later stages can relax Jain's here without touching the global gate.
+STAGE_GATES: dict[int, dict[str, float]] = {}
+
 # ── Demotion Gate ─────────────────────────────────────────────────────────────
 # Reverts one stage if performance collapses after an advancement.
 # Both thresholds must be breached simultaneously to trigger demotion,
@@ -756,7 +763,11 @@ class CurriculumCallback(BaseCallback):
         or if the greedy runner raises an exception.
         """
         if not GREEDY_BENCHMARK["enabled"]:
-            return COMPETENCE_GATE["ndr_pct"], COMPETENCE_GATE["jains"]
+            override = STAGE_GATES.get(stage, {})
+            return (
+                override.get("ndr_pct", COMPETENCE_GATE["ndr_pct"]),
+                override.get("jains",   COMPETENCE_GATE["jains"]),
+            )
 
         if stage not in self._greedy_cache:
             try:
@@ -1173,6 +1184,15 @@ def main():
         COMPETENCE_GATE["ndr_pct"], COMPETENCE_GATE["window"]))
     print("  Jain's >= {:.2f}  (min dwell = {:,} steps)".format(
         COMPETENCE_GATE["jains"], COMPETENCE_GATE["min_steps"]))
+    if STAGE_GATES and not GREEDY_BENCHMARK["enabled"]:
+        print("Per-stage gate overrides:")
+        for stage in sorted(STAGE_GATES.keys()):
+            ov = STAGE_GATES[stage]
+            print("  Stage {}: NDR >= {:.1f}%  Jain >= {:.2f}".format(
+                stage,
+                ov.get("ndr_pct", COMPETENCE_GATE["ndr_pct"]),
+                ov.get("jains",   COMPETENCE_GATE["jains"]),
+            ))
     print()
     print("Demotion Gate (triggers if both drop below):")
     print("  NDR   < {:.1f}%  |  Jain's < {:.2f}  (after {} episodes in stage)".format(
