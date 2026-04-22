@@ -146,9 +146,14 @@ CHECKPOINT_ROOT = _ROOT / "models" / "transformer_gtrxl"
 
 class MetricsCallback(DefaultCallbacks):
     """
-    Computes NDR and Jain's Fairness Index from the terminal info dict and
-    logs them as custom metrics so the training loop can read them from
-    result["custom_metrics"]["ndr_mean"] etc.
+    Reads NDR and Jain's Fairness Index from the terminal info dict (populated
+    by TransformerObsWrapper._compute_episode_metrics) and logs them as custom
+    metrics so the training loop can read them from
+    result["custom_metrics"]["ndr_pct_mean"] / ["jain_fairness_mean"].
+
+    Earlier versions read info["sensor_collection_ratios"], which the base
+    UAVEnvironment does not populate — so NDR was permanently 0 and the
+    curriculum gate could never fire.
     """
 
     def on_episode_end(
@@ -166,24 +171,12 @@ class MetricsCallback(DefaultCallbacks):
         except Exception:
             return
 
-        ratios: list[float] = info.get("sensor_collection_ratios", [])
-        if not ratios:
-            return
+        ndr = info.get("ndr")
+        if ndr is None:
+            return  # no metrics in this episode (e.g., truncated mid-episode)
 
-        n = len(ratios)
-        visited = sum(1 for r in ratios if r > 0.0)
-
-        ndr_pct: float = visited / n * 100.0
-
-        sum_r  = sum(ratios)
-        sum_r2 = sum(r * r for r in ratios)
-        jain: float = (
-            (sum_r ** 2) / (n * sum_r2 + 1e-9)
-            if sum_r2 > 0 else 0.0
-        )
-
-        episode.custom_metrics["ndr_pct"] = ndr_pct
-        episode.custom_metrics["jain_fairness"] = jain
+        episode.custom_metrics["ndr_pct"]       = float(ndr) * 100.0
+        episode.custom_metrics["jain_fairness"] = float(info.get("jains", 0.0))
 
 
 # ---------------------------------------------------------------------------
@@ -363,7 +356,13 @@ def train() -> None:
                 f"{total_timesteps:,}",
                 ndr, mean_ndr,
                 jain, mean_jain,
-                result.get("episode_reward_mean", float("nan")),
+                # Ray 2.x renamed episode_reward_mean → episode_return_mean.
+                # Old API stack still emits both at the top level for compat,
+                # but we read the new name first and fall back to the legacy.
+                result.get(
+                    "episode_return_mean",
+                    result.get("episode_reward_mean", float("nan")),
+                ),
             )
             # Periodic checkpoint — keep only the newest subdir to avoid
             # disk exhaustion (each save creates a new checkpoint_XXXXXX dir).
