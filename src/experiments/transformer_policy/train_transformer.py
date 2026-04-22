@@ -283,20 +283,18 @@ def _extract_metrics(result: dict) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 
 def train() -> None:
-    # runtime_env propagates both PYTHONPATH (so package imports resolve in
-    # workers) and RAY_TRAIN_ENABLE_LIBUV=0 (torch 2.5.1+cu121 on Windows is
-    # built without libuv; the env var must reach the worker subprocess).
+    # Set env vars on the parent process so Ray workers inherit them directly.
+    # Using runtime_env causes Ray to spawn workers with system Python and
+    # rebuild the entire venv, which times out in containers.
+    os.environ["PYTHONPATH"] = str(_SRC)
+    os.environ["RAY_TRAIN_ENABLE_LIBUV"] = "0"
+    os.environ.pop("VIRTUAL_ENV", None)  # prevent uv venv-detection confusion in workers
+
     ray.init(
         ignore_reinit_error=True,
         num_cpus=8,
         num_gpus=NUM_GPUS,
         _temp_dir="/workspace/ray_tmp",
-        runtime_env={
-            "env_vars": {
-                "PYTHONPATH":             str(_SRC),
-                "RAY_TRAIN_ENABLE_LIBUV": "0",
-            }
-        },
     )
     tune.register_env(
         "UAVTransformerEnv",
