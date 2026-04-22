@@ -64,6 +64,16 @@ UAV_FEATURES = 3        # [x_norm, y_norm, battery_norm]
 SENSOR_FEATURES = 5     # [buffer, urgency, link_quality, dx, dy]
 OBS_DIM = UAV_FEATURES + SENSOR_FEATURES * MAX_SENSORS   # 253
 
+# Reward scale.  Episode returns from the base UAVEnvironment are ~10^6 because
+# of the +5000 sensor-visit bonus, +1000 urgency-reduction, and +100 per byte ×
+# urgency.  Ray RLlib clips PPO value loss to vf_clip_param=10 by default and
+# silently ignores PPOConfig overrides on the new API stack.  This makes
+# vf_explained_var ≈ 0 (the value head learns nothing) and reduces PPO to
+# REINFORCE with a zero baseline.  Scaling rewards by REWARD_SCALE brings
+# returns into a range where vf_clip=10 is non-binding.  PPO is invariant to
+# reward scale × learning rate, so the policy gradient direction is unchanged.
+REWARD_SCALE = 1e-5      # divide reward by 10^5; episode returns ~12 instead of ~10^6
+
 
 class TransformerObsWrapper(gym.Wrapper):
     """
@@ -142,7 +152,7 @@ class TransformerObsWrapper(gym.Wrapper):
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
         obs, reward, terminated, truncated, info = self.env.step(action)
-        return self._pad(obs), reward, terminated, truncated, info
+        return self._pad(obs), reward * REWARD_SCALE, terminated, truncated, info
 
     # ------------------------------------------------------------------
     # Internal helpers
