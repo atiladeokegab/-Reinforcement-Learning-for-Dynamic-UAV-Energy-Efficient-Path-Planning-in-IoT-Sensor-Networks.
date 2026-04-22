@@ -313,19 +313,26 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     # (PyTorch 2.x default) rejects them. A fresh optimiser per stage is also
     # the correct semantics: env and entropy_coeff change at every transition,
     # so the running Adam moments from the previous stage would be misleading.
+    #
+    # Ray 2.55 note: algo.restore_from_path(component="learner_group/learner/rl_module")
+    # has a multi-segment path-descent bug that tries to open module_state.pkl at the
+    # wrong directory level. Workaround: descend manually to the rl_module subdir and
+    # call restore_from_path on the Learner's MultiRLModule, then sync to env runners.
     prev_ckpt = CKPT_DIR / f"stage_{stage_idx - 1}" / "final"
-    if stage_idx > 0 and prev_ckpt.exists():
-        log.info(f"Restoring RLModule weights from {prev_ckpt} (optimizer reset)")
-        try:
-            algo.restore_from_path(
-                path=str(prev_ckpt),
-                component="learner_group/learner/rl_module",
-            )
-        except Exception as e:
-            log.warning(
-                f"Selective restore failed ({e!r}); falling back to full restore"
-            )
-            algo.restore(str(prev_ckpt))
+    rl_module_ckpt = prev_ckpt / "learner_group" / "learner" / "rl_module"
+    if stage_idx > 0 and rl_module_ckpt.exists():
+        log.info(f"Restoring RLModule weights from {rl_module_ckpt} (optimizer reset)")
+        algo.learner_group.foreach_learner(
+            func=lambda learner, _p=str(rl_module_ckpt): learner.module.restore_from_path(_p)
+        )
+        algo.env_runner_group.sync_weights(
+            from_worker_or_learner_group=algo.learner_group
+        )
+        log.info("RLModule weights restored and synced to env runners")
+    elif stage_idx > 0:
+        log.warning(
+            f"No RLModule checkpoint at {rl_module_ckpt}; stage {stage_idx} starts cold"
+        )
 
     stage_ckpt_dir = CKPT_DIR / f"stage_{stage_idx}"
     stage_ckpt_dir.mkdir(parents=True, exist_ok=True)
