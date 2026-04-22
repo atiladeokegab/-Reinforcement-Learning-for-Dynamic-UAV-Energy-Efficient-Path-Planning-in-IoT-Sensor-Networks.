@@ -267,8 +267,15 @@ def _advance_workers(algo: Any, stage_cfg: dict[str, Any]) -> None:
 
 
 def _extract_metrics(result: dict) -> tuple[float, float]:
-    """Return (mean_ndr_pct, mean_jain) from a training result dict."""
-    cm = result.get("custom_metrics", {})
+    """Return (mean_ndr_pct, mean_jain) from a training result dict.
+
+    Ray 2.55 old-API-stack places summarize_episodes() output (including
+    custom_metrics) under result["env_runners"]; the top-level
+    result["custom_metrics"] is populated by a separate pop() that doesn't
+    receive our callback's values.  Fall back to top-level for older Ray.
+    """
+    env_r = result.get("env_runners", {})
+    cm = env_r.get("custom_metrics") or result.get("custom_metrics", {})
     ndr  = cm.get("ndr_pct_mean",       cm.get("ndr_pct",       0.0))
     jain = cm.get("jain_fairness_mean", cm.get("jain_fairness", 0.0))
     return float(ndr), float(jain)
@@ -356,12 +363,20 @@ def train() -> None:
                 f"{total_timesteps:,}",
                 ndr, mean_ndr,
                 jain, mean_jain,
-                # Ray 2.x renamed episode_reward_mean → episode_return_mean.
-                # Old API stack still emits both at the top level for compat,
-                # but we read the new name first and fall back to the legacy.
-                result.get(
-                    "episode_return_mean",
-                    result.get("episode_reward_mean", float("nan")),
+                # Ray 2.55 emits episode_reward_mean/episode_return_mean under
+                # result["env_runners"] (ENV_RUNNER_RESULTS), not at top level.
+                # Try env_runners first, then top-level for older Ray.
+                (
+                    result.get("env_runners", {}).get(
+                        "episode_return_mean",
+                        result.get("env_runners", {}).get(
+                            "episode_reward_mean",
+                            result.get(
+                                "episode_return_mean",
+                                result.get("episode_reward_mean", float("nan")),
+                            ),
+                        ),
+                    )
                 ),
             )
             # Periodic checkpoint — keep only the newest subdir to avoid
