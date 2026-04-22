@@ -67,7 +67,7 @@ for _p in (str(_HERE), str(_SRC), str(_ROOT)):   # _HERE first so local imports 
 import ray
 from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.algorithms.callbacks import DefaultCallbacks
+from ray.rllib.callbacks.callbacks import RLlibCallback
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
 
 # Use package-style imports so Ray workers (separate processes without the
@@ -77,7 +77,7 @@ from experiments.relational_policy.relational_module import RelationalUAVModule 
 
 
 # ── Metrics callback (new API stack) ──────────────────────────────────────────
-class RelationalMetricsCallback(DefaultCallbacks):
+class RelationalMetricsCallback(RLlibCallback):
     """
     Reads NDR / Jain's / Efficiency from the terminal info dict and logs them
     via metrics_logger so Ray aggregates them back to the main-process result
@@ -282,12 +282,24 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     os.environ["PYTHONPATH"] = str(_SRC)
     os.environ["RAY_TRAIN_ENABLE_LIBUV"] = "0"
     os.environ.pop("VIRTUAL_ENV", None)  # prevent uv venv-detection confusion in workers
+    # UV_PROJECT_ENVIRONMENT tells uv to reuse the existing venv instead of
+    # creating a fresh copy in the raylet's temp dir (avoids the 500 MB copy
+    # that exhausts disk quota and causes worker startup timeouts).
+    os.environ["UV_PROJECT_ENVIRONMENT"] = "/workspace/uav/.venv"
+    os.environ["UV_NO_SYNC"] = "1"  # skip uv sync entirely in the temp dir
 
     ray.init(
         ignore_reinit_error=True,
         num_cpus=8,
         num_gpus=1,
         _temp_dir="/workspace/ray_tmp",
+        runtime_env={
+            "env_vars": {
+                "PYTHONPATH": str(_SRC),
+                "UV_PROJECT_ENVIRONMENT": "/workspace/uav/.venv",
+                "UV_NO_SYNC": "1",
+            }
+        },
     )
     tune.register_env("RelationalUAV", lambda cfg: RelationalUAVEnv(**cfg))
 
@@ -331,7 +343,13 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
         )
 
         if (iteration + 1) % 10 == 0:
+            import shutil
             ckpt_path = algo.save(str(stage_ckpt_dir))
+            # Ray creates a new checkpoint_XXXXXX subdir each save; keep only
+            # the latest to prevent disk fill on long runs.
+            subdirs = sorted(stage_ckpt_dir.glob("checkpoint_*"))
+            for old in subdirs[:-1]:
+                shutil.rmtree(old, ignore_errors=True)
             log.info(f"Checkpoint saved → {ckpt_path}")
 
         ready = m["n_episodes"] >= 5

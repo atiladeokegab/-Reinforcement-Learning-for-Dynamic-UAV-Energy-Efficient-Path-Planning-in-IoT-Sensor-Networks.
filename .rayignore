@@ -7,3 +7,7 @@ models/
 *.png
 *.pdf
 MSc_and_BEng_Dissertation_Template_the_University_of_Manchester_EEE__2_/
+# Prevent Ray workers from triggering a fresh `uv sync` in the extracted temp dir.
+# Workers use the original /workspace/uav/.venv via UV_PROJECT_ENVIRONMENT instead.
+pyproject.toml
+uv.lock
