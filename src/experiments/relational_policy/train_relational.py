@@ -230,7 +230,7 @@ def build_config(
             num_epochs=20,          # 2x local — extract more signal per batch on GPU
             minibatch_size=256,
             clip_param=0.2,
-            vf_clip_param=10.0,
+            vf_clip_param=1e8,   # episode returns ~1M; 10.0 clips every VF gradient
             vf_loss_coeff=0.5,
             entropy_coeff=entropy_coeff,
             lambda_=0.95,
