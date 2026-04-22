@@ -67,12 +67,53 @@ for _p in (str(_HERE), str(_SRC), str(_ROOT)):   # _HERE first so local imports 
 import ray
 from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
+from ray.rllib.algorithms.callbacks import DefaultCallbacks
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
 
 # Use package-style imports so Ray workers (separate processes without the
 # local directory on sys.path) can resolve these via PYTHONPATH = _SRC.
 from experiments.relational_policy.env_wrapper      import RelationalUAVEnv, EpisodeMetricsStore, GAMMA, N_MAX  # noqa: E402
 from experiments.relational_policy.relational_module import RelationalUAVModule                                  # noqa: E402
+
+
+# ── Metrics callback (new API stack) ──────────────────────────────────────────
+class RelationalMetricsCallback(DefaultCallbacks):
+    """
+    Reads NDR / Jain's / Efficiency from the terminal info dict and logs them
+    via metrics_logger so Ray aggregates them back to the main-process result
+    dict under result["env_runners"]["ndr|jains|efficiency"].
+
+    Required because EpisodeMetricsStore is process-local: with num_env_runners>0
+    the envs run in separate worker processes and the main process store stays
+    empty.  metrics_logger sends values over the Ray object store instead.
+    """
+
+    def on_episode_end(
+        self,
+        *,
+        episode,
+        env_runner=None,
+        metrics_logger=None,
+        env=None,
+        env_index=None,
+        rl_module=None,
+        **kwargs,
+    ) -> None:
+        if metrics_logger is None:
+            return
+        try:
+            infos = episode.get_infos()
+            info  = infos[-1] if infos else {}
+        except Exception:
+            return
+
+        ndr = info.get("ndr")
+        if ndr is None:
+            return
+
+        metrics_logger.log_value("ndr",        float(ndr),                    window=20)
+        metrics_logger.log_value("jains",       float(info.get("jains",  0.0)), window=20)
+        metrics_logger.log_value("efficiency",  float(info.get("efficiency", 0.0)), window=20)
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -209,6 +250,8 @@ def build_config(
             num_learners=1,
             num_gpus_per_learner=1,
         )
+        # ── Callbacks ─────────────────────────────────────────────────────
+        .callbacks(RelationalMetricsCallback)
         # ── Reporting ─────────────────────────────────────────────────────
         .reporting(
             metrics_num_episodes_for_smoothing=20,
@@ -265,13 +308,20 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
     advanced = False
     for iteration in range(MAX_ITERS_PER_STAGE):
         result  = algo.train()
-        ep_ret  = result.get("env_runners", {}).get("episode_return_mean", float("nan"))
-        ep_len  = result.get("env_runners", {}).get("episode_len_mean", 0)
+        env_r   = result.get("env_runners", {})
+        ep_ret  = env_r.get("episode_return_mean", float("nan"))
         lifetime_steps = result.get("num_env_steps_sampled_lifetime", 0)
-        steps_this_iter = lifetime_steps - (total_steps if total_steps > 0 else 0)
-        total_steps = lifetime_steps  # track lifetime, not cumulative sum of lifetime
+        total_steps = lifetime_steps
 
-        m = EpisodeMetricsStore.rolling_means()
+        # Metrics come from RelationalMetricsCallback via metrics_logger,
+        # aggregated by Ray across all workers into result["env_runners"].
+        n_eps = int(env_r.get("num_episodes", 0))
+        m = {
+            "ndr":        float(env_r.get("ndr",        0.0)),
+            "jains":      float(env_r.get("jains",      0.0)),
+            "efficiency": float(env_r.get("efficiency", 0.0)),
+            "n_episodes": n_eps,
+        }
         log.info(
             f"[stage {stage_idx} | iter {iteration:3d}] "
             f"NDR={m['ndr']:.3f}  Jain={m['jains']:.3f}  "
@@ -284,7 +334,8 @@ def _run_stage(stage_idx: int, total_steps: int) -> tuple[int, bool]:
             ckpt_path = algo.save(str(stage_ckpt_dir))
             log.info(f"Checkpoint saved → {ckpt_path}")
 
-        if EpisodeMetricsStore.ready() and gate(m):
+        ready = m["n_episodes"] >= 5
+        if ready and gate(m):
             log.info(
                 f"  ✓ Stage {stage_idx} complete — "
                 f"NDR={m['ndr']:.3f}  Jain={m['jains']:.3f}  "
