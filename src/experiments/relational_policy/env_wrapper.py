@@ -50,6 +50,15 @@ DWELL_MAX_STEPS  = 10    # ADR convergence horizon for EMA λ=0.1
 MIN_CLUSTER_SIZE = 2     # Minimum in-range sensors to trigger dwell bonus
 METRICS_WINDOW   = 20    # Rolling window for curriculum gating (episodes)
 
+# Reward scale.  Episode returns from the base UAVEnvironment are ~10^6 because
+# of the +5000 sensor-visit bonus, +1000 urgency-reduction, and +100 per byte ×
+# urgency.  Ray RLlib's new API stack ignores PPOConfig(vf_clip_param=1e8) and
+# clips value loss to 10.0, which makes vf_explained_var ≈ 0 and reduces PPO
+# to REINFORCE with a zero baseline.  Scaling rewards by REWARD_SCALE brings
+# returns into a range where vf_clip=10 is non-binding.  PPO is invariant to
+# reward scale × learning rate, so the policy gradient direction is unchanged.
+REWARD_SCALE = 1e-5      # divide reward by 10^5; episode returns ~12 instead of ~10^6
+
 
 class EpisodeMetricsStore:
     """
@@ -177,9 +186,10 @@ class RelationalUAVEnv(UAVEnvironment):
             info["jains"]      = jains
             info["efficiency"] = eff
 
+        scaled_reward = (base_reward + shaping + dwell_bonus) * REWARD_SCALE
         return (
             self._build_relational_obs(),
-            base_reward + shaping + dwell_bonus,
+            scaled_reward,
             terminated,
             truncated,
             info,
