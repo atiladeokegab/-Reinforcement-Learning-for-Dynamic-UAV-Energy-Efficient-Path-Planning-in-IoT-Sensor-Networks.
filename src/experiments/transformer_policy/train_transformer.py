@@ -214,8 +214,8 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict) -> Any:
         .training(
             model=model_cfg,
             train_batch_size=TRAIN_BATCH_SIZE,
-            sgd_minibatch_size=MINIBATCH_SIZE,   # old-API name; new API uses minibatch_size
-            num_sgd_iter=NUM_SGD_ITER,
+            minibatch_size=MINIBATCH_SIZE,
+            num_epochs=NUM_SGD_ITER,
             clip_param=CLIP_PARAM,
             lr=LR,
             gamma=GAMMA,
