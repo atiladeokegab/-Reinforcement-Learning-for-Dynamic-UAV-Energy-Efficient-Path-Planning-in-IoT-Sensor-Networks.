@@ -126,8 +126,8 @@ ADVANCE_CRITERIA: dict[str, float] = {
 # ---------------------------------------------------------------------------
 # PPO hyper-parameters
 # ---------------------------------------------------------------------------
-TRAIN_BATCH_SIZE  = 32_768
-MINIBATCH_SIZE    = 2_048
+TRAIN_BATCH_SIZE  = 8_192   # reduced: 1 episode/worker with 4 workers avoids sample_timeout
+MINIBATCH_SIZE    = 512
 NUM_SGD_ITER      = 10
 CLIP_PARAM        = 0.2
 LR                = 2.5e-4
@@ -231,6 +231,7 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict) -> Any:
             # Attention-based models require entire episodes rather than
             # fixed-length fragments to maintain recurrent state integrity.
             batch_mode="complete_episodes",
+            sample_timeout_s=300,  # 5 min; episodes are 2100 steps and CPU is shared
         )
         # ── resources ─────────────────────────────────────────────────────
         # num_gpus drives data-parallel multi-GPU training on the old learner
