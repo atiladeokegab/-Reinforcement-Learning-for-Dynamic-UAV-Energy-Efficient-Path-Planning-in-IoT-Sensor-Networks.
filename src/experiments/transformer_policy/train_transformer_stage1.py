@@ -184,11 +184,27 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict,
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def _get_worker_group(algo: Any) -> Any:
+    """Ray 2.55 renamed .workers → .env_runner_group; fall back for older Ray."""
+    grp = getattr(algo, "env_runner_group", None)
+    if grp is None:
+        w = getattr(algo, "workers", None)
+        grp = w() if callable(w) else w
+    return grp
+
+
 def _advance_workers(algo: Any, stage_cfg: dict[str, Any]) -> None:
     grid   = stage_cfg["grid_size"]
     n_sens = stage_cfg["num_sensors"]
-    algo.workers.foreach_env(lambda e: e.reconfigure(grid, n_sens))
-    algo.workers.local_worker().foreach_env(lambda e: e.reconfigure(grid, n_sens))
+    grp = _get_worker_group(algo)
+    grp.foreach_env(lambda e: e.reconfigure(grid, n_sens))
+    # Local worker (used for evaluation) — API varies across Ray versions.
+    local = (
+        getattr(grp, "local_env_runner", None)
+        or (grp.local_worker() if hasattr(grp, "local_worker") else None)
+    )
+    if local is not None:
+        local.foreach_env(lambda e: e.reconfigure(grid, n_sens))
     log.info("All workers reconfigured → grid=%s, num_sensors=%d", grid, n_sens)
 
 
@@ -211,7 +227,8 @@ def _set_entropy(algo: Any, coeff: float) -> None:
             pass
 
     try:
-        algo.workers.foreach_policy(setter)
+        grp = _get_worker_group(algo)
+        grp.foreach_policy(setter)
     except Exception as e:
         log.warning("foreach_policy entropy update failed: %s", e)
 
