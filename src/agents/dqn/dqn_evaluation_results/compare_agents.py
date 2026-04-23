@@ -50,6 +50,11 @@ else:
 
 from environment.uav_env import UAVEnvironment
 from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, TSPOracleAgent
+from relational_rl_runner import (
+    InferenceRelationalUAVEnv,
+    load_relational_rl_module,
+    run_relational_rl_agent_for_plot,
+)
 
 # ==================== ANALYSIS ENV WRAPPER (WITH ZERO PADDING) ====================
 
@@ -309,14 +314,26 @@ BASELINES_DIR = src_dir / "agents" / "baselines"
 OUTPUT_DIR = script_dir / "baseline_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-_MODEL_DIR = script_dir.parent / "models" / "dqn_v3"
+_MODEL_DIR = script_dir.parent / "models" / "dqn_v3_retrain"
 DQN_MODEL_PATH     = _MODEL_DIR / "dqn_final.zip"
 DQN_CONFIG_PATH    = _MODEL_DIR / "training_config.json"
-VEC_NORMALIZE_PATH = _MODEL_DIR / "vec_normalize.pkl"
+
+# Relational RL (Ray RLlib PPO) — extracted from relational_results.zip
+REL_CKPT_DIR = (
+    script_dir.parent / "models" / "relational_rl" /
+    "results" / "checkpoints" / "stage_4" / "final"
+)
+
+# Relational RL Ablation — retrained with step penalty, no dwell bonus, N=20
+REL_ABLATION_CKPT_DIR = (
+    script_dir.parent / "models" / "relational_rl_ablation" /
+    "checkpoints" / "stage_4" / "final"
+)
+
 
 PLOT_CONFIG = {
-    "grid_size":          (100, 100),
-    "num_sensors":        10,
+    "grid_size":          (500, 500),
+    "num_sensors":        30,
     "max_steps":          2100,
     "path_loss_exponent": 3.8,
     "rssi_threshold":     -85.0,
@@ -328,10 +345,14 @@ PLOT_CONFIG = {
 EVAL_MAX_BATTERY = 274.0
 
 AGENT_STYLES = {
-    "DQN Agent":       {"color": ieee_style.AGENT_COLORS["DQN Agent"],       "marker": "o"},
-    "Smart Greedy V2": {"color": ieee_style.AGENT_COLORS["Smart Greedy V2"], "marker": "s"},
-    "Nearest Greedy":  {"color": ieee_style.AGENT_COLORS["Nearest Greedy"],  "marker": "^"},
-    "TSP Oracle":      {"color": "#e7298a",                                   "marker": "D"},
+    "DQN Agent":              {"color": ieee_style.AGENT_COLORS["DQN Agent"],       "marker": "o"},
+    "Smart Greedy V2":        {"color": ieee_style.AGENT_COLORS["Smart Greedy V2"], "marker": "s"},
+    "Nearest Greedy":         {"color": ieee_style.AGENT_COLORS["Nearest Greedy"],  "marker": "^"},
+    "TSP Oracle":             {"color": "#e7298a",                                   "marker": "D"},
+    "Relational RL":          {"color": ieee_style.AGENT_COLORS["Relational RL"],   "marker": "v"},
+    "Relational RL (PPO)":    {"color": ieee_style.AGENT_COLORS["Relational RL"],   "marker": "v"},
+    # Ablation: no dwell bonus + step penalty — "Local Controller" baseline
+    "Relational Ablation":    {"color": "#66a61e",                                   "marker": "p"},
 }
 
 print(f"Output directory: {OUTPUT_DIR}")
@@ -412,21 +433,6 @@ def create_stacked_dqn_env(env_kwargs, training_config, seed=PLOT_CONFIG["seed"]
         print(f"✓ Frame stacking enabled (n_stack={n_stack})")
     else:
         print(f"✓ Frame stacking disabled")
-
-    if VEC_NORMALIZE_PATH.exists():
-        try:
-            vec_env = VecNormalize.load(str(VEC_NORMALIZE_PATH), vec_env)
-            vec_env.training = False
-            vec_env.norm_reward = False
-            print(f"✓ VecNormalize loaded from {VEC_NORMALIZE_PATH.name}")
-        except AssertionError as e:
-            print(
-                f"⚠ vec_normalize.pkl shape mismatch — skipping normalisation.\n"
-                f"  (The .pkl was saved with a different obs size: {e})\n"
-                f"  Delete {VEC_NORMALIZE_PATH.name} if it belongs to an old run."
-            )
-    else:
-        print(f"⚠ vec_normalize.pkl not found — observations will NOT be normalised")
 
     true_base_env = _unwrap_base_env(vec_env)
     print(f"  Seeding DQN base env directly (seed={seed})...")
@@ -805,8 +811,9 @@ def _draw_trajectory_panel(ax, trajectory, title, color, grid_size, sensor_posit
 
 
 def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_trajectory,
-                      tsp_trajectory=None, tsp_agent=None):
-    fig, axes = plt.subplots(1, 4, figsize=(24, 5))
+                      tsp_trajectory=None, tsp_agent=None, rel_trajectory=None):
+    n_panels = 4 + (1 if rel_trajectory is not None and len(rel_trajectory) > 0 else 0)
+    fig, axes = plt.subplots(1, n_panels, figsize=(6 * n_panels, 5))
     sensor_positions = np.array([sensor.position for sensor in env.sensors])
     grid_size = PLOT_CONFIG["grid_size"][0]
 
@@ -863,6 +870,14 @@ def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_
 
         ax_tsp.legend(loc="lower right", fontsize=8)
 
+    # ── Panel 5: Relational RL (optional) ────────────────────────────────────
+    if rel_trajectory is not None and len(rel_trajectory) > 0:
+        rel_color = AGENT_STYLES["Relational RL"]["color"]
+        _draw_trajectory_panel(
+            axes[4], rel_trajectory, "Relational RL (PPO)",
+            rel_color, grid_size, sensor_positions,
+        )
+
     plt.tight_layout()
     output_file = OUTPUT_DIR / "agent_trajectories"
     ieee_style.save(fig, str(output_file))
@@ -870,7 +885,7 @@ def plot_trajectories(env, dqn_trajectory, greedy_smart_trajectory, greedy_dumb_
     plt.close()
 
 
-def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=None):
+def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=None, rel_df=None):
     fig, ax1 = plt.subplots(figsize=(12, 5.5))
 
     ax1.set_xlabel("Simulation Step (t)", fontsize=12, fontweight="bold")
@@ -899,6 +914,12 @@ def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=No
         ax1.plot(tsp_df["step"], tsp_df["cumulative_reward"],
                  color="#e7298a", linewidth=2, linestyle="-.",
                  label="TSP Oracle (Upper Bound)", marker="D", markersize=4)
+
+    if rel_df is not None and not rel_df.empty:
+        rel_color = AGENT_STYLES["Relational RL"]["color"]
+        ax1.plot(rel_df["step"], rel_df["cumulative_reward"],
+                 color=rel_color, linewidth=2, linestyle=(0, (3, 1, 1, 1)),
+                 label="Relational RL (PPO)", marker="v", markersize=4)
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Battery Level (%)", fontsize=12, fontweight="bold", color="black")
@@ -940,12 +961,14 @@ def plot_comparative_analysis(dqn_df, greedy_smart_df, greedy_dumb_df, tsp_df=No
 
 
 def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None,
-                          dqn_snap=None, smart_snap=None, dumb_snap=None, tsp_snap=None):
+                          dqn_snap=None, smart_snap=None, dumb_snap=None, tsp_snap=None,
+                          rel_df=None, rel_snap=None):
     AGENT_COLORS = {
-        "DQN Agent":       "#1b9e77",
-        "Smart Greedy V2": "#d95f02",
-        "Nearest Greedy":  "#7570b3",
-        "TSP Oracle":      "#e7298a",
+        "DQN Agent":           "#1b9e77",
+        "Smart Greedy V2":     "#d95f02",
+        "Nearest Greedy":      "#7570b3",
+        "TSP Oracle":          "#e7298a",
+        "Relational RL (PPO)": ieee_style.AGENT_COLORS["Relational RL"],
     }
 
     def get_stats(df, name, snap_path):
@@ -973,6 +996,8 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None,
     ]
     if tsp_df is not None and not tsp_df.empty:
         entries.append(get_stats(tsp_df, "TSP Oracle", tsp_snap))
+    if rel_df is not None and not rel_df.empty:
+        entries.append(get_stats(rel_df, "Relational RL (PPO)", rel_snap))
     rows_raw = [e for e in entries if e is not None]
 
     columns = [
@@ -1041,7 +1066,7 @@ def plot_efficiency_table(dqn_df, smart_df, dumb_df, tsp_df=None,
 
 
 def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
-                          tsp_snapshot_path=None):
+                          tsp_snapshot_path=None, rel_snapshot_path=None):
     paths = {
         "DQN Agent":       dqn_snapshot_path,
         "Smart Greedy V2": smart_snapshot_path,
@@ -1049,6 +1074,8 @@ def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_
     }
     if tsp_snapshot_path is not None:
         paths["TSP Oracle"] = tsp_snapshot_path
+    if rel_snapshot_path is not None and Path(rel_snapshot_path).exists():
+        paths["Relational RL (PPO)"] = rel_snapshot_path
 
     n_panels = len(paths)
     fig, axes = plt.subplots(1, n_panels, figsize=(6 * n_panels, 5))
@@ -1097,12 +1124,14 @@ def plot_fairness_heatmap(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_
     plt.close()
 
 
-def plot_pareto_scatter(dqn_df, smart_df, dumb_df, tsp_df=None):
+def plot_pareto_scatter(dqn_df, smart_df, dumb_df, tsp_df=None, rel_df=None):
     import matplotlib.patheffects as pe
     fig, ax = plt.subplots(figsize=(9, 6))
     agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
     if tsp_df is not None and not tsp_df.empty:
         agents.append(("TSP Oracle", tsp_df))
+    if rel_df is not None and not rel_df.empty:
+        agents.append(("Relational RL (PPO)", rel_df))
     for name, df in agents:
         if df is None or df.empty:
             continue
@@ -1129,7 +1158,7 @@ def plot_pareto_scatter(dqn_df, smart_df, dumb_df, tsp_df=None):
 
 
 def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
-                        tsp_snapshot_path=None):
+                        tsp_snapshot_path=None, rel_snapshot_path=None):
     paths = {
         "DQN Agent":       dqn_snapshot_path,
         "Smart Greedy V2": smart_snapshot_path,
@@ -1137,6 +1166,8 @@ def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_pa
     }
     if tsp_snapshot_path is not None:
         paths["TSP Oracle"] = tsp_snapshot_path
+    if rel_snapshot_path is not None and Path(rel_snapshot_path).exists():
+        paths["Relational RL (PPO)"] = rel_snapshot_path
     all_data = {}
     sensor_ids = None
     for name, path in paths.items():
@@ -1180,7 +1211,8 @@ def plot_per_sensor_bar(dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_pa
 
 def plot_radar_chart(dqn_df, smart_df, dumb_df,
                      dqn_snapshot_path, smart_snapshot_path, dumb_snapshot_path,
-                     tsp_df=None, tsp_snapshot_path=None):
+                     tsp_df=None, tsp_snapshot_path=None,
+                     rel_df=None, rel_snapshot_path=None):
     def load_jains(path):
         if not Path(path).exists():
             return 0.0
@@ -1209,6 +1241,8 @@ def plot_radar_chart(dqn_df, smart_df, dumb_df,
     ]
     if tsp_df is not None and not tsp_df.empty and tsp_snapshot_path is not None:
         agents.append(("TSP Oracle", tsp_df, tsp_snapshot_path))
+    if rel_df is not None and not rel_df.empty and rel_snapshot_path is not None:
+        agents.append(("Relational RL (PPO)", rel_df, rel_snapshot_path))
 
     raw_metrics = {name: get_metrics(df, sp) for name, df, sp in agents}
     categories  = ["Data\nThroughput", "Jain's\nFairness", "Battery\nRemaining",
@@ -1259,12 +1293,14 @@ def plot_radar_chart(dqn_df, smart_df, dumb_df,
     plt.close()
 
 
-def plot_buffer_dynamics(dqn_df, smart_df, dumb_df, tsp_df=None):
+def plot_buffer_dynamics(dqn_df, smart_df, dumb_df, tsp_df=None, rel_df=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle("Network Data Backlog Clearance Over Time", fontsize=13, fontweight="bold")
     agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
     if tsp_df is not None and not tsp_df.empty:
         agents.append(("TSP Oracle", tsp_df))
+    if rel_df is not None and not rel_df.empty:
+        agents.append(("Relational RL (PPO)", rel_df))
 
     ax = axes[0]
     for name, df in agents:
@@ -1306,7 +1342,7 @@ def plot_buffer_dynamics(dqn_df, smart_df, dumb_df, tsp_df=None):
     plt.close()
 
 
-def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None):
+def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None, rel_df=None):
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
     fig.suptitle(
         "Battery Depletion, Data Throughput & Combined Overview by Agent",
@@ -1320,6 +1356,8 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None):
     ]
     if tsp_df is not None and not tsp_df.empty:
         agents.append(("TSP Oracle", tsp_df, AGENT_STYLES["TSP Oracle"]))
+    if rel_df is not None and not rel_df.empty:
+        agents.append(("Relational RL (PPO)", rel_df, AGENT_STYLES["Relational RL"]))
 
     ax = axes[0]
     for name, df, style in agents:
@@ -1393,7 +1431,7 @@ def plot_battery_steps_data(dqn_df, smart_df, dumb_df, tsp_df=None):
 # ==================== NEW DISSERTATION PLOTS ====================
 
 
-def plot_ndr_progression(dqn_df, smart_df, dumb_df, tsp_df=None):
+def plot_ndr_progression(dqn_df, smart_df, dumb_df, tsp_df=None, rel_df=None):
     """
     Plot NDR (sensor coverage %) and unique sensors visited over simulation time.
     Key dissertation figure: shows DQN visits sensors more systematically than heuristics.
@@ -1405,6 +1443,8 @@ def plot_ndr_progression(dqn_df, smart_df, dumb_df, tsp_df=None):
     agents = [("DQN Agent", dqn_df), ("Smart Greedy V2", smart_df), ("Nearest Greedy", dumb_df)]
     if tsp_df is not None and not tsp_df.empty:
         agents.append(("TSP Oracle", tsp_df))
+    if rel_df is not None and not rel_df.empty:
+        agents.append(("Relational RL (PPO)", rel_df))
 
     ax = axes[0]
     for name, df in agents:
@@ -1452,16 +1492,20 @@ def plot_ndr_progression(dqn_df, smart_df, dumb_df, tsp_df=None):
 
 def plot_comprehensive_summary_table(dqn_df, smart_df, dumb_df, tsp_df,
                                       dqn_snap, smart_snap, dumb_snap, tsp_snap,
-                                      tsp_agent=None):
+                                      tsp_agent=None,
+                                      rel_df=None, rel_snap=None,
+                                      rel_abl_df=None, rel_abl_snap=None):
     """
     Single dissertation-ready table: NDR, Jain's, Gini, starved sensors, data,
     efficiency, battery remaining, oracle gap, min collection rate — all agents.
     """
     AGENT_COLORS_TABLE = {
-        "DQN Agent":       "#1b9e77",
-        "Smart Greedy V2": "#d95f02",
-        "Nearest Greedy":  "#7570b3",
-        "TSP Oracle":      "#e7298a",
+        "DQN Agent":           "#1b9e77",
+        "Smart Greedy V2":     "#d95f02",
+        "Nearest Greedy":      "#7570b3",
+        "TSP Oracle":          "#e7298a",
+        "Relational RL (PPO)": ieee_style.AGENT_COLORS["Relational RL"],
+        "Relational Ablation": "#66a61e",
     }
 
     all_agents = [
@@ -1471,6 +1515,10 @@ def plot_comprehensive_summary_table(dqn_df, smart_df, dumb_df, tsp_df,
     ]
     if tsp_df is not None and not tsp_df.empty:
         all_agents.append(("TSP Oracle", tsp_df, tsp_snap))
+    if rel_df is not None and not rel_df.empty:
+        all_agents.append(("Relational RL (PPO)", rel_df, rel_snap))
+    if rel_abl_df is not None and not rel_abl_df.empty:
+        all_agents.append(("Relational Ablation", rel_abl_df, rel_abl_snap))
 
     tsp_data = (tsp_df["total_data_collected"].iloc[-1]
                 if tsp_df is not None and not tsp_df.empty else None)
@@ -1581,10 +1629,11 @@ def plot_comprehensive_summary_table(dqn_df, smart_df, dumb_df, tsp_df,
 
 
 def plot_improvement_breakdown(dqn_df, smart_df, dumb_df,
-                                dqn_snap, smart_snap, dumb_snap):
+                                dqn_snap, smart_snap, dumb_snap,
+                                rel_df=None, rel_snap=None):
     """
-    Grouped bar chart: DQN's % improvement over SF-Aware Greedy and Nearest Greedy
-    on five key dissertation metrics. The 'so what' figure.
+    Grouped bar chart: DQN's % improvement over SF-Aware Greedy, Nearest Greedy,
+    and (optionally) Relational RL on five key dissertation metrics.
     """
     if dqn_df is None or dqn_df.empty:
         print("  ⚠ Skipping improvement breakdown: DQN data missing")
@@ -1609,6 +1658,7 @@ def plot_improvement_breakdown(dqn_df, smart_df, dumb_df,
     dqn_m   = get_agent_metrics(dqn_df,   dqn_snap)
     smart_m = get_agent_metrics(smart_df, smart_snap)
     dumb_m  = get_agent_metrics(dumb_df,  dumb_snap)
+    rel_m   = get_agent_metrics(rel_df,   rel_snap)
 
     if not dqn_m:
         return
@@ -1620,23 +1670,31 @@ def plot_improvement_breakdown(dqn_df, smart_df, dumb_df,
             return 0.0
         return (dqn_val - base_val) / abs(base_val) * 100.0
 
-    smart_impr = [pct_improvement(dqn_m[m], smart_m.get(m, 0)) for m in metrics]
-    dumb_impr  = [pct_improvement(dqn_m[m], dumb_m.get(m, 0))  for m in metrics]
+    series = [
+        ("vs SF-Aware Greedy V2",     "#d95f02", smart_m),
+        ("vs Nearest Sensor Greedy",  "#7570b3", dumb_m),
+    ]
+    if rel_m:
+        series.append(
+            ("vs Relational RL (PPO)", AGENT_STYLES["Relational RL"]["color"], rel_m)
+        )
 
-    x     = np.arange(len(metrics))
-    width = 0.35
+    x       = np.arange(len(metrics))
+    n_bars  = len(series)
+    width   = 0.8 / n_bars
 
     fig, ax = plt.subplots(figsize=(13, 6))
-    bars1 = ax.bar(x - width / 2, smart_impr, width,
-                   label="vs SF-Aware Greedy V2",
-                   color="#d95f02", alpha=0.85, edgecolor="white", linewidth=0.5)
-    bars2 = ax.bar(x + width / 2, dumb_impr, width,
-                   label="vs Nearest Sensor Greedy",
-                   color="#7570b3", alpha=0.85, edgecolor="white", linewidth=0.5)
+    drawn = []
+    for i, (label, color, base_m) in enumerate(series):
+        offset = (i - n_bars / 2 + 0.5) * width
+        impr = [pct_improvement(dqn_m[m], base_m.get(m, 0)) for m in metrics]
+        bars = ax.bar(x + offset, impr, width * 0.95, label=label,
+                      color=color, alpha=0.85, edgecolor="white", linewidth=0.5)
+        drawn.append((bars, color))
 
     ax.axhline(0, color="black", linewidth=1.2)
 
-    for bar, color in [(bars1, "#d95f02"), (bars2, "#7570b3")]:
+    for bar, color in drawn:
         for b in bar:
             h = b.get_height()
             offset = 1.5 if h >= 0 else -3.5
@@ -1701,7 +1759,7 @@ def _sf_entropy(sf_counts):
 
 
 def plot_sf_distribution_vs_collection(
-    dqn_snap, smart_snap, dumb_snap, tsp_snap=None
+    dqn_snap, smart_snap, dumb_snap, tsp_snap=None, rel_snap=None,
 ):
     """
     Two-panel SF analysis figure for the dissertation 'protocol-aware vs blind' argument.
@@ -1720,6 +1778,8 @@ def plot_sf_distribution_vs_collection(
     snap_map = {"DQN Agent": dqn_snap, "Smart Greedy V2": smart_snap, "Nearest Greedy": dumb_snap}
     if tsp_snap is not None:
         snap_map["TSP Oracle"] = tsp_snap
+    if rel_snap is not None:
+        snap_map["Relational RL (PPO)"] = rel_snap
 
     agent_sf_data = {name: _load_sf_data(p) for name, p in snap_map.items()}
     # Drop agents with no data
@@ -1816,7 +1876,7 @@ def plot_sf_distribution_vs_collection(
     plt.close()
 
 
-def plot_sf_monoculture_index(dqn_snap, smart_snap, dumb_snap, tsp_snap=None):
+def plot_sf_monoculture_index(dqn_snap, smart_snap, dumb_snap, tsp_snap=None, rel_snap=None):
     """
     'Breaking the SF Monoculture' headline figure — three panels:
 
@@ -1836,6 +1896,8 @@ def plot_sf_monoculture_index(dqn_snap, smart_snap, dumb_snap, tsp_snap=None):
     snap_map = {"DQN Agent": dqn_snap, "Smart Greedy V2": smart_snap, "Nearest Greedy": dumb_snap}
     if tsp_snap is not None:
         snap_map["TSP Oracle"] = tsp_snap
+    if rel_snap is not None:
+        snap_map["Relational RL (PPO)"] = rel_snap
 
     agent_sf_data = {name: _load_sf_data(p) for name, p in snap_map.items()}
     agent_sf_data = {k: v for k, v in agent_sf_data.items() if v}
@@ -2039,6 +2101,101 @@ def main():
     else:
         print(f"⚠ WARNING: DQN model not found at {DQN_MODEL_PATH}")
 
+    # ========== STEP 1b: Run Relational RL (Ray RLlib PPO) Agent ==========
+    print("\n" + "-" * 100)
+    df_rel          = None
+    rel_trajectory  = None
+    rel_base_env    = None
+
+    if REL_CKPT_DIR.exists():
+        try:
+            rel_module = load_relational_rl_module(REL_CKPT_DIR)
+
+            # Same seed / start position / env params as DQN for a fair comparison.
+            np.random.seed(PLOT_CONFIG["seed"])
+            random.seed(PLOT_CONFIG["seed"])
+            rel_env_kwargs = {k: v for k, v in env_kwargs.items()
+                              if k != "max_sensors_limit"}
+            rel_base_env = InferenceRelationalUAVEnv(
+                n_max=max_sensors_limit, **rel_env_kwargs,
+            )
+
+            df_rel, steps_rel, rel_trajectory = run_relational_rl_agent_for_plot(
+                rel_module, rel_base_env,
+                name="Relational RL (PPO)",
+                seed=PLOT_CONFIG["seed"],
+                max_battery=EVAL_MAX_BATTERY,
+            )
+            save_baseline_data("relational_rl", df_rel)
+            save_sensor_snapshot(
+                rel_base_env,
+                OUTPUT_DIR / "relational_rl_sensor_snapshot.json",
+                "Relational RL (PPO)",
+                is_wrapper=False,
+            )
+            agents_config.append({
+                "name":           "Relational RL (PPO)",
+                "steps":          steps_rel,
+                "final_reward":   float(df_rel["cumulative_reward"].iloc[-1]),
+                "final_coverage": float(df_rel["coverage_percent"].iloc[-1]),
+            })
+            print("✓ Relational RL evaluation complete")
+        except Exception as e:
+            print(f"⚠ WARNING: Could not run Relational RL agent: {e}")
+            import traceback
+            traceback.print_exc()
+    else:
+        print(f"⚠ WARNING: Relational RL checkpoint not found at {REL_CKPT_DIR}")
+
+    # ========== STEP 1c: Run Relational RL Ablation Agent ==========
+    # Ablation baseline: same architecture, no dwell bonus, step penalty.
+    # Dissertation Section 5.7 — "Local Controller" vs "Global Navigator" framing.
+    print("\n" + "-" * 100)
+    df_rel_abl         = None
+    rel_abl_trajectory = None
+    rel_abl_base_env   = None
+
+    if REL_ABLATION_CKPT_DIR.exists():
+        try:
+            rel_abl_module = load_relational_rl_module(REL_ABLATION_CKPT_DIR)
+
+            np.random.seed(PLOT_CONFIG["seed"])
+            random.seed(PLOT_CONFIG["seed"])
+            rel_abl_env_kwargs = {k: v for k, v in env_kwargs.items()
+                                  if k != "max_sensors_limit"}
+            rel_abl_base_env = InferenceRelationalUAVEnv(
+                n_max=max_sensors_limit, **rel_abl_env_kwargs,
+            )
+
+            df_rel_abl, steps_rel_abl, rel_abl_trajectory = run_relational_rl_agent_for_plot(
+                rel_abl_module, rel_abl_base_env,
+                name="Relational Ablation",
+                seed=PLOT_CONFIG["seed"],
+                max_battery=EVAL_MAX_BATTERY,
+            )
+            save_baseline_data("relational_ablation", df_rel_abl)
+            save_sensor_snapshot(
+                rel_abl_base_env,
+                OUTPUT_DIR / "relational_ablation_sensor_snapshot.json",
+                "Relational Ablation",
+                is_wrapper=False,
+            )
+            agents_config.append({
+                "name":           "Relational Ablation",
+                "steps":          steps_rel_abl,
+                "final_reward":   float(df_rel_abl["cumulative_reward"].iloc[-1]),
+                "final_coverage": float(df_rel_abl["coverage_percent"].iloc[-1]),
+            })
+            print("✓ Relational Ablation evaluation complete")
+        except Exception as e:
+            print(f"⚠ WARNING: Could not run Relational Ablation agent: {e}")
+            import traceback
+            traceback.print_exc()
+    else:
+        print(f"  Relational Ablation checkpoint not yet trained — skipping "
+              f"(run train_relational_ablation.py first)")
+        print(f"  Expected at: {REL_ABLATION_CKPT_DIR}")
+
     # ========== STEP 2 & 3: Run Greedy Agents ==========
     print("\n" + "-" * 100)
     print("Setting up environment for greedy agents...")
@@ -2105,54 +2262,68 @@ def main():
     # ========== PLOTTING ==========
     print("\n" + "-" * 100)
     plot_trajectories(env, dqn_trajectory, smart_trajectory, dumb_trajectory,
-                      tsp_trajectory=tsp_trajectory, tsp_agent=tsp_agent)
+                      tsp_trajectory=tsp_trajectory, tsp_agent=tsp_agent,
+                      rel_trajectory=rel_trajectory)
     # Snapshot paths used by multiple plots — define once
-    snap_dqn   = OUTPUT_DIR / "dqn_sensor_snapshot.json"
-    snap_smart = OUTPUT_DIR / "greedy_smart_sensor_snapshot.json"
-    snap_dumb  = OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json"
-    snap_tsp   = OUTPUT_DIR / "tsp_sensor_snapshot.json"
+    snap_dqn     = OUTPUT_DIR / "dqn_sensor_snapshot.json"
+    snap_smart   = OUTPUT_DIR / "greedy_smart_sensor_snapshot.json"
+    snap_dumb    = OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json"
+    snap_tsp     = OUTPUT_DIR / "tsp_sensor_snapshot.json"
+    snap_rel     = OUTPUT_DIR / "relational_rl_sensor_snapshot.json"
+    snap_rel_abl = OUTPUT_DIR / "relational_ablation_sensor_snapshot.json"
 
     print("\n" + "-" * 100)
-    plot_comparative_analysis(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_comparative_analysis(df_dqn, df_smart, df_dumb, tsp_df=df_tsp, rel_df=df_rel)
     print("\n" + "-" * 100)
     plot_efficiency_table(df_dqn, df_smart, df_dumb, tsp_df=df_tsp,
                           dqn_snap=snap_dqn, smart_snap=snap_smart,
-                          dumb_snap=snap_dumb, tsp_snap=snap_tsp)
+                          dumb_snap=snap_dumb, tsp_snap=snap_tsp,
+                          rel_df=df_rel, rel_snap=snap_rel)
     print("\n" + "-" * 100)
-    plot_fairness_heatmap(snap_dqn, snap_smart, snap_dumb, tsp_snapshot_path=snap_tsp)
+    plot_fairness_heatmap(snap_dqn, snap_smart, snap_dumb,
+                          tsp_snapshot_path=snap_tsp,
+                          rel_snapshot_path=snap_rel)
     print("\n" + "-" * 100)
-    plot_pareto_scatter(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_pareto_scatter(df_dqn, df_smart, df_dumb, tsp_df=df_tsp, rel_df=df_rel)
     print("\n" + "-" * 100)
-    plot_per_sensor_bar(snap_dqn, snap_smart, snap_dumb, tsp_snapshot_path=snap_tsp)
+    plot_per_sensor_bar(snap_dqn, snap_smart, snap_dumb,
+                        tsp_snapshot_path=snap_tsp,
+                        rel_snapshot_path=snap_rel)
     print("\n" + "-" * 100)
     plot_radar_chart(
         df_dqn, df_smart, df_dumb,
         snap_dqn, snap_smart, snap_dumb,
         tsp_df=df_tsp, tsp_snapshot_path=snap_tsp,
+        rel_df=df_rel, rel_snapshot_path=snap_rel,
     )
     print("\n" + "-" * 100)
-    plot_buffer_dynamics(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_buffer_dynamics(df_dqn, df_smart, df_dumb, tsp_df=df_tsp, rel_df=df_rel)
     print("\n" + "-" * 100)
-    plot_battery_steps_data(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_battery_steps_data(df_dqn, df_smart, df_dumb, tsp_df=df_tsp, rel_df=df_rel)
     # ── New dissertation plots ────────────────────────────────────────────────
     print("\n" + "-" * 100)
-    plot_ndr_progression(df_dqn, df_smart, df_dumb, tsp_df=df_tsp)
+    plot_ndr_progression(df_dqn, df_smart, df_dumb, tsp_df=df_tsp, rel_df=df_rel)
     print("\n" + "-" * 100)
     plot_comprehensive_summary_table(
         df_dqn, df_smart, df_dumb, df_tsp,
         snap_dqn, snap_smart, snap_dumb, snap_tsp,
         tsp_agent=tsp_agent,
+        rel_df=df_rel, rel_snap=snap_rel,
+        rel_abl_df=df_rel_abl, rel_abl_snap=snap_rel_abl,
     )
     print("\n" + "-" * 100)
     plot_improvement_breakdown(
         df_dqn, df_smart, df_dumb,
         snap_dqn, snap_smart, snap_dumb,
+        rel_df=df_rel, rel_snap=snap_rel,
     )
     # ── SF monoculture analysis (key dissertation contribution) ──────────────
     print("\n" + "-" * 100)
-    plot_sf_distribution_vs_collection(snap_dqn, snap_smart, snap_dumb, tsp_snap=snap_tsp)
+    plot_sf_distribution_vs_collection(snap_dqn, snap_smart, snap_dumb,
+                                        tsp_snap=snap_tsp, rel_snap=snap_rel)
     print("\n" + "-" * 100)
-    plot_sf_monoculture_index(snap_dqn, snap_smart, snap_dumb, tsp_snap=snap_tsp)
+    plot_sf_monoculture_index(snap_dqn, snap_smart, snap_dumb,
+                               tsp_snap=snap_tsp, rel_snap=snap_rel)
 
     # ========== SUMMARY TABLE ==========
     def _load_fm(snapshot_path):
@@ -2163,23 +2334,25 @@ def main():
     fm_smart   = _load_fm(OUTPUT_DIR / "greedy_smart_sensor_snapshot.json")
     fm_nearest = _load_fm(OUTPUT_DIR / "greedy_nearest_sensor_snapshot.json")
     fm_tsp     = _load_fm(OUTPUT_DIR / "tsp_sensor_snapshot.json")
+    fm_rel     = _load_fm(OUTPUT_DIR / "relational_rl_sensor_snapshot.json")
+    fm_rel_abl = _load_fm(OUTPUT_DIR / "relational_ablation_sensor_snapshot.json")
 
     def _fmt_val(val, fmt=".1f", suffix=""):
         return f"{val:{fmt}}{suffix}" if val is not None else "—"
 
-    def _row(label, vals, fmt=".1f", suffix="", col_w=16):
+    def _row(label, vals, fmt=".1f", suffix="", col_w=14):
         cells = "".join(f"{v:>{col_w}}" for v in vals)
         print(f"  {label:<30}{cells}")
 
-    def _divider(char="─", width=98):
+    def _divider(char="─", width=120):
         print("  " + char * width)
 
-    COL_W = 16
-    HEADERS = ["DQN Agent", "Smart Greedy V2", "Nearest Greedy", "TSP Oracle"]
+    COL_W = 14
+    HEADERS = ["DQN Agent", "Smart Greedy", "Nearest", "TSP Oracle", "Rel RL", "Rel Ablation"]
 
-    print("\n" + "=" * 102)
+    print("\n" + "=" * 124)
     print("  COMPARISON SUMMARY STATISTICS")
-    print("=" * 102)
+    print("=" * 124)
     print()
     print(f"  {'Metric':<30}" + "".join(f"{h:>{COL_W}}" for h in HEADERS))
     _divider()
@@ -2190,30 +2363,40 @@ def main():
 
     rows_perf = [
         ("Final Reward",
-         [_fmt_val(_r(df_dqn, 'cumulative_reward'), ",.1f"),
-          _fmt_val(_r(df_smart, 'cumulative_reward'), ",.1f"),
-          _fmt_val(_r(df_dumb,  'cumulative_reward'), ",.1f"),
-          _fmt_val(_r(df_tsp,   'cumulative_reward'), ",.1f")]),
+         [_fmt_val(_r(df_dqn,     'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_smart,   'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_dumb,    'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_tsp,     'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_rel,     'cumulative_reward'), ",.1f"),
+          _fmt_val(_r(df_rel_abl, 'cumulative_reward'), ",.1f")]),
         ("Final Battery (%)",
-         [_fmt_val(_r(df_dqn, 'battery_percent'), ".1f", "%"),
-          _fmt_val(_r(df_smart, 'battery_percent'), ".1f", "%"),
-          _fmt_val(_r(df_dumb,  'battery_percent'), ".1f", "%"),
-          _fmt_val(_r(df_tsp,   'battery_percent'), ".1f", "%")]),
+         [_fmt_val(_r(df_dqn,     'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_smart,   'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_dumb,    'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_tsp,     'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_rel,     'battery_percent'), ".1f", "%"),
+          _fmt_val(_r(df_rel_abl, 'battery_percent'), ".1f", "%")]),
         ("Final NDR (%)",
-         [_fmt_val(_r(df_dqn, 'coverage_percent'), ".1f", "%"),
-          _fmt_val(_r(df_smart, 'coverage_percent'), ".1f", "%"),
-          _fmt_val(_r(df_dumb,  'coverage_percent'), ".1f", "%"),
-          _fmt_val(_r(df_tsp,   'coverage_percent'), ".1f", "%")]),
+         [_fmt_val(_r(df_dqn,     'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_smart,   'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_dumb,    'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_tsp,     'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_rel,     'coverage_percent'), ".1f", "%"),
+          _fmt_val(_r(df_rel_abl, 'coverage_percent'), ".1f", "%")]),
         ("Data Collected (bytes)",
-         [_fmt_val(_r(df_dqn, 'total_data_collected'), ",.0f"),
-          _fmt_val(_r(df_smart, 'total_data_collected'), ",.0f"),
-          _fmt_val(_r(df_dumb,  'total_data_collected'), ",.0f"),
-          _fmt_val(_r(df_tsp,   'total_data_collected'), ",.0f")]),
+         [_fmt_val(_r(df_dqn,     'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_smart,   'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_dumb,    'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_tsp,     'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_rel,     'total_data_collected'), ",.0f"),
+          _fmt_val(_r(df_rel_abl, 'total_data_collected'), ",.0f")]),
         ("Efficiency (bytes/Wh)",
-         [_fmt_val(_r(df_dqn, 'efficiency'), ".2f"),
-          _fmt_val(_r(df_smart, 'efficiency'), ".2f"),
-          _fmt_val(_r(df_dumb,  'efficiency'), ".2f"),
-          _fmt_val(_r(df_tsp,   'efficiency'), ".2f")]),
+         [_fmt_val(_r(df_dqn,     'efficiency'), ".2f"),
+          _fmt_val(_r(df_smart,   'efficiency'), ".2f"),
+          _fmt_val(_r(df_dumb,    'efficiency'), ".2f"),
+          _fmt_val(_r(df_tsp,     'efficiency'), ".2f"),
+          _fmt_val(_r(df_rel,     'efficiency'), ".2f"),
+          _fmt_val(_r(df_rel_abl, 'efficiency'), ".2f")]),
     ]
     for label, vals in rows_perf:
         _row(label, vals, col_w=COL_W)
@@ -2226,46 +2409,57 @@ def main():
 
     rows_fair = [
         ("Jain's Fairness Index",
-         [_fm_get(fm_dqn, 'jains'), _fm_get(fm_smart, 'jains'),
-          _fm_get(fm_nearest, 'jains'), _fm_get(fm_tsp, 'jains')]),
-        ("Gini Coefficient  [0=eq, 1=ineq]",
-         [_fm_get(fm_dqn, 'gini'), _fm_get(fm_smart, 'gini'),
-          _fm_get(fm_nearest, 'gini'), _fm_get(fm_tsp, 'gini')]),
+         [_fm_get(fm_dqn, 'jains'),     _fm_get(fm_smart, 'jains'),
+          _fm_get(fm_nearest, 'jains'), _fm_get(fm_tsp, 'jains'),
+          _fm_get(fm_rel, 'jains'),     _fm_get(fm_rel_abl, 'jains')]),
+        ("Gini Coefficient  [0=eq]",
+         [_fm_get(fm_dqn, 'gini'),     _fm_get(fm_smart, 'gini'),
+          _fm_get(fm_nearest, 'gini'), _fm_get(fm_tsp, 'gini'),
+          _fm_get(fm_rel, 'gini'),     _fm_get(fm_rel_abl, 'gini')]),
         ("Min Collection Rate (%)",
-         [_fm_get(fm_dqn, 'min_rate', ".1f", "%"), _fm_get(fm_smart, 'min_rate', ".1f", "%"),
-          _fm_get(fm_nearest, 'min_rate', ".1f", "%"), _fm_get(fm_tsp, 'min_rate', ".1f", "%")]),
+         [_fm_get(fm_dqn, 'min_rate', ".1f", "%"),     _fm_get(fm_smart, 'min_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'min_rate', ".1f", "%"), _fm_get(fm_tsp, 'min_rate', ".1f", "%"),
+          _fm_get(fm_rel, 'min_rate', ".1f", "%"),     _fm_get(fm_rel_abl, 'min_rate', ".1f", "%")]),
         ("Max Collection Rate (%)",
-         [_fm_get(fm_dqn, 'max_rate', ".1f", "%"), _fm_get(fm_smart, 'max_rate', ".1f", "%"),
-          _fm_get(fm_nearest, 'max_rate', ".1f", "%"), _fm_get(fm_tsp, 'max_rate', ".1f", "%")]),
+         [_fm_get(fm_dqn, 'max_rate', ".1f", "%"),     _fm_get(fm_smart, 'max_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'max_rate', ".1f", "%"), _fm_get(fm_tsp, 'max_rate', ".1f", "%"),
+          _fm_get(fm_rel, 'max_rate', ".1f", "%"),     _fm_get(fm_rel_abl, 'max_rate', ".1f", "%")]),
         ("Mean Collection Rate (%)",
-         [_fm_get(fm_dqn, 'mean_rate', ".1f", "%"), _fm_get(fm_smart, 'mean_rate', ".1f", "%"),
-          _fm_get(fm_nearest, 'mean_rate', ".1f", "%"), _fm_get(fm_tsp, 'mean_rate', ".1f", "%")]),
+         [_fm_get(fm_dqn, 'mean_rate', ".1f", "%"),     _fm_get(fm_smart, 'mean_rate', ".1f", "%"),
+          _fm_get(fm_nearest, 'mean_rate', ".1f", "%"), _fm_get(fm_tsp, 'mean_rate', ".1f", "%"),
+          _fm_get(fm_rel, 'mean_rate', ".1f", "%"),     _fm_get(fm_rel_abl, 'mean_rate', ".1f", "%")]),
         ("Starved Sensors (<20%)",
          [f"{fm_dqn.get('starved','—')}/{fm_dqn.get('n_sensors','—')}",
           f"{fm_smart.get('starved','—')}/{fm_smart.get('n_sensors','—')}",
           f"{fm_nearest.get('starved','—')}/{fm_nearest.get('n_sensors','—')}",
-          f"{fm_tsp.get('starved','—')}/{fm_tsp.get('n_sensors','—')}"]),
+          f"{fm_tsp.get('starved','—')}/{fm_tsp.get('n_sensors','—')}",
+          f"{fm_rel.get('starved','—')}/{fm_rel.get('n_sensors','—')}",
+          f"{fm_rel_abl.get('starved','—')}/{fm_rel_abl.get('n_sensors','—')}"]),
     ]
     for label, vals in rows_fair:
         _row(label, vals, col_w=COL_W)
 
     _divider()
     # ── TSP-only metrics ──────────────────────────────────────────────────────
+    _n_non_tsp = 3  # DQN, Smart, Nearest before TSP column
     print(f"  {'TSP Min Tour (grid units)':<30}"
-          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
-          + f"{tsp_agent.tsp_tour_length_units:>{COL_W},.1f}")
+          + "".join(f"{'—':>{COL_W}}" for _ in range(_n_non_tsp))
+          + f"{tsp_agent.tsp_tour_length_units:>{COL_W},.1f}"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(2)))
     print(f"  {'Actual Flown (grid units)':<30}"
-          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
-          + f"{tsp_agent.actual_path_length:>{COL_W},.1f}")
+          + "".join(f"{'—':>{COL_W}}" for _ in range(_n_non_tsp))
+          + f"{tsp_agent.actual_path_length:>{COL_W},.1f}"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(2)))
     print(f"  {'Path Efficiency (%)':<30}"
-          + "".join(f"{'—':>{COL_W}}" for _ in range(3))
-          + f"{tsp_agent.path_efficiency_pct:>{COL_W}.1f}%")
+          + "".join(f"{'—':>{COL_W}}" for _ in range(_n_non_tsp))
+          + f"{tsp_agent.path_efficiency_pct:>{COL_W}.1f}%"
+          + "".join(f"{'—':>{COL_W}}" for _ in range(2)))
 
     env.close()
     print()
-    print("=" * 102)
+    print("=" * 118)
     print("  EVALUATION COMPLETE")
-    print("=" * 102 + "\n")
+    print("=" * 118 + "\n")
 
 
 if __name__ == "__main__":
