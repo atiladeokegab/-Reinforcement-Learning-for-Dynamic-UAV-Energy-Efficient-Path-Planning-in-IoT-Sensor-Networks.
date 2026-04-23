@@ -49,6 +49,8 @@ AGENT_COLORS = {
     "Smart Greedy V2":        "#d95f02",
     "Nearest Greedy":         "#7570b3",   # purple (Dark2[2])
     "Nearest Sensor Greedy":  "#7570b3",
+    "Relational RL":          "#66a61e",   # green  (Dark2[4])
+    "Relational RL (PPO)":    "#66a61e",
 }
 
 AGENT_LINESTYLES = {
@@ -60,6 +62,8 @@ AGENT_LINESTYLES = {
     "Smart Greedy V2":        "--",
     "Nearest Greedy":         ":",
     "Nearest Sensor Greedy":  ":",
+    "Relational RL":          (0, (3, 1, 1, 1)),
+    "Relational RL (PPO)":    (0, (3, 1, 1, 1)),
 }
 
 AGENT_MARKERS = {
@@ -71,6 +75,8 @@ AGENT_MARKERS = {
     "Smart Greedy V2":        "s",
     "Nearest Greedy":         "^",
     "Nearest Sensor Greedy":  "^",
+    "Relational RL":          "v",
+    "Relational RL (PPO)":    "v",
 }
 
 # Spreading-factor colour map (SF7→green, SF12→purple)
