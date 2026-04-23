@@ -47,8 +47,8 @@ import gymnasium
 # ---------------------------------------------------------------------------
 _HERE   = Path(__file__).resolve().parent       # dqn_evaluation_results/
 _DQN    = _HERE.parent                          # dqn/
-_SRC    = _HERE.parents[3]                      # src/
-_ROOT   = _HERE.parents[4]                      # project root
+_SRC    = _HERE.parents[2]                      # src/
+_ROOT   = _HERE.parents[3]                      # project root
 
 for _p in (str(_SRC), str(_DQN), str(_HERE)):
     if _p not in sys.path:
