@@ -42,7 +42,7 @@ import scipy.stats as stats
 # Path setup
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent
-_SRC  = _HERE.parents[3]
+_SRC  = _HERE.parents[2]
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
