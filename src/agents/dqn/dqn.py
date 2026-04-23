@@ -1104,7 +1104,6 @@ HYPERPARAMS = {
     "policy": "MlpPolicy",
     # Cosine-like LR decay: 3e-4 → 3e-5 over training. High LR early for fast
     # learning, low LR late so Q-values settle rather than oscillating.
-    "optimize_memory_usage": True,
     "learning_rate":          lambda progress: 3e-4 * max(0.1, 1.0 - progress * 0.8),
     "buffer_size":            150_000,   # 612-dim × 4B × 2 × 150k ≈ 0.69 GB
     "batch_size":             256,
