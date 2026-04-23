@@ -76,7 +76,7 @@ _dqn.COMPETENCE_GATE = {
     "ndr_pct":   95.0,
     "jains":     0.85,
     "window":    50,
-    "min_steps": 500_000,
+    "min_steps": 100_000,
 }
 
 # Per-stage overrides derived from greedy ceiling calibration (50-ep sweep,
@@ -146,8 +146,9 @@ STAGE_TARGET_KPIS = {
 # ── 4090 overrides (24 GB VRAM — remove these if running on laptop GPU) ──────
 _dqn.N_ENVS               = 8
 _dqn.WORKER_SENSOR_COUNTS = [10, 15, 20, 25, 30, 35, 40, 40]  # 8 workers, diverse coverage
-_dqn.HYPERPARAMS["buffer_size"] = 500_000   # was 150k — ~2.3 GB on 24 GB VRAM
-_dqn.HYPERPARAMS["batch_size"]  = 512       # was 256 — larger minibatch for stable gradients
+_dqn.HYPERPARAMS["buffer_size"]            = 500_000   # was 150k — ~2.3 GB on 24 GB VRAM
+_dqn.HYPERPARAMS["batch_size"]             = 512       # was 256 — larger minibatch for stable gradients
+_dqn.HYPERPARAMS["exploration_final_eps"]  = 0.05      # was 0.03 — stochastic layouts need more exploration
 
 # ── Extended budget — 3M was insufficient (prev run stalled in Stage 2) ──────
 # Stage 0+1 took ~1M combined. Stages 2, 3, 4 need ~1.5M each to learn the
