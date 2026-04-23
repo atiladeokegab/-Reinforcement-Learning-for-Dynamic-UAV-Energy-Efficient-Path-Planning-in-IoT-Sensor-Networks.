@@ -731,6 +731,11 @@ class CurriculumCallback(BaseCallback):
         # Per-condition stats: (grid_size, n_sensors) → list[jains]
         self._condition_stats  = {}
 
+        # Per-worker rolling windows — graduation gates on the hardest worker,
+        # not the pool mean (easy workers inflate the pooled signal otherwise).
+        self._worker_ndrs:  dict[int, list] = {}
+        self._worker_jains: dict[int, list] = {}
+
         self._n_episodes       = 0
         self._last_logged_ep   = 0
 
@@ -822,12 +827,24 @@ class CurriculumCallback(BaseCallback):
         if steps_in_stage < min_steps:
             return
 
-        # Require a full window of data before evaluating gates
-        if len(self._window_ndrs) < window or len(self._window_jains) < window:
+        # Gate on the hardest worker: every worker must have a full window and
+        # the *minimum* rolling mean across workers must clear the threshold.
+        # This prevents easy workers (small N, small grid) from pulling the
+        # pooled average above the gate while hard workers are still struggling.
+        w_roll_ndrs, w_roll_jains = [], []
+        for w_id in sorted(self._worker_ndrs):
+            w_ndrs  = self._worker_ndrs[w_id]
+            w_jains = self._worker_jains[w_id]
+            if len(w_ndrs) < window or len(w_jains) < window:
+                return  # this worker hasn't accumulated a full window yet
+            w_roll_ndrs.append(float(np.mean(w_ndrs[-window:])))
+            w_roll_jains.append(float(np.mean(w_jains[-window:])))
+
+        if not w_roll_ndrs:
             return
 
-        rolling_ndr   = self._rolling_mean(self._window_ndrs,  "ndr")
-        rolling_jains = self._rolling_mean(self._window_jains, "jains")
+        rolling_ndr   = min(w_roll_ndrs)   # hardest worker drives the gate
+        rolling_jains = min(w_roll_jains)
 
         ndr_gate, jains_gate = self._get_stage_thresholds(self._current_stage)
 
@@ -871,6 +888,8 @@ class CurriculumCallback(BaseCallback):
             self._episodes_in_stage = 0
             self._window_ndrs.clear()
             self._window_jains.clear()
+            self._worker_ndrs.clear()
+            self._worker_jains.clear()
 
             # Push new stage to all environment workers
             self._set_stage_on_envs(self._current_stage)
@@ -919,6 +938,8 @@ class CurriculumCallback(BaseCallback):
             self._episodes_in_stage = 0
             self._window_ndrs.clear()
             self._window_jains.clear()
+            self._worker_ndrs.clear()
+            self._worker_jains.clear()
 
             self._set_stage_on_envs(self._current_stage)
 
@@ -966,6 +987,16 @@ class CurriculumCallback(BaseCallback):
                 self._window_ndrs  = self._window_ndrs[-max_window:]
                 self._window_jains = self._window_jains[-max_window:]
 
+            # Per-worker tracking — used by _try_advance_stage to gate on hardest worker
+            if idx not in self._worker_ndrs:
+                self._worker_ndrs[idx]  = []
+                self._worker_jains[idx] = []
+            self._worker_ndrs[idx].append(stats["ndr"])
+            self._worker_jains[idx].append(stats["jains_index"])
+            if len(self._worker_ndrs[idx]) > max_window:
+                self._worker_ndrs[idx]  = self._worker_ndrs[idx][-max_window:]
+                self._worker_jains[idx] = self._worker_jains[idx][-max_window:]
+
             # Full-run history
             self._all_ndrs.append(stats["ndr"])
             self._all_jains.append(stats["jains_index"])
@@ -995,14 +1026,21 @@ class CurriculumCallback(BaseCallback):
             roll_ndr = self._rolling_mean(self._window_ndrs,  "ndr")
             roll_j   = self._rolling_mean(self._window_jains, "jains")
 
-            # Show distance to graduation gate (dynamic if greedy benchmark enabled)
+            # Show gate distance using hardest-worker rolling means when available
+            # (pool mean can be inflated by easy workers — hardest worker is the real signal)
+            _w = COMPETENCE_GATE["window"]
+            _hw_ndrs  = [float(np.mean(v[-_w:])) for v in self._worker_ndrs.values()  if len(v) >= _w]
+            _hw_jains = [float(np.mean(v[-_w:])) for v in self._worker_jains.values() if len(v) >= _w]
+            gate_ndr   = min(_hw_ndrs)  if _hw_ndrs  else roll_ndr
+            gate_jains = min(_hw_jains) if _hw_jains else roll_j
+
             dyn_ndr, dyn_j = self._get_stage_thresholds(self._current_stage)
-            ndr_gap   = dyn_ndr - roll_ndr
-            jains_gap = dyn_j   - roll_j
+            ndr_gap   = dyn_ndr - gate_ndr
+            jains_gap = dyn_j   - gate_jains
             gate_str  = (
                 "GATE MET ✓" if ndr_gap <= 0 and jains_gap <= 0
-                else "NDR_gap={:+.1f}% J_gap={:+.3f} (tgt NDR={:.1f}% J={:.3f})".format(
-                    ndr_gap, jains_gap, dyn_ndr, dyn_j
+                else "hw_NDR={:.1f}% hw_J={:.3f} gap={:+.1f}%/{:+.3f} (tgt {:.1f}%/{:.3f})".format(
+                    gate_ndr, gate_jains, ndr_gap, jains_gap, dyn_ndr, dyn_j
                 )
             )
 
@@ -1066,6 +1104,7 @@ HYPERPARAMS = {
     "policy": "MlpPolicy",
     # Cosine-like LR decay: 3e-4 → 3e-5 over training. High LR early for fast
     # learning, low LR late so Q-values settle rather than oscillating.
+    "optimize_memory_usage": True,
     "learning_rate":          lambda progress: 3e-4 * max(0.1, 1.0 - progress * 0.8),
     "buffer_size":            150_000,   # 612-dim × 4B × 2 × 150k ≈ 0.69 GB
     "batch_size":             256,
