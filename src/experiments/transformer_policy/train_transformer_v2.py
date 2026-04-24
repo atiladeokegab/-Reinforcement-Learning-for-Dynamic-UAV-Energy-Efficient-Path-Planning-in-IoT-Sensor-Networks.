@@ -3,26 +3,32 @@ train_transformer_v2.py
 =======================
 Clean end-to-end curriculum run for the GTrXL transformer policy.
 
-Differences from the stage-specific scripts
---------------------------------------------
-* Restores from stage_1_progress (keeps the 24h of compute already done).
-* NDR gate relaxed to 65% (physically achievable on each grid size).
-* JFI gate relaxed to 0.80.
-* MAX_ITERS_PER_STAGE = 600 safety valve: auto-advances when a stage stalls
-  so the run always completes rather than hanging forever.
-* Single script covers Stage 1 → Stage 4 (200×200 → 500×500).
+From-scratch restart (v3 changes)
+---------------------------------
+* Starts at Stage 0 with no weight restore.
+* 7-stage curriculum — only one axis (grid OR sensor count) changes per step,
+  so the policy never faces two simultaneous distribution shifts.
+* Monotone-decreasing entropy schedule with a transient bump (2× target for
+  the first 30 iters of each new stage) to aid re-exploration after advance.
+* NDR gate relaxed to 55% (60% was a plateau ceiling for this architecture).
+* MAX_ITERS_PER_STAGE = 400 — if a stage has not graduated by then, more
+  iterations are unlikely to help; advance and let later stages do the work.
+* Per-stage LR schedule: 2.5e-4 early, 1.5e-4 from S3 onward.
 
-Curriculum
-----------
-  Stage 1 : 200×200,  20 sensors  (restores from stage_1_progress)
-  Stage 2 : 300×300,  30 sensors
-  Stage 3 : 400×400,  40 sensors
-  Stage 4 : 500×500,  50 sensors
+Curriculum (one axis at a time)
+-------------------------------
+  Stage 0 : 100×100, 10 sensors
+  Stage 1 : 200×200, 10 sensors   (grow grid)
+  Stage 2 : 200×200, 20 sensors   (grow sensors)
+  Stage 3 : 300×300, 20 sensors   (grow grid)
+  Stage 4 : 300×300, 30 sensors   (grow sensors)
+  Stage 5 : 400×400, 40 sensors
+  Stage 6 : 500×500, 50 sensors
 
 Graduation gate (per stage)
 ----------------------------
-  NDR rolling mean ≥ 65%  OR  stage iters ≥ 600
-  JFI rolling mean ≥ 0.80 OR  stage iters ≥ 600
+  NDR rolling mean ≥ 55%  OR  stage iters ≥ 400
+  JFI rolling mean ≥ 0.80 OR  stage iters ≥ 400
   50-episode rolling window, ≥ 200 k min timesteps
 
 Outputs
@@ -86,50 +92,63 @@ NUM_GPUS: int = min(_CUDA_COUNT, 2)
 log.info("Detected %d CUDA GPU(s). Using %d for training.", _CUDA_COUNT, NUM_GPUS)
 
 # ---------------------------------------------------------------------------
-# Restore point — the 24h Stage-1 run already in place
+# Restart from scratch — no restore
 # ---------------------------------------------------------------------------
-START_STAGE  = 1
-RESTORE_FROM = "/workspace/uav/models/transformer_gtrxl_stage1/stage_1_progress"
+START_STAGE  = 0
+RESTORE_FROM: str | None = None
 
 # ---------------------------------------------------------------------------
-# Curriculum
+# Curriculum — one axis changes per step to avoid compound distribution shifts
 # ---------------------------------------------------------------------------
 CURRICULUM_STAGES: list[dict[str, Any]] = [
     {"grid_size": (100, 100), "num_sensors": 10, "name": "Stage-0 · 100×100 · 10 sensors"},
-    {"grid_size": (200, 200), "num_sensors": 20, "name": "Stage-1 · 200×200 · 20 sensors"},
-    {"grid_size": (300, 300), "num_sensors": 30, "name": "Stage-2 · 300×300 · 30 sensors"},
-    {"grid_size": (400, 400), "num_sensors": 40, "name": "Stage-3 · 400×400 · 40 sensors"},
-    {"grid_size": (500, 500), "num_sensors": 50, "name": "Stage-4 · 500×500 · 50 sensors"},
+    {"grid_size": (200, 200), "num_sensors": 10, "name": "Stage-1 · 200×200 · 10 sensors"},
+    {"grid_size": (200, 200), "num_sensors": 20, "name": "Stage-2 · 200×200 · 20 sensors"},
+    {"grid_size": (300, 300), "num_sensors": 20, "name": "Stage-3 · 300×300 · 20 sensors"},
+    {"grid_size": (300, 300), "num_sensors": 30, "name": "Stage-4 · 300×300 · 30 sensors"},
+    {"grid_size": (400, 400), "num_sensors": 40, "name": "Stage-5 · 400×400 · 40 sensors"},
+    {"grid_size": (500, 500), "num_sensors": 50, "name": "Stage-6 · 500×500 · 50 sensors"},
 ]
 
-# Relaxed gates: achievable based on observed performance
+# Relaxed NDR gate: 60% was a plateau ceiling for this architecture.
 ADVANCE_CRITERIA: dict[str, float] = {
-    "ndr_pct":                65.0,
+    "ndr_pct":                55.0,
     "jains":                  0.80,
     "window":                 50,
     "min_timesteps_per_stage": 200_000,
 }
 
 # Safety valve: force-advance after this many iters even if gate not met.
-# At ~1 min/iter this caps each stage at ~10 hours.
-MAX_ITERS_PER_STAGE = 600
+MAX_ITERS_PER_STAGE = 400
 
-# Entropy decays toward canonical 0.01 as environments grow harder.
-ENTROPY_SCHEDULE: list[float] = [0.01, 0.05, 0.03, 0.02, 0.01]
+# Monotone-decreasing target entropy per stage.
+ENTROPY_SCHEDULE: list[float] = [0.05, 0.04, 0.03, 0.025, 0.02, 0.015, 0.01]
+
+# Transient exploration bump applied at the start of each new stage:
+# entropy = ENTROPY_BUMP_FACTOR × target for the first ENTROPY_BUMP_ITERS
+# iterations, then settles to target. Helps re-exploration across the shift.
+ENTROPY_BUMP_FACTOR = 2.0
+ENTROPY_BUMP_ITERS  = 30
 
 # ---------------------------------------------------------------------------
-# PPO hyper-parameters (unchanged from working stage1 run)
+# PPO hyper-parameters
 # ---------------------------------------------------------------------------
 TRAIN_BATCH_SIZE    = 8_192
 MINIBATCH_SIZE      = 512
 NUM_SGD_ITER        = 10
 CLIP_PARAM          = 0.2
-LR                  = 2.5e-4
+LR_EARLY            = 2.5e-4   # stages 0–2
+LR_LATE             = 1.5e-4   # stages 3+
+LR_SWITCH_STAGE     = 3
 GAMMA               = 0.99
 GAE_LAMBDA          = 0.95
 VF_LOSS_COEFF       = 0.5
 GRAD_CLIP           = 1.0
 NUM_ROLLOUT_WORKERS = 4
+
+
+def lr_for_stage(stage_idx: int) -> float:
+    return LR_LATE if stage_idx >= LR_SWITCH_STAGE else LR_EARLY
 
 CHECKPOINT_ROOT = _ROOT / "models" / "transformer_gtrxl_v2"
 
@@ -155,7 +174,7 @@ class MetricsCallback(DefaultCallbacks):
 # Algorithm builder
 # ---------------------------------------------------------------------------
 def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict,
-                    entropy_coeff: float) -> Any:
+                    entropy_coeff: float, lr: float = LR_EARLY) -> Any:
     env_cfg = {
         "grid_size":   stage_cfg["grid_size"],
         "num_sensors": stage_cfg["num_sensors"],
@@ -173,7 +192,7 @@ def build_algorithm(stage_cfg: dict[str, Any], model_cfg: dict,
             minibatch_size=MINIBATCH_SIZE,
             num_epochs=NUM_SGD_ITER,
             clip_param=CLIP_PARAM,
-            lr=LR,
+            lr=lr,
             gamma=GAMMA,
             lambda_=GAE_LAMBDA,
             entropy_coeff=entropy_coeff,
@@ -244,6 +263,39 @@ def _set_entropy(algo: Any, coeff: float) -> None:
     log.info("Entropy → %.4f", coeff)
 
 
+def _set_lr(algo: Any, lr: float) -> None:
+    """Update learning rate live on all policy optimizers."""
+    def setter(policy, pid):
+        try:
+            opts = getattr(policy, "_optimizers", None) or []
+            for opt in opts:
+                for g in opt.param_groups:
+                    g["lr"] = lr
+        except Exception as exc:
+            log.warning("Failed to set optimizer lr: %s", exc)
+        try:
+            policy.cur_lr = lr
+        except Exception:
+            pass
+        try:
+            if hasattr(policy, "config") and isinstance(policy.config, dict):
+                policy.config["lr"] = lr
+        except Exception:
+            pass
+
+    try:
+        _get_worker_group(algo).foreach_policy(setter)
+    except Exception as exc:
+        log.warning("foreach_policy lr update failed: %s", exc)
+    try:
+        p = algo.get_policy()
+        if p is not None:
+            setter(p, "default_policy")
+    except Exception:
+        pass
+    log.info("LR → %.2e", lr)
+
+
 def _extract_metrics(result: dict) -> tuple[float, float]:
     env_r = result.get("env_runners", {})
     cm = env_r.get("custom_metrics") or result.get("custom_metrics", {})
@@ -309,19 +361,29 @@ def train() -> None:
     log.info("Checkpoints → %s", CHECKPOINT_ROOT)
 
     start_cfg     = CURRICULUM_STAGES[START_STAGE]
-    start_entropy = ENTROPY_SCHEDULE[START_STAGE]
-    log.info("Building algo for %s (entropy=%.4f)", start_cfg["name"], start_entropy)
-    algo = build_algorithm(start_cfg, model_cfg, start_entropy)
+    start_target  = ENTROPY_SCHEDULE[START_STAGE]
+    start_entropy = start_target * ENTROPY_BUMP_FACTOR
+    start_lr      = lr_for_stage(START_STAGE)
+    log.info(
+        "Building algo for %s (entropy=%.4f [bumped from %.4f], lr=%.2e)",
+        start_cfg["name"], start_entropy, start_target, start_lr,
+    )
+    algo = build_algorithm(start_cfg, model_cfg, start_entropy, lr=start_lr)
 
-    log.info("Restoring weights from %s", RESTORE_FROM)
-    algo.restore(RESTORE_FROM)
-    log.info("Restore complete.")
+    if RESTORE_FROM:
+        log.info("Restoring weights from %s", RESTORE_FROM)
+        algo.restore(RESTORE_FROM)
+        log.info("Restore complete.")
+    else:
+        log.info("Fresh run — no checkpoint restore.")
     _advance_workers(algo, start_cfg)
     _set_entropy(algo, start_entropy)
 
-    stage_idx       = START_STAGE
-    total_timesteps = 0
-    iteration       = 0
+    stage_idx        = START_STAGE
+    total_timesteps  = 0
+    iteration        = 0
+    entropy_target   = start_target
+    entropy_bumped   = True   # currently in bump window
 
     window_size = int(ADVANCE_CRITERIA["window"])
     min_ts      = int(ADVANCE_CRITERIA["min_timesteps_per_stage"])
@@ -337,6 +399,11 @@ def train() -> None:
         result = algo.train()
         iteration   += 1
         stage_iters += 1
+
+        # Decay entropy bump once we've spent ENTROPY_BUMP_ITERS in this stage.
+        if entropy_bumped and stage_iters >= ENTROPY_BUMP_ITERS:
+            _set_entropy(algo, entropy_target)
+            entropy_bumped = False
 
         ts = result.get("num_env_steps_sampled", TRAIN_BATCH_SIZE)
         total_timesteps += ts
@@ -379,11 +446,19 @@ def train() -> None:
                 log.info("All stages complete.")
                 break
 
-            next_cfg     = CURRICULUM_STAGES[stage_idx]
-            next_entropy = ENTROPY_SCHEDULE[stage_idx]
-            log.info("Advancing to %s (entropy=%.4f)", next_cfg["name"], next_entropy)
+            next_cfg       = CURRICULUM_STAGES[stage_idx]
+            entropy_target = ENTROPY_SCHEDULE[stage_idx]
+            bumped_entropy = entropy_target * ENTROPY_BUMP_FACTOR
+            next_lr        = lr_for_stage(stage_idx)
+            log.info(
+                "Advancing to %s (entropy=%.4f [bumped from %.4f for %d iters], lr=%.2e)",
+                next_cfg["name"], bumped_entropy, entropy_target,
+                ENTROPY_BUMP_ITERS, next_lr,
+            )
             _advance_workers(algo, next_cfg)
-            _set_entropy(algo, next_entropy)
+            _set_entropy(algo, bumped_entropy)
+            _set_lr(algo, next_lr)
+            entropy_bumped = True
 
             ndr_window.clear()
             jain_window.clear()
