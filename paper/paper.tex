@@ -369,20 +369,20 @@ Welch $t$-tests on NDR between Relational RL and SF-Aware Greedy give $p{<}0.001
 \section{SF Protocol Consequences of Routing Architecture}
 % ============================================================
 
-Coverage performance is the primary metric, but the routing trajectory also determines the Spreading Factor (SF) distribution the ADR protocol converges to---a consequence that matters for concurrent channel capacity. We ran a 10-seed SF sweep across all five scalability conditions, recording the per-sensor SF at episode end, the Herfindahl-Hirschman Index (HHI $= \sum_{\text{SF}} f_{\text{SF}}^2$; 1 = total monoculture, 0.25 = perfectly spread over four SFs), and the number of ADR-triggered SF changes per sensor per episode.
+The routing trajectory does more than determine coverage: it shapes the SF distribution the ADR protocol settles on, which sets the concurrent channel capacity available to the network. To quantify this, we ran a 10-seed SF sweep across all five scalability conditions and recorded the per-sensor SF at episode end, the Herfindahl-Hirschman Index (HHI $= \sum_{\text{SF}} f_{\text{SF}}^2$; 1~=~total monoculture, 0.25~=~perfectly spread over four SFs), and the number of ADR-triggered SF changes per sensor per episode.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\columnwidth]{sf_monoculture_entropy}
-    \caption{SF monoculture index (HHI, left) and Shannon entropy (bits, right) across five scalability conditions (10 seeds). The DQN's perimeter patrol drives sensors toward SF12 monoculture at large scale while triggering zero ADR re-assignments. The Relational RL and TSP Oracle converge to near-identical SF diversity profiles, confirming the architecture fix also restores the protocol benefit.}
+    \caption{SF monoculture index (HHI, left) and Shannon entropy (bits, right) across five scalability conditions (10 seeds). The DQN's perimeter patrol leaves sensors locked on SF12 at large scale and triggers zero ADR re-assignments throughout. The Relational RL and TSP Oracle reach near-identical SF diversity profiles, showing the architecture fix also recovers the protocol benefit.}
     \label{fig:sf_hhi}
 \end{figure}
 
 \paragraph{DQN triggers zero ADR events.}
-The DQN produces a mean of 0.0 ADR SF changes per sensor across all five conditions. Because the agent patrols the perimeter, its distance to interior sensors is nearly constant throughout each episode. The EMA-RSSI of those sensors never shifts enough to cross an ADR threshold, so they remain locked on whichever SF they were initialised with. At $500{\times}500$/$N{=}50$, 95\% of sensors end the episode on SF12 (HHI $= 0.91$), the slowest and most channel-time-intensive setting---precisely the SF Monoculture the UAV gateway is meant to prevent.
+The DQN records a mean of 0.0 ADR SF changes per sensor across all five conditions. Perimeter patrol keeps the UAV at roughly constant distance from every interior sensor; the EMA-RSSI of those sensors never moves enough to cross a threshold, so each stays locked on its initial SF. At $500{\times}500$/$N{=}50$ this leaves 95\% of sensors on SF12 (HHI~$= 0.91$): the slowest, most channel-time-intensive setting, and the SF monoculture the gateway was deployed to avoid.
 
-\paragraph{Architecture change restores SF diversity.}
-The Relational RL agent triggers 16--105 ADR re-assignments per sensor depending on condition, because it enters the grid interior and varies its distance to sensors. At $300{\times}300$/$N{=}30$ the DQN HHI is 0.72 (entropy 0.73 bits) while the Relational RL reaches HHI $= 0.47$ (entropy 1.23 bits), a diversity gain of 0.50 bits from the architecture change alone. At $N{\ge}40$, the Relational RL and TSP Oracle converge to nearly identical SF profiles (HHI $= 0.76$ vs $0.77$ at $N{=}50$), confirming that interior exploration---not perfect routing---is sufficient to recover near-optimal protocol behaviour. The DQN--Relational RL HHI gap grows monotonically from 0 at $N{=}10$ to $0.15$ at $N{=}50$ (Fig.~\ref{fig:sf_hhi}), tracking the same scale at which NDR diverges.
+\paragraph{Interior routing restores SF diversity.}
+The Relational RL agent triggers 16--105 ADR re-assignments per sensor across conditions by entering the grid interior and closing the distance to sensors that the DQN never reached. At $300{\times}300$/$N{=}30$ the DQN HHI is 0.72 (entropy 0.73 bits); the Relational RL reaches HHI~$= 0.47$ (entropy 1.23 bits), a gain of 0.50 bits from the architecture change alone. From $N{=}40$ onward the Relational RL and TSP Oracle settle at essentially the same SF profile (HHI $= 0.76$ vs $0.77$ at $N{=}50$), showing that interior exploration rather than optimal routing accounts for most of the diversity recovery. The HHI gap between DQN and Relational RL widens from zero at $N{=}10$ to 0.15 at $N{=}50$ (Fig.~\ref{fig:sf_hhi}), growing at the same scale where NDR diverges.
 
 % ============================================================
 \section{Discussion}
