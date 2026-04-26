@@ -15,7 +15,7 @@ The key contribution is a Gymnasium-compatible simulation that models the comple
 
 ## System Model
 
-![System Model](src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.png)
+![System Model](presentation/img.png)
 
 ![DRL System Architecture](src/agents/dqn/dqn_evaluation_results/baseline_results/drl_system_architecture.png)
 
