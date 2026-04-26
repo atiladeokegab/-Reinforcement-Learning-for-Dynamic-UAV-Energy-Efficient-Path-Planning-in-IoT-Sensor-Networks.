@@ -98,7 +98,7 @@ project/
 |---|---|
 | Python | 3.11 or higher |
 | `uv` package manager | latest (recommended) |
-| CUDA-capable GPU | Optional — CPU training is supported but significantly slower |
+| CUDA-capable GPU | Optional (CPU training is supported but significantly slower) |
 
 ```bash
 pip install uv
@@ -128,9 +128,9 @@ Key dependencies: `torch==2.5.1+cu121`, `stable-baselines3`, `gymnasium`, `matpl
 uv run python src/agents/dqn/dqn.py
 ```
 
-Trains for 3 million timesteps across 4 parallel environments using domain randomisation and a 5-stage competence-based curriculum. The trained model is saved to `models/dqn_v3/dqn_final.zip`.
+Trains for 3 million timesteps across 4 parallel enviroments using domain randomisation and a 5-stage competence-based curriculum. The trained model is saved to `models/dqn_v3/dqn_final.zip`.
 
-Expected training time: approximately 6–8 hours on an RTX-class GPU.
+Expected training time: aproximately 6–8 hours on an RTX-class GPU.
 
 ### Evaluate Against All Baselines
 
@@ -212,8 +212,8 @@ A permutation-invariant PPO policy trained via Ray RLlib. Applies a shared per-s
 | UAV altitude | 100 m (constant) |
 | UAV speed | 10 m/s |
 | UAV battery | 274 Wh (DJI TB60-inspired) |
-| Power — moving | 500 W (0.139 Wh/step) |
-| Power — hovering | 700 W (0.194 Wh/step) |
+| Power (moving) | 500 W (0.139 Wh/step) |
+| Power (hovering) | 700 W (0.194 Wh/step) |
 | Action space | N, S, E, W, Hover/Collect (5 discrete) |
 | Episode length | 2100 timesteps (~7 min flight) |
 | Sensors per episode | 10–40 |
@@ -262,7 +262,7 @@ Hover costs more power than movement. This is intentional rotary-wing aerodynami
 | Relational RL | 4,131,223 | 100% | 59,485 B | 221.5 | 1,736 |
 | Lawnmower | 3,614,612 | 98% | 66,122 B | 246.1 | 1,411 |
 
-The DQN matches greedy baseline throughput, with reward shaping that pushes toward fairer collection patterns over the episode. The TSP Oracle is a theoretical ceiling (offline optimal routing).
+The DQN matches greedy baseline throughput, with reward shaping that pushes toward fairer collection paterns over the episode. The TSP Oracle is a theoretical ceiling (offline optimal routing).
 
 ### Scalability
 
@@ -279,15 +279,15 @@ Full model vs combined ablation (Welch's t-test):
 | Metric | Full Model | Ablation Mean | Cohen's d | p-value |
 |---|---|---|---|---|
 | Cumulative reward | 823,902 | 287,648 | 1.43 (large) | 0.000125 |
-| Jain's Fairness Index | 0.288 | 0.177 | 1.23 (large) | — |
-| Energy efficiency (B/Wh) | 51.4 | 35.8 | 0.63 (medium) | — |
+| Jain's Fairness Index | 0.288 | 0.177 | 1.23 (large) | N/A |
+| Energy efficiency (B/Wh) | 51.4 | 35.8 | 0.63 (medium) | N/A |
 
 | Ablation | Component removed |
 |---|---|
-| A1 | Capture Effect — all same-SF collisions → packet loss |
-| A2 | EMA-ADR smoothing — λ=1.0 (instant ADR, no convergence latency) |
-| A3 | AoI observation — urgency features zeroed at inference |
-| A4 | Domain randomisation — fixed-env control model (500×500, N=20) |
+| A1 | Capture Effect: all same-SF collisions → packet loss |
+| A2 | EMA-ADR smoothing: λ=1.0 (instant ADR, no convergence latency) |
+| A3 | AoI observation: urgency features zeroed at inference |
+| A4 | Domain randomisation: fixed-env control model (500×500, N=20) |
 
 ---
 
@@ -311,7 +311,7 @@ The custom Gymnasium environment (`uav_env.py`, `iot_sensors.py`, `uav.py`), rew
 Known limitations:
 
 - The flat-MLP DQN learns spatial heuristics (perimeter-adjacent flight) rather than topology-aware routing. This is an architectural consequence of the fixed-size observation encoding, not a training failure. `UAVAttentionExtractor` in `gnn_extractor.py` addresses this with cross-attention over padded sensor slots.
-- The simulation assumes a flat, obstacle-free environment. Real deployments would need 3D terrain and dynamic interference modelling.
+- The simulation assumes a flat, obstacle-free environment. Real deployments would need 3D terrain and dynamic interferance modelling.
 - The Two-Ray path-loss model works in open fields but breaks down in urban LoRa deployments, which need ray-tracing or empirical channel models.
 - Battery power is modelled as constant; real rotary-wing UAVs vary with payload, wind, and manoeuvring.
 - The observation space is padded to 50 sensors. Performance above N=40 has not been benchmarked.
