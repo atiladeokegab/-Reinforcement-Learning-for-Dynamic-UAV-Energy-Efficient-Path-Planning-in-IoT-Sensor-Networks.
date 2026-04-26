@@ -36,7 +36,7 @@ src_dir    = script_dir.parent.parent.parent
 sys.path.insert(0, str(src_dir))
 
 from environment.uav_env import UAVEnvironment
-from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
+from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, LawnmowerAgent
 
 # ==================== CONFIGURATION ====================
 
@@ -162,6 +162,8 @@ def run_greedy_trajectory(agent_class, fixed_positions, seed):
     env = FixedLayoutEnv(fixed_positions, **BASE_ENV_KWARGS)
     obs, _ = env.reset(seed=seed)
     agent = agent_class(env)
+    if hasattr(agent, "reset"):
+        agent.reset()
 
     steps, xs, ys, actions, sf_dists = [], [], [], [], []
     step = 0
@@ -218,17 +220,19 @@ def run_dqn_trajectory(model, fixed_positions, seed):
 def plot_trajectory_comparison(model, positions, initial_sfs):
     """Side-by-side trajectory plots: DQN | SF-Aware | Nearest on seed 42."""
     print("  Running trajectory episodes (seed 42)...")
-    dqn_traj = run_dqn_trajectory(model, positions, VIZ_SEED)
-    sfa_traj = run_greedy_trajectory(MaxThroughputGreedyV2, positions, VIZ_SEED)
+    dqn_traj  = run_dqn_trajectory(model, positions, VIZ_SEED)
+    sfa_traj  = run_greedy_trajectory(MaxThroughputGreedyV2, positions, VIZ_SEED)
     nrst_traj = run_greedy_trajectory(NearestSensorGreedy,   positions, VIZ_SEED)
+    lawn_traj = run_greedy_trajectory(LawnmowerAgent,        positions, VIZ_SEED)
 
     trajs = [
         ("DQN",             dqn_traj,  "#1b9e77"),
         ("SF-Aware Greedy", sfa_traj,  "#d95f02"),
         ("Nearest Greedy",  nrst_traj, "#7570b3"),
+        ("Lawnmower",       lawn_traj, "#e6ab02"),
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
+    fig, axes = plt.subplots(1, 4, figsize=(17, 4.5))
 
     for ax, (name, traj, col) in zip(axes, trajs):
         xs = np.array(positions)[:, 0]
@@ -296,19 +300,21 @@ def plot_trajectory_comparison(model, positions, initial_sfs):
 def plot_position_heatmap(model):
     """2D density heatmap of UAV positions across 5 seeds."""
     print("  Running heatmap episodes (5 seeds)...")
-    agent_data = {"DQN": [], "SF-Aware Greedy": [], "Nearest Greedy": []}
+    agent_data = {"DQN": [], "SF-Aware Greedy": [], "Nearest Greedy": [], "Lawnmower": []}
 
     for seed in SEEDS:
         positions, _ = get_canonical_positions(seed)
         dqn  = run_dqn_trajectory(model, positions, seed)
         sfa  = run_greedy_trajectory(MaxThroughputGreedyV2, positions, seed)
         nrst = run_greedy_trajectory(NearestSensorGreedy,   positions, seed)
+        lawn = run_greedy_trajectory(LawnmowerAgent,        positions, seed)
         agent_data["DQN"].append(dqn)
         agent_data["SF-Aware Greedy"].append(sfa)
         agent_data["Nearest Greedy"].append(nrst)
+        agent_data["Lawnmower"].append(lawn)
 
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
-    cmaps = ["Blues", "Reds", "Greens"]
+    fig, axes = plt.subplots(1, 4, figsize=(17, 4.5))
+    cmaps = ["Blues", "Reds", "Greens", "Oranges"]
 
     for ax, (name, trajs), cmap in zip(axes, agent_data.items(), cmaps):
         all_x = np.concatenate([t["x"] for t in trajs])

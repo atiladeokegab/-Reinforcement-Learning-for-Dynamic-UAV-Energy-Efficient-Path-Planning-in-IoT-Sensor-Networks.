@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  20 APR 2026 15:55
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  26 APR 2026 16:28
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -1485,6 +1485,10 @@ decorations.code.tex
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/decorat
 ions/pgflibrarydecorations.markings.code.tex))
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/tik
+z/libraries/tikzlibrarydecorations.pathmorphing.code.tex
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/decorat
+ions/pgflibrarydecorations.pathmorphing.code.tex))
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/tik
 z/libraries/tikzlibrarybackgrounds.code.tex
 File: tikzlibrarybackgrounds.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@layerbox@background=\box85
@@ -1788,30 +1792,30 @@ Package: blx-case-expl3 2025/07/10 v3.21 expl3 case changing code for biblatex
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... none found.
 Package translations Info: No language package found. I am going to use `englis
-h' as default language. on input line 118.
+h' as default language. on input line 145.
  (./main.aux)
 \openout1 = main.aux
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 118.
-LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 145.
+LaTeX Font Info:    ... okay on input line 145.
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mk
 ii
@@ -1838,7 +1842,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 118.
+Package hyperref Info: Link coloring OFF on input line 145.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: luatex
@@ -1874,7 +1878,7 @@ Package hyperref Info: Link coloring OFF on input line 118.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package ragged2e Info: ABD: executing \RaggedRight on input line 118.
+Package ragged2e Info: ABD: executing \RaggedRight on input line 145.
 
 Package fontspec Info: 
 (fontspec)             Adjusting the maths setup (use [no-math] to avoid
@@ -1882,60 +1886,60 @@ Package fontspec Info:
 
 \symlegacymaths=\mathgroup6
 LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 118.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 118.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 118.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 118.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 118.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 118.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 118.
-LaTeX Font Info:    Redeclaring math accent \check on input line 118.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 118.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 118.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 118.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 118.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 118.
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 145.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 145.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 145.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 145.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 145.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 145.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 145.
+LaTeX Font Info:    Redeclaring math accent \check on input line 145.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 145.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 145.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 145.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 145.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 145.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 118.
+(Font)              `operators' in the math version `normal' on input line 145.
 
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> TU/Calibri(0)/m/n on input line 118.
+(Font)                  OT1/cmr/m/n --> TU/Calibri(0)/m/n on input line 145.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 118.
+(Font)              `operators' in the math version `bold' on input line 145.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/m/n on input line 118.
+(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/m/n on input line 145.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  TU/Calibri(0)/m/n --> TU/Calibri(0)/m/n on input line 1
-18.
+45.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> TU/Calibri(0)/m/it on input line 118.
+(Font)                  OT1/cmr/m/it --> TU/Calibri(0)/m/it on input line 145.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/b/n on input line 118.
+(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/b/n on input line 145.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 118.
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 145.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 118.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 145.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  TU/Calibri(0)/m/n --> TU/Calibri(0)/b/n on input line 1
-18.
+45.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> TU/Calibri(0)/b/it on input line 118.
+(Font)                  OT1/cmr/bx/it --> TU/Calibri(0)/b/it on input line 145.
 
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 118.
+(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 145.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 118.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 145.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: listings package is loaded.
@@ -1949,7 +1953,7 @@ File: translations-basic-dictionary-english.trsl (english translation file `tra
 nslations-basic-dictionary')
 )
 Package translations Info: loading dictionary `translations-basic-dictionary' f
-or `english'. on input line 118.
+or `english'. on input line 145.
 Package biblatex Info: Trying to load language 'english'...
 Package biblatex Info: ... file 'english.lbx' found.
 
@@ -1966,15 +1970,15 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 118.
-Package biblatex Info: Reference segment=0 on input line 118.
+Package biblatex Info: Reference section=0 on input line 145.
+Package biblatex Info: Reference segment=0 on input line 145.
 
 warning  (file ./images/uom_logo.pdf) (pdf inclusion): PDF inclusion: found PDF 
 version '1.5', but at most version '1.4' allowed
 <./images/uom_logo.pdf, id=9, 130.90004pt x 55.35129pt>
 File: ./images/uom_logo.pdf Graphic file (type pdf)
 <use ./images/uom_logo.pdf>
-Package luatex.def Info: ./images/uom_logo.pdf  used on input line 131.
+Package luatex.def Info: ./images/uom_logo.pdf  used on input line 158.
 (luatex.def)             Requested size: 113.82808pt x 48.1324pt.
 [1
 
@@ -1993,102 +1997,113 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \tf@toc=\write6
 
 \openout6 = main.toc
- [4] [5] (./abstract.tex) [6
+ [4] (./abstract.tex) [5
 
 
-] [7] [8
+] [6
 
+] [7
 
-] [9
+] (./acknowledgements.tex) [8
 
-] (./acknowledgements.tex)
-[10
-
-] (./abbreviations.tex [11
+]
+(./abbreviations.tex [9
 
 ]) (./introduction.tex
 (./introduction/background_motivation.tex) (./introduction/aims_objectives.tex
-[12
+[10
 
-] [13]) (./introduction/report_structure.tex)) (./literature_review.tex
-(./literature_review/lorawan_scalability.tex [14] [15])
-(./literature_review/existing_approaches.tex [16])
-(./literature_review/ai_native_networking.tex [17] [18] [19])
-(./literature_review/summary_positioning.tex [20])) (./preliminaries.tex
-(./preliminaries/lorawan_physical_layer.tex [21])
-(./preliminaries/channel_propagation.tex [22]) (./preliminaries/deep_rl.tex
-[23]
-
-LaTeX Warning: Reference `sec:methodology' on page 24 undefined on input line 5
-3.
-
-(./figures/drl_architecture_tikz.tex) [24])) (./methodology.tex
-(./methodology/system_model.tex [25] [26] [27] [28] [29] [30]
-Overfull \hbox (28.18613pt too wide) in paragraph at lines 269--279
- [][] 
- []
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[31]) (./methodology/problem_formulation.tex [32] [33])
-(./methodology/sensor_placement.tex
-<../src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.png, id
-=564, 540.21825pt x 484.57034pt>
-File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.pn
-g Graphic file (type png)
-<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.png
->
+]) (./introduction/contributions.tex [11] [12])
+(./introduction/report_structure.tex)) (./literature_review.tex
+(./literature_review/lorawan_scalability.tex [13])
+(./literature_review/existing_approaches.tex [14])
+(./literature_review/ai_native_networking.tex [15])
+(./literature_review/permutation_invariant_policies.tex [16])
+(./literature_review/summary_positioning.tex [17])) (./preliminaries.tex
+(./preliminaries/lorawan_physical_layer.tex)
+(./preliminaries/channel_propagation.tex) (./preliminaries/deep_rl.tex [18]
+(./figures/drl_architecture_tikz.tex (./figures/nn_style.tex)) [19]))
+(./methodology.tex [20] (./methodology/system_model.tex [21])
+(./methodology/problem_formulation.tex [22] [23])
+(./methodology/sensor_placement.tex (./figures/system_model_tikz.tex
+<images/dji.png, id=463, 752.8125pt x 752.8125pt>
+File: images/dji.png Graphic file (type png)
+<use images/dji.png>
+Package luatex.def Info: images/dji.png  used on input line 80.
+(luatex.def)             Requested size: 79.6678pt x 79.66219pt.
+))
+(./methodology/drl_implementation.tex [24] [25<./images/dji.png>])
+(./methodology/relational_rl_policy.tex [26]
+(./figures/relational_arch_tikz.tex (./figures/nn_style.tex)))
+(./methodology/architecture_interface.tex)
+(./methodology/modelling_assumptions.tex) (./methodology/summary.tex [27]))
+(./results.tex (./results/intro.tex) (./results/experimental_setup.tex [28])
+(./results/single_episode.tex [29]) (./results/multi_seed_analysis.tex [30])
+(./results/scalability.tex) (./results/architectural_diagnostic.tex
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatmap
+.png, id=562, 433.62pt x 397.485pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_he
+atmap.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_hea
+tmap.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/system_model.png  used on input line 11.
-(luatex.def)             Requested size: 396.63496pt x 355.79631pt.
- [34]) (./methodology/drl_implementation.tex [35<../src/agents/dqn/dqn_evaluatio
-n_results/baseline_results/system_model.png>] [36]) (./methodology/architecture
-_interface.tex [37])
-(./methodology/summary.tex)) (./results.tex (./results/intro.tex)
-(./results/experimental_setup.tex [38]) (./results/single_episode.tex [39]
-<../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory_com
-parison.pdf, id=625, 922.17523pt x 312.01756pt>
-File: ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajector
-y_comparison.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory
-_comparison.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/trajectory_re
-sults/fig_trajectory_comparison.pdf  used on input line 28.
-(luatex.def)             Requested size: 483.69687pt x 163.6593pt.
-)
-(./results/multi_seed_analysis.tex
+lts/dqn_boundary_heatmap.png  used on input line 43.
+(luatex.def)             Requested size: 299.8897pt x 274.91391pt.
+ [31]
+[32<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatm
+ap.png>]) (./results/ablation_study.tex [33])
+(./results/robustness_analysis.tex) (./results/relational_rl.tex [34]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_com
+pare.png, id=609, 903.375pt x 397.485pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatma
+p_compare.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap
+_compare.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/boundary_heatmap_compare.png  used on input line 22.
+(luatex.def)             Requested size: 459.51054pt x 202.187pt.
+ [35]
+[36<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_c
+ompare.png>]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combined
+.png, id=627, 867.24pt x 325.215pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_com
+bined.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_comb
+ined.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/scalability_combined.png  used on input line 77.
+(luatex.def)             Requested size: 483.69687pt x 181.38968pt.
+ [37<../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combi
+ned.png>]) (./results/sf_analysis.tex
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_monocult
+ure_entropy.png, id=637, 713.5458pt x 281.853pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mon
+oculture_entropy.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mono
+culture_entropy.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/sf_sweep/sf_monoculture_entropy.png  used on input line 14.
+(luatex.def)             Requested size: 483.69687pt x 191.064pt.
+ [38])
+(./results/discussion.tex [39<../src/agents/dqn/dqn_evaluation_results/baseline_
+results/sf_sweep/sf_monoculture_entropy.png>] [40])) (./conclusions.tex
+(./conclusions/conclusions_content.tex [41]) (./conclusions/future_work.tex
+[42])) (./project_management.tex [43]) [44] [45] [46] [47]
+(./appendices/project_outline.tex [48
 
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4.
-
-[40<../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory_c
-omparison.pdf>] [41]) (./results/scalability.tex [42] [43])
-(./results/ablation_study.tex [44] [45]) (./results/robustness_analysis.tex
-[46] [47]) (./results/discussion.tex [48] [49])) (./conclusions.tex
-(./conclusions/conclusions_content.tex [50] [51])
-(./conclusions/future_work.tex [52])) (./project_management.tex) [53] [54]
-[55] [56] (./appendices/project_outline.tex [57
-
-]) (./appendices/gantt_chart.tex [58] [59]
-Overfull \vbox (102.53809pt too high) has occurred while \output is active []
-
-
-[60]) (./appendices/risk_assessment.tex
-Underfull \hbox (badness 1622) in paragraph at lines 45--45
+] [49]) (./appendices/project_plan.tex
+[50]) (./appendices/risk_register.tex
+Underfull \hbox (badness 1622) in paragraph at lines 46--46
 \TU/Calibri(0)/m/n/10.95 Baselines3 pro-vides ef-fi-cient GPU- 
  []
 
-[61] [62]) (./appendices/cpd_log.tex [63]
+) (./appendices/cpd_log.tex [51] [52]
 Underfull \hbox (badness 1237) in paragraph at lines 33--33
 []|\TU/Calibri(0)/m/n/10.95 S1 
  []
 
-[64] [65] [66]
+[53] [54] [55]
 Underfull \hbox (badness 1158) in paragraph at lines 105--105
 []|\TU/Calibri(0)/m/n/12 S1 
  []
@@ -2098,221 +2113,174 @@ Underfull \hbox (badness 3108) in paragraph at lines 105--105
 []|\TU/Calibri(0)/m/n/12 De-signed the three-stage cur-ricu-lum (grid sizes 
  []
 
-[67]) (./appendices/repository.tex [68] [69] [70])
-(./appendices/hyperparams.tex [71]
+[56]) (./appendices/hs_assessment.tex [57] [58]) (./appendices/gantt_chart.tex
+Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[]|\TU/Calibri(0)/m/n/10.95 S1 
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[]|\TU/Calibri(0)/m/n/10.95 S1 
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[]|\TU/Calibri(0)/m/n/10.95 S2 
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[]|\TU/Calibri(0)/m/n/10.95 S2 
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[]|\TU/Calibri(0)/m/n/10.95 S2 
+ []
+
+) (./appendices/repository.tex [59] [60] [61] [62])
+(./appendices/hyperparams.tex [63] [64]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
 put line 40.
- [72]) (./appendices/sim_to_real.tex [73]
-<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_real_s
-ummary.pdf, id=1003, 996.25952pt x 312.94064pt>
-File: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_r
-eal_summary.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_re
-al_summary.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_r
-esults/fig_sim_to_real_summary.pdf  used on input line 43.
-(luatex.def)             Requested size: 483.69687pt x 151.9336pt.
+ [65] [66])
+(./appendices/sim_to_real.tex [67] [68] [69])
+(./appendices/additional_figures.tex [70]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence
+.png, id=976, 494.8086pt x 234.51614pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_conver
+gence.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_converg
+ence.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/training_convergence.png  used on input line 15.
+(luatex.def)             Requested size: 232.17242pt x 110.0401pt.
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_convergen
+ce.png, id=977, 432.1746pt x 257.40166pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conv
+ergence.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conve
+rgence.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/relational_convergence.png  used on input line 20.
+(luatex.def)             Requested size: 232.17242pt x 138.27998pt.
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_comparison.
+png, id=978, 1004.0712pt x 307.3884pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_compar
+ison.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_compari
+son.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/ablation_comparison.png  used on input line 33.
+(luatex.def)             Requested size: 445.00023pt x 136.23158pt.
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.png, 
+id=979, 632.96475pt x 418.9251pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.
+png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.p
+ng>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/pareto_scatter.png  used on input line 47.
+(luatex.def)             Requested size: 232.17242pt x 153.66386pt.
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png, id=
+980, 551.78145pt x 550.9383pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png
+ Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png>
 
-[74]
-<../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_layout
-_reward.pdf, id=1009, 852.34435pt x 345.61897pt>
-File: ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_l
-ayout_reward.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_la
-yout_reward.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/cross_layout_
-results/fig_cross_layout_reward.pdf  used on input line 53.
-(luatex.def)             Requested size: 483.69687pt x 196.13997pt.
-<../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_layout
-_advantage.pdf, id=1010, 851.56331pt x 279.6933pt>
-File: ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_l
-ayout_advantage.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig_cross_la
-yout_advantage.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/cross_layout_
-results/fig_cross_layout_advantage.pdf  used on input line 62.
-(luatex.def)             Requested size: 338.58632pt x 111.20956pt.
-) (./appendices/additional_figures.tex
-<../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_converg
-ence.pdf, id=1011, 922.88979pt x 308.27722pt>
-File: ../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_co
-nvergence.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_con
-vergence.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/training_resu
-lts/fig_training_convergence.pdf  used on input line 9.
-(luatex.def)             Requested size: 483.69687pt x 161.57042pt.
- [75<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_sim_to_rea
-l_summary.pdf><../src/agents/dqn/dqn_evaluation_results/cross_layout_results/fig
-_cross_layout_reward.pdf><../src/agents/dqn/dqn_evaluation_results/cross_layout_
-results/fig_cross_layout_advantage.pdf>]
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig1_sh
-aded_reward.pdf, id=1079, 984.57298pt x 551.05711pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fi
-g1_shaded_reward.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig
-1_shaded_reward.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/sensors_20/fig1_shaded_reward.pdf  used on input line 44.
-(luatex.def)             Requested size: 328.91032pt x 184.08604pt.
- [76<../src/agents/dqn/dqn_evaluation_results/training_results/fig_training_conv
-ergence.pdf>]
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig3_me
-tric_bars.pdf, id=1115, 1553.96996pt x 506.16544pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fi
-g3_metric_bars.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig
-3_metric_bars.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/sensors_20/fig3_metric_bars.pdf  used on input line 56.
-(luatex.def)             Requested size: 232.17242pt x 75.62032pt.
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_40/fig3_me
-tric_bars.pdf, id=1116, 1553.96996pt x 506.16544pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_40/fi
-g3_metric_bars.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_40/fig
-3_metric_bars.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/sensors_40/fig3_metric_bars.pdf  used on input line 61.
-(luatex.def)             Requested size: 232.17242pt x 75.62032pt.
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_scala
-bility.pdf, id=1117, 1128.90219pt x 838.72673pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_
-scalability.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_s
-calability.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/fig10_sensor_scalability.pdf  used on input line 74.
-(luatex.def)             Requested size: 232.17242pt x 172.4904pt.
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11_sensor_dqn_a
-dvantage.pdf, id=1118, 1273.78221pt x 449.19142pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11_sensor_
-dqn_advantage.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11_sensor_d
-qn_advantage.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/fig11_sensor_dqn_advantage.pdf  used on input line 79.
-(luatex.def)             Requested size: 232.17242pt x 81.87222pt.
- [77<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/sensors_20/fig1
-_shaded_reward.pdf><../src/agents/dqn/dqn_evaluation_results/multi_seed_results/
-sensors_20/fig3_metric_bars.pdf><../src/agents/dqn/dqn_evaluation_results/multi_
-seed_results/sensors_40/fig3_metric_bars.pdf>]
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig13_grid_scalabi
-lity.pdf, id=1181, 1128.90219pt x 839.19635pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig13_grid_sc
-alability.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig13_grid_sca
-lability.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/fig13_grid_scalability.pdf  used on input line 90.
-(luatex.def)             Requested size: 232.17242pt x 172.58698pt.
-<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig14_grid_dqn_adv
-antage.pdf, id=1182, 1273.60153pt x 449.4258pt>
-File: ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig14_grid_dq
-n_advantage.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig14_grid_dqn
-_advantage.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/multi_seed_re
-sults/fig14_grid_dqn_advantage.pdf  used on input line 95.
-(luatex.def)             Requested size: 232.17242pt x 81.92865pt.
-<../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bars.pd
-f, id=1183, 1138.23293pt x 384.41982pt>
-File: ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_ba
-rs.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bar
-s.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/ablation_resu
-lts/fig_ablation_bars.pdf  used on input line 108.
-(luatex.def)             Requested size: 299.8897pt x 101.27832pt.
-<../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fairnes
-s.pdf, id=1184, 486.43294pt x 346.33766pt>
-File: ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fa
-irness.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fai
-rness.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/ablation_resu
-lts/fig_ablation_fairness.pdf  used on input line 115.
-(luatex.def)             Requested size: 164.45515pt x 117.09265pt.
- [78<../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig10_sensor_sc
-alability.pdf><../src/agents/dqn/dqn_evaluation_results/multi_seed_results/fig11
-_sensor_dqn_advantage.pdf><../src/agents/dqn/dqn_evaluation_results/multi_seed_r
-esults/fig13_grid_scalability.pdf><../src/agents/dqn/dqn_evaluation_results/mult
-i_seed_results/fig14_grid_dqn_advantage.pdf>]
-<../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_dynamics.pd
-f, id=1305, 779.3297pt x 278.20938pt>
-File: ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_dynami
-cs.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_dynamic
-s.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/trajectory_re
-sults/fig_sf_dynamics.pdf  used on input line 128.
-(luatex.def)             Requested size: 348.26233pt x 124.3228pt.
-<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_hil_preparati
-on.pdf, id=1306, 852.18375pt x 347.87503pt>
-File: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_hil_prep
-aration.pdf Graphic file (type pdf)
-<use ../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/fig_hil_prepa
-ration.pdf>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/sim_to_real_r
-esults/fig_hil_preparation.pdf  used on input line 140.
-(luatex.def)             Requested size: 483.69687pt x 197.45744pt.
-) [79<../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bar
-s.pdf><../src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_fa
-irness.pdf><../src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_sf_d
-ynamics.pdf>] [80<../src/agents/dqn/dqn_evaluation_results/sim_to_real_results/f
-ig_hil_preparation.pdf>] (./main.aux)
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/radar_chart.png  used on input line 52.
+(luatex.def)             Requested size: 232.17242pt x 231.82124pt.
+ [71<../src/agents/dqn/dqn_evaluation_results/baseline_results/training_converge
+nce.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_co
+nvergence.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/ablatio
+n_comparison.png>]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png
+, id=991, 2581.9662pt x 363.5181pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatma
+p.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap
+.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/fairness_heatmap.png  used on input line 66.
+(luatex.def)             Requested size: 411.14528pt x 57.8812pt.
+)
+(./appendices/extended_methodology.tex [72<../src/agents/dqn/dqn_evaluation_resu
+lts/baseline_results/pareto_scatter.png><../src/agents/dqn/dqn_evaluation_result
+s/baseline_results/radar_chart.png><../src/agents/dqn/dqn_evaluation_results/bas
+eline_results/fairness_heatmap.png>] [73] [74] [75] [76])
+(./appendices/extended_results.tex
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_vs_r
+elational.png, id=1039, 614.295pt x 252.945pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn
+_vs_relational.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_
+vs_relational.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/forest_plot_dqn_vs_relational.png  used on input line 10.
+(luatex.def)             Requested size: 411.14528pt x 169.29472pt.
+ [77]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robustne
+ss_summary.png, id=1044, 786.83963pt x 542.025pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/rob
+ustness_summary.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robu
+stness_summary.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/sim_to_real/robustness_summary.png  used on input line 24.
+(luatex.def)             Requested size: 483.69687pt x 333.20692pt.
+ [78<../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_v
+s_relational.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_
+to_real/robustness_summary.png>]
+[79] [80]) [81] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-10-24>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
 Package logreq Info: Writing requests to 'main.run.xml'.
 
 \openout1 = main.run.xml
 )
 
 Here is how much of LuaTeX's memory you used:
- 47982 strings out of 476081
+ 48583 strings out of 476081
  125165,1977958 words of node,token memory allocated
- 1102 words of node memory still in use:
-   7 hlist, 2 vlist, 2 rule, 4 glue, 4 kern, 1 glyph, 60 attribute, 126 glue_spe
-c, 60 attribute_list, 2 write, 1 pdf_action nodes
-   avail lists: 1:2,2:4859,3:2941,4:314,5:1139,6:301,7:7881,8:93,9:1222,10:23,11
-:643
- 68783 multiletter control sequences out of 65536+600000
- 113 fonts using 45113007 bytes
- 104i,14n,117p,1180b,3422s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-warning  (pdf backend): unreferenced destination with name 'Hfootnote.2'
+ 1049 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 3 glue, 4 kern, 1 glyph, 47 attribute, 126 glue_spe
+c, 47 attribute_list, 2 write, 2 pdf_action nodes
+   avail lists: 1:1,2:5104,3:2894,4:426,5:1165,6:262,7:8466,8:72,9:1506,10:22,11
+:648
+ 69317 multiletter control sequences out of 65536+600000
+ 111 fonts using 43547807 bytes
+ 104i,15n,117p,1888b,3422s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 warning  (pdf backend): unreferenced destination with name 'Hfootnote.1'
-<c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/public/lm/lmmono8-r
-egular.otf><//?/c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/publ
-ic/lm/lmmono10-regular.otf><c:/users/okeat/appdata/local/programs/miktex/fonts/o
-pentype/public/lm/lmmono12-regular.otf><C:/WINDOWS/Fonts/calibrii.ttf><C:/WINDOW
-S/Fonts/calibri.ttf><C:/WINDOWS/Fonts/calibrib.ttf><C:/Users/okeat/AppData/Local
-/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/okeat/AppDa
-ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/oke
-at/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/U
-sers/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pf
-b><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
-mmi8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
-ts/cm/cmr10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public
-/amsfonts/cm/cmr12.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1
-/public/amsfonts/cm/cmr6.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts
-/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX
-/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/okeat/AppData/Local/Program
-s/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/okeat/AppData/Local/
-Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/okeat/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam10.pfb><C:/Users/
-okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.p
-fb>
-Output written on main.pdf (80 pages, 2663444 bytes).
+<//?/c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/public/lm/lmmon
+o10-regular.otf><c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/pub
+lic/lm/lmmono12-regular.otf><C:/WINDOWS/Fonts/calibrii.ttf><C:/WINDOWS/Fonts/cal
+ibri.ttf><C:/WINDOWS/Fonts/calibrib.ttf><C:/Users/okeat/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/okeat/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/okeat/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/okeat/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users
+/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C
+:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8
+.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
+m/cmr10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmr12.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmr6.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/typ
+e1/public/amsfonts/cm/cmr7.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fon
+ts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/okeat/AppData/Local/Progr
+ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Users/okeat/AppData/Loca
+l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/okeat/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/okea
+t/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Use
+rs/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam1
+0.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+symbols/msbm10.pfb>
+Output written on main.pdf (81 pages, 6035099 bytes).
 
-PDF statistics: 1828 PDF objects out of 2073 (max. 8388607)
- 290 named destinations out of 1000 (max. 131072)
- 759 words of extra memory for PDF output out of 10000 (max. 100000000)
+PDF statistics: 1385 PDF objects out of 1440 (max. 8388607)
+ 265 named destinations out of 1000 (max. 131072)
+ 567 words of extra memory for PDF output out of 10000 (max. 100000000)
 

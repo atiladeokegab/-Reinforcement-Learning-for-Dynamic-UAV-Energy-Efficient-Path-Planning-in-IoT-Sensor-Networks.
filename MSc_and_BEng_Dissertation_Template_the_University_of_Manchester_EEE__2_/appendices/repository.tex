@@ -1,15 +1,25 @@
-\section{Code Repository}
+\subsection{Source Code}
 \label{app:repo}
 
-The source code developed for this project is maintained in a version-controlled Git repository. The repository contains the custom Gymnasium environment, the DQN training scripts, the baseline agent implementations, and the evaluation and plotting scripts used to produce all figures and tables in this dissertation.
+This appendix reproduces the key sections of the repository README. All source code is publicly available at the link below.
+
+\subsection*{Title}
+
+\textbf{UAV-IoT Data Collection via Protocol-Aware Deep Reinforcement Learning}
+
+\subsection*{Introduction}
+
+A Deep Q-Network (DQN) agent learns to navigate a UAV over a 2D grid to collect data from LoRa IoT sensors, optimising jointly for data throughput, energy efficiency, and fairness across sensors. A permutation-invariant Relational-RL policy (Deep-Sets encoder, PPO) is trained on the same environment to address the flat-MLP DQN's architectural ceiling at scale.
+
+The simulation models the complete causal chain from UAV position through received signal strength (RSSI), EMA-based Adaptive Data Rate (ADR) convergence latency, and the LoRa Capture Effect to packet delivery, all within a single environment step. This end-to-end fidelity lets the agent learn to exploit protocol-level dynamics that simple greedy heuristics cannot.
 
 \subsection*{Repository Link}
 
 \begin{center}
-{\footnotesize\url{https://github.com/atiladeokegab/}}\\[2pt]
-{\scriptsize\url{-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks}}
+\href{https://github.com/atiladeokegab/-Reinforcement-Learning-for-Dynamic-UAV-Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks}{\ttfamily\small github.com/atiladeokegab/-Reinforcement-Learning-for-Dynamic-UAV-\\Energy-Efficient-Path-Planning-in-IoT-Sensor-Networks}
 \end{center}
 
+\newpage
 \subsection*{Repository Structure}
 
 {\footnotesize
@@ -82,3 +92,7 @@ Full instructions for training the DQN agent and reproducing all evaluation resu
 \subsection*{Third-Party Code}
 
 All third-party code used in this project is clearly identified in the repository. The DQN implementation uses the Stable-Baselines3 library (MIT licence). The Gymnasium environment interface follows the standard \texttt{gymnasium.Env} API. No third-party code is incorporated into the simulation environment or reward function, which are entirely original.
+
+\subsection*{Known Limitations and Future Improvements}
+
+The flat-MLP DQN learns perimeter-adjacent flight heuristics rather than topology-aware routing; a boundary-occupancy diagnostic shows $100\%$ edge-cell occupancy across 20 seeds. The Relational-RL policy resolves this ($21.5\%$ occupancy, zero wall collisions), but the DQN ceiling is an architectural property of the observation encoding. The simulation assumes a flat, obstacle-free environment with a simplified Two-Ray path-loss model; real LoRa links in urban settings require more detailed channel models. Potential future improvements include replacing the path-loss model with ray-tracing or measured channels, extending to multi-UAV cooperative collection with multi-agent RL (QMIX, MAPPO), adding dynamic sensor arrival/departure, implementing variable-altitude flight, and hardware-in-the-loop validation with real LoRa hardware.

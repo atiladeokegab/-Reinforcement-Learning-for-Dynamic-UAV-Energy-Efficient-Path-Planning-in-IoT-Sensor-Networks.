@@ -1,9 +1,24 @@
 \subsection{Report structure}
 
-This report is organised as follows. \autoref{sec:lit} reviews UAV-assisted data collection,
-LoRaWAN scalability, and DRL in wireless networks. \autoref{sec:prelim} covers prerequisite
-concepts: the LoRaWAN physical layer, Two-Ray channel model, and Q-Learning fundamentals.
-\autoref{sec:method} presents the system model, Gymnasium environment, and DRL formulation.
-\autoref{sec:results} reports multi-seed comparative performance, ablation studies, robustness
-analysis, and a discussion of mechanisms. Conclusions and future work are in
-\autoref{sec:conclusions}.
+The remainder of this report is organised into two argumentative arcs
+within the results chapter, framed by four expository chapters.
+\autoref{sec:lit} reviews UAV-assisted data collection, LoRaWAN
+scalability, deep reinforcement learning for path planning, and
+permutation-invariant policy architectures. \autoref{sec:prelim} covers
+prerequisite concepts: the LoRaWAN physical layer, the Two-Ray channel
+model, Q-learning, and Proximal Policy Optimisation.
+\autoref{sec:method} presents the simulation environment, the MDP
+formulation, the reward function, the domain-randomisation curriculum,
+the flat-MLP DQN policy, and the permutation-invariant Relational-RL
+policy, together with the baseline agents (Nearest Greedy, SF-Aware
+Greedy, TSP Oracle, Lawnmower) used for comparison.
+
+\autoref{sec:results} reports the first argumentative arc, the
+flat-MLP DQN, across experimental setup, single-episode behaviour,
+multi-seed benchmarks, scalability, a component ablation, and the
+architectural diagnostic (Section~\ref{sec:diagnostic}) that identifies
+a representational ceiling in the flat-MLP policy.
+\autoref{sec:relational} reports the second arc: the permutation-invariant
+Relational-RL policy, its matched-conditions diagnostic, and its
+head-to-head performance against the DQN. Conclusions, contributions,
+limitations, and future work are in \autoref{sec:conclusions}.

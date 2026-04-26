@@ -1,36 +1,7 @@
-Mobile UAV gateways in dense LoRaWAN networks face a collision problem: as the UAV moves,
-rapid link-quality changes cause sensors to converge on identical Spreading Factors,
-collapsing packet delivery in a phenomenon termed the ``SF Monoculture.'' Existing solutions
-are siloed, standard path planners ignore this failure mode, and static protocol optimisers
-cannot adapt to UAV mobility. This dissertation addresses both gaps by treating UAV physical
-position as a direct control input for the LoRaWAN radio protocol, and by characterising the
-physical operational envelope within which a single UAV can feasibly collect data.
+Mobile UAV gateways in dense LoRaWAN sensor fields face two linked problems. Standard flat-policy reinforcement learners lack the inductive bias needed to treat the sensor field as an unordered set, and rapid link-quality changes drive Adaptive Data Rate (ADR) convergence onto a single Spreading Factor, collapsing packet delivery. This dissertation addresses both by coupling UAV trajectory planning with the full LoRaWAN physics stack inside a Gymnasium simulation, training a Deep Q-Network (DQN) agent with domain randomisation and a competence-gated curriculum, then using direct empirical analysis to identify the architectural ceiling of a flat-MLP policy.
 
-A protocol-aware Deep Reinforcement Learning (DRL) framework trains a Deep Q-Network (DQN)
-agent within a custom Gymnasium environment, to the author's knowledge the first open
-simulation to model the complete causal chain from UAV position through RSSI, EMA-based
-Adaptive Data Rate (ADR) latency, and the LoRa Capture Effect to packet delivery within a
-single step. The environment incorporates the Two-Ray Ground Reflection path loss model,
-log-normal shadowing, and asynchronous duty cycles, producing a realistic link-budget
-constraint: sensors beyond approximately 365 grid units ($3{,}650$\,m) fall outside the
-collection radius, making UAV positioning genuinely consequential. A Domain Randomisation
-and Curriculum Learning regime produces a single generalised policy deployable without
-retraining across grids from $100{\times}100$ to $1{,}000{\times}1{,}000$ cells and network
-densities of 10 to 40 sensors.
+The simulation models the complete causal chain from UAV position through Two-Ray path loss, log-normal shadowing, EMA-based ADR, and the LoRa Capture Effect to per-packet delivery within a single environment step. A single policy trained across five (grid size, sensor count) conditions -- from $100{\times}100$ to $500{\times}500$ grids with $N \in \{10, 20, 30, 40, 50\}$ sensors -- is evaluated against Nearest Sensor Greedy, SF-Aware Greedy, and a TSP Oracle using 50 independent seeds per condition. A four-condition ablation study isolates the contribution of the Capture Effect, ADR smoothing, Age of Information observation, and domain randomisation.
 
-Multi-seed evaluation (20 seeds per condition) against a protocol-blind Nearest-Sensor
-Greedy and a novel SF-Aware Max-Throughput Greedy baseline reveals a clear operational
-envelope. At compact scales ($100{\times}100$, $300{\times}300$), all sensors remain within
-link-budget range from any UAV position and all agents achieve near-identical coverage. At
-intermediate scales ($500{\times}500$), link-budget constraints become active: the DQN's
-protocol-aware repositioning strategy yields statistically significant throughput advantages
-over both greedy baselines ($p<0.05$, Welch's $t$-test). At $1{,}000{\times}1{,}000$, the
-problem becomes physically infeasible for a single UAV: the energy budget supports at most
-$2{,}100$ steps of flight, insufficient to traverse the $14{,}142$\,m grid diagonal, and
-no agent achieves full sensor coverage. The key emergent behaviour is strategic
-dwell-then-reposition: the DQN hovers near sensor clusters to drive EMA-ADR convergence to
-lower Spreading Factors before repositioning to exploit orthogonal-SF concurrent reception,
-a temporal planning strategy that one-step greedy heuristics cannot replicate. A component
-ablation confirms that the Capture Effect and Domain Randomisation are individually
-necessary, while the physical infeasibility at $1{,}000{\times}1{,}000$ scale identifies
-multi-UAV coordination as the required architectural extension.
+The central finding is architectural: the trained DQN produces two consistent behaviours, sustained in-place dwell at sensor clusters and boundary-adjacent flight, which quantitative diagnostics (mean 21.8 wall collisions, median zero, but 100.0\% boundary-adjacent cell occupancy across 20 deterministic $200{\times}200$/$N{=}20$ episodes) confirm are heuristics of the flat-MLP inductive bias rather than set-structured reasoning over the sensor field. A permutation-invariant Relational RL policy, trained with PPO on a per-sensor encoder with masked sum-pooling, resolves the diagnostic: boundary-cell occupancy falls from 100.0\% to 21.5\% (mean), wall collisions drop to zero across all 20 diagnostic seeds, and the policy leads the DQN at every multi-seed condition. NDR at $300{\times}300$/$N{=}30$ rises from 52.7\% to 97.7\%, and at $500{\times}500$/$N{=}50$ from 13.0\% to 56.4\% (all $p < 0.001$, Welch's $t$-test).
+
+Five contributions result: a full-stack LoRaWAN-physics simulation; a domain-randomised curriculum training strategy; a 50-seed benchmarked comparison against greedy baselines and a TSP Oracle; a quantitative architectural diagnostic linking flat-MLP spatial heuristics to representational limits; and a Relational RL policy that empirically resolves those limits.

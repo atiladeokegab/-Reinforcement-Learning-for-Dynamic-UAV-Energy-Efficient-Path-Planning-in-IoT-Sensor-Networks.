@@ -27,6 +27,7 @@ dependencies = [
     "absl-py==2.1.0",
     "tensorboard>=2.20.0",
     "ray[rllib]>=2.10",
+    "joblib>=1.5.3",
 ]
 
 [tool.uv]

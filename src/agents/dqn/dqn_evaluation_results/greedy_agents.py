@@ -366,6 +366,118 @@ class TSPOracleAgent(GreedyAgent):
         return self._move_toward(target_sensor.position)
 
 
+# ==================== LAWNMOWER (BOUSTROPHEDON) ====================
+
+class LawnmowerAgent(GreedyAgent):
+    """
+    Boustrophedon (lawnmower) coverage baseline.
+
+    Precomputes a snake-path of waypoints across the grid at episode start,
+    then follows them in order.  Collects from any in-range sensor encountered
+    along the path before advancing.
+
+    On a 500×500 grid with strip_width=50 the full sweep requires ~5 000 steps,
+    so only ~2 full strips are completed within the 2 100-step budget.
+    This is intentional — it exposes the limitation of systematic coverage
+    when the episode horizon is tight.
+    """
+
+    # Collect at most once per distinct position before forcing forward progress.
+    # Sensors have ~50-unit range, so without this the agent stalls for many steps
+    # at every position along the sweep path.
+    _MAX_HOVER_STREAK = 1
+
+    def __init__(self, env: UAVEnvironment, strip_width: int = 50):
+        super().__init__(env)
+        self.strip_width = strip_width
+        self._waypoints: List[np.ndarray] = []
+        self._current_wp: int = 0
+        self._plan_computed: bool = False
+        self.waypoints_completed: int = 0
+        self.total_waypoints: int = 0
+        self._hover_streak: int = 0
+        self._prev_pos: Optional[np.ndarray] = None
+
+    def reset(self):
+        """Call after env.reset() to recompute the sweep plan for the new grid."""
+        self._plan_computed = False
+        self._current_wp = 0
+        self.waypoints_completed = 0
+        self._hover_streak = 0
+        self._prev_pos = None
+
+    @property
+    def grid_coverage_pct(self) -> float:
+        if self.total_waypoints == 0:
+            return 0.0
+        return min(100.0, self.waypoints_completed / self.total_waypoints * 100.0)
+
+    def _ensure_plan(self):
+        if self._plan_computed:
+            return
+
+        W, H = self.env.grid_size
+        sw = self.strip_width
+
+        # Build boustrophedon corner waypoints:
+        # (x_end_of_strip, y) then (x_end_of_strip, y+sw) for the vertical step.
+        waypoints: List[np.ndarray] = []
+        y = 0
+        going_right = True
+        while y < H:
+            x_end = W - 1 if going_right else 0
+            waypoints.append(np.array([x_end, y], dtype=float))
+            next_y = y + sw
+            if next_y < H:
+                waypoints.append(np.array([x_end, next_y], dtype=float))
+            y = next_y
+            going_right = not going_right
+
+        self._waypoints = waypoints
+        self.total_waypoints = len(waypoints)
+        self._current_wp = 0
+        self._plan_computed = True
+
+        print(
+            f"  [Lawnmower] Plan: {len(waypoints)} waypoints, "
+            f"strip_width={sw} units, ~{H // sw} strips over {W}×{H} grid"
+        )
+
+    def select_action(self, observation: np.ndarray) -> int:
+        self._ensure_plan()
+
+        uav_pos = self.env.uav.position
+
+        # Track how many consecutive steps we've spent hovering at this position
+        if self._prev_pos is not None and np.allclose(uav_pos, self._prev_pos, atol=0.5):
+            self._hover_streak += 1
+        else:
+            self._hover_streak = 0
+        self._prev_pos = uav_pos.copy()
+
+        # Advance past any waypoints already reached
+        while self._current_wp < len(self._waypoints):
+            wp = self._waypoints[self._current_wp]
+            if abs(wp[0] - uav_pos[0]) <= 0.5 and abs(wp[1] - uav_pos[1]) <= 0.5:
+                self.waypoints_completed += 1
+                self._current_wp += 1
+            else:
+                break
+
+        # Collect from any in-range sensor with data — but cap hover streak to
+        # keep the sweep advancing rather than stalling on one sensor
+        if self._hover_streak < self._MAX_HOVER_STREAK:
+            for sensor in self.env.sensors:
+                if sensor.data_buffer > 0 and sensor.is_in_range(tuple(uav_pos)):
+                    return self.ACTION_COLLECT
+
+        # Sweep exhausted — hover
+        if self._current_wp >= len(self._waypoints):
+            return self.ACTION_COLLECT
+
+        return self._move_toward(self._waypoints[self._current_wp])
+
+
 # ==================== QUICK SMOKE TEST ====================
 
 if __name__ == "__main__":
@@ -376,6 +488,7 @@ if __name__ == "__main__":
         ("NearestSensorGreedy",   NearestSensorGreedy),
         ("MaxThroughputGreedyV2", MaxThroughputGreedyV2),
         ("TSPOracleAgent",        TSPOracleAgent),
+        ("LawnmowerAgent",        LawnmowerAgent),
     ]:
         obs, _ = env.reset(seed=0)
         agent = AgentClass(env)
@@ -395,6 +508,11 @@ if __name__ == "__main__":
                 f"  TSP_tour={agent.tsp_tour_length_units:.0f}u  "
                 f"actual={agent.actual_path_length:.0f}u  "
                 f"efficiency={agent.path_efficiency_pct:.1f}%"
+            )
+        if isinstance(agent, LawnmowerAgent):
+            extra = (
+                f"  waypoints={agent.waypoints_completed}/{agent.total_waypoints}  "
+                f"grid_coverage={agent.grid_coverage_pct:.1f}%"
             )
         print(f"{name}: reward={total_reward:.0f}  NDR={ndr:.1f}%{extra}")
 

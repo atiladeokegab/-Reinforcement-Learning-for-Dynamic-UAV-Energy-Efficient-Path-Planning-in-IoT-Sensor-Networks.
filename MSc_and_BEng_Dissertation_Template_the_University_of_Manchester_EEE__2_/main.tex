@@ -64,7 +64,8 @@
 % TikZ for inline diagrams
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, shapes.geometric, positioning, calc,
-                decorations.markings, backgrounds, fit}
+                decorations.markings, decorations.pathmorphing,
+                backgrounds, fit}
 
 % Override class font: use Calibri directly (installed on Windows via Office)
 % Placed last in preamble so it overrides the class's \setmainfont{Carlito}
@@ -74,6 +75,32 @@
   ItalicFont={Calibri Italic},
   BoldItalicFont={Calibri Bold Italic}
 ]{Calibri}
+
+% Make \includegraphics tolerant of missing files during drafting:
+% if the file is absent, render a visible placeholder box and continue
+% the compile rather than halting.
+\usepackage{xcolor}
+\let\uomorigincludegraphics\includegraphics
+\renewcommand{\includegraphics}[2][]{%
+  \IfFileExists{#2}%
+    {\uomorigincludegraphics[#1]{#2}}%
+    {\fbox{\parbox{0.6\linewidth}{\centering\vspace{1em}%
+      \textbf{\color{red!70!black}[Missing figure]}\\[2pt]%
+      {\footnotesize\ttfamily\detokenize{#2}}\vspace{1em}}}}%
+}
+
+% Override the UoM class's uomappendix environment so the appendices render
+% as a single numbered "A Appendices" section with A.1 ... A.N subsections,
+% matching the Y3 project template used across the cohort.
+\renewenvironment{uomappendix}{%
+  \clearpage
+  \bookmarksetupnext{level=-1}%
+  \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}%
+  \begin{appendices}%
+    \section{Appendices}%
+}{%
+  \end{appendices}%
+}
 
 % Custom commands
 \newcommand{\degree}{\ensuremath{^\circ}}
@@ -141,10 +168,9 @@
 	\begin{abstract} % put abstract here.
         \input{abstract.tex}
 	\end{abstract}%
-	\clearpage
-	
-	
-	
+	% Note: the abstract environment already issues \clearpage; no extra one needed here.
+
+
 	%%%%%%%%%%%%%%%%%% DECLARATIONS %%%%%%%%%%%%%%%%%%
 	\begin{uomoriginality}
 		\uomoriginalitydeclaration 
@@ -194,14 +220,18 @@
 
 	%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%
 	\begin{uomappendix}
-		\input{appendices/project_outline}    % A: Preliminary Project Proposal
-		\input{appendices/gantt_chart}        % B: Project Plan and Gantt Chart
-		\input{appendices/risk_assessment}    % C: Risk Register + D: H&S Assessment
-		\input{appendices/cpd_log}            % E: CPD Log
-		\input{appendices/repository}         % F: Code Repository
-		\input{appendices/hyperparams}        % G: Hyperparameters
-		\input{appendices/sim_to_real}        % H: Sim-to-Real Analysis
-		\input{appendices/additional_figures} % I: Additional Figures
+		\input{appendices/project_outline}    % A.1 Project Outline
+		\input{appendices/project_plan}       % A.2 Initial Project Plan
+		\input{appendices/risk_register}      % A.3 Risk Register
+		\input{appendices/cpd_log}            % A.4 CPD
+		\input{appendices/hs_assessment}      % A.5 Health & Safety Risk Assessment
+		\input{appendices/gantt_chart}        % A.6 Gantt Chart
+		\input{appendices/repository}         % A.7 Source Code
+		\input{appendices/hyperparams}        % A.8 Hyperparameters
+		\input{appendices/sim_to_real}        % A.9 Sim-to-Real Analysis
+		\input{appendices/additional_figures} % A.10 Additional Figures
+		\input{appendices/extended_methodology} % A.11 Extended Methodology
+		\input{appendices/extended_results}     % A.12 Extended Results
 	\end{uomappendix}
 
 	%%%%%%%%%%%%%%%%%% END MATTER %%%%%%%%%%%%%%%%%%

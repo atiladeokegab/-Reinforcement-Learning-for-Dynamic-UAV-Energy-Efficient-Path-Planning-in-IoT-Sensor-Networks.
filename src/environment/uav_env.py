@@ -1,23 +1,6 @@
-"""
-Gymnasium-Compatible UAV Environment with Fairness Constraints and Battery Constraints
-
-Environment for training UAV to collect data from IoT sensors using RL
-with fairness constraints to prevent sensor neglect.
-
-NEW FEATURES:
-- Urgency metrics in observation space
-- Fairness-constrained reward function
-- Data loss tracking per step (GLOBAL for all actions)
-- Urgency reduction tracking
-- Observation space bounds match actual observation values
-
-CRITICAL FIX:
-- Data loss penalty applies to ALL actions (movement AND collection)
-- Prevents agent from learning to ignore buffer overflows while moving
+"""Gymnasium-compatible UAV environment for IoT data collection with fairness and battery constraints.
 
 Author: ATILADE GABRIEL OKE
-Date: November 2025
-Project: Energy-Efficient UAV Path Planning in IOT Networks: A Deep Reinforcement Learning Aided Approach
 """
 
 import gymnasium as gym
@@ -93,110 +76,161 @@ def render_sensor_enhanced(
     current_action=None,
     urgency=0.0,
     is_visited=True,
+    grid_size=None,
 ):
-    """Render a single sensor with enhanced visual states and urgency indicator."""
+    """Render a single sensor with a soft glow/halo treatment that scales with grid."""
     x, y  = sensor.position
     state = get_sensor_visual_state(sensor, uav_position, current_action)
 
+    # Scale all sensor geometry with grid extent so they stay visible on big maps.
+    if grid_size is not None:
+        span = float(max(grid_size[0], grid_size[1]))
+    else:
+        xlim = ax.get_xlim()
+        span = float(max(abs(xlim[1] - xlim[0]), 1.0))
+    r_core  = max(span * 0.008, 0.35)           # core dot radius (data units)
+    r_halo  = r_core * 2.6                       # outer halo radius
+    label_fs = min(max(int(span * 0.012), 7), 13)
+
+    # Per-state palette — tuned for strong contrast on white background.
     if state == SensorState.EMPTY:
-        color, marker_size, alpha, marker = "lightblue", 80,  0.5, "o"
+        core_c, halo_c, core_a = "#334155", "#64748b", 0.85   # slate
     elif state == SensorState.LOW:
-        color, marker_size, alpha, marker = "yellow",   120, 0.7, "o"
+        core_c, halo_c, core_a = "#fb923c", "#c2410c", 0.9    # light orange
     elif state == SensorState.MEDIUM:
-        color, marker_size, alpha, marker = "yellow",   160, 0.8, "o"
+        core_c, halo_c, core_a = "#ea580c", "#9a3412", 0.95   # deep orange
     elif state == SensorState.HIGH:
-        color, marker_size, alpha, marker = "yellow",   200, 0.9, "o"
+        core_c, halo_c, core_a = "#dc2626", "#7f1d1d", 1.0    # strong red
     elif state == SensorState.FULL:
         pulse = 0.5 + 0.5 * np.sin(current_step * 0.3)
-        color = "blue"
-        marker_size = 250 * (0.9 + 0.2 * pulse)
-        alpha  = 0.7 + 0.2 * pulse
-        marker = "o"
+        core_c, halo_c = "#1d4ed8", "#1e3a8a"                  # deep blue
+        core_a = 0.9 + 0.1 * pulse
+        r_core *= 1.0 + 0.15 * pulse
+        r_halo *= 1.0 + 0.25 * pulse
     elif state == SensorState.COLLECTING:
-        color, marker_size, alpha, marker = "purple", 300, 1.0, "*"
+        core_c, halo_c, core_a = "#7e22ce", "#4c1d95", 1.0    # rich purple
+        r_core *= 1.25
+        r_halo *= 1.4
     elif state == SensorState.COLLECTED:
-        color, marker_size, alpha, marker = "green",  100, 0.5, "o"
+        core_c, halo_c, core_a = "#15803d", "#14532d", 0.95   # deep green
     else:
-        color, marker_size, alpha, marker = "gray",   80,  0.5, "o"
+        core_c, halo_c, core_a = "#6b7280", "#374151", 0.8    # gray
 
-    ax.scatter(x, y, c=color, marker=marker, s=marker_size, alpha=alpha,
-               edgecolors="black", linewidths=2, zorder=5)
+    # Outer halo — soft glow
+    ax.add_patch(Circle((x, y), r_halo, facecolor=halo_c,
+                        edgecolor="none", alpha=0.22, zorder=3))
+    # Mid ring
+    ax.add_patch(Circle((x, y), r_halo * 0.65, facecolor=halo_c,
+                        edgecolor="none", alpha=0.32, zorder=4))
+    # Core
+    ax.add_patch(Circle((x, y), r_core, facecolor=core_c,
+                        edgecolor="white", linewidth=1.2,
+                        alpha=core_a, zorder=5))
 
-    if sensor.data_buffer > 0:
-        ready_ring = Circle((x, y), 0.8, fill=False, edgecolor="lime",
-                            linewidth=1.5, linestyle="-", alpha=0.8, zorder=4)
-        ax.add_patch(ready_ring)
+    # Ready/data-available ring
+    if sensor.data_buffer > 0 and state not in (SensorState.COLLECTING,):
+        ax.add_patch(Circle((x, y), r_core * 1.5, fill=False,
+                            edgecolor="#7cf27c", linewidth=1.2,
+                            linestyle="-", alpha=0.7, zorder=6))
 
-    buffer_pct = (sensor.data_buffer / sensor.max_buffer_size) * 100
-    text_color = ("white"
-                  if state in [SensorState.FULL, SensorState.COLLECTING]
-                  else "black")
-
-    ax.text(x, y - 0.4, f"{int(buffer_pct)}%",
-            ha="center", va="top", fontsize=7, fontweight="bold", color=text_color,
-            bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                      edgecolor="black", alpha=0.7))
-
-    ax.text(x, y + 0.5, f"S{sensor.sensor_id}",
-            ha="center", va="bottom", fontsize=7, fontweight="bold")
-
-    if urgency > 0.8:
-        urgency_symbol = "🔴"
-    elif urgency > 0.5:
-        urgency_symbol = "🟠"
-    elif urgency > 0.2:
-        urgency_symbol = "🟡"
-    else:
-        urgency_symbol = "🟢"
-
-    ax.text(x + 0.5, y + 0.5, urgency_symbol,
-            fontsize=8, ha="center", va="center", zorder=12)
-
-    if urgency > 0.3:
-        ax.text(x, y - 0.8, f"U:{urgency:.2f}",
-                fontsize=6, ha="center", va="top",
-                color="red" if urgency > 0.8 else "orange",
-                fontweight="bold",
-                bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.7))
-
-    if is_visited:
-        ax.text(x - 0.6, y + 0.5, "✓",
-                fontsize=12, fontweight="bold", color="darkgreen",
-                ha="center", va="center", zorder=20,
-                bbox=dict(boxstyle="circle,pad=0.1", facecolor="white",
-                          edgecolor="green", alpha=0.8))
-
+    # Collecting highlight — pulsing dashed ring
     if state == SensorState.COLLECTING:
-        collection_circle = Circle((x, y), 0.5, facecolor="none",
-                                   edgecolor="purple", linewidth=3,
-                                   linestyle="--", alpha=0.6, zorder=6)
-        ax.add_patch(collection_circle)
+        ax.add_patch(Circle((x, y), r_halo * 1.1, facecolor="none",
+                            edgecolor="#a64bff", linewidth=2.0,
+                            linestyle="--", alpha=0.75, zorder=7))
+
+    # Sensor ID label
+    ax.text(x, y + r_halo * 1.15, f"S{sensor.sensor_id}",
+            ha="center", va="bottom", fontsize=label_fs, fontweight="bold",
+            color="#222", zorder=11,
+            bbox=dict(boxstyle="round,pad=0.18", facecolor="white",
+                      edgecolor="none", alpha=0.75))
+
+    # Visited tick — small corner badge
+    if is_visited:
+        ax.text(x - r_halo * 0.95, y + r_halo * 0.95, "✓",
+                fontsize=label_fs, fontweight="bold", color="#1b8a3a",
+                ha="center", va="center", zorder=12,
+                bbox=dict(boxstyle="circle,pad=0.1", facecolor="white",
+                          edgecolor="#1b8a3a", linewidth=1.0, alpha=0.9))
+
+    # High-urgency flag
+    if urgency > 0.5:
+        flag_c = "#e63946" if urgency > 0.8 else "#ff8c42"
+        ax.add_patch(Circle((x + r_halo * 0.9, y - r_halo * 0.9),
+                            r_core * 0.55, facecolor=flag_c,
+                            edgecolor="white", linewidth=1.0,
+                            alpha=0.95, zorder=12))
 
 
-def render_uav_enhanced(ax, uav):
-    """Render the UAV with battery indicator."""
-    uav_x, uav_y = uav.position
+def render_uav_enhanced(ax, uav, grid_size=None):
+    """Render the UAV as a stylized quadcopter (body + 4 rotors) that scales with grid."""
+    uav_x, uav_y = float(uav.position[0]), float(uav.position[1])
 
-    uav_marker = patches.FancyBboxPatch(
-        (uav_x - 0.25, uav_y - 0.25), 0.5, 0.5,
-        boxstyle="round,pad=0.05", edgecolor="red", facecolor="orange",
-        linewidth=2.5, zorder=10)
-    ax.add_patch(uav_marker)
+    if grid_size is not None:
+        span = float(max(grid_size[0], grid_size[1]))
+    else:
+        xlim = ax.get_xlim()
+        span = float(max(abs(xlim[1] - xlim[0]), 1.0))
 
-    ax.text(uav_x, uav_y, "✈",
-            ha="center", va="center", fontweight="bold", fontsize=14,
-            color="white", zorder=11)
+    # Overall UAV scale in data units.
+    R       = max(span * 0.022, 0.8)     # rotor-centre distance from UAV centre
+    rotor_r = R * 0.55                    # rotor disc radius
+    body_r  = R * 0.55                    # central body radius
+    battery_fs = min(max(int(span * 0.015), 8), 18)
+    offset  = R * 2.6                     # battery label offset below
+
+    # Four rotor arms (dark struts) — X-config quadcopter
+    arm_offsets = [(+R, +R), (-R, +R), (-R, -R), (+R, -R)]
+    for dx, dy in arm_offsets:
+        ax.plot([uav_x, uav_x + dx], [uav_y, uav_y + dy],
+                color="#2a2a2a", linewidth=3.5, solid_capstyle="round",
+                zorder=9)
+
+    # Rotor discs — spin blur (soft outer ring + hub)
+    for dx, dy in arm_offsets:
+        cx, cy = uav_x + dx, uav_y + dy
+        ax.add_patch(Circle((cx, cy), rotor_r * 1.15,
+                            facecolor="#4aa8ff", edgecolor="none",
+                            alpha=0.25, zorder=9))
+        ax.add_patch(Circle((cx, cy), rotor_r,
+                            facecolor="#111111", edgecolor="#4aa8ff",
+                            linewidth=1.5, alpha=0.85, zorder=10))
+        ax.add_patch(Circle((cx, cy), rotor_r * 0.25,
+                            facecolor="#dddddd", edgecolor="#111111",
+                            linewidth=0.8, zorder=11))
+
+    # Central body — glossy orange disc with red rim
+    ax.add_patch(Circle((uav_x, uav_y), body_r * 1.25,
+                        facecolor="#ff6a00", edgecolor="none",
+                        alpha=0.25, zorder=10))
+    ax.add_patch(Circle((uav_x, uav_y), body_r,
+                        facecolor="#ff8a1a", edgecolor="#b22222",
+                        linewidth=2.0, zorder=11))
+    # Camera / gimbal dot
+    ax.add_patch(Circle((uav_x, uav_y), body_r * 0.32,
+                        facecolor="#1a1a1a", edgecolor="#dddddd",
+                        linewidth=1.0, zorder=12))
+
+    # Forward-heading indicator (small nose arrow pointing +x)
+    nose = R * 1.25
+    ax.annotate("",
+                xy=(uav_x + nose, uav_y),
+                xytext=(uav_x + body_r * 0.8, uav_y),
+                arrowprops=dict(arrowstyle="-|>", color="#b22222",
+                                lw=2.0, mutation_scale=12),
+                zorder=12)
 
     battery_pct   = uav.get_battery_percentage()
-    battery_color = ("green" if battery_pct > 50
-                     else ("orange" if battery_pct > 25 else "red"))
+    battery_color = ("#2ecc71" if battery_pct > 50
+                     else ("#ff8c42" if battery_pct > 25 else "#e63946"))
 
-    ax.text(uav_x, uav_y - 0.8, f"⚡{battery_pct:.0f}%",
-            ha="center", va="top", fontsize=8, fontweight="bold",
+    ax.text(uav_x, uav_y - offset, f"⚡ {battery_pct:.0f}%",
+            ha="center", va="top", fontsize=battery_fs, fontweight="bold",
             color=battery_color,
             bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                      edgecolor=battery_color, linewidth=2, alpha=0.9),
-            zorder=11)
+                      edgecolor=battery_color, linewidth=1.8, alpha=0.92),
+            zorder=12)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -259,9 +293,7 @@ class UAVEnvironment(gym.Env):
         self.render_mode = render_mode
         self.collection_duration = collection_duration
 
-        # ── FIX 2: initialise ALL instance variables here, BEFORE reset() ──
-        # reset() (called at the bottom of __init__) references these fields,
-        # so they must exist first.
+        # All instance variables must be defined before reset() is called.
         self.last_successful_collections = []
         self.last_action                 = None
         self.previous_data_loss          = 0.0
@@ -271,6 +303,8 @@ class UAVEnvironment(gym.Env):
         self.total_data_collected        = 0.0
         self.sensors_visited: set        = set()
         self.current_step                = 0
+        self.boundary_hits               = 0   # failed moves (attempted to leave grid)
+        self.edge_steps                  = 0   # steps spent on boundary cells
 
         # ── Sensor setup ──
         if sensor_positions is None:
@@ -324,10 +358,6 @@ class UAVEnvironment(gym.Env):
         self.fig = None
         self.ax  = None
 
-        # NOTE: we intentionally do NOT call self.reset() here.
-        # Gymnasium's convention is for the caller to call reset() before
-        # the first step().  Calling it in __init__ is harmless but it used
-        # to hide bugs; keeping it explicit makes the lifecycle clearer.
 
     # ─────────────────────────────────────────────────────────────────────
     # Internal helpers
@@ -387,8 +417,12 @@ class UAVEnvironment(gym.Env):
         self.last_action               = None
         self.previous_data_loss        = 0.0
         self.capture_effect_triggers   = 0
+        self.boundary_hits             = 0
+        self.edge_steps                = 0
         self.last_step_bytes_collected = 0.0
         self.last_successful_collections = []
+        self._path_history = [(float(self.uav.position[0]),
+                               float(self.uav.position[1]))]
 
         return self._get_observation(), self._get_info()
 
@@ -404,6 +438,13 @@ class UAVEnvironment(gym.Env):
         """
         self.current_step += 1
         self.last_action  = action
+
+        # Track whether UAV is currently parked on a boundary cell
+        W, H = float(self.grid_size[0]), float(self.grid_size[1])
+        ux, uy = float(self.uav.position[0]), float(self.uav.position[1])
+        eps = 1e-6
+        if ux <= eps or uy <= eps or ux >= W - 1 - eps or uy >= H - 1 - eps:
+            self.edge_steps += 1
 
         # ── Dynamic step duration ──────────────────────────────────────
         step_duration = self.collection_duration if action == 4 else 1.0
@@ -458,6 +499,9 @@ class UAVEnvironment(gym.Env):
         battery_before = self.uav.battery
         move_success   = self.uav.move(direction, self.grid_size, time_step=1)
         battery_used   = battery_before - self.uav.battery
+
+        if not move_success:
+            self.boundary_hits += 1
 
         self.last_successful_collections = []
 
@@ -595,8 +639,6 @@ class UAVEnvironment(gym.Env):
         """Return normalised observation vector."""
         W, H   = float(self.grid_size[0]), float(self.grid_size[1])
 
-        # ── FIX 3: extract scalars explicitly to avoid 0-d array indexing ──
-        # uav.position is np.ndarray shape (2,); index safely with [0] / [1].
         uav_x = float(self.uav.position[0])
         uav_y = float(self.uav.position[1])
 
@@ -604,9 +646,6 @@ class UAVEnvironment(gym.Env):
 
         sf_quality = {7: 1.0, 8: 0.8, 9: 0.6, 10: 0.4, 11: 0.2, 12: 0.1}
 
-        # ── FIX 4: pass position as a plain Python tuple of floats ──────────
-        # Some code paths call np.array(uav_position) inside IoTSensor;
-        # passing a tuple of Python floats avoids accidental 0-d arrays.
         uav_pos_tuple = (uav_x, uav_y)
 
         for sensor in self.sensors:
@@ -651,6 +690,8 @@ class UAVEnvironment(gym.Env):
             "avg_urgency":             float(np.mean(urgencies)),
             "high_urgency_sensors":    int(np.sum(urgencies > 0.8)),
             "capture_effect_triggers": self.capture_effect_triggers,
+            "boundary_hits":           self.boundary_hits,
+            "edge_steps":              self.edge_steps,
             "last_step_bytes_collected": self.last_step_bytes_collected,
             "sensor_collection_ratios": [
                 s.total_data_transmitted / max(s.total_data_generated, 1e-6)
@@ -682,11 +723,24 @@ class UAVEnvironment(gym.Env):
             self.fig, self.ax = plt.subplots(figsize=(14, 10))
 
         self.ax.clear()
+        # Clean white background — no gridlines.
+        self.ax.set_facecolor("white")
 
-        for i in range(self.grid_size[0] + 1):
-            self.ax.axhline(i, color="gray", linewidth=0.5, alpha=0.3)
-        for i in range(self.grid_size[1] + 1):
-            self.ax.axvline(i, color="gray", linewidth=0.5, alpha=0.3)
+        # Append current position to path history and draw the trail.
+        pos = (float(self.uav.position[0]), float(self.uav.position[1]))
+        if not hasattr(self, "_path_history") or self._path_history is None:
+            self._path_history = [pos]
+        elif self._path_history[-1] != pos:
+            self._path_history.append(pos)
+
+        if len(self._path_history) >= 2:
+            px = [p[0] for p in self._path_history]
+            py = [p[1] for p in self._path_history]
+            # White halo underneath for contrast on any background
+            self.ax.plot(px, py, color="white", linewidth=4.0,
+                         alpha=0.35, zorder=6, solid_capstyle="round")
+            self.ax.plot(px, py, color="deepskyblue", linewidth=2.2,
+                         alpha=0.85, zorder=7, solid_capstyle="round")
 
         urgencies = self._get_sensor_urgencies()
 
@@ -718,6 +772,7 @@ class UAVEnvironment(gym.Env):
                 current_action=self.last_action if is_collecting else None,
                 urgency=urgencies[i],
                 is_visited=has_been_visited,
+                grid_size=self.grid_size,
             )
 
         for sensor in collecting_sensors:
@@ -738,7 +793,7 @@ class UAVEnvironment(gym.Env):
                 zorder=9,
             )
 
-        render_uav_enhanced(self.ax, self.uav)
+        render_uav_enhanced(self.ax, self.uav, grid_size=self.grid_size)
 
         self.ax.set_xlim(0, self.grid_size[0])
         self.ax.set_ylim(0, self.grid_size[1])

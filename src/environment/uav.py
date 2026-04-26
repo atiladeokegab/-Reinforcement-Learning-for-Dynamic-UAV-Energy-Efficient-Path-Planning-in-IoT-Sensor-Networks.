@@ -40,7 +40,7 @@ Constraints:
     - Cannot move and collect data simultaneously
 
 Example UAV:
-    - TB60 Intelligent
+    - TB60 Intelligentwhat d
     - Capacity: 5935mAh, 52.8V, 274W
     - Typical Range: 5 m/s - 15 m/s
     - Speed:  10m/s

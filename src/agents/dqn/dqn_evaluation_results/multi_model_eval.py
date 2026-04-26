@@ -52,7 +52,7 @@ MODEL_REGISTRY = [
     {"name": "DQN-v7", "model_dir": "dqn_v7_tuned"},
     {"name": "DQN-v8", "model_dir": "dqn_v8_tuned_nopos"},
 ]
-GREEDY_NAMES    = ["SmartGreedyV2", "NearestGreedy"]
+GREEDY_NAMES    = ["SmartGreedyV2", "NearestGreedy", "Lawnmower"]
 ALL_AGENTS      = [m["name"] for m in MODEL_REGISTRY] + GREEDY_NAMES
 
 GRID_SIZES      = [(200, 200), (400, 400), (600, 600)]
@@ -71,6 +71,7 @@ AGENT_COLORS = {
     "DQN-v8":        "#e7298a",
     "SmartGreedyV2": "#66a61e",
     "NearestGreedy": "#e6ab02",
+    "Lawnmower":     "#a6761d",
 }
 AGENT_MARKERS = {
     "DQN-v5": "o", "DQN-v6": "s", "DQN-v7": "^", "DQN-v8": "D",
@@ -275,7 +276,7 @@ def _run_dqn_episode(model, config, model_name,
 def _run_greedy_episode(agent_name,
                         grid_size, n_sensors, sp_name, start_pos, seed) -> dict:
     from environment.uav_env import UAVEnvironment
-    from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
+    from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, LawnmowerAgent
 
     np.random.seed(seed)
     random.seed(seed)
@@ -292,8 +293,13 @@ def _run_greedy_episode(agent_name,
         render_mode=None,
     )
 
-    AgentCls = MaxThroughputGreedyV2 if agent_name == "SmartGreedyV2" else NearestSensorGreedy
-    agent    = AgentCls(env)
+    if agent_name == "SmartGreedyV2":
+        agent = MaxThroughputGreedyV2(env)
+    elif agent_name == "Lawnmower":
+        agent = LawnmowerAgent(env, strip_width=50)
+        agent.reset()
+    else:
+        agent = NearestSensorGreedy(env)
 
     obs, _ = env.reset(seed=seed)
     trajectory        = []

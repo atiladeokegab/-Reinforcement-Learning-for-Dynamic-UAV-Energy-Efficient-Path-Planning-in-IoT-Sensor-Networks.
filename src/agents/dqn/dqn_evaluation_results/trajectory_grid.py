@@ -53,7 +53,7 @@ ieee_style.apply()
 _PDF_OUTPUT = False   # overridden by --pdf flag in main()
 
 from environment.uav_env import UAVEnvironment
-from greedy_agents import MaxThroughputGreedyV2
+from greedy_agents import MaxThroughputGreedyV2, LawnmowerAgent
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
@@ -289,11 +289,58 @@ def run_greedy_episode(grid_size, n_sensors, seed):
     }
 
 
+def run_lawnmower_episode(grid_size, n_sensors, seed):
+    rng = np.random.default_rng(seed + 77777)
+    W, H = float(grid_size[0]), float(grid_size[1])
+    uav_start = np.array(
+        [float(rng.uniform(0.05 * W, 0.95 * W)),
+         float(rng.uniform(0.05 * H, 0.95 * H))],
+        dtype=np.float32,
+    )
+    env = UAVEnvironment(
+        grid_size=grid_size, num_sensors=n_sensors,
+        uav_start_position=uav_start,
+        **BASE_ENV_KW,
+    )
+    obs, _ = env.reset(seed=seed)
+    agent = LawnmowerAgent(env, strip_width=50)
+    agent.reset()
+
+    trajectory, done = [], False
+    while not done:
+        trajectory.append(env.uav.position.copy())
+        action = agent.select_action(obs)
+        obs, _, term, trunc, _ = env.step(action)
+        done = term or trunc
+    trajectory.append(env.uav.position.copy())
+
+    sensor_positions = [s.position.copy() for s in env.sensors]
+    rates = [
+        s.total_data_transmitted / s.total_data_generated
+        for s in env.sensors if s.total_data_generated > 0
+    ]
+    ndr  = len(env.sensors_visited) / n_sensors * 100
+    jain = _jains([r * 100 for r in rates])
+    de   = (sum(s.total_data_transmitted for s in env.sensors) /
+            max(sum(s.total_data_generated  for s in env.sensors), 1)) * 100
+    batt_used = max(MAX_BATT - env.uav.battery, 1e-6)
+    bpwh = sum(s.total_data_transmitted for s in env.sensors) / batt_used
+
+    env.close()
+    return {
+        "trajectory": np.array(trajectory),
+        "sensor_positions": sensor_positions,
+        "sensor_rates": rates,
+        "ndr": ndr, "jains": jain, "data_eff": de, "bpwh": bpwh,
+    }
+
+
 # ── Plotting (IEEE-compliant) ─────────────────────────────────────────────────
 
 # Canonical agent styles pulled from ieee_style
 _DQN_COLOR    = ieee_style.AGENT_COLORS["DQN Agent"]        # teal  #1b9e77
 _GREEDY_COLOR = ieee_style.AGENT_COLORS["SF-Aware Greedy"]  # orange #d95f02
+_LAWN_COLOR   = "#e6ab02"                                    # gold
 _CR_CMAP      = cm.RdYlGn
 _CR_NORM      = mcolors.Normalize(vmin=0.0, vmax=1.0)
 
@@ -303,7 +350,7 @@ _FIG_W = 7.16
 _FIG_H = 9.8
 
 
-def _plot_condition(ax, grid_size, n_sensors, dqn_runs, greedy_runs):
+def _plot_condition(ax, grid_size, n_sensors, dqn_runs, greedy_runs, lawn_runs=None):
     """
     Render one IEEE-styled subplot.
 
@@ -352,14 +399,32 @@ def _plot_condition(ax, grid_size, n_sensors, dqn_runs, greedy_runs):
                 marker="^", color=_GREEDY_COLOR, ms=4,
                 alpha=min(alpha + 0.15, 1.0), zorder=4, linestyle="none")
 
+    # ── Lawnmower paths (optional) ────────────────────────────────────────────
+    if lawn_runs:
+        for i, run in enumerate(lawn_runs):
+            traj  = run["trajectory"]
+            alpha = 0.25 + 0.50 * (i / n_runs)
+            ax.plot(traj[:, 0], traj[:, 1],
+                    color=_LAWN_COLOR, lw=0.8, alpha=alpha,
+                    linestyle=(0, (5, 2)), zorder=2)
+            ax.plot(traj[0, 0], traj[0, 1],
+                    marker="^", color=_LAWN_COLOR, ms=4,
+                    alpha=min(alpha + 0.15, 1.0), zorder=4, linestyle="none")
+
     # ── Stats annotation ──────────────────────────────────────────────────────
     mean_ndr_dqn = np.mean([r["ndr"]   for r in dqn_runs])
     mean_j_dqn   = np.mean([r["jains"] for r in dqn_runs])
     mean_ndr_g   = np.mean([r["ndr"]   for r in greedy_runs])
     mean_j_g     = np.mean([r["jains"] for r in greedy_runs])
+    lawn_line = ""
+    if lawn_runs:
+        mean_ndr_l = np.mean([r["ndr"]   for r in lawn_runs])
+        mean_j_l   = np.mean([r["jains"] for r in lawn_runs])
+        lawn_line  = "\n" + r"$\bf{Lawn}$" + "  NDR={:.0f}%  J={:.3f}".format(mean_ndr_l, mean_j_l)
     stats = (
         r"$\bf{DQN}$"    + "  NDR={:.0f}%  J={:.3f}\n".format(mean_ndr_dqn, mean_j_dqn) +
-        r"$\bf{Greedy}$" + "  NDR={:.0f}%  J={:.3f}".format(mean_ndr_g, mean_j_g)
+        r"$\bf{Greedy}$" + "  NDR={:.0f}%  J={:.3f}".format(mean_ndr_g, mean_j_g) +
+        lawn_line
     )
     ax.text(
         0.03, 0.97, stats,
@@ -420,6 +485,7 @@ def build_figure(all_results, seeds, output_stem: str):
                 ax, grid_size, n_sensors,
                 all_results[key]["dqn"],
                 all_results[key]["greedy"],
+                all_results[key].get("lawn"),
             )
             # Overwrite per-condition title with grid label only (N in col header)
             ax.set_title(
@@ -429,14 +495,15 @@ def build_figure(all_results, seeds, output_stem: str):
 
     # ── Shared legend (figure-level) ─────────────────────────────────────────
     legend_handles = [
-        Line2D([0], [0], color=_DQN_COLOR,    lw=1.5, ls="-",  label="DQN Agent"),
-        Line2D([0], [0], color=_GREEDY_COLOR,  lw=1.5, ls="--", label="SF-Aware Greedy"),
+        Line2D([0], [0], color=_DQN_COLOR,    lw=1.5, ls="-",          label="DQN Agent"),
+        Line2D([0], [0], color=_GREEDY_COLOR,  lw=1.5, ls="--",         label="SF-Aware Greedy"),
+        Line2D([0], [0], color=_LAWN_COLOR,    lw=1.5, ls=(0, (5, 2)),  label="Lawnmower"),
         Line2D([0], [0], marker="^", color="grey", lw=0, ms=6,
                label="UAV start position", alpha=0.7),
     ]
     fig.legend(
         handles=legend_handles,
-        loc="lower center", ncol=3,
+        loc="lower center", ncol=4,
         fontsize=9, framealpha=0.95,
         edgecolor="#CCCCCC",
         bbox_to_anchor=(0.5, -0.01),
@@ -464,7 +531,7 @@ def build_figure(all_results, seeds, output_stem: str):
 def build_summary(all_results, output_path):
     rows = []
     for (grid_size, n_sensors), data in all_results.items():
-        for agent_key, runs in (("DQN", data["dqn"]), ("SmartGreedy", data["greedy"])):
+        for agent_key, runs in (("DQN", data["dqn"]), ("SmartGreedy", data["greedy"]), ("Lawnmower", data.get("lawn", []))):
             rows.append({
                 "grid":        "{}x{}".format(*grid_size),
                 "n_sensors":   n_sensors,
@@ -539,7 +606,7 @@ def main():
     for grid_size, n_sensors in CONDITIONS:
         key = (grid_size, n_sensors)
         print("\n[{}×{}, N={}]".format(grid_size[0], grid_size[1], n_sensors))
-        dqn_runs, greedy_runs = [], []
+        dqn_runs, greedy_runs, lawn_runs = [], [], []
 
         for seed in seeds:
             print("  seed {}".format(seed), end="  ", flush=True)
@@ -554,12 +621,17 @@ def main():
 
             g_ep = run_greedy_episode(grid_size, n_sensors, seed)
             print("Greedy  NDR={:.0f}%  J={:.3f}".format(
-                g_ep["ndr"], g_ep["jains"]))
+                g_ep["ndr"], g_ep["jains"]), end="   ", flush=True)
+
+            l_ep = run_lawnmower_episode(grid_size, n_sensors, seed)
+            print("Lawn  NDR={:.0f}%  J={:.3f}".format(
+                l_ep["ndr"], l_ep["jains"]))
 
             dqn_runs.append(dqn_ep)
             greedy_runs.append(g_ep)
+            lawn_runs.append(l_ep)
 
-        all_results[key] = {"dqn": dqn_runs, "greedy": greedy_runs}
+        all_results[key] = {"dqn": dqn_runs, "greedy": greedy_runs, "lawn": lawn_runs}
 
     total_runs = len(CONDITIONS) * len(seeds)
     if zero_ndr_count == total_runs:

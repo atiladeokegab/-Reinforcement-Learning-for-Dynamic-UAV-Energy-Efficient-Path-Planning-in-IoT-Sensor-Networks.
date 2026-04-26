@@ -1,15 +1,6 @@
-"""
-IoT Sensor with EMA-based ADR and Gaussian Shadowing
-
-UPDATED: Added Gaussian Random Variable for Shadowing
-Formula: RSSI = RSS(d) + X_sigma
-Where X_sigma ~ N(0, 4.0)
-
-This stochasticity simulates the effect of trees, buildings, and
-orientation changes, validating the need for the EMA smoothing algorithm.
+"""IoT Sensor with EMA-based ADR and Gaussian Shadowing (RSSI = RSS(d) + X_sigma, X_sigma ~ N(0,4)).
 
 Author: ATILADE GABRIEL OKE
-Date: November 2025
 """
 
 import numpy as np

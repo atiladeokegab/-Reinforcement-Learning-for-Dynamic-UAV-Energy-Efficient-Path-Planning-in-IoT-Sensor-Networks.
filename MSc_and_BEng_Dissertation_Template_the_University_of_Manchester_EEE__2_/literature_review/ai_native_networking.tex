@@ -1,98 +1,44 @@
-\subsection{The Shift to AI-Native Networking}
+\subsection{DRL and UAV Path Planning}
 
-Nguyen et al.~\cite{nguyen20226g} outline the 6G vision of AI-native networks where DRL
-manages massive, heterogeneous IoT connectivity in real time, conditions under which
-hand-crafted optimisation policies cannot scale.
+Nguyen et al.~\cite{nguyen20226g} outline the 6G vision of AI-native
+networks where DRL manages massive heterogeneous IoT connectivity in
+real time, conditions under which hand-crafted optimisation policies
+cannot scale. The Deep Q-Network~\cite{mnih2015humanlevel} stabilises
+Q-learning with experience replay and a periodically frozen target
+network; replay breaks the temporal correlation of consecutive UAV
+observations and the target network prevents the Q-value feedback
+loop that causes divergence. Luong et al.~\cite{luong2019drl} survey
+DRL in communications and observe that reward shaping and state
+design are critical, directly motivating the frame-stacking and
+urgency-proxy design choices in Section~\ref{sec:method}.
 
-\subsubsection{Deep Q-Networks in Communications}
+No prior work applies DRL specifically to UAV path planning in
+LoRaWAN networks with explicit ADR and Capture Effect modelling. The
+closest precedents, Challita et al.~\cite{challita2018interference}
+and Nemer et al.~\cite{nemer2022energyefficient}, operate in the
+cellular domain where the interference field is determined solely by
+geometry and can be estimated from a single observation. In LoRaWAN
+the SF assignment of each sensor depends on its RSSI history
+filtered through the EMA-ADR loop: the same geometric configuration
+can yield entirely different SF distributions depending on the UAV's
+prior trajectory. This history-dependence violates the Markov
+property and forces the agent to infer latent protocol state from
+temporal sequences rather than instantaneous observations, a
+qualitatively harder learning problem than the stationary
+interference settings in prior work. The architectural-selection
+argument for MLP over attention or graph neural networks on this
+specific training distribution is summarised in
+Appendix~\ref{app:extended_methodology}.
 
-The Deep Q-Network~\cite{mnih2015humanlevel} stabilises Q-learning with experience replay
-and a periodically frozen target network. Experience replay breaks the temporal correlation
-between consecutive UAV observations (important given the spatial correlation of the flight
-path), while the target network prevents the Q-value feedback loop that causes divergence.
-Luong et al.~\cite{luong2019drl} survey DRL in communications and observe that reward
-shaping and state-space design are critical: poorly chosen representations prevent the agent
-from learning the temporal patterns needed to anticipate future congestion. This directly
-motivates the frame-stacking and urgency-proxy design choices in~\autoref{sec:method}.
-
-The non-stationary reward landscape introduced by EMA-ADR convergence presents a
-particular stability challenge that on-policy methods struggle to handle. Because the
-same state--action pair yields different rewards depending on the accumulated ADR history,
-on-policy algorithms such as PPO discard relevant transitions before the ADR feedback loop
-has resolved. DQN's experience replay retains these transitions across ADR timescales,
-allowing the agent to correlate dwell behaviour with the delayed SF-downgrade reward
-that follows, a temporal gap of approximately $1/\lambda = 10$ steps that one-step
-lookahead cannot bridge. This property is central to why off-policy value-based learning
-is preferred over policy-gradient alternatives in the LoRaWAN setting.
-
-\subsubsection{DRL for UAV Path Planning}
-
-No prior work applies DRL specifically to UAV path planning in LoRaWAN networks with
-explicit ADR and Capture Effect modelling. The closest precedents (Challita et
-al.~\cite{challita2018interference}, Nemer et al.~\cite{nemer2022energyefficient}) operate
-in the cellular domain where interference models are stationary and the non-stationary
-EMA-ADR feedback loop is absent. This gap is the primary motivation for this dissertation.
-
-A further structural difference from prior DRL path-planning work is the coupling between
-physical positioning and MAC-layer protocol state. In cellular interference avoidance, the
-interference field is determined solely by geometry and can be estimated from a single
-observation. In LoRaWAN, the SF assignment of each sensor depends on its RSSI history
-filtered through the EMA-ADR loop: the same geometric configuration can yield entirely
-different SF distributions depending on the UAV's prior trajectory. This history-dependence
-violates the Markov property and means the agent must infer latent protocol state from
-temporal sequences rather than instantaneous observations, a qualitatively harder
-learning problem than the stationary interference settings considered by Challita et al.\
-and Nemer et al.
-
-\subsubsection{Architecture Selection: MLP versus Attention and Graph Neural Networks}
-\label{sec:arch_selection}
-
-The choice of a fixed-capacity Multi-Layer Perceptron (MLP) as the policy backbone warrants
-explicit justification, since attention-based and graph neural network (GNN) architectures
-have demonstrated advantages in combinatorial routing tasks that share structural
-similarities with UAV coverage planning.
-
-Kool et al.~\cite{kool2018attention} show that attention mechanisms can learn
-permutation-invariant policies over variable-length sets of locations, a natural fit for
-problems where the agent must sequence visits across an unordered sensor deployment.
-Cappart et al.~\cite{cappart2023combinatorial} demonstrate that GNN policies that
-explicitly represent the deployment graph can generalise across topology changes that
-defeat fixed-input architectures. In principle, either approach could encode inter-sensor
-spatial relationships that the MLP with concatenated per-sensor features cannot.
-
-However, several properties of the primary evaluation regime favour the MLP. First, the
-UAV's five-action discrete space is low-dimensional; the representational bottleneck lies
-in the temporal protocol state, which frame stacking addresses without architectural
-complexity. Second, the training distribution (uniformly random sensor positions sampled
-each episode) does not impose consistent inter-sensor topology, so a graph-structured
-inductive bias offers no stable structure to exploit. The cross-layout generalisation
-analysis (\autoref{sec:robustness}) confirms this: the MLP achieves statistically
-significant advantages on geometrically regular layouts (grid-aligned, ring) and matches
-or exceeds greedy performance on dispersed layouts analogous to the training distribution.
-Third, MLP compatibility with the Stable-Baselines3 DQN implementation avoids the
-engineering overhead of custom graph-batch collation in the replay buffer, which would
-complicate the training pipeline without clear benefit for the primary regime.
-
-The failure boundary is precisely identified: bimodal two-cluster deployments ($-14.0\%$,
-$d = 5.33$, \autoref{sec:robustness}) represent a topological regime where
-inter-cluster routing decisions cannot be inferred from local positional features. A
-curriculum fine-tuning experiment (\autoref{sec:clustered_curriculum}) confirms the gap is
-architectural rather than distributional: the MLP cannot encode cluster identity or
-inter-cluster routing priority regardless of training exposure. This establishes attention
-or GNN architectures as a motivated next step rather than a speculative one, and the
-performance gap quantifies the representational cost of the MLP choice in this specific
-failure regime.
-
-\subsubsection{Information Freshness and Domain Generalisation}
-
-Kaul et al.~\cite{kaul2012realtime} show that the throughput-optimal update frequency is not
-the freshness-optimal frequency, motivating the explicit AoI term in the reward function.
-Abd-Elmagid et al.~\cite{abdelmagid2019aoi} demonstrate a fundamental AoI--throughput
-trade-off in IoT networks, supporting the multi-term weighted reward design adopted here.
-
-Tobin et al.~\cite{tobin2017domain} introduce Domain Randomisation to bridge the sim-to-real
-gap, subsequently validated by OpenAI~\cite{openai2019dexterous} at scale in robotic
-manipulation. Bengio et al.~\cite{bengio2009curriculum} show that curriculum learning, which presents
-training examples in order of increasing difficulty, produces faster convergence and better
-generalisation. Both techniques are combined in this work to produce a single policy
-deployable across a 100$\times$ variation in operational area without retraining.
+On information freshness and domain generalisation, Kaul et al.~\cite{kaul2012realtime} show that the throughput-optimal
+update frequency is not the freshness-optimal frequency, motivating
+the explicit AoI term in the reward. Abd-Elmagid et
+al.~\cite{abdelmagid2019aoi} demonstrate a fundamental AoI--throughput
+trade-off in IoT networks, supporting the multi-term weighted reward.
+Tobin et al.~\cite{tobin2017domain} introduce domain randomisation
+to bridge the sim-to-real gap (subsequently validated at scale in
+robotic manipulation~\cite{openai2019dexterous}), and Bengio et
+al.~\cite{bengio2009curriculum} show curriculum learning accelerates
+convergence and improves generalisation; both techniques are combined
+in this work to produce a single policy deployable across a
+$100\times$ variation in operational area without retraining.

@@ -1,60 +1,49 @@
-\subsection{Sensor Placement in Simulation}
+\subsection{Sensor Placement and Reward}
 
-Figure~\ref{fig:system_model} illustrates the complete system model for the
-$500\times500$ evaluation condition. The UAV (DJI TB60) flies at 100\,m altitude and
-the concentric rings show the SF-specific collection radii derived in
-Section~\ref{sec:link_budget}. The charging station marks the return-to-base point
-(Assumption~4); a relay UAV is dispatched upon landing to maintain continuous coverage.
+Figure~\ref{fig:system_model} illustrates the complete system model
+for the $500\times 500$ evaluation condition. Sensor coordinates are
+sampled from $\mathcal{U}(0, L)\times\mathcal{U}(0, W)$, modelling an
+unstructured ad-hoc topology. This ensures the agent learns a
+generalisable policy rather than memorising a fixed map, and
+naturally creates density clusters that induce the SF monoculture.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\linewidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/system_model.png}
-    \caption{System model for the $500\times500$ evaluation condition ($N=20$ sensors,
-    $h_r=100$\,m). Sensor markers are coloured by their current Spreading Factor
-    assignment. Concentric rings show the link-budget collection radius for each SF
-    (Table~\ref{tab:sf_range}). The dashed arrow indicates the UAV trajectory; the
-    dotted arrow the return-to-base path on reaching the 20\% battery reserve threshold.
-    A relay UAV is dispatched from the charging station to continue the mission.}
+    \resizebox{0.95\linewidth}{!}{\input{figures/system_model_tikz}}
+    \caption{System model. UAV gateway at $h_u = 100$\,m over an
+    IoT sensor field; RSSI obeys Two-Ray plus Gaussian shadowing
+    $\mathcal{N}(0, 4\,\mathrm{dB})$. Per-sensor SF evolves via
+    EMA-ADR ($\lambda = 0.1$). Same-SF collisions resolve via the
+    Capture Effect with margin threshold
+    $\tau_{\mathrm{cap}} = 6$\,dB. The dark sensor has a full buffer
+    $b_i = b_{\max}$ driving urgency into the reward.}
     \label{fig:system_model}
 \end{figure}
 
-\subsubsection{Stochastic Sensor Deployment}
+\subsubsection{Multi-objective reward}
+\label{sec:reward}
 
-Sensor coordinates are sampled from $\mathcal{U}(0, L) \times \mathcal{U}(0, W)$,
-modelling an unstructured ad-hoc topology. This ensures the agent learns a generalisable
-policy rather than memorising a fixed map, while also naturally creating density clusters
-that induce the SF Monoculture.
-
-\subsubsection{Multi-Objective Reward Function} \label{sec:reward}
-
-A dense reward is used to avoid the vanishing gradient problem inherent in sparse
-mission-success objectives. The total reward at step $t$ is:
+A dense reward avoids the vanishing-gradient problem of sparse
+mission-success objectives. The total reward at step $t$ is
 \begin{equation}
-    R_t = w_{\text{coll}} \cdot R_{\text{coll}} - w_{\text{energy}} \cdot C_{\text{energy}}
-        - w_{\text{AoI}} \cdot C_{\text{AoI}} - w_{\text{hover}} \cdot C_{\text{hover}}
+    R_t = w_{\mathrm{coll}}\,R_{\mathrm{coll}}
+        - w_{\mathrm{energy}}\,C_{\mathrm{energy}}
+        - w_{\mathrm{AoI}}\,C_{\mathrm{AoI}}
+        - w_{\mathrm{hover}}\,C_{\mathrm{hover}}
     \label{eq:reward}
 \end{equation}
-
-\noindent\textbf{Data collection} ($R_{\text{coll}}$): positive reward for every
-successfully decoded packet, encouraging positioning that exploits Capture Effect
-and orthogonal-SF concurrent reception.
-
-\noindent\textbf{Energy penalty} ($C_{\text{energy}} = P(a_t)\cdot\Delta t$):
-proportional to action power draw, discouraging meandering trajectories.
-
-\noindent\textbf{AoI penalty} ($C_{\text{AoI}} = \frac{1}{N}\sum_i \text{AoI}_{i,t}$~\cite{kaul2012realtime,abdelmagid2019aoi}):
-mean Age of Information across all sensors, forcing the agent to service stale nodes and
-preventing information starvation.
-
-\noindent\textbf{Hover penalty} ($C_{\text{hover}} = \mathbb{I}(a_t = \text{HOVER})\cdot\lambda_{\text{hover}}$):
-a small fixed cost applied to all action types (including movement) to prevent the agent
-from idling indefinitely over a single high-rate sensor, a failure mode observed in
-earlier reward formulations.
-
-This shaped structure provides immediate step-level feedback that guides the agent
-toward the long-horizon multi-objective optimum.
-
-\paragraph{Reward scale rationale.}
-Component magnitudes are calibrated so that visiting all sensors is strictly preferable
-to revisiting a single node ($+5{,}000$ discovery vs.\ $-2{,}000$ terminal penalty per
-unvisited sensor), and no component exceeds 15\% of total episode reward.
+with four components: (i)~$R_{\mathrm{coll}}$ grants a positive
+reward for every successfully decoded packet, encouraging
+positioning that exploits Capture Effect and orthogonal-SF concurrent
+reception; (ii)~$C_{\mathrm{energy}} = P(a_t)\,\Delta t$ penalises
+power draw, discouraging meandering trajectories;
+(iii)~$C_{\mathrm{AoI}} = \frac{1}{N}\sum_i \mathrm{AoI}_{i,t}$
+penalises mean Age of Information~\cite{kaul2012realtime,abdelmagid2019aoi},
+preventing information starvation of any sensor; and
+(iv)~$C_{\mathrm{hover}}$ applies a small fixed cost to prevent the
+agent from idling indefinitely over one high-rate sensor (a failure
+mode observed in earlier reward formulations). Component magnitudes
+are calibrated so that visiting all sensors is strictly preferable
+to revisiting a single node and no component exceeds 15\% of the
+total episode reward; full per-term weights are in
+Appendix~\ref{app:reward_scale}.

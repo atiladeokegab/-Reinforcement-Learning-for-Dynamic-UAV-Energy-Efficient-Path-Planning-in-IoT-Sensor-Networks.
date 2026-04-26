@@ -42,7 +42,7 @@ src_dir    = script_dir.parent.parent.parent
 sys.path.insert(0, str(src_dir))
 
 from environment.uav_env import UAVEnvironment
-from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
+from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, LawnmowerAgent
 
 # ==================== CONFIG ====================
 
@@ -79,18 +79,21 @@ AGENTS = {
     "DQN":             None,           # filled in main
     "SF-Aware Greedy": MaxThroughputGreedyV2,
     "Nearest Greedy":  NearestSensorGreedy,
+    "Lawnmower":       LawnmowerAgent,
 }
 
 AGENT_COLORS = {
     "DQN":             "#1b9e77",
     "SF-Aware Greedy": "#d95f02",
     "Nearest Greedy":  "#7570b3",
+    "Lawnmower":       "#e6ab02",
 }
 
 AGENT_LINESTYLES = {
     "DQN":             "-",
     "SF-Aware Greedy": "--",
     "Nearest Greedy":  ":",
+    "Lawnmower":       (0, (5, 2)),
 }
 
 LAYOUT_LABELS = {
@@ -265,6 +268,8 @@ def run_greedy_episode(agent_class, positions):
     env    = FixedLayoutEnv(positions, **BASE_ENV_KWARGS)
     obs, _ = env.reset()
     agent  = agent_class(env)
+    if hasattr(agent, "reset"):
+        agent.reset()
     cum_r  = 0.0
     while True:
         action = agent.select_action(obs)
@@ -299,14 +304,15 @@ def run_all_layouts(model):
 
             # Greedy baselines
             for name, cls in [("SF-Aware Greedy", MaxThroughputGreedyV2),
-                               ("Nearest Greedy",  NearestSensorGreedy)]:
+                               ("Nearest Greedy",  NearestSensorGreedy),
+                               ("Lawnmower",       LawnmowerAgent)]:
                 gr = run_greedy_episode(cls, positions)
                 records.append({"layout": layout_name, "agent": name, "seed": seed, **gr})
 
         # Print per-layout summary
         sub = pd.DataFrame(records)
         sub = sub[sub["layout"] == layout_name]
-        for agent in ["DQN", "SF-Aware Greedy", "Nearest Greedy"]:
+        for agent in ["DQN", "SF-Aware Greedy", "Nearest Greedy", "Lawnmower"]:
             ag = sub[sub["agent"] == agent]
             print(f"    {agent:20s}: reward={ag['reward'].mean():>10.0f}±{ag['reward'].std():.0f}"
                   f"  J={ag['jains'].mean():.4f}")
@@ -318,9 +324,9 @@ def run_all_layouts(model):
 
 def plot_reward_comparison(df):
     layouts = list(LAYOUT_GENERATORS.keys())
-    agents  = ["DQN", "SF-Aware Greedy", "Nearest Greedy"]
+    agents  = ["DQN", "SF-Aware Greedy", "Nearest Greedy", "Lawnmower"]
     x       = np.arange(len(layouts))
-    width   = 0.25
+    width   = 0.20
 
     fig, ax = plt.subplots(figsize=(12, 5))
     for i, agent in enumerate(agents):
@@ -349,9 +355,9 @@ def plot_reward_comparison(df):
 
 def plot_fairness_comparison(df):
     layouts = list(LAYOUT_GENERATORS.keys())
-    agents  = ["DQN", "SF-Aware Greedy", "Nearest Greedy"]
+    agents  = ["DQN", "SF-Aware Greedy", "Nearest Greedy", "Lawnmower"]
     x       = np.arange(len(layouts))
-    width   = 0.25
+    width   = 0.20
 
     fig, ax = plt.subplots(figsize=(12, 5))
     for i, agent in enumerate(agents):

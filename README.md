@@ -10,9 +10,7 @@ The key contribution is a Gymnasium-compatible simulation that models the comple
 
 ## Contextual Overview
 
-The figure below shows a representative UAV trajectory learned by the DQN agent alongside two greedy baselines operating in the same 500×500-unit environment with 20 LoRa sensors. The DQN agent (left) visits all sensors while the greedy agents (centre and right) exhibit inefficient routing and sensor neglect.
-
-![UAV Trajectory Comparison](src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_trajectory_comparison.png)
+Representative DQN and Relational-RL trajectories alongside greedy / TSP / lawnmower baselines are produced by `compare_agents.py`; see `src/agents/dqn/dqn_evaluation_results/baseline_results/` (e.g., `agent_trajectories.png`, `final_comparison_graph.png`) after running the evaluation scripts below.
 
 The system architecture is as follows:
 
@@ -39,9 +37,7 @@ The system architecture is as follows:
          Multi-seed evaluation vs. NearestSensor & MaxThroughput baselines
 ```
 
-The position heatmap below shows where the DQN agent spends its time across 20 seeds — it concentrates hovering time over sensor clusters rather than traversing empty space.
-
-![UAV Position Heatmap](src/agents/dqn/dqn_evaluation_results/trajectory_results/fig_position_heatmap.png)
+A position-occupancy diagnostic (`boundary_diagnostic.py`, `boundary_diagnostic_relational.py`) writes per-episode JSON to `baseline_results/` and quantifies the flat-MLP DQN's perimeter-adjacent flight behaviour (100% edge occupancy on 20 seeds) alongside the Relational RL policy (21.5% edge occupancy, 0 wall collisions).
 
 ### Repository Structure
 
@@ -180,6 +176,15 @@ uv run python src/agents/dqn/dqn_evaluation_results/fairness_sweep.py
 
 Sweeps all 16 training conditions (4 grid sizes × 4 sensor counts) and plots Jain's fairness index. Figures saved to `dqn_evaluation_results/sweep_fairness_results/`.
 
+### Run the Boundary-Occupancy Diagnostics
+
+```bash
+uv run python src/agents/dqn/dqn_evaluation_results/boundary_diagnostic.py
+uv run python src/agents/dqn/dqn_evaluation_results/boundary_diagnostic_relational.py
+```
+
+Runs 20 episodes for each policy, reporting `boundary_hits` (failed moves into the grid edge) and `edge_steps` (steps spent on a boundary-adjacent cell). Per-episode JSON is written to `baseline_results/`. The diagnostic is the empirical basis for the architectural-limit finding discussed in the dissertation.
+
 ### Train the Ablation A4 Control Model
 
 ```bash
@@ -227,9 +232,11 @@ The agent is a Deep Q-Network (DQN) implemented via Stable-Baselines3. Key hyper
 - Stage 1 (150k–400k steps): + grid 500, N = 30
 - Stage 2 (400k+ steps): full distribution including 1000×1000, N = 40
 
-The training convergence curve below shows episode reward stabilising after approximately 1.2M timesteps:
+Training-convergence curves are written to `baseline_results/training_convergence.png` (DQN) and `baseline_results/relational_convergence.png` (Relational RL) after running the corresponding training scripts.
 
-![Training Convergence](src/agents/dqn/dqn_evaluation_results/training_results/fig_training_convergence.png)
+### Relational RL (Permutation-Invariant Policy)
+
+In addition to the flat-MLP DQN, the repository contains a Relational RL policy trained with PPO via Ray RLlib. The policy treats the sensor field as an unordered set, applies a shared per-sensor encoder, pools to a permutation-invariant representation, and emits discrete actions. Checkpoints are extracted to `src/agents/dqn/models/relational_rl/` (full policy) and `src/agents/dqn/models/relational_rl_ablation/` (ablation — step-penalty, no dwell bonus, N = 20). The Relational RL policy is evaluated alongside the DQN and baselines by `compare_agents.py`; a matched boundary-occupancy diagnostic is provided by `boundary_diagnostic_relational.py`.
 
 ### Environment Model
 
@@ -288,13 +295,11 @@ Four components were ablated to isolate their contributions:
 | A3 | AoI observation | Urgency features zeroed — agent cannot see time-since-visit |
 | A4 | Domain randomisation | Fixed 500×500, N = 20; separate control model trained |
 
-![Ablation Results](src/agents/dqn/dqn_evaluation_results/ablation_results/fig_ablation_bars.png)
+Ablation comparison bars are written to `baseline_results/ablation_comparison.png` after running `ablation_study.py`.
 
 ### Fairness Across Conditions
 
-Jain's fairness index is measured across all 16 training conditions. The summary matrix below shows the DQN maintains a consistent fairness advantage over greedy baselines as grid size and sensor count scale:
-
-![Jain's Fairness Summary Matrix](src/agents/dqn/dqn_evaluation_results/sweep_fairness_results/figA_jains_summary_matrix.png)
+Jain's fairness index is measured across all 16 training conditions by `fairness_sweep.py`; outputs include a summary matrix in `sweep_fairness_results/` that compares DQN against greedy baselines as grid size and sensor count scale.
 
 ### Third-Party Code and Academic Integrity
 
@@ -316,17 +321,19 @@ The custom Gymnasium environment (`uav_env.py`, `iot_sensors.py`, `uav.py`), rew
 
 **Known limitations:**
 
+- The flat-MLP DQN policy, even when trained with domain randomisation and a competence curriculum, learns spatial heuristics (perimeter-adjacent flight, sustained in-place dwell) rather than topology-aware reasoning. A diagnostic (`boundary_diagnostic.py`) shows 100% boundary-cell occupancy across 20 seeds. The Relational RL policy resolves this (21.5% occupancy, 0 wall collisions), but the DQN ceiling is an architectural property of the observation encoding.
 - The simulation assumes a flat, obstacle-free environment. Real deployments involve 3D terrain, buildings, and dynamic interference that are not modelled.
 - The Two-Ray ground reflection model is a simplified path-loss approximation. Real LoRa links in urban environments would require more detailed channel models (e.g., ray-tracing).
 - The UAV battery model uses constant power consumption values; real flight power varies with payload, wind, and manoeuvring.
 - Evaluation uses a DummyVecEnv (serial); large-scale sweeps (e.g., N=40, 30 seeds) are compute-intensive on CPU.
 - The observation space is zero-padded to a fixed maximum of 50 sensors; the agent's performance on sensor counts above 40 has not been evaluated.
+- The Lawnmower baseline is currently evaluated at 5 seeds (`compare_v3_multiseed.py`), whereas the DQN / Relational RL / greedy / TSP comparisons use 20 seeds; the Lawnmower reporting is therefore indicative rather than a statistically matched comparison.
 
 **Potential future improvements:**
 
 - Replace the simplified path-loss model with a ray-tracing or measured channel model for higher sim-to-real fidelity.
-- Extend to multi-UAV cooperative collection using multi-agent RL.
+- Extend to multi-UAV cooperative collection using multi-agent RL (QMIX, MAPPO) — the single-UAV physical-feasibility wall at 1000×1000 motivates this directly.
 - Add dynamic sensor arrival/departure to model real IoT deployments.
 - Implement 3D flight (variable altitude) to exploit altitude-dependent ADR changes.
 - Integrate real GPS and LoRa hardware (Raspberry Pi + LoRa HAT) for hardware-in-the-loop validation.
-- Investigate continuous action spaces and actor-critic algorithms (SAC, TD3) for smoother trajectory optimisation.
+- Investigate continuous action spaces and actor-critic algorithms (SAC, TD3) for smoother trajectory optimisation, in combination with the Relational RL encoder.

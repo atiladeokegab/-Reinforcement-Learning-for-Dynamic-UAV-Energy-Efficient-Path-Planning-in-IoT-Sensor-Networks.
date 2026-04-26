@@ -47,7 +47,7 @@ src_dir    = script_dir.parent.parent.parent
 sys.path.insert(0, str(src_dir))
 
 from environment.uav_env import UAVEnvironment
-from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy
+from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, LawnmowerAgent
 
 # ==================== CONFIG ====================
 
@@ -276,6 +276,8 @@ def run_greedy_episode(agent_class, env_kwargs, fixed_positions, seed):
     env    = FixedLayoutEnv(fixed_positions, **env_kwargs)
     obs, _ = env.reset(seed=seed)
     agent  = agent_class(env)
+    if hasattr(agent, "reset"):
+        agent.reset()
     cum_reward = 0.0
     while True:
         action         = agent.select_action(obs)
@@ -306,7 +308,8 @@ def sweep_gps_noise(model):
             records.append({"perturbation": "gps", "sigma": sigma, "seed": seed, **r})
             # baseline greedy (no GPS noise — greedy uses true position)
             for name, cls in [("SF-Aware Greedy", MaxThroughputGreedyV2),
-                               ("Nearest Greedy",  NearestSensorGreedy)]:
+                               ("Nearest Greedy",  NearestSensorGreedy),
+                               ("Lawnmower",       LawnmowerAgent)]:
                 gr = run_greedy_episode(cls, BASE_ENV_KWARGS, pos, seed)
                 records.append({"perturbation": "gps_baseline", "sigma": sigma,
                                  "seed": seed, "agent": name, **gr})
@@ -370,7 +373,7 @@ def sweep_latency(model):
 
 # ==================== PLOTTING ====================
 
-COLORS = {"DQN": "#1b9e77", "SF-Aware Greedy": "#d95f02", "Nearest Greedy": "#7570b3"}
+COLORS = {"DQN": "#1b9e77", "SF-Aware Greedy": "#d95f02", "Nearest Greedy": "#7570b3", "Lawnmower": "#e6ab02"}
 
 
 def _mean_std(df, x_col):

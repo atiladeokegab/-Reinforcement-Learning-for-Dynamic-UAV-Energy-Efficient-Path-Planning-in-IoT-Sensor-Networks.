@@ -1,76 +1,39 @@
-\subsection{Multi-Condition Comparative Analysis}
+\subsection{Multi-Seed Scalability Results}
 \label{sec:multi_condition}
+\label{sec:multi_seed}
+\label{sec:dqn_results}
+\label{sec:scalability}
 
-\subsubsection{Sensor-Count Scaling at 500$\times$500}
+This section aggregates the five-condition scalability sweep
+(50 seeds per condition, 250 episodes per agent). Full per-condition
+numbers and $p$-values are in Table~\ref{tab:scalability_ndr}
+(Section~\ref{sec:relational_headtohead}); the figure is
+Figure~\ref{fig:scalability_combined}. Regime-by-regime breakdowns
+for each $(grid, N)$ condition are in
+Appendix~\ref{app:scalability_extended}. Discussion here concentrates
+on the DQN relative to the heuristic baselines and the TSP Oracle.
 
-Table~\ref{tab:fairness_summary} reports cumulative reward, Jain's fairness index, and
-energy efficiency across $N \in \{10, 20, 30, 40\}$ sensors at the 500$\times$500 grid,
-evaluated over 20 seeds per condition.
+Two coverage regimes emerge from the sweep. At the trivial condition $(100{\times}100, N{=}10)$, all five agents
+reach $100\%$ NDR. From $(200{\times}200, N{=}20)$ upward the
+coverage numbers separate sharply: the DQN drops from $99.4\%$ NDR
+at $N{=}20$ to $52.7\%$ at $N{=}30$, $27.5\%$ at $N{=}40$, and
+$13.0\%$ at $N{=}50$, roughly halving per step, while the TSP Oracle
+remains at $92.2\%$ at $N{=}40$ and $76.8\%$ at $N{=}50$. The
+coverage gap between the DQN and the Oracle widens from $0$ to $63.8$
+percentage points across the sweep, showing that the DQN's
+performance is limited by routing quality, not the physical envelope.
 
-\begin{table}[H]
-\centering
-\caption{Mean cumulative reward ($\times 10^6$), Jain's fairness index $\mathcal{J}$,
-         and energy efficiency (B/Wh) across sensor counts at the 500$\times$500 grid,
-         20 seeds per condition. All agents achieve 100\% sensor coverage at every density.}
-\label{tab:fairness_summary}
-\begin{tabularx}{\textwidth}{l l Z Z Z Z Z Z}
-\toprule
-$N$ & Agent & Reward ($\times10^6$) & $\pm$Std & Mean $\mathcal{J}$ & $\pm$Std & Eff (B/Wh) & $\pm$Std \\
-\midrule
-\multirow{3}{*}{10}
- & DQN             & 3.25 & 0.04 & 0.999 & 0.001 & 111.0 & 1.1 \\
- & SF-Aware Greedy & 3.27 & 0.02 & 1.000 & 0.001 & 111.4 & 0.7 \\
- & Nearest Greedy  & 3.25 & 0.05 & 0.999 & 0.001 & 110.8 & 1.3 \\
-\midrule
-\multirow{3}{*}{20}
- & DQN             & 5.58 & 0.57 & 0.962 & 0.027 & 188.5 & 18.4 \\
- & SF-Aware Greedy & 5.60 & 0.54 & 0.963 & 0.026 & 189.4 & 17.8 \\
- & Nearest Greedy  & 5.60 & 0.58 & 0.963 & 0.028 & 189.2 & 18.9 \\
-\midrule
-\multirow{3}{*}{30}
- & DQN             & 6.22 & 0.65 & 0.833 & 0.039 & 210.1 & 22.0 \\
- & SF-Aware Greedy & 6.15 & 0.66 & 0.827 & 0.041 & 207.8 & 22.3 \\
- & Nearest Greedy  & 6.19 & 0.61 & 0.829 & 0.037 & 209.2 & 20.8 \\
-\midrule
-\multirow{3}{*}{40}
- & DQN             & 6.39 & 1.06 & 0.666 & 0.070 & 215.3 & 35.7 \\
- & SF-Aware Greedy & 6.41 & 1.06 & 0.666 & 0.068 & 216.0 & 35.9 \\
- & Nearest Greedy  & 6.38 & 1.03 & 0.659 & 0.067 & 215.3 & 34.8 \\
-\bottomrule
-\end{tabularx}
-\end{table}
+More telling still, the greedy baselines beat the DQN from $N \ge 30$. SF-Aware Greedy outperforms the DQN on NDR from $N{=}30$ onward:
+$84.3\%$ vs $52.7\%$ at $N{=}30$ (Welch's $t = -10.0$,
+$p < 10^{-4}$), $57.0\%$ vs $27.5\%$ at $N{=}40$, and $39.4\%$ vs
+$13.0\%$ at $N{=}50$. Even the protocol-blind Nearest-Sensor Greedy
+beats the DQN from $N{=}30$ upward ($70.6\%$ vs $52.7\%$). That a
+method with no spreading-factor awareness outperforms the DQN
+strongly implicates routing representation, not protocol adaptation,
+as the bottleneck. This is the empirical setup for the architectural
+diagnostic of Section~\ref{sec:diagnostic}, which localises the
+finding to the flat-MLP encoder's inability to represent the sensor
+set as an unordered collection.
 
-The multi-condition comparative analysis between the Deep Q-Network (DQN), SF-Aware Greedy, and
-Nearest Greedy baselines reveals a consistent and strong primary result: all three agents achieve
-complete sensor coverage across every sensor count evaluated. This outcome confirms that the
-learned policy generalises robustly to varying network densities without retraining.
-
-At $N = 10$, performance metrics across the three agents are near-indistinguishable, constituting
-a \emph{trivial regime} in which the energy budget is sufficient for any routing strategy to visit
-all sensors within a single episode. Cumulative rewards differ by less than 0.6\% and Jain's
-indices converge to $\mathcal{J} \approx 1.0$ for all agents, confirming that algorithmic choice
-provides no marginal benefit at low sensor density.
-
-As sensor count increases, Jain's fairness index degrades uniformly across all three agents:
-from $\mathcal{J} \approx 1.0$ at $N = 10$, to $0.96$ at $N = 20$, $0.83$ at $N = 30$, and
-$0.67$ at $N = 40$. This monotonic degradation reflects the fixed energy budget: as the network
-grows denser, the UAV must allocate flight steps across more sensors, reducing the time available
-at each. Crucially, the DQN tracks the greedy baselines within one standard deviation at every
-density, and a Welch's $t$-test on the primary test condition ($N = 20$) confirms no statistically
-significant difference in cumulative reward between the DQN and SF-Aware Greedy
-($t = -0.157$, $p = 0.876$) or between the DQN and Nearest Greedy ($t = -0.140$, $p = 0.889$).
-
-At $N = 40$, reward variance rises substantially for all agents (standard deviation $\approx 1.06
-\times 10^6$) and fairness variance broadens to $\sigma_{\mathcal{J}} \approx 0.07$. This
-elevated variability is a shared characteristic, attributable to stochastic sensor layout sampling
-at high density rather than any policy-level instability. The DQN demonstrates commensurate
-variance to both greedy strategies, confirming that the source of uncertainty is environmental.
-
-\subsubsection{Statistical Summary}
-
-Welch's $t$-tests on the primary condition ($N = 20$, 500$\times$500 grid, $n = 20$ seeds)
-yield $p = 0.876$ (DQN vs.\ SF-Aware Greedy) and $p = 0.889$ (DQN vs.\ Nearest Greedy),
-confirming that the DQN achieves statistically equivalent performance to both handcrafted
-baselines. The absence of significant differences, combined with universal 100\% sensor coverage,
-demonstrates that the trained DQN policy has converged to a near-optimal solution on this
-problem class, matching the performance ceiling set by the greedy oracles.
+The Relational-RL results and full agent ordering are in
+Section~\ref{sec:relational_headtohead} and Table~\ref{tab:scalability_ndr}.

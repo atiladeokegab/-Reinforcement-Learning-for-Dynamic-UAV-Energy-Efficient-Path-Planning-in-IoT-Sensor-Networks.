@@ -1,63 +1,7 @@
 \subsection{Conclusions}
 
-This project builds and evaluates a DRL framework for UAV-assisted LoRaWAN data collection,
-coupling UAV trajectory planning with LoRaWAN protocol physics in a Gymnasium environment.
-Systematic evaluation across a $100{\times}$ area range ($100{\times}100$ to
-$1{,}000{\times}1{,}000$ cells) reveals that the operative constraint on single-UAV
-performance is not algorithm quality but physical feasibility: energy and link-budget limits
-define a hard boundary that no policy can overcome. Six contributions result.
+This dissertation coupled UAV trajectory planning with the full LoRaWAN physics stack inside a Gymnasium simulation, trained a DQN agent under domain randomisation and a competence-gated curriculum, and used the resulting framework to diagnose and then resolve an architectural limit of flat-policy learners on this problem. Five contributions resulted. (1)~A full-stack LoRaWAN physics environment (Section~\ref{sec:env}) that models the complete causal chain from UAV position through Two-Ray path loss, log-normal shadowing, EMA-based ADR, and the LoRa Capture Effect to per-packet delivery in a single timestep; no prior open simulator couples all four effects end-to-end. (2)~A three-stage competence-gated domain-randomised curriculum (Section~\ref{sec:training}) that produces a single DQN policy deployable across all $(\text{grid}, N)$ combinations without retraining. (3)~A 50-seed five-condition benchmarked comparison (Section~\ref{sec:multi_seed}) against Nearest-Sensor Greedy, SF-Aware Greedy, and a TSP Oracle, quantifying the operational envelope and the routing-efficiency ceiling. (4)~An architectural diagnostic (Section~\ref{sec:diagnostic}) showing the trained DQN produces median zero wall collisions but $100.0\%$ boundary-cell occupancy, tracing this to the absence of a set-structured inductive bias in the flat-MLP policy. (5)~A permutation-invariant Relational-RL policy (Section~\ref{sec:relational}) that, under matched conditions, reduces edge-cell occupancy from $100.0\%$ to $21.5\%$, eliminates wall collisions (mean $21.8 \to 0$), and dominates the DQN across every multi-seed scalability condition: NDR at $(300{\times}300, N{=}30)$ rises from $52.7\%$ to $97.7\%$; at $(500{\times}500, N{=}50)$ from $13.0\%$ to $56.4\%$ (all $p < 10^{-4}$, Welch's $t$-test).
 
-\begin{enumerate}
-    \item \textbf{Simulation environment}: the first open Gymnasium framework modelling the
-    complete causal chain from UAV position through RSSI, EMA-ADR, and Capture Effect to
-    packet delivery, with Two-Ray path loss, log-normal shadowing, asynchronous duty cycles,
-    and a physically motivated link-budget constraint ($r_{\max} \approx 365$ grid units at
-    SF12, Table~\ref{tab:sf_range}).
+The scalability sweep identifies three regimes (trivial, policy-sensitive, battery-bounded), with the feasibility boundary determined by physics rather than policy quality. The architectural diagnostic localises the DQN bottleneck to the absence of permutation invariance over the sensor set, making it a constructive finding that predicts the direction of the fix. The Relational-RL system, which combines a permutation-invariant encoder with two PPO-motivated reward supplements (potential-based navigation shaping and a cluster dwell bonus), empirically eliminates the diagnostic pathology and closes a measurable fraction of the TSP-Oracle reward ceiling. Retraining the DQN with the same cluster dwell bonus shifted NDR by at most $1\%$ across all five conditions, confirming the performance gap comes from the architecture rather than the reward supplement. The diagnostic-then-fix pairing is the principal contribution.
 
-    \item \textbf{Curriculum training}: a three-stage domain-randomisation curriculum
-    producing a single policy that operates across all 16 tested conditions (4 grid sizes
-    $\times$ 4 sensor counts) without retraining, spanning trivially solvable
-    ($100{\times}100$) through physically infeasible ($1{,}000{\times}1{,}000$) regimes.
-
-    \item \textbf{Multi-objective reward}: AoI urgency, buffer-overflow penalties, a
-    discovery bonus, and an energy term prevent degenerate hovering and drive the agent
-    to navigate toward out-of-range sensors. Ablation confirms AoI shapes training
-    behaviour without being observable at inference ($d = 0.005$, $p = 0.987$).
-
-    \item \textbf{SF-Aware Greedy baseline}: a novel protocol-aware comparator that
-    routes deterministically toward the lowest-SF sensor. This baseline proves harder to
-    exceed than standard routing heuristics, outperforming the DQN at 300$\times$300
-    ($d = 1.65$, $p = 0.052$) and 500$\times$500 ($d = 1.84$, $p = 0.039$), and
-    quantifying the performance ceiling achievable by explicit SF-aware routing.
-
-    \item \textbf{Operational envelope characterisation}: systematic evaluation identifies
-    three regimes, trivial ($100{\times}100$, all agents J$>$0.96), feasible
-    ($300{\times}300$, SFGreedy leads with J$\approx$0.55), and infeasible
-    ($1{,}000{\times}1{,}000$, all agents NDR$<$13\%), and the single-UAV physical
-    boundary at which energy and range make full coverage impossible regardless of policy.
-
-    \item \textbf{Emergent dwell-then-reposition}: despite not matching SFGreedy on
-    aggregate metrics, the DQN learns to sustain proximity for $\sim$10 steps near sensor
-    clusters to drive EMA-ADR convergence before repositioning. This temporal strategy is
-    structurally inaccessible to one-step greedy look-ahead and represents genuine
-    long-horizon protocol-aware learning.
-\end{enumerate}
-
-\paragraph{Key Findings.}
-
-The central finding is that single-UAV LoRaWAN data collection faces a physical feasibility
-ceiling, not an algorithmic one. At $1{,}000{\times}1{,}000$, no agent achieves more than
-12\% per-sensor coverage: the grid diagonal ($14{,}142$\,m) exceeds the maximum traversable
-distance within the episode energy budget ($d_{\max} \approx 15{,}782$\,m with 20\% reserve),
-and the TSP tour to visit all 20 sensors ($\approx 44{,}700$\,m) is a factor of 2.8 beyond
-what the UAV can achieve. This boundary is independent of policy quality.
-
-Within the feasible regime ($300{\times}300$ and below), SF-Aware Greedy demonstrates that
-explicit protocol-awareness in routing, routing toward the lowest-SF sensor, is more
-effective than the DQN's learned policy at the current training budget. The DQN performs
-comparably to Nearest-Sensor Greedy, confirming that the key capability gap is the
-absence of structured sensor-topology representation in the MLP policy. The dwell-then-reposition
-behaviour shows the agent has learned \emph{when} to exploit ADR convergence, but not yet
-\emph{where} to route to maximise its cumulative effect. Closing this gap is the specific
-motivation for the attention-based and graph-neural-network extensions identified as
-highest priority in Section~\ref{sec:future_work}.
+Several limitations remain. The boundary diagnostic is evaluated at a single $(200, 20)$ scale across 20 seeds; the scalability comparison uses 50 seeds across five conditions. The Lawnmower baseline uses 5 seeds and is kept as an indicative coverage-only benchmark. The simulation is 2D at fixed $100$\,m altitude with no 3D channel effects (urban shadowing, terrain reflection) modelled.

@@ -1,50 +1,48 @@
 \subsection{Aims and objectives}
 \label{sec:aims}
 
-This project develops a protocol-aware Deep Reinforcement Learning (DRL) framework that
-optimises UAV flight trajectories for energy-efficient data collection in dense, unsynchronised
-LoRaWAN networks. The central claim is that using the UAV's physical position as a direct
-control input for the radio protocol resolves the ``Spreading Factor (SF) Monoculture''
-bottleneck. A Deep Q-Network (DQN) agent is trained within a high-fidelity simulation to
-learn a network-aware policy that maximises data throughput while minimising energy consumption.
-
-The project objectives are:
+This project develops a protocol-aware reinforcement-learning framework
+for UAV-assisted LoRaWAN data collection and uses it to diagnose
+and resolve a specific architectural limit of flat-policy learners.
+The central claim is that, once the simulation models the full
+causal chain from UAV position to packet delivery, the remaining
+bottleneck to policy quality is the inductive bias of the policy
+network, and that a permutation-invariant sensor-set policy
+measurably resolves that bottleneck. The project objectives are:
 
 \begin{itemize}
-    \item To develop a high-fidelity simulation environment compatible with the Gymnasium
-    interface, incorporating rigorous telecommunications physics including the Two-Ray Ground
-    Reflection path loss model, log-normal shadowing, and asynchronous duty cycles. To the
-    author's knowledge, this is the first open framework to model the complete causal chain
-    from UAV position through RSSI, EMA-ADR, and Capture Effect to packet delivery within a
-    single simulation step.
-
-    \item To model the specific constraints of the LoRaWAN protocol, particularly the
-    Adaptive Data Rate (ADR) latency, to replicate the causal link between UAV positioning,
-    RSSI, and Spreading Factor allocation.
-
-    \item To formulate the UAV data collection problem as a Partially Observable Markov
-    Decision Process (POMDP, where sensor locations and out-of-range channel states are
-    hidden from the agent), and to approximate the resulting POMDP as a tractable MDP via
-    frame stacking ($k{=}4$), designing a multi-objective reward function that balances the
-    competing goals of energy conservation, data freshness (AoI), and collection volume.
-
-    \item To train a Deep Q-Network (DQN) agent to learn an emergent flight policy that
-    autonomously navigates the ``Starvation vs.\ Throughput'' trade-off without human
-    intervention.
-
-    \item To evaluate the protocol-aware DRL agent against two greedy path-planning baselines
-    (Nearest-Sensor Greedy and SF-Aware Max-Throughput Greedy) in terms of energy efficiency,
-    fairness (Jain's Index), and total bytes delivered, using multi-seed statistical testing
-    (Welch's $t$-test, Cohen's $d$).
-
-    \item To characterise the operational envelope of the single-UAV system by evaluating
-    across grid scales from $100{\times}100$ to $1{,}000{\times}1{,}000$ cells, identifying
-    the physical feasibility boundary beyond which link-budget and energy constraints prevent
-    full sensor coverage regardless of policy quality.
-
-    \item To assess the trade-offs between computational complexity, policy robustness, and
-    real-world feasibility, identifying the ``Sim-to-Real'' gap and the transition from
-    feasible to infeasible regimes as key findings for future research.
+    \item Develop a high-fidelity Gymnasium environment coupling the
+    Two-Ray Ground Reflection model, log-normal shadowing,
+    asynchronous duty cycles, EMA-based ADR, and the LoRa Capture
+    Effect into a single per-step causal chain, and formulate the
+    task as a POMDP approximated as an MDP via frame stacking
+    ($k{=}4$) with a multi-objective reward balancing energy, AoI
+    freshness, and collection volume.
+    \item Train a DQN agent under domain randomisation across 16
+    $(\text{grid}, N)$ conditions and a three-stage competence-gated
+    curriculum, producing a single policy deployable across the
+    envelope without retraining.
+    \item Evaluate the trained DQN against Nearest-Sensor Greedy,
+    SF-Aware Max-Throughput Greedy, a Nearest-Neighbour + 2-opt TSP
+    Oracle, and a 5-seed Lawnmower benchmark, using 50 independent
+    seeds per condition with Welch's $t$-test and Cohen's $d$.
+    \item Conduct a four-condition ablation study (Capture Effect,
+    EMA-ADR smoothing, AoI observation, domain randomisation)
+    quantifying each component's contribution.
+    \item Diagnose the representational limits of the flat-MLP policy
+    by instrumenting the environment for boundary-cell occupancy and
+    wall-collision frequency across 20 seeds, and interpret the
+    observed behaviour as a consequence of the flat-MLP inductive
+    bias rather than a training failure.
+    \item Implement and evaluate a permutation-invariant Relational-RL
+    policy (per-sensor encoder with masked sum-pooling, trained under
+    PPO on the same environment and curriculum), reporting its effect
+    on the diagnostic metrics, the multi-seed benchmarks, and the
+    TSP-Oracle gap.
 \end{itemize}
 
-A protocol-aware agent generates energy-efficient trajectories satisfying network fairness and throughput requirements without pre-specified routing heuristics.
+The guiding hypothesis is that once protocol physics, reward shaping,
+and the domain-randomisation curriculum are fixed, an explicit
+permutation-invariant inductive bias over the sensor set closes a
+measurable fraction of the gap between a flat-MLP DQN and a
+routing-optimal ceiling.

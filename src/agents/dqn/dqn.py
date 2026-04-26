@@ -1,28 +1,8 @@
-"""
-DQN Training with Domain Randomisation + Competence-Based Curriculum Learning
-==============================================================================
-Trains one model that generalises across all evaluation conditions without
-retraining by exposing the agent to randomly sampled (grid_size, num_sensors)
-combinations every episode.
+"""DQN training with domain randomisation and competence-based curriculum learning.
 
-Key improvements over the time-based curriculum:
-  1. Competence Gate       — graduation requires BOTH NDR > 95 % AND Jain's > 0.85
-                             sustained over a rolling window of N episodes.
-  2. Demotion Gate         — if performance collapses after advancing, the agent
-                             is demoted one stage to stabilise.
-  3. Min-Dwell Enforcement — prevents instant skip-through at training start.
-  4. Domain Randomisation  — every episode samples a new grid_size from the
-                             current curriculum stage; sensor count is fixed
-                             per worker.
-  5. Multi-env Parallelism — N_ENVS parallel workers, each independently
-                             randomised, for faster and more diverse training.
-  6. Adaptive Reward Shaping — fairness bonus scaled to grid size so the agent
-                              is rewarded consistently across all conditions.
-  7. Larger Replay Buffer  — needed because experience covers a wider
-                             distribution of states.
-
-Zero-padding layout (unchanged from original):
-    [raw UAVEnvironment obs]  +  [zeros for missing sensors up to MAX_SENSORS_LIMIT]
+Trains one model that generalises across all (grid_size, num_sensors) evaluation
+conditions by sampling a new grid from the current curriculum stage every episode.
+Sensor count is fixed per worker; diversity is achieved via N_ENVS parallel workers.
 
 Author: ATILADE GABRIEL OKE
 """
@@ -131,11 +111,6 @@ GREEDY_BENCHMARK = {
     "floor_ndr":    50.0,
     "floor_jains":  0.40,
 }
-
-# Kept for backward-compat so any import that references these does not crash.
-# They are NOT used by the competence-based callback.
-CURRICULUM_THRESHOLDS = []
-MIN_STEPS_PER_STAGE   = 50_000  # fallback; overridden by COMPETENCE_GATE["min_steps"]
 
 # Fixed target config for evaluation during training (matches your baseline)
 EVAL_GRID      = (500, 500)
@@ -1125,7 +1100,7 @@ TRAINING_CONFIG = {
 }
 
 EVAL_FREQ       = 5_000
-N_EVAL_EPISODES = 25   # overridden to 100 in train_v3_full_retrain.py
+N_EVAL_EPISODES = 25
 
 SAVE_DIR = Path("models/dqn_v3")
 LOG_DIR  = Path("logs/dqn_v3")

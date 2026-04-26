@@ -1,77 +1,55 @@
 \subsection{Problem Formulation}
 
-We formulate the UAV trajectory optimisation problem as a finite-horizon Partially
-Observable Markov Decision Process (POMDP). The agent does not observe sensor locations
-directly, and the link-quality signal $Q_{i,t}$ is zero for all out-of-range sensors,
-leaving channel state and SF distributions beyond the UAV's current footprint hidden.
-The objective is to maximise total collected data throughput subject to energy, kinematic,
-and protocol constraints:
+We formulate the UAV trajectory optimisation problem as a
+finite-horizon Partially Observable MDP. The link-quality signal
+$Q_{i,t}$ is zero for out-of-range sensors, leaving channel state
+and SF distributions beyond the UAV's current footprint hidden.
+The objective is to maximise total collected throughput subject to
+energy, kinematic, and protocol constraints:
 \begin{align}
     \text{(P1):} \quad \max_{\pi} \quad & \sum_{t=0}^{T} \sum_{i=1}^{N} D_{i,t}
         \label{eq:p1_obj} \\
     \text{s.t.} \quad
-    & \text{RSSI}_{i,t}(p_t) \geq \text{RSSI}_{\min}(\text{SF}_{i,t})
-        \quad \forall i \in \mathcal{N} \label{eq:p1_c1} \\
-    & E_{t+1} = E_t - P(a_t) \cdot \Delta t \geq 0
-        \quad \forall t \label{eq:p1_c2} \\
-    & \sum_{i \in \mathcal{N}} \mathbb{I}(\text{SF}_{i,t} = k) \leq 1
+    & \mathrm{RSSI}_{i,t}(p_t) \geq \mathrm{RSSI}_{\min}(\mathrm{SF}_{i,t})
+        \quad \forall i \label{eq:p1_c1} \\
+    & E_{t+1} = E_t - P(a_t)\,\Delta t \geq 0 \quad \forall t \label{eq:p1_c2} \\
+    & \sum_{i\in\mathcal{N}} \mathbb{I}(\mathrm{SF}_{i,t} = k) \leq 1
         \quad \forall k \in \mathcal{S} \label{eq:p1_c3}
 \end{align}
-where $D_{i,t}$ is the data successfully collected from sensor $i$ at step $t$,
-$E_t$ is the remaining battery energy, and constraint~\eqref{eq:p1_c3} enforces
-SF orthogonality (one active transmission per SF).
+where $D_{i,t}$ is the data collected from sensor $i$ at step $t$.
+(P1) is non-convex: $p_t$ and $\mathrm{SF}_{i,t}$ are coupled through
+the EMA-ADR filter ($\lambda = 0.1$), violating the Markov property.
+Classical methods (MILP, convex MPC) cannot tractably encode this
+history. Frame stacking (Eq.~\ref{eq:stacked_state}) restores
+approximate Markovianity by rendering EMA-ADR convergence
+state-observable.
 
-\noindent\textbf{Proposition 1} (Intractability and Markov Restoration).
-\textit{Under Assumptions 1--3, (P1) is non-convex: $p_t$ and $\mathrm{SF}_{i,t}$
-are coupled through the EMA-ADR filter ($\lambda{=}0.1$), violating the Markov property.
-Classical methods (MILP, convex MPC) cannot tractably encode this history.
-Frame stacking $\mathbf{S}_t^{\mathrm{stacked}}$ (Eq.~\ref{eq:stacked_state})
-restores approximate Markovianity by rendering EMA-ADR convergence state-observable.}
+\subsubsection{State and action spaces}
 
-\subsubsection{State Space Definition}
-
-The observation at step $t$ is:
+The per-step observation is
 \begin{equation}
-    \mathbf{S}_t = [p_t,\, E_t,\, B_t,\, U_t] \label{eq:state_vector}
+    \mathbf{S}_t = [p_t,\, E_t,\, B_t,\, U_t,\, Q_t]
+    \label{eq:state_vector}
 \end{equation}
-where $p_t \in \mathbb{R}^2$ is the UAV's 2D position (altitude is fixed at $h_u$),
-$E_t \in [0, E_{\max}]$ is remaining battery energy, $B_t \in [0, B_{\max}]^N$
-is the per-sensor buffer occupancy, and $U_t \in [0,1]^N$ is a normalised urgency vector:
+combining UAV position, battery energy, per-sensor buffer
+occupancy $B_{i,t}\in[0, B_{\max}]$, a normalised urgency
+$U_{i,t} = (B_{i,t}/B_{\max})\cdot(\text{gen-rate}_i/\text{coll-rate}_i)$
+that captures imminent overflow risk more directly than classical
+Age of Information~\cite{kaul2012realtime,abdelmagid2019aoi}, and a
+per-sensor link-quality signal $Q_{i,t}\in[0,1]$ encoding the current
+SF (SF7 $\mapsto 1.0$, SF12 $\mapsto 0.1$; zero if out of range).
+Total dimensionality is $3 + 3N$. To restore Markovianity under
+partial observability, frame stacking aggregates the last $k=4$ steps:
 \begin{equation}
-    U_{i,t} = \frac{B_{i,t}}{B_{\max}} \cdot \frac{\text{data\_generation\_rate}_i}{\text{collection\_rate}_i}
-    \label{eq:urgency}
-\end{equation}
-Urgency captures imminent overflow risk more directly than classical Age of
-Information~\cite{kaul2012realtime}: a sensor with a near-full buffer and a fast
-generation rate has high urgency regardless of how long its data has been waiting.
-A third per-sensor feature, link quality $Q_{i,t} \in [0,1]$, encodes the sensor's
-current Spreading Factor normalised to $[0,1]$ (SF7 $\mapsto$ 1.0, SF12 $\mapsto$ 0.1),
-providing the agent with a direct signal of spectral efficiency at each sensor:
-\begin{equation}
-    Q_{i,t} = \begin{cases}
-        \text{SF\_norm}(\text{SF}_{i,t}) & \text{if sensor } i \text{ in range} \\
-        0 & \text{otherwise}
-    \end{cases}
-\end{equation}
-The total state dimensionality is therefore $3 + 3N$ (UAV position, battery, and per-sensor
-buffer, urgency, and link quality). The link quality feature allows the agent to observe
-ADR convergence progress directly, complementing the temporal trend information provided
-by frame stacking.
-
-To make the environment approximately Markovian under partial observability, we employ
-frame stacking with $k=4$ steps:
-\begin{equation}
-    \mathbf{S}_t^{\text{stacked}} = [\mathbf{S}_{t-3},\, \mathbf{S}_{t-2},\, \mathbf{S}_{t-1},\, \mathbf{S}_t]
-    \in \mathbb{R}^{4(3+3N)}
+    \mathbf{S}_t^{\mathrm{stacked}}
+    = [\mathbf{S}_{t-3},\, \mathbf{S}_{t-2},\, \mathbf{S}_{t-1},\, \mathbf{S}_t]
+    \in \mathbb{R}^{4(3+3N)}.
     \label{eq:stacked_state}
 \end{equation}
-The temporal window lets the agent observe urgency and link-quality trends, inferring
-SF convergence dynamics (link quality rising over consecutive steps signals EMA-ADR
-downgrading from SF12 toward SF7) without explicitly tracking the ADR filter state.
-
-\subsubsection{Action Space Definition}
-
-The discrete action space $\mathcal{A}$ (Eq.~\ref{eq:action_space}) is as defined in
-Section~4.1.1. Hover is energetically more expensive per unit displacement
-($P_{\text{hover}} > P_{\text{flight}}$) but essential for stabilising the LoRa link
-during data collection and for allowing duty-cycle windows to open.
+The temporal window lets the agent observe urgency and link-quality
+trends, inferring EMA-ADR convergence (link quality rising over
+consecutive steps signals SF downgrade from SF12 toward SF7) without
+explicitly tracking the filter state. The action space is
+$\mathcal{A}$ (Eq.~\ref{eq:action_space}); Hover is energetically
+more expensive per unit displacement but essential for stabilising
+the LoRa link during decode windows.

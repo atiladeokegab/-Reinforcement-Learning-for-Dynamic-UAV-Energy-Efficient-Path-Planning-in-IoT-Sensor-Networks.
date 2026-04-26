@@ -1,145 +1,80 @@
-\section{Additional Results Figures}
+\subsection{Additional Figures}
 \label{app:additional_figures}
+\label{app:extra}
+\label{app:lawnmower}
+
+Figures that support the main body but were moved here to keep the results section readable.
+All are reproducible from the scripts in \texttt{src/agents/dqn/dqn\_evaluation\_results/}
+using the data in \texttt{baseline\_results/}.
 
 \subsection*{Training Convergence}
-\label{app:training}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{fig_training_convergence}
-    \caption{Training convergence per curriculum stage (8 stages with $\geq50$ logged
-             episodes shown; short interrupted stages omitted). Each line is one stage,
-             coloured light-to-dark with stage index. \textbf{Left:} mean episode reward
-            , early stages (4--6) converge at large negative values; later stages
-             (7, 10, 13, 15, 16) converge to $3$--$5\times10^6$.
-             \textbf{Right:} TD loss, all stages show the spike-then-converge profile.
-             Raw values in transparent colour; EMA ($w=0.9$) in bold.}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence.png}
+        \caption{DQN (flat MLP) training.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_convergence.png}
+        \caption{Relational RL (PPO) training.}
+    \end{subfigure}
+    \caption{Training convergence curves for the two learned policies.
+    Both reach the curriculum's final stage under the same
+    domain-randomised distribution.}
     \label{fig:training_convergence}
 \end{figure}
 
-\subsection*{Effect Size Summary}
-
-\begin{table}[H]
-\centering
-\caption{Cohen's $d$ effect sizes for DQN vs.\ SF-Aware Greedy (cumulative reward),
-         20-seed evaluation (30-seed for $N=40$). $d < 0.2$ = negligible; $0.2$--$0.5$ = small;
-         $0.5$--$0.8$ = medium; $> 0.8$ = large.}
-\label{tab:effect_sizes}
-\begin{tabularx}{\textwidth}{l Z Z Z Z}
-\toprule
-$N$ & Reward $d$ & Jain's $d$ & Efficiency $d$ & Interpretation \\
-\midrule
-10  & 2.52 & 0.43 & 2.68 & Large ($p < 0.001$) \\
-20  & 0.66 & 0.36 & 0.67 & Medium ($p = 0.049$\textsuperscript{*})  \\
-30  & 0.78 & 0.61 & 0.77 & Medium ($p = 0.021$\textsuperscript{*})  \\
-40  & 0.54 & 0.40 & 0.55 & Medium ($p = 0.043$\textsuperscript{*}) \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\subsection*{Single-Episode Reward Curve}
+\subsection*{Ablation Study}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{sensors_20/fig1_shaded_reward}
-    \caption{Mean cumulative reward ($\pm 1$ std, $n=20$ seeds) for the trained DQN agent
-             (20 sensors, 500$\times$500 grid). The shaded band shows inter-seed variance;
-             battery depletion occurs at approximately step~1{,}400.}
-    \label{fig:single_episode_app}
+    \includegraphics[width=0.92\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_comparison.png}
+    \caption{Component ablation bars. Full Model versus the four
+    ablation conditions (Capture Effect removed, instant ADR, AoI
+    zeroed, fixed environment) across cumulative reward, NDR, Jain's
+    fairness index, and energy efficiency. Regenerable from
+    \texttt{ablation\_study.py}.}
+    \label{fig:ablation_bars}
 \end{figure}
 
-\subsection*{Multi-Seed Comparative Figures}
+\subsection*{Multi-Seed Pareto and Radar Views}
 
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{sensors_20/fig3_metric_bars}
-        \caption{$N = 20$ sensors.}
+        \includegraphics[width=\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.png}
+        \caption{Reward vs energy efficiency.}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{sensors_40/fig3_metric_bars}
-        \caption{$N = 40$ sensors.}
+        \includegraphics[width=\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png}
+        \caption{Multi-metric radar.}
     \end{subfigure}
-    \caption{Per-metric bar charts (mean $\pm$ std across twenty seeds) comparing DQN and
-             greedy baselines at two representative network densities.}
-    \label{fig:metric_bars}
+    \caption{The same five-condition scalability data from
+    Figure~\ref{fig:scalability_combined}, plotted as a Pareto scatter
+    (reward vs energy efficiency) and a multi-metric radar.
+    Same 50-seed results, different layout.}
+    \label{fig:pareto_radar}
 \end{figure}
 
-\subsection*{Scalability Figures}
+\subsection*{Fairness Heatmap}
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig10_sensor_scalability}
-        \caption{Absolute metric values vs.\ sensor count.}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig11_sensor_dqn_advantage}
-        \caption{DQN advantage (\%) over SF-Aware Greedy.}
-    \end{subfigure}
-    \caption{Scalability of the three agents as a function of network density
-             ($N \in \{10, 20, 30, 40\}$, $500\times500$ grid, twenty seeds each).}
-    \label{fig:scalability}
+    \includegraphics[width=0.85\textwidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png}
+    \caption{Per-sensor collection fairness heatmap (rows: sensors,
+    columns: agents). Darker cells indicate higher fraction of the
+    sensor's total data successfully collected.}
+    \label{fig:fairness_heatmap}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig13_grid_scalability}
-        \caption{Absolute metric values vs.\ grid size.}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig14_grid_dqn_advantage}
-        \caption{DQN advantage (\%) over SF-Aware Greedy.}
-    \end{subfigure}
-    \caption{Scalability of the three agents as a function of grid size
-             ($N = 20$ sensors, twenty seeds each).}
-    \label{fig:grid_scalability}
-\end{figure}
+\subsection*{Lawnmower Indicative Results}
 
-\subsection*{Ablation Study Figures}
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.62\textwidth}
-        \includegraphics[width=\textwidth]{fig_ablation_bars}
-        \caption{Mean $\pm$ std for cumulative reward, Jain's index, and energy
-                 efficiency across all ablation conditions.}
-        \label{fig:ablation_bars}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.34\textwidth}
-        \includegraphics[width=\textwidth]{fig_ablation_fairness}
-        \caption{Per-seed Jain's index scatter. Horizontal bars show the mean.}
-        \label{fig:ablation_fairness}
-    \end{subfigure}
-    \caption{Ablation study results ($N = 20$, 500$\times$500 grid, $n = 20$ seeds).
-             Blue = Full Model.}
-    \label{fig:ablation}
-\end{figure}
-
-\subsection*{Spreading Factor Dynamics}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.72\textwidth]{fig_sf_dynamics}
-    \caption{Spreading factor distribution across all 20 sensors over the episode (seed 42).
-             The DQN (left) maintains greater SF diversity and achieves faster SF downgrades
-             than the SF-Aware Greedy baseline (right), confirming that deliberate
-             repositioning actively reshapes the LoRaWAN spectral environment.}
-    \label{fig:sf_dynamics}
-\end{figure}
-
-\subsection*{HIL Preparation Analysis}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{fig_hil_preparation}
-    \caption{HIL preparation analysis: DQN reward under systematic wind drift (left)
-             and observation latency (right). Error bars show $\pm 1$ std across 5 seeds.
-             Secondary $y$-axis shows percentage change relative to the unperturbed baseline.}
-    \label{fig:hil}
-\end{figure}
+The Lawnmower baseline was run at 5 seeds, not 50; per-episode reward
+and per-metric traces are in \texttt{baseline\_results/lawnmower\_results.csv}.
+At $200{\times}200$, $N{=}50$ it achieves $98\%$ coverage with cumulative
+reward roughly $78\%$ of the DQN's on the matched seed. It is a
+coverage-only indicator and is not included in the statistical comparisons
+in the main body.

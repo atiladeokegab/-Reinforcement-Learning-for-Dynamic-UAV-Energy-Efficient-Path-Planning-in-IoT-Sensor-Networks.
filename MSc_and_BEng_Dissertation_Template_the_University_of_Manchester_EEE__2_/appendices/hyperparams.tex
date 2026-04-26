@@ -1,4 +1,4 @@
-\section{DQN Hyperparameters}
+\subsection{Hyperparameters}
 \label{app:hyperparams}
 
 \begin{table}[H]
@@ -38,7 +38,7 @@ iteration, as discussed in Section~\ref{sec:project_management}.
 
 \begin{algorithm}[h]
 \caption{Protocol-Aware DQN Training for UAV Data Collection}
-\label{alg:dqn}
+\label{alg:dqn_full}
 \begin{algorithmic}[1]
     \State \textbf{Initialise:} UAV position $p_0$, Replay Buffer $\mathcal{D}$, Q-network $Q(s,a|\theta)$, target $\hat{Q}(s,a|\theta^-)$
     \State \textbf{Initialise:} $\epsilon \leftarrow \epsilon_{\max}$; sensor states (buffers, AoI, SF)
@@ -54,5 +54,81 @@ iteration, as discussed in Section~\ref{sec:project_management}.
         \EndWhile
         \State Decay $\epsilon$; update $\theta^- \leftarrow \theta$ every $C$ steps
     \EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Pseudocode for Baselines and Relational-RL}
+
+\begin{algorithm}[H]
+\caption{Relational-RL (PPO) with permutation-invariant policy.}
+\label{alg:relational}
+\begin{algorithmic}[1]
+\Require env, policy $\pi_\theta$ (Eq.~\ref{eq:relational}), value
+         $V_\psi$, rollout length $T = 2048$
+\For{$i = 1$ to $I$}
+  \State $\tau \gets \emptyset$; $s \gets$ env.reset()
+  \For{$t = 1$ to $T$}
+    \State $\{$uav, sensors, mask$\} \gets s$
+    \State $h_i \gets \phi(\text{sensors}_i \oplus \text{uav})$ for each $i$ with $\text{mask}_i = 1$
+    \State $z \gets \rho(\sum_i \text{mask}_i \cdot h_i)$
+    \State logits, $v \gets$ head$([\text{uav};\, z])$
+    \State $a \sim $ softmax(logits)
+    \State $(s', r, d) \gets$ env.step$(a)$; append $(s, a, r, v, \log \pi)$ to $\tau$
+  \EndFor
+  \State compute GAE advantages $\hat{A}$ with $\gamma = 0.99$, $\lambda = 0.95$
+  \For{epoch $= 1$ to $K$}
+    \State sample minibatch from $\tau$
+    \State $\mathcal{L} \gets \mathcal{L}_{\text{clip}}(\pi_\theta) + c_v \mathcal{L}_{\text{value}} + c_e \mathcal{L}_{\text{entropy}}$
+    \State update $\theta, \psi$ via Adam
+  \EndFor
+\EndFor
+\State \Return $\theta, \psi$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{TSP-Oracle (Nearest-Neighbour $+$ 2-opt) routing policy.}
+\label{alg:tsp}
+\begin{algorithmic}[1]
+\Require sensor positions $\{p_1, \ldots, p_N\}$, UAV start $p_0$
+\State tour $\gets [p_0]$; visited $\gets \{p_0\}$
+\While{$|$visited$| < N + 1$} \Comment{nearest neighbour}
+  \State next $\gets \arg\min_{p \notin \text{visited}} \|\text{tour}[-1] - p\|$
+  \State append next to tour; add to visited
+\EndWhile
+\State improved $\gets$ true \Comment{2-opt refinement}
+\While{improved}
+  \State improved $\gets$ false
+  \For{each swap-pair $(i, j)$ in tour}
+    \If{length(swap(tour, $i, j$)) $<$ length(tour)}
+      \State tour $\gets$ swap(tour, $i, j$); improved $\gets$ true
+    \EndIf
+  \EndFor
+\EndWhile
+\State at runtime: move toward next waypoint; at a waypoint, emit COLLECT until the sensor buffer is empty.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{One-step greedy policy (scoring-function parameterised).}
+\label{alg:greedy}
+\begin{algorithmic}[1]
+\Require scoring function $f(\cdot)$
+\For{each step $t$}
+  \State candidates $\gets \{s : s \in \text{range}(\text{uav}_t)\}$
+  \If{candidates $= \emptyset$}
+    \State target $\gets \arg\min_{s}\|s.\text{pos} - \text{uav}.\text{pos}\|$
+    \State $a_t \gets$ move\_toward(target)
+  \Else
+    \State target $\gets \arg\max_{s \in \text{candidates}} f(s)$
+    \If{uav at target.pos} $a_t \gets$ COLLECT
+    \Else{} $a_t \gets$ move\_toward(target)
+    \EndIf
+  \EndIf
+\EndFor
+\Statex\textbf{Instantiations.} Nearest-Sensor Greedy:
+       $f(s) = -\|s.\text{pos} - \text{uav}.\text{pos}\|$. SF-Aware
+       Max-Throughput Greedy:
+       $f(s) = (1 - \text{BER}(s.\text{SF}))\cdot \text{payload}/T_{\text{air}}(s.\text{SF})$.
 \end{algorithmic}
 \end{algorithm}

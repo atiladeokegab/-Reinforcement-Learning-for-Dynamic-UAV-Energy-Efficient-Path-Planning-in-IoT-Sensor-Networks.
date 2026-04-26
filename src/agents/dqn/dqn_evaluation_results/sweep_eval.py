@@ -449,7 +449,7 @@ def _greedy_worker(task: dict) -> dict | None:
     import random as _rnd
     import numpy as _np
     from environment.uav_env import UAVEnvironment as _Env
-    from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, TSPOracleAgent
+    from greedy_agents import MaxThroughputGreedyV2, NearestSensorGreedy, TSPOracleAgent, LawnmowerAgent
 
     agent_name = task["agent"]
     grid_size  = tuple(task["grid_size"])
@@ -468,6 +468,9 @@ def _greedy_worker(task: dict) -> dict | None:
         agent = NearestSensorGreedy(env)
     elif agent_name == "TSP Oracle":
         agent = TSPOracleAgent(env)
+        agent.reset()
+    elif agent_name == "Lawnmower":
+        agent = LawnmowerAgent(env, strip_width=50)
         agent.reset()
     else:
         return None
@@ -637,7 +640,7 @@ def run_sweep() -> None:
     log.info("Total task slots already done: %d", len(done_keys))
 
     RL_AGENTS      = []
-    GREEDY_AGENTS  = ["Smart Greedy V2", "Nearest Greedy", "TSP Oracle"]
+    GREEDY_AGENTS  = ["Smart Greedy V2", "Nearest Greedy", "TSP Oracle", "Lawnmower"]
 
     # ── Discover available RL agents ─────────────────────────────────────
     if DQN_MODEL_PATH.exists():

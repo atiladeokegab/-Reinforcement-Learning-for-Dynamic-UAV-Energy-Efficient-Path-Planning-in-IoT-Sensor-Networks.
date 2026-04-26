@@ -1,30 +1,16 @@
 \subsection{LoRaWAN Physical Layer}
 
-LoRa (Long Range) is a proprietary spread-spectrum modulation technique derived from Chirp
-Spread Spectrum (CSS). It encodes information by varying the frequency of ``chirps'' over
-time, which provides exceptional resilience to interference and noise~\cite{augustin2016lora,bor2016lora}.
-
-\subsubsection{Spreading Factors and Orthogonality}
-
-The key parameter in LoRa modulation is the Spreading Factor (SF), which determines the
-duration of a chirp. LoRaWAN defines six orthogonal spreading factors,
-\(\text{SF} \in \{7, 8, \ldots, 12\}\).
-
-\begin{itemize}
-    \item \textbf{SF7}: Lowest range, highest data rate, shortest Time-on-Air.
-    \item \textbf{SF12}: Longest range, lowest data rate, longest Time-on-Air.
-\end{itemize}
-
-A defining feature of LoRa is the orthogonality of these spreading factors. Signals modulated
-with different SFs can theoretically be received simultaneously by a gateway on the same
-frequency channel without interfering with each other~\cite{augustin2016lora,reynders2016range}. This
-property creates the ``concurrent channel capacity'' that this project aims to exploit.
-
-\subsubsection{The Capture Effect}
-
-In dense networks, collisions occur when two devices transmit on the same SF and frequency
-simultaneously. However, LoRa receivers exhibit the Capture Effect: if one signal is
-sufficiently stronger than the interfering signal (typically by a margin of \SI{6}{dB}), the
-receiver can successfully decode the stronger packet while suppressing the weaker
-one~\cite{croce2020lora,zorbas2025revisiting}. This physical phenomenon is modelled in the simulation to
-resolve co-SF collisions.
+LoRa (Long Range) is a proprietary chirp spread-spectrum modulation
+that encodes information by varying the frequency of chirps over
+time, providing resilience to interference and
+noise~\cite{augustin2016lora,bor2016lora}. The key parameter is the
+Spreading Factor; LoRaWAN defines six orthogonal values
+$\mathrm{SF}\in\{7,\ldots,12\}$ spanning highest data rate / shortest
+Time-on-Air (SF7) to longest range / longest Time-on-Air (SF12).
+Signals modulated with different SFs can be received simultaneously
+on the same frequency channel without interfering, creating the
+concurrent-channel capacity this project exploits. When two devices
+transmit on the same SF, LoRa receivers exhibit the Capture Effect:
+if one signal exceeds the interferer by the capture margin (typically
+$6$\,dB), the receiver decodes the stronger packet while suppressing
+the weaker~\cite{croce2020lora,zorbas2025revisiting}.

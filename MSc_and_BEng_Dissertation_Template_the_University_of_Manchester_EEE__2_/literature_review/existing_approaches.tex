@@ -1,59 +1,37 @@
 \subsection{Existing Optimisation Approaches}
 
-Zorbas et al.~\cite{zorbas2025revisiting} propose
-a Mixed Integer Linear Programming (MILP) framework to determine the optimal SF distribution
-that maximises packet reception probability. While this method provides a theoretically optimal
-allocation for static networks, it has two critical limitations for the mobile-gateway setting:
-first, MILP scales exponentially with the number of binary SF assignment variables, becoming
-intractable for $N > 20$ sensors; second, and more critically, it assumes channel conditions
-are known and stationary at solve time, an assumption that fails continuously as the UAV moves
-and the EMA-ADR control loop propagates outdated RSSI estimates across the network. The authors
-themselves acknowledge this limitation, concluding that reinforcement learning is the appropriate
-tool for the dynamic case~\cite{zorbas2025revisiting}.
+Zorbas et al.~\cite{zorbas2025revisiting} propose a Mixed Integer
+Linear Programming framework for optimal SF allocation. MILP scales
+exponentially with binary SF variables, becoming intractable for
+$N > 20$ sensors, and assumes channel conditions are known and
+stationary at solve time, an assumption that fails continuously as a
+mobile UAV and the EMA-ADR loop propagate outdated RSSI estimates.
+The authors themselves conclude that reinforcement learning is the
+appropriate tool for the dynamic case.
 
-Xiong et al.~\cite{xiong2023flyinglora} introduce ``FlyingLoRa,'' which minimises energy
-consumption by jointly optimising the UAV's 3D trajectory and transmission scheduling.
-FlyingLoRa optimises offline and requires full knowledge of sensor locations and link budgets
-before the mission; it omits ADR dynamics (treating each sensor's data rate as fixed) and does
-not model the Capture Effect, assuming mutual packet destruction on any intra-SF collision.
-FlyingLoRa therefore cannot exploit the positioning-induced SF diversity that the
-protocol-aware DRL agent learns to generate.
+Xiong et al.~\cite{xiong2023flyinglora} introduce FlyingLoRa, which
+minimises energy by jointly optimising the UAV's 3D trajectory and
+transmission scheduling offline, given full knowledge of sensor
+locations and link budgets before the mission. FlyingLoRa omits ADR
+dynamics (treating each sensor's rate as fixed) and does not model
+the Capture Effect, and therefore cannot exploit the
+positioning-induced SF diversity that the protocol-aware DRL agent
+learns to generate. The channel-geometry and energy-consumption
+assumptions that underpin this work follow the UAV-communications
+tutorials by Zeng et al.~\cite{zeng2016wireless},
+Mozaffari et al.~\cite{mozaffari2019tutorial}, and
+Zeng and Zhang~\cite{zeng2017energy}.
 
-Channel and trajectory optimisation surveys (Zeng et al.~\cite{zeng2016wireless},
-Mozaffari et al.~\cite{mozaffari2019tutorial}) establish the channel geometry assumptions
-underpinning the Two-Ray Ground Reflection model used here, and Zeng and
-Zhang~\cite{zeng2017energy} motivate the energy-consumption term in our reward function.
-However, none of these works jointly models the physical channel \emph{and} the MAC-layer
-ADR feedback loop; their positioning conclusions do not account for the SF convergence
-dynamics that dominate throughput in dense deployments.
-
-At the intersection of deep reinforcement learning and UAV communications, Challita
-et al.~\cite{challita2018interference} propose a deep RL framework for interference-aware
-path planning of cellular-connected UAVs, demonstrating that DRL agents can learn
-collision-avoidance behaviour that static planners cannot replicate, directly analogous to
-the SF-monoculture avoidance objective here. However, Challita et al.\ operate in the
-cellular domain where the interference model is well-characterised and stationary; they
-do not encounter the non-stationary MAC-layer dynamics (EMA-ADR, duty cycles, Capture
-Effect) that make the LoRaWAN setting harder.
-Nemer et al.~\cite{nemer2022energyefficient} apply a distributed actor--critic approach to
-maximise coverage fairness for multi-UAV networks, confirming that Jain's Fairness Index
-is an appropriate target metric for DRL-based UAV controllers. A limitation of Nemer et al.\
-is that their evaluation uses fixed sensor positions and a simplified channel model,
-leaving open whether the fairness gains transfer to the stochastic, topology-varying
-conditions that domain randomisation is designed to address.
-
-\subsubsection{Algorithm Selection: DQN versus Policy-Gradient Methods}
-
-Three candidate families are considered: DQN~\cite{mnih2015humanlevel}, PPO~\cite{schulman2017proximal}, and SAC~\cite{haarnoja2018soft}.
-The UAV's five-action discrete space directly favours DQN: it was designed for discrete
-actions and achieves sample efficiency via experience replay and a target network.
-PPO handles discrete actions but is on-policy, discarding all experience after each
-update, which is costly when episodes span 2100 steps and interactions are
-computationally expensive. SAC's discrete variant~\cite{christodoulou2019soft} loses
-the entropy-maximisation guarantee that motivates its exploration, offering no clear
-advantage here.
-
-Experience replay also stabilises the Q-function as the reward landscape shifts with
-ADR convergence, a property on-policy PPO cannot replicate. Challita
-et al.~\cite{challita2018interference} and Luong et al.~\cite{luong2019drl} both support
-DQN for discrete-waypoint UAV navigation, motivating it as the primary algorithm.
+At the intersection of DRL and UAV communications, Challita et
+al.~\cite{challita2018interference} propose a deep RL framework for
+interference-aware path planning of cellular-connected UAVs,
+demonstrating that DRL agents can learn collision-avoidance behaviour
+that static planners cannot replicate. Nemer et
+al.~\cite{nemer2022energyefficient} apply a distributed actor--critic
+approach to maximise coverage fairness for multi-UAV networks,
+confirming Jain's Fairness Index as an appropriate target metric.
+Neither study encounters the non-stationary MAC-layer dynamics
+(EMA-ADR, duty cycles, Capture Effect) that make the LoRaWAN setting
+structurally harder. The DQN versus policy-gradient algorithm
+selection argument for this specific reward landscape is in
+Appendix~\ref{app:extended_methodology}.

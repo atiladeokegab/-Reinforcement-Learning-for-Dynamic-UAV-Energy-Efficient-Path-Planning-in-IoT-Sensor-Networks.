@@ -1,13 +1,17 @@
-\section{Project Plan and Gantt Chart}
+\subsection{Gantt Chart}
 \label{app:gantt}
 
-The following table presents the final, updated project plan reflecting the actual execution of the project. Shaded rows indicate milestones that deviated from the original plan; deviations are explained in Section~\ref{sec:project_management}.
+The Gantt chart below records the final, updated project timeline
+reflecting the actual execution of the project. Shaded rows indicate
+milestones that deviated from the original plan; deviations are
+explained in Section~\ref{sec:project_management}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
-\caption{Project Plan, Final Updated Version (Semester 1: S1, Semester 2: S2; weeks numbered within each semester).}
+\small
+\caption{Project Timeline (Semester 1: S1, Semester 2: S2; weeks numbered within each semester).}
 \label{tab:gantt}
-\begin{tabularx}{\textwidth}{p{5.5cm} p{2.2cm} p{2.2cm} X}
+\begin{tabularx}{\textwidth}{p{5.2cm} p{1.9cm} p{1.9cm} X}
 \toprule
 \textbf{Milestone / Task} & \textbf{Planned} & \textbf{Actual} & \textbf{Notes} \\
 \midrule
@@ -27,19 +31,19 @@ Domain Randomisation and Curriculum Learning regime & S2 W1--W4 & S2 W1--W4 & On
 \midrule
 Generalised policy training ($2 \times 10^6$ steps) & S2 W3--W5 & S2 W3--W5 & On schedule \\
 \midrule
-Baseline agent implementation (Nearest Greedy, SF-Aware Greedy) & S2 W4 & S2 W4--W5 & SF-Aware Greedy added beyond original scope \\
+Baseline agent implementation (Nearest Greedy, SF-Aware Greedy, TSP Oracle) & S2 W4 & S2 W4--W5 & SF-Aware Greedy and TSP Oracle added beyond original scope \\
 \midrule
-Multi-seed evaluation (5 seeds, 4 sensor counts) & S2 W5--W7 & S2 W5--W8 & Expanded from single-seed; delayed by $\approx$ 2 weeks \\
+Multi-seed evaluation (20 seeds, 4 sensor counts) & S2 W5--W7 & S2 W5--W8 & Expanded from single-seed; delayed by $\approx$ 2 weeks \\
 \midrule
 Grid-size scalability sweep & S2 W6--W7 & S2 W7--W8 & On schedule after multi-seed delay absorbed \\
+\midrule
+Architectural diagnostic and Relational-RL extension & --- & S2 W8--W10 & Added in response to diagnostic findings (Section~\ref{sec:diagnostic}); agreed with supervisor \\
 \midrule
 Draft Final Report submission & S2 W6 & S2 W6 & Submitted 13 Mar 2026 \\
 \midrule
 Dissertation write-up (all chapters) & S2 W6--W12 & S2 W6--W12 & Parallel with evaluation; modular structure aided progress \\
 \midrule
-Final Report submission & S2 W14 & S2 W10 & \textbf{Target: 1 May 2026} \\
+Final Report submission & S2 W14 & S2 W14 & \textbf{Target: 1 May 2026} \\
 \bottomrule
 \end{tabularx}
 \end{table}
-
-\noindent The project was completed within the original semester framework. The two principal deviations (the expanded multi-seed evaluation and the addition of the SF-Aware Greedy baseline) both arose from interim results indicating that a more rigorous evaluation was needed to produce statistically defensible conclusions. These changes increased the scope and quality of the work and were agreed with the Project Supervisor.
