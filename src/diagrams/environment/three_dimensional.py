@@ -3,11 +3,18 @@ Two-Ray Ground Reflection Model - 3D Visualization
 For Thesis Figure 3.3
 """
 
+import sys
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d.proj3d import proj_transform
+
+# ieee_style lives in src/agents/dqn/dqn_evaluation_results/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "agents" / "dqn" / "dqn_evaluation_results"))
+import ieee_style
+ieee_style.apply()
 
 
 class Arrow3D(FancyArrowPatch):
@@ -39,8 +46,8 @@ ax1 = fig.add_subplot(221, projection="3d")
 # Sensor position (origin)
 sensor_x, sensor_y, sensor_z = 0, 0, 0
 
-# UAV position (elevated)
-uav_x, uav_y, uav_z = 30, 20, 50
+# UAV position (elevated) — constant altitude 100m (from uav.py)
+uav_x, uav_y, uav_z = 30, 20, 100
 
 # Plot sensor
 ax1.scatter(
@@ -128,7 +135,7 @@ ax1.plot(
 )
 
 # Ground plane (semi-transparent)
-xx, yy = np.meshgrid(np.linspace(-5, 40, 10), np.linspace(-5, 30, 10))
+xx, yy = np.meshgrid(np.linspace(-5, 40, 10), np.linspace(-5, 35, 10))
 zz = np.zeros_like(xx)
 ax1.plot_surface(xx, yy, zz, alpha=0.1, color="gray")
 
@@ -155,7 +162,7 @@ ax1.text(
     uav_x + 2,
     uav_y,
     uav_z / 2,
-    f"h = {uav_z}m",
+    f"h = {uav_z}m (constant)",
     fontsize=9,
     color="black",
     fontweight="bold",
@@ -189,13 +196,15 @@ ax1.set_box_aspect([1, 1, 1])
 # ========================================
 ax2 = fig.add_subplot(222)
 
-# Horizontal distance
+# Horizontal distance (metres)
 d_horizontal = 50
+# UAV altitude — must match uav.py (constant 100 m)
+uav_alt = 100
 
 # UAV
 ax2.scatter(
     [d_horizontal / 2],
-    [50],
+    [uav_alt],
     c="orange",
     marker="^",
     s=400,
@@ -203,28 +212,29 @@ ax2.scatter(
     linewidths=2,
     zorder=10,
 )
-ax2.text(d_horizontal / 2, 55, "UAV", ha="center", fontsize=11, fontweight="bold")
+ax2.text(d_horizontal / 2, uav_alt + 5, "UAV", ha="center", fontsize=11, fontweight="bold")
 
 # Sensor
 ax2.scatter(
     [0], [0], c="blue", marker="o", s=300, edgecolors="black", linewidths=2, zorder=10
 )
-ax2.text(0, -5, "Sensor", ha="center", fontsize=11, fontweight="bold")
+ax2.text(0, -8, "Sensor", ha="center", fontsize=11, fontweight="bold")
 
-# Direct path
-ax2.plot([0, d_horizontal / 2], [0, 50], "g--", linewidth=2.5, label="Direct LOS")
+# Direct path (Line-of-Sight)
+ax2.plot([0, d_horizontal / 2], [0, uav_alt], "g--", linewidth=2.5, label="Direct LOS")
 
-# Reflected path (via ground)
-ax2.plot([0, d_horizontal / 2], [0, 0], "r:", linewidth=2, label="Ground Reflection")
-ax2.plot([d_horizontal / 2, d_horizontal / 2], [0, 50], "r:", linewidth=2)
+# Reflected path (sensor → ground reflection point → UAV projection)
+reflect_x = d_horizontal / 2  # simplified: reflection directly below UAV
+ax2.plot([0, reflect_x], [0, 0], "r:", linewidth=2, label="Ground Reflection")
+ax2.plot([reflect_x, d_horizontal / 2], [0, uav_alt], "r:", linewidth=2)
 
-# Altitude line
-ax2.plot([d_horizontal / 2, d_horizontal / 2], [0, 50], "k--", linewidth=1.5, alpha=0.5)
-ax2.text(d_horizontal / 2 + 3, 25, "h = 50m", fontsize=10, rotation=90, va="center")
+# Altitude line (vertical dashed)
+ax2.plot([d_horizontal / 2, d_horizontal / 2], [0, uav_alt], "k--", linewidth=1.5, alpha=0.5)
+ax2.text(d_horizontal / 2 + 3, uav_alt / 2, f"h = {uav_alt}m", fontsize=10, rotation=90, va="center")
 
 # Horizontal distance line
 ax2.plot([0, d_horizontal / 2], [0, 0], "b--", linewidth=1.5, alpha=0.5)
-ax2.text(d_horizontal / 4, -3, f"dₕ", fontsize=10, ha="center")
+ax2.text(d_horizontal / 4, -5, "dₕ", fontsize=10, ha="center")
 
 # Ground line
 ax2.axhline(0, color="brown", linewidth=3, alpha=0.3, label="Ground")
@@ -235,9 +245,8 @@ ax2.set_xlabel("Horizontal Distance (meters)", fontsize=11, fontweight="bold")
 ax2.set_ylabel("Altitude (meters)", fontsize=11, fontweight="bold")
 ax2.set_title("Side View: Two-Ray Propagation", fontsize=13, fontweight="bold")
 ax2.legend(loc="upper right", fontsize=9)
-ax2.set_xlim(-5, 60)
-ax2.set_ylim(-10, 60)
-ax2.set_aspect("equal")
+ax2.set_xlim(-5, 65)
+ax2.set_ylim(-15, 120)
 
 # ========================================
 # SUBPLOT 3: Top View (Communication Footprint)
@@ -279,7 +288,7 @@ circle = plt.Circle(
 )
 ax3.add_patch(circle)
 
-# Sensors (random positions)
+# Sensors (random positions) — N=20 sensors, matching EVAL_N_SENSORS in dqn.py
 np.random.seed(42)
 sensor_positions = np.random.uniform(50, 450, (20, 2))
 
@@ -322,20 +331,19 @@ ax3.legend(loc="upper right", fontsize=9)
 # ========================================
 fig.suptitle(
     "Two-Ray Ground Reflection Model for UAV-IoT Communication\n"
-    "Figure 3.3: Propagation Geometry and Channel Characteristics",
-    fontsize=15,
+    "UAV altitude = 100 m (constant) | Grid: 100×100 to 1000×1000 units | N = 10–40 LoRa sensors",
+    fontsize=13,
     fontweight="bold",
     y=0.98,
 )
 
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 
-# Save high-resolution figure
-plt.savefig("two_ray_model_3d.png", dpi=300, bbox_inches="tight")
-plt.savefig("two_ray_model_3d.pdf", dpi=300, bbox_inches="tight")  # For LaTeX
+# Save high-resolution figure (pdf.fonttype=42 set by ieee_style for full font embedding)
+ieee_style.save(plt.gcf(), "two_ray_model_3d")
 
 print("✓ Figure saved as:")
 print(" - two_ray_model_3d.png (for presentations)")
 print(" - two_ray_model_3d.pdf (for thesis)")
 
-plt.show()
+plt.close()

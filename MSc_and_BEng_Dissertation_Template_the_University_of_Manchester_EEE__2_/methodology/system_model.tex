@@ -1,0 +1,119 @@
+\subsection{System Model}
+\label{sec:env}
+
+We consider a remote IoT monitoring environment comprising a set
+$\mathcal{N} = \{1, \ldots, N\}$ of static sensors uniformly
+distributed over a rectangular Region of Interest
+$\mathcal{W}\subset\mathbb{R}^2$. Data accumulates in finite
+transmission buffers of capacity $B_{\max}$, after which new packets
+are discarded. A rotary-wing UAV, acting as a mobile LoRaWAN gateway,
+is dispatched to harvest this data over a finite horizon $T$
+discretised into timesteps of duration $\Delta t$. The UAV flies at
+fixed altitude $h_u$ and updates its horizontal position
+$p_t = (x_t, y_t)$ at each step. The LoRaWAN protocol exposes
+orthogonal Spreading Factors $\mathcal{S}=\{7, 9, 11, 12\}$, allowing
+simultaneous uploads from sensors assigned distinct SFs by the
+Adaptive Data Rate mechanism. The UAV must therefore optimise its
+trajectory to actively manage spectral assignments and prevent the
+SF-monoculture congestion collapse.
+
+\noindent\textbf{Assumptions.}
+(1)~The UAV operates at fixed altitude $h_u$, reducing trajectory
+optimisation to a 2D problem with fixed power profiles
+$P_{\mathrm{hover}}$ and $P_{\mathrm{flight}}$.
+(2)~The LoRaWAN gateway is single-channel multi-SF: at most one
+transmission per SF is decoded per timestep; intra-SF collisions are
+resolved via the Capture Effect (Section~\ref{sec:capture}).
+(3)~Sensors are LoRaWAN Class~A devices with a 10\% effective
+per-timestep transmission probability\footnote{The EU 868\,MHz ISM
+band mandates a 1\% radio duty cycle. The 10\% parameter models the
+\emph{effective} per-timestep transmission probability (wake-up rate
+$\times$ packet frequency $\times$ channel access). Sensitivity is
+tested down to 4\% in Section~\ref{sec:robustness}.} and Poisson data
+generation; network-initiated wake-up is infeasible.
+(4)~The UAV retains a 2\% battery reserve for safe return-to-base,
+terminating each episode at
+$E_t = 0.02\,E_{\max} = 5.48$\,Wh; a relay UAV is dispatched on
+landing (the DJI TB60 relay model~\cite{mozaffari2019tutorial}).
+The effective episode budget is therefore
+$E_{\mathrm{eff}} = 268.52$\,Wh, tightening the feasibility bounds
+derived in Appendix~\ref{app:link_budget}.
+
+\subsubsection{UAV kinematics and energy}
+
+The UAV's state is its 2D position and remaining battery energy
+$E_k$. It selects from a discrete action set
+\begin{equation}
+    \mathcal{A} = \{\mathrm{MoveN},\, \mathrm{MoveS},\,
+                    \mathrm{MoveE},\, \mathrm{MoveW},\,
+                    \mathrm{Hover}\}
+    \label{eq:action_space}
+\end{equation}
+each updating position by $\delta_d$ in the chosen cardinal
+direction, or holding position for Hover (critical for stabilising
+the LoRa link during decode windows). Energy evolves as
+$E_{k+1} = E_k - P(a_k)\,\Delta t$ with
+$P_{\mathrm{hover}} = 700$\,W $> P_{\mathrm{flight}} = 500$\,W,
+consistent with rotary-wing aerodynamics (translational lift reduces
+the power required for forward flight relative to hovering). This
+differential incentivises efficient trajectories and penalises
+excessive loitering.
+
+\subsubsection{Channel, ADR, and Capture Effect}
+
+The ground-to-air channel uses the Two-Ray Ground Reflection
+model~\cite{rappaport2002wireless}:
+\begin{equation}
+    P_r = P_t G_t G_r \frac{h_t^2 h_r^2}{d^4}
+    \label{eq:tworay}
+\end{equation}
+with additive log-normal shadowing
+$X_\sigma\sim\mathcal{N}(0, 4^2\,\mathrm{dB})$. The quartic decay
+enforces realistic collection radii and means small UAV position
+changes have a magnified impact on RSSI.
+
+Per-sensor SF is updated by an EMA filter on smoothed RSSI
+($\lambda = 0.1$), with ring thresholds at
+$-60, -70, -78, -85$\,dBm mapping to
+$\{\mathrm{SF}7, \mathrm{SF}9, \mathrm{SF}11, \mathrm{SF}12\}$. The
+smoothing principle follows Slabicki et~al.~\cite{slabicki2018adaptive};
+full derivation of the ADR ring-assignment rule, the 6-SF-to-4-SF
+reduction, and the 100\,m altitude and battery-budget choices are in
+Appendix~\ref{app:modelling_assumptions}.
+
+Intra-SF collisions are resolved by the LoRa Capture
+Effect~\cite{croce2020lora}: the gateway decodes sensor $i$ if its
+received power exceeds co-SF interference by the capture threshold
+$\tau_{\mathrm{cap}} = 6$\,dB,
+\begin{equation}
+    \frac{P_{r,i}}{\sum_{j\in\mathcal{I}_{\mathrm{co\text{-}SF}}} P_{r,j} + N_0}
+    \;\geq\; \tau_{\mathrm{cap}}.
+    \label{eq:capture}
+\end{equation}
+\label{sec:capture}
+Because the gateway decodes one device per SF, the UAV's positioning
+controls not just link quality but the number of concurrent
+receptions, up to $|\mathcal{S}|=4$ packets per timestep when sensors
+are distributed across distinct SFs. This is the spectral-diversity
+lever that greedy one-step heuristics cannot plan for. Full
+per-timestep collision-resolution procedure, gateway architecture,
+and Class~A device-constraint detail are in
+Appendix~\ref{app:gateway}.
+
+\subsubsection{Operational envelope}
+\label{sec:link_budget}
+
+Inverting Eq.~(\ref{eq:tworay}) for horizontal range gives a
+maximum SF12 collection radius of $r_{\max} = 365$ grid units at
+100\,m altitude (full derivation in Appendix~\ref{app:link_budget},
+per-SF radii in Table~\ref{tab:sf_range_appendix}). The four
+evaluation grid sizes are chosen to span qualitatively distinct
+regimes:
+at $100\times 100$ the diagonal is smaller than $r_{\max}$ so every
+sensor is always in range (navigation has no link-budget effect);
+at $500\times 500$ the diagonal is nearly double $r_{\max}$, making
+sensors near opposite corners mutually unreachable without
+navigation; at $1{,}000\times 1{,}000$ the TSP-tour length exceeds
+$d_{\max}$ by a factor of $2.3$ (Eq.~\ref{eq:dmax_appendix}), making
+full coverage physically infeasible for a single UAV. The full
+regime table is Table~\ref{tab:grid_regimes_appendix}.

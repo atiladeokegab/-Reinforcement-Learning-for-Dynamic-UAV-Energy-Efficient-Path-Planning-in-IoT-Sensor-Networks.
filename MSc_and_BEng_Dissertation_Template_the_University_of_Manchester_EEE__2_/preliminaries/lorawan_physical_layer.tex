@@ -1,0 +1,16 @@
+\subsection{LoRaWAN Physical Layer}
+
+LoRa (Long Range) is a proprietary chirp spread-spectrum modulation
+that encodes information by varying the frequency of chirps over
+time, providing resilience to interference and
+noise~\cite{augustin2016lora,bor2016lora}. The key parameter is the
+Spreading Factor; LoRaWAN defines six orthogonal values
+$\mathrm{SF}\in\{7,\ldots,12\}$ spanning highest data rate / shortest
+Time-on-Air (SF7) to longest range / longest Time-on-Air (SF12).
+Signals modulated with different SFs can be received simultaneously
+on the same frequency channel without interfering, creating the
+concurrent-channel capacity this project exploits. When two devices
+transmit on the same SF, LoRa receivers exhibit the Capture Effect:
+if one signal exceeds the interferer by the capture margin (typically
+$6$\,dB), the receiver decodes the stronger packet while suppressing
+the weaker~\cite{croce2020lora,zorbas2025revisiting}.

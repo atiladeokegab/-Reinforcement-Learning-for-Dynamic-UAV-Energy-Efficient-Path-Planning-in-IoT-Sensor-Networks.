@@ -1,0 +1,46 @@
+\subsection{LoRaWAN Scalability and the SF Monoculture}
+
+LoRaWAN is the de facto standard for long-range, low-power IoT
+connectivity. Augustin et al.~\cite{augustin2016lora} characterise
+the chirp spread-spectrum modulation, the six orthogonal spreading
+factors $\mathrm{SF}\in\{7,\ldots,12\}$, and the rate--budget
+trade-off that governs SF selection. Bor et al.~\cite{bor2016lora}
+show through large-scale simulation that a single gateway can
+theoretically serve thousands of devices but that this capacity is
+highly sensitive to the SF distribution: if too many devices converge
+on the same high-SF setting, per-device throughput collapses due to
+intra-SF collisions and the resulting long Time-on-Air.
+
+A critical failure mode in mobile LoRaWAN networks is the congestion
+collapse known as the SF monoculture or ``SF12 Well.'' Zorbas et
+al.~\cite{zorbas2025revisiting} analyse this failure rigorously:
+because the standard ADR mechanism reacts to smoothed RSSI history,
+devices in a rapidly changing environment (a UAV moving away)
+accumulate outdated estimates and converge on high SFs long after
+the UAV has left, driving the entire network toward SF12. The result
+is self-reinforcing: high SF increases collision probability,
+reducing successful transmissions, which in turn prevents downgrade
+commands from being received. Reynders et
+al.~\cite{reynders2016range} provide complementary evidence that
+collision probability grows super-linearly beyond a critical load
+threshold, motivating the ADR modelling choices in this work.
+
+The Capture Effect offers a partial remedy to this. Croce et al.~\cite{croce2020lora} are the first to rigorously
+characterise the LoRa Capture Effect through software-defined radio
+experiments. They show that collisions between two LoRa signals on
+the same SF can be resolved if the stronger signal exceeds the
+weaker by a power ratio of approximately $6$\,dB, the ``capture
+threshold''; below this threshold both packets are lost. This
+overturns the common simplifying assumption in prior LoRaWAN
+simulators (that any intra-SF collision destroys all packets) and
+creates a tension between coverage (demands high SFs at range) and
+capacity (demands low SFs for throughput) that a mobile UAV can
+resolve dynamically: closing the physical distance to sensors
+reduces path loss, enables SF downgrade via ADR, and creates the
+power differential required for capture.
+
+This project directly incorporates the $6$\,dB threshold of
+Croce et al.~\cite{croce2020lora} into the collision-resolution
+logic, rewarding the agent for reaching spatial positions that
+induce the power differential required for capture, a design
+distinction from all protocol-blind trajectory planners.

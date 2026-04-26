@@ -1,0 +1,56 @@
+\subsection{Deep Reinforcement Learning Implementation}
+\label{sec:drl_impl}
+\label{sec:training}
+
+The simulation is a custom environment compliant with the Gymnasium
+interface~\cite{towers2024gymnasium}, integrated with
+Stable-Baselines3~\cite{raffin2021stable}. Each \texttt{step(action)}
+call sequentially (1)~updates UAV position and decrements battery,
+(2)~recomputes RSSI via the Two-Ray model, (3)~updates AoI counters
+and generates Poisson packets while advancing EMA-ADR,
+(4)~resolves collisions via the Capture Effect, and (5)~computes
+$R_t$.
+
+\subsubsection{DQN architecture and training}
+
+The policy is a Deep Q-Network~\cite{mnih2015humanlevel}: a 3-layer
+MLP with hidden dimensions $[512, 512, 256]$ and ReLU activations,
+mapping the frame-stacked state $\mathbf{S}_t^{\mathrm{stacked}}\in\mathbb{R}^{4(3+3N)}$
+to five Q-values, one per action. Weights $\theta$ are optimised by
+Adam to minimise the TD error against a periodically-updated target
+network $\hat{Q}(\cdot;\theta^-)$. Key hyperparameters: learning rate
+$3\times 10^{-4}$, discount $\gamma = 0.99$, replay buffer
+$1.5\times 10^5$ transitions, batch size 128, target update every
+$10^3$ steps, $\varepsilon$-greedy exploration decaying 1.0 to 0.05
+over the first 25\% of $3\times 10^6$ training timesteps. Full
+listings in Appendix~\ref{app:hyperparams}; convergence curves in
+Appendix~\ref{app:extra} (Figure~\ref{fig:training_convergence}), and
+stage-transition detail in Appendix~\ref{app:training_convergence}.
+
+The domain-randomised training wrapper applies two auxiliary shaping
+terms on top of the base reward: a proximity bonus
+$\eta\,(\hat{d}_{t-1} - \hat{d}_t)$ with $\eta = 2.0$ that rewards
+closing distance to the nearest data-bearing sensor, and a per-step
+fairness term $0.5(J - 0.5)/N$ where $J$ is the current Jain's index.
+Both are small relative to the base reward scale and serve as
+convergence aids; neither is present in the evaluation reward.
+
+\subsubsection{Probabilistic link-layer model}
+
+Packet reception is a Bernoulli trial rather than a hard range
+predicate. The link success probability is a sigmoid of the received
+SNR margin,
+\begin{equation}
+    P_{\mathrm{link}} = \sigma\!\bigl(\mathrm{SNR}_{\mathrm{dB}} - \mathrm{SNR}_{\mathrm{req}}(\mathrm{SF})\bigr),
+    \label{eq:p_link}
+\end{equation}
+where $\mathrm{SNR}_{\mathrm{dB}} = \mathrm{RSSI} - N_0$ and
+$\mathrm{SNR}_{\mathrm{req}}(\mathrm{SF})$ is the SF-specific
+demodulation threshold~\cite{augustin2016lora}. The per-step
+transmission probability combines the link margin with the duty-cycle
+constraint, $P_{\mathrm{overall}} = P_{\mathrm{link}}\,P_{\mathrm{cycle}}$
+with $P_{\mathrm{cycle}} = 0.10$. Collection yield therefore depends
+continuously on SNR margin: sensors at the edge of the UAV footprint
+contribute probabilistically rather than being admitted or excluded
+by a hard range boundary, coupling physical positioning directly to
+link-layer throughput.

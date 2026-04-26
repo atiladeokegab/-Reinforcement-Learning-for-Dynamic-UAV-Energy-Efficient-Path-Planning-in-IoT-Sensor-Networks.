@@ -10,13 +10,13 @@ CURRENT_DIR = Path(__file__).parent.parent.parent.parent
 
 def create_diagram():
     logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV Q-Learning Code Structure diagram...")
+    logger.info("Creating UAV DQN Code Structure diagram...")
 
     # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / "q_learning_code_diagram"
+    output_file = output_dir / "dqn_code_diagram"
 
     logger.debug(f"Output file: {output_file}.png")
 
@@ -24,79 +24,142 @@ def create_diagram():
 
     try:
         with Diagram(
-            "Code Diagram - Q-Learning Class Structure",
+            "Code Diagram - DQN UAV Project Class/Module Structure",
             direction="TB",
             graph_attr=graph_attr,
             show=False,
             filename=str(output_file),
             outformat="png",
         ):
-            with Cluster("agents/"):
-                q_agent = Python(
-                    "QLearningAgent\n+ q_table: np.ndarray\n+ alpha: float\n+ gamma: float\n+ epsilon: float\n--\n+ select_action(state)\n+ update_q_value()\n+ get_best_action(state)\n+ save_model()\n+ load_model()"
+            with Cluster("src/agents/dqn/"):
+                dqn_train = Python(
+                    "dqn.py\n[Training Script]\n"
+                    "SB3 DQN(MlpPolicy)\n"
+                    "policy_kwargs=[512,512,256]\n"
+                    "domain randomisation\n"
+                    "curriculum: 3 stages\n"
+                    "4× DummyVecEnv\n"
+                    "2M timesteps\n"
+                    "→ dqn_final.zip"
+                )
+                evaluate = Python(
+                    "evaluate_dqn.py\n[Single-seed Eval]\n"
+                    "loads dqn_final.zip\n"
+                    "runs one test episode"
+                )
+                ablation_a4 = Python(
+                    "train_ablation_a4.py\n[Ablation Control]\n"
+                    "fixed 500×500, N=20\n"
+                    "no domain randomisation\n"
+                    "→ models/dqn_no_dr/"
                 )
 
-            with Cluster("environment/"):
+            with Cluster("src/agents/dqn/dqn_evaluation_results/"):
+                ablation = Python(
+                    "ablation_study.py\n"
+                    "A1: no capture effect\n"
+                    "A2: instant ADR (λ=1)\n"
+                    "A3: no AoI observation\n"
+                    "A4: no domain rand"
+                )
+                compare = Python(
+                    "compare_agents.py\n"
+                    "DQN vs NearestSensor\n"
+                    "vs MaxThroughput"
+                )
+                fairness = Python(
+                    "fairness_sweep.py\n"
+                    "Jain's fairness index\n"
+                    "across all 16 conditions"
+                )
+                greedy = Python(
+                    "greedy_agents.py\n"
+                    "NearestSensorGreedy\n"
+                    "MaxThroughputGreedy\n"
+                    "(SF-aware)"
+                )
+
+            with Cluster("src/environment/"):
                 env = Python(
-                    "UAVEnvironment\n+ grid_size: tuple\n+ sensors: List[Sensor]\n+ uav: UAV\n--\n+ reset()\n+ step(action)\n+ get_state()\n+ is_done()\n+ render()"
+                    "uav_env.py\n[UAVEnvironment]\n"
+                    "+ grid_size: Tuple[int,int]\n"
+                    "+ sensors: List[IoTSensor]\n"
+                    "+ uav: UAV\n"
+                    "+ observation_space (Box)\n"
+                    "+ action_space (Discrete 5)\n"
+                    "——\n"
+                    "+ reset() → obs\n"
+                    "+ step(action) → (obs,r,done,info)\n"
+                    "+ _get_observation()\n"
+                    "+ render()"
                 )
 
                 uav_class = Python(
-                    "UAV\n+ position: tuple\n+ battery: float\n+ max_battery: float\n+ speed: float\n--\n+ move(direction)\n+ update_battery()\n+ get_position()\n+ is_alive()"
+                    "uav.py\n[UAV]\n"
+                    "+ position: np.ndarray\n"
+                    "+ battery: float  # Wh\n"
+                    "+ max_battery=274.0  # Wh\n"
+                    "+ speed=10.0  # m/s\n"
+                    "+ altitude=100.0  # m\n"
+                    "+ power_move=500.0  # W\n"
+                    "+ power_hover=700.0  # W\n"
+                    "——\n"
+                    "+ move(direction, grid_size)\n"
+                    "+ hover(duration)\n"
+                    "+ is_alive() → bool\n"
+                    "+ reset()"
                 )
 
                 sensor_class = Python(
-                    "Sensor\n+ id: int\n+ position: tuple\n+ data_collected: bool\n+ range: float\n--\n+ is_in_range(uav_pos)\n+ collect_data()\n+ reset()"
+                    "iot_sensors.py\n[IoTSensor]\n"
+                    "+ position: np.ndarray\n"
+                    "+ spreading_factor: int  # SF7–12\n"
+                    "+ data_buffer: float  # bytes\n"
+                    "+ max_buffer_size=1000.0\n"
+                    "+ adr_lambda=0.1  # EMA\n"
+                    "+ shadowing_std_db=4.0  # N(0,4)\n"
+                    "+ duty_cycle=10.0  # 1% EU\n"
+                    "——\n"
+                    "+ compute_rssi(uav_pos)\n"
+                    "+ update_adr(rssi)\n"
+                    "+ is_in_range(uav_pos)\n"
+                    "+ collect_data()\n"
+                    "+ generate_data()"
                 )
 
-            with Cluster("rewards/"):
+            with Cluster("src/rewards/"):
                 reward_func = Python(
-                    "RewardFunction\n+ coverage_weight: float\n+ efficiency_weight: float\n--\n+ calculate(state, action)\n+ coverage_reward()\n+ battery_penalty()\n+ collision_penalty()"
+                    "reward_function.py\n[RewardFunction]\n"
+                    "——\n"
+                    "+100 per byte collected\n"
+                    "+5000 new sensor visited\n"
+                    "+200 multi-sensor bonus\n"
+                    "+1000 urgency reduction\n"
+                    "-2 revisit penalty\n"
+                    "-50 boundary hit\n"
+                    "-500 starvation\n"
+                    "-2000 unvisited at end"
                 )
 
-            with Cluster("training/"):
-                trainer = Python(
-                    "Trainer\n+ agent: QLearningAgent\n+ env: UAVEnvironment\n+ episodes: int\n--\n+ train()\n+ run_episode()\n+ evaluate()\n+ save_checkpoint()"
-                )
+            # Relationships — training flow
+            dqn_train >> Edge(label="wraps (×4)", style="dashed") >> env
+            dqn_train >> Edge(label="trains SB3 DQN") >> evaluate
+            dqn_train >> Edge(label="uses") >> ablation_a4
 
-                metrics = Python(
-                    "MetricsLogger\n+ episode_rewards: List\n+ q_values: List\n+ coverage: List\n--\n+ log_episode()\n+ log_step()\n+ export_to_csv()\n+ plot_results()"
-                )
+            evaluate >> Edge(label="loads model, runs") >> env
+            ablation >> Edge(label="loads A1–A4 models, runs") >> env
+            compare >> Edge(label="benchmarks") >> greedy
+            compare >> Edge(label="evaluates") >> env
+            fairness >> Edge(label="sweeps conditions") >> env
 
-            with Cluster("config/"):
-                config = Python(
-                    "Config\n+ grid_size: tuple\n+ num_sensors: int\n+ learning_rate: float\n+ discount_factor: float\n--\n+ load_from_yaml()\n+ validate()\n+ to_dict()"
-                )
-
-            with Cluster("utils/"):
-                visualizer = Python(
-                    "Visualizer\n--\n+ plot_trajectory()\n+ plot_rewards()\n+ plot_q_values()\n+ animate_episode()"
-                )
-
-                data_manager = Python(
-                    "DataManager\n--\n+ save_results()\n+ load_results()\n+ export_trajectories()\n+ create_checkpoint()"
-                )
-
-            # Relationships
-            trainer >> Edge(label="uses", style="dashed") >> q_agent
-            trainer >> Edge(label="interacts with", style="dashed") >> env
-            trainer >> Edge(label="logs to", style="dashed") >> metrics
-            trainer >> Edge(label="loads", style="dashed") >> config
-
-            q_agent >> Edge(label="observes", style="bold") >> env
-            q_agent >> Edge(label="receives reward from", style="bold") >> reward_func
-
+            # Environment structure
             env >> Edge(label="contains", style="solid") >> uav_class
-            env >> Edge(label="contains", style="solid") >> sensor_class
-            env >> Edge(label="uses", style="dashed") >> reward_func
+            env >> Edge(label="contains (10–40)", style="solid") >> sensor_class
+            env >> Edge(label="calls per step", style="dashed") >> reward_func
 
-            reward_func >> Edge(label="evaluates", style="dashed") >> sensor_class
-
-            metrics >> Edge(label="saves via", style="dashed") >> data_manager
-            metrics >> Edge(label="plots via", style="dashed") >> visualizer
-
-            config >> Edge(label="configures", style="dashed") >> env
-            config >> Edge(label="configures", style="dashed") >> q_agent
+            uav_class >> Edge(label="moves toward", style="dashed") >> sensor_class
+            reward_func >> Edge(label="reads buffer/urgency") >> sensor_class
+            reward_func >> Edge(label="reads battery") >> uav_class
 
             logger.info("✓ Diagram components created")
 
@@ -116,7 +179,7 @@ def create_diagram():
         logger.error(traceback.format_exc())
         raise
 
-    logger.info("Code diagram creation complete!")
+    logger.info("DQN code diagram creation complete!")
 
 
 if __name__ == "__main__":
@@ -124,6 +187,6 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    logger.info("Running Q-Learning code diagram script...")
+    logger.info("Running DQN code structure diagram script...")
     create_diagram()
     logger.info("Script finished!")

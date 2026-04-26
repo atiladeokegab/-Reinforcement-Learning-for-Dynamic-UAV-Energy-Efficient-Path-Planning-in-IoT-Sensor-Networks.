@@ -1,15 +1,6 @@
-"""
-IoT Sensor with EMA-based ADR and Gaussian Shadowing
-
-UPDATED: Added Gaussian Random Variable for Shadowing
-Formula: RSSI = RSS(d) + X_sigma
-Where X_sigma ~ N(0, 4.0)
-
-This stochasticity simulates the effect of trees, buildings, and
-orientation changes, validating the need for the EMA smoothing algorithm.
+"""IoT Sensor with EMA-based ADR and Gaussian Shadowing (RSSI = RSS(d) + X_sigma, X_sigma ~ N(0,4)).
 
 Author: ATILADE GABRIEL OKE
-Date: November 2025
 """
 
 import numpy as np
@@ -28,10 +19,22 @@ class IoTSensor:
         12: 250 / 8,
     }
 
-    REQUIRED_SNR_DB = {7: 7.5, 8: 10.0, 9: 12.5, 10: 15.0, 11: 17.5, 12: 20.0}
+    REQUIRED_SNR_DB = {
+        7: -6.0,
+        8: -9.0,
+        9: -12.0,
+        10: -15.0,
+        11: -17.5,
+        12: -20.0
+    }
 
     # RSSI to SF mapping (Capped SF12 range)
-    RSSI_SF_MAPPING = [(-55, 7), (-70, 9), (-90, 11), (-110, 12)]
+    RSSI_SF_MAPPING = [
+        (-60, 7),   # Switch to SF7 if RSSI > -60 dBm  (~50 grid units)
+        (-70, 9),   # Switch to SF9 if RSSI > -70 dBm  (~89 grid units)
+        (-78, 11),  # Switch to SF11 if RSSI > -78 dBm (~141 grid units)
+        (-85, 12),  # Default to SF12 for worst-case links (~211 grid units)
+    ]
 
     def __init__(
         self,
@@ -43,7 +46,7 @@ class IoTSensor:
         transmit_power_dbm: float = 14.0,  # Updated to realistic 14dBm
         path_loss_exponent: float = 3.8,  # Urban Path Loss
         d0: float = 1.0,
-        rssi_threshold: float = -120.0,
+        rssi_threshold: float = -85.0,
         noise_floor_dbm: float = -105.0,
         uav_altitude: int = 100,  # Fixed at 100m
         spreading_factor: int = 12,
@@ -299,13 +302,18 @@ class IoTSensor:
             "sf_changes": self.get_sf_changes(),
         }
 
-    def reset(self):
-        self.data_buffer = 0.0
+    def reset(self, initial_buffer_fill: float = 1.0):
+        # Sensors start with accumulated data (UAV arrives after sensors have been running).
+        # initial_buffer_fill=1.0 means full buffer → urgency=1.0 → byte reward is live from step 1.
+        self.data_buffer = self.max_buffer_size * np.clip(initial_buffer_fill, 0.0, 1.0)
         self.spreading_factor = 12
         self.data_rate = self.LORA_DATA_RATES[12]
         self.avg_rssi = None
         self.current_rssi = None
-        self.total_data_generated = 0.0
+        # Initialise generated counter to include the pre-filled buffer so that
+        # collection_rate = transmitted / total_available stays in [0, 1].
+        # Without this, CR > 100% when the UAV collects the initial backlog.
+        self.total_data_generated = float(self.data_buffer)
         self.total_data_transmitted = 0.0
         self.total_data_lost = 0.0
         self.sf_history = []
@@ -431,4 +439,56 @@ if __name__ == "__main__":
     # )
     print(f"→ Forces DQN to learn HOVERING strategies (not just passing by)")
     print(f"→ Frame stacking becomes valuable for predicting future RSSI trends")
+    print("=" * 100)
+
+    # Test 6: RSSI and SF values at different distances
+    print("=" * 100)
+    print("Test 6: RSSI and SF Values at Different Distances from UAV")
+    print("=" * 100)
+
+    # Place sensor at origin, move UAV to different distances
+    sensor_dist = IoTSensor(
+        position=(0.0, 0.0),
+        sensor_id=99,
+        transmit_power_dbm=14.0,
+        uav_altitude=100,
+        adr_lambda=0.1,
+        use_ema_adr=False,  # Instantaneous so we see true SF per distance
+        shadowing_std_db=0.0,  # Zero shadowing so values are deterministic
+    )
+
+    # Grid distances (1 grid unit = 10m), UAV always on same y=0 axis
+    grid_distances = [0, 1, 2, 5, 10, 20, 30, 50, 70, 100, 150, 200, 300, 400, 500, 700, 1000, 1500, 2000, 3000, 5000]
+
+    print(
+        f"\n{'Grid Dist':<12} {'Real Dist (m)':<16} {'3D Dist (m)':<14} {'RSSI (dBm)':<14} {'SF':<6} {'Data Rate (B/s)':<18} {'In Range?'}")
+    print("-" * 100)
+
+    for gd in grid_distances:
+        uav_pos = (float(gd), 0.0)
+
+        # Real ground distance
+        real_ground_m = gd * 10
+        real_3d_m = np.sqrt(real_ground_m ** 2 + 100 ** 2)  # 100m altitude
+
+        sensor_dist.avg_rssi = None  # Reset EMA each time
+        sensor_dist.update_spreading_factor(uav_pos, current_step=0)
+
+        rssi = sensor_dist.current_rssi
+        sf = sensor_dist.spreading_factor
+        data_rate = sensor_dist.data_rate
+        in_range = rssi >= sensor_dist.rssi_threshold
+
+        print(
+            f"{gd:<12} {real_ground_m:<16.0f} {real_3d_m:<14.1f} "
+            f"{rssi:<14.1f} {sf:<6} {data_rate:<18.2f} {'✅' if in_range else '❌'}"
+        )
+
+    print()
+    print("Notes:")
+    print(f"  UAV altitude: 100m (fixed)")
+    print(f"  Grid unit = 10m | shadowing disabled for clean deterministic output")
+    print(f"  RSSI threshold: {sensor_dist.rssi_threshold} dBm")
+    print(
+        f"  SF7=fastest ({sensor_dist.LORA_DATA_RATES[7]:.1f} B/s) → SF12=slowest ({sensor_dist.LORA_DATA_RATES[12]:.1f} B/s)")
     print("=" * 100)

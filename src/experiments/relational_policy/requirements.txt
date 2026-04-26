@@ -1,0 +1,13 @@
+# Isolated dependencies for the relational policy experiment.
+# Install into the project's uv environment:
+#   uv add "ray[rllib]>=2.10"
+#
+# Or into a separate venv:
+#   pip install -r requirements.txt
+
+ray[rllib]>=2.10.0
+
+# Already in pyproject.toml — listed here for clarity:
+# gymnasium>=1.0.0
+# torch>=2.0.0
+# numpy>=1.24.0

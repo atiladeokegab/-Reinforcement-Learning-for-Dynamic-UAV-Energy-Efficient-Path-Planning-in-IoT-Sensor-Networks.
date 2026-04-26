@@ -1,0 +1,783 @@
+% !TEX program = lualatex
+% ============================================================
+%  Y3 Individual Project Final Presentation
+%  Atilade Gabriel Oke, University of Manchester (EEE)
+%  EEEN30330 — Final Demonstration/Presentation, May 2026
+%
+%  Structure: detective story, 15 slides, 15-minute delivery.
+%  Style: modern-tech, single UoM-manpurple accent, metropolis base.
+% ============================================================
+
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% ---------- Packages ----------
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,shapes.geometric,decorations.pathmorphing,shadows}
+
+\graphicspath{{figures/}}
+
+% ---------- Theme ----------
+\usetheme{metropolis}
+\usecolortheme{default}
+
+% Single-accent palette (UoM manpurple). Yellow is intentionally dropped.
+\definecolor{manpurple}{RGB}{96,37,121}    % UoM manpurple
+\definecolor{manpurple2}{RGB}{178,136,190} % tint
+\definecolor{ink}{RGB}{28,28,32}           % near-black body
+\definecolor{muted}{RGB}{120,120,128}      % captions / quiet
+\definecolor{surface}{RGB}{245,243,247}    % block background
+
+\setbeamercolor{normal text}{fg=ink,bg=white}
+\setbeamercolor{frametitle}{bg=white,fg=manpurple}
+\setbeamercolor{title separator}{fg=manpurple}
+\setbeamercolor{progress bar}{fg=manpurple,bg=manpurple2!30}
+\setbeamercolor{alerted text}{fg=manpurple}
+\setbeamercolor{block title}{bg=surface,fg=manpurple}
+\setbeamercolor{block body}{bg=surface!60}
+\setbeamercolor{structure}{fg=manpurple}
+\setbeamercolor{footline}{fg=muted}
+
+\setbeamertemplate{frame numbering}[fraction]
+\metroset{block=fill}
+\metroset{subsectionpage=progressbar}
+\metroset{titleformat=smallcaps}
+
+% ---------- Macros ----------
+\newcommand{\NDR}{\mathrm{NDR}}
+\newcommand{\emp}[1]{{\color{manpurple}\textbf{#1}}}
+\newcommand{\qt}[1]{{\color{muted}#1}}
+% Hero number (big coloured statistic)
+\newcommand{\hero}[2]{%
+  {\fontsize{44pt}{52pt}\selectfont\color{manpurple}\textbf{#1}}\\[2pt]%
+  {\color{muted}\small #2}%
+}
+
+% ---------- Title ----------
+\title{A Single Drone. Forty Sensors. Thirty-Five Minutes.}
+\subtitle{Energy-Efficient UAV Path Planning in IoT Networks:\\
+          A Deep Reinforcement Learning Aided Approach}
+\author{Atilade Gabriel Oke}
+\institute{%
+  EEEN30330 Individual 3\textsuperscript{rd}-Year Project \\
+  Department of Electrical \& Electronic Engineering \\
+  The University of Manchester}
+\date{Final Presentation, May 2026}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 1 --- Title  (0:30)
+% ------------------------------------------------------------
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+
+
+% ============================================================
+% ACT I --- THE MISSION   (slides 2-3, ~3 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 2 --- The scene  (1:00)  [LOCKED]
+% SPEAKER: "Imagine a remote field, forty sensors scattered, one
+% drone, seven minutes of battery. The drone is the only gateway.
+% Every uncollected sensor is lost data. This is the problem."
+% ------------------------------------------------------------
+\begin{frame}{The scene}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \vspace{0.6em}
+      \LARGE
+      A remote sensor field.\\[0.4em]
+      \emp{Forty} sensors.\\[0.4em]
+      \emp{One} drone.\\[0.4em]
+      \emp{35 minutes} of battery.\\[1em]
+      \normalsize
+      \qt{The drone is the only gateway.
+      Every uncollected sensor is lost data.}\\[0.5em]
+      \emp{And it is also a protocol-controller, not just a data-mule.}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \vspace{0.0em}
+      \centering
+      \resizebox{0.95\linewidth}{!}{\input{figures/scene_comparison}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 3 --- The two coupled problems  (1:30)  [LOCKED]
+% SPEAKER: "Two problems, coupled. Physical: battery and coverage.
+% Protocol: LoRaWAN's ADR collapses devices onto one SF when the
+% gateway moves, congestion collapse. Prior work addresses one or
+% the other, never both together."
+% ------------------------------------------------------------
+\begin{frame}{Two coupled problems, one control input}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Physical}
+        \small
+        Limited battery, large grid, partial coverage.
+        Drone position determines link budget.
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{Protocol: \emph{mobility-blind ADR}}
+        \small
+        LoRaWAN's Adaptive Data Rate is engineered for static
+        gateways. Under a moving UAV it triggers the
+        \emp{SF monoculture}: every sensor converges on SF12,
+        intra-SF collisions collapse throughput.
+      \end{block}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \vspace{0.3em}
+      \centering
+      \resizebox{\linewidth}{!}{\input{figures/system_model_tikz}}\\
+      {\scriptsize\qt{UAV position is the shared control input.}}
+    \end{column}
+  \end{columns}
+  \vfill
+  \emp{Gap:} no prior work addresses physical \emph{and} protocol
+  jointly on a mobile gateway.
+\end{frame}
+
+
+% ============================================================
+% ACT II --- ROADMAP + APPROACH   (slides 4-6, ~3 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 4 --- Plan on a page  (0:30)
+% SPEAKER: "Here is what the next 15 minutes look like. First the
+% problem and why it has no closed-form solution. Then my approach.
+% Then what I actually found — which was not what I expected.
+% Then the diagnosis and the fix. And finally the evidence."
+% ------------------------------------------------------------
+\begin{frame}{Five things in 15 minutes}
+  \vspace{0.6em}
+  \begin{enumerate}\setlength\itemsep{0.55em}
+    \item \emp{The problem} \quad
+          \qt{two coupled constraints, no closed form}
+    \item \emp{My approach} \quad
+          \qt{DQN trained across 16 conditions simultaneously}
+    \item \emp{What I found} \quad
+          \qt{performance collapses at scale; a greedy heuristic beats it}
+    \item \emp{Why, and the fix} \quad
+          \qt{representational ceiling diagnosed; permutation-invariant architecture}
+    \item \emp{The evidence} \quad
+          \qt{NDR $+333\%$,\ \ energy ${\times}12$,\ \ all $p<10^{-4}$,\ \ 50 seeds}
+  \end{enumerate}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 5 --- Problem formulation + why it's hard  (1:30)
+% SPEAKER: "The objective is to maximise total data collected from
+% all sensors over the episode — that outer double sum. Subject to
+% three hard constraints: link quality must exceed the SF threshold,
+% the battery must not run out, and no two sensors may share the
+% same spreading factor in the same slot — that's the collision
+% constraint. These three constraints map directly onto three
+% physical forces the drone feels simultaneously: battery decay,
+% quartic path-loss, and a protocol that lags the drone's movement
+% by ten seconds. No closed form handles all three at once.
+% That is why this needs a learned policy."
+% ------------------------------------------------------------
+\begin{frame}{Problem formulation}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \small
+      \emp{Objective:} maximise total data collected
+      \[
+        \max_{\pi}\;\sum_{t=0}^{T}\sum_{i=1}^{N} D_{i,t}
+      \]
+      \vspace{-0.5em}
+      \emp{Subject to:}
+      \begin{alignat}{2}
+        &\mathrm{RSSI}_{i,t}(p_t) \ge \mathrm{RSSI}_{\min}(SF_{i,t})
+          &\quad&\forall i \notag\\
+        &E_{t+1} = E_t - P(a_t)\Delta t \ge 0
+          &\quad&\forall t \notag\\
+        &\textstyle\sum_{i\in\mathcal{N}}\mathbf{1}[SF_{i,t}{=}k] \le 1
+          &\quad&\forall k\in\{7,\ldots,12\} \notag\\
+        &p_{t+1} = p_t + v(a_t)\,\Delta t \notag
+      \end{alignat}
+      \vspace{-0.3em}
+      \footnotesize\qt{$D_{i,t}$: bytes from sensor $i$ at step $t$.
+      $\pi$: control policy. $E_t$: battery. $SF_{i,t}$: spreading factor.}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small\emp{Three forces act simultaneously:}\\[0.5em]
+      \begin{tabular}{@{}p{2.2cm} p{3.8cm}@{}}
+        \emp{Battery} &
+          $E_{t+1}=E_t-P(a_t)\Delta t$\\
+          & \tiny\qt{$P_\text{hover}>P_\text{flight}$; hovering costs more.}\\[0.4em]
+        \emp{Coverage} &
+          $P_r\propto d^{-4}$\\
+          & \tiny\qt{Two-Ray: halve distance $\Rightarrow$ 16$\times$ power.}\\[0.4em]
+        \emp{Protocol lag} &
+          $\bar{R}_t=\lambda R_t+(1{-}\lambda)\bar{R}_{t-1}$\\
+          & \tiny\qt{EMA-ADR, $\lambda{=}0.1$; SF lags ${\sim}$10\,s.}\\
+      \end{tabular}
+      \vfill
+      \begin{block}{}
+        \centering\small
+        Non-convex. Non-stationary. No closed form.\\
+        \qt{$\Rightarrow$ trained a \emp{Deep Q-Network} to find $\pi$.}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 6 --- Experimental setup  (1:00)
+% SPEAKER: "Before we get to results, let me show you what the
+% agent actually sees at runtime. This is a live frame from the
+% simulator at step 440 of 2100. The orange circle at the top
+% is the UAV — it is currently hovering above sensor S2 and
+% actively collecting via a SF11 link, shown by the dashed
+% purple line. The coloured rings around each sensor encode
+% urgency: dark red means the buffer is nearly full and data
+% is about to be lost. The dotted circle is the UAV's
+% communication range — 17 sensors are reachable right now.
+% This is what the policy must navigate: 20 sensors, 200 by
+% 200 metre grid, 35 minutes of battery."
+% ------------------------------------------------------------
+\begin{frame}[t]{Experimental setup: the simulator}
+  \vspace{-0.6em}
+  \begin{columns}[T]
+    \begin{column}{0.61\textwidth}
+      \begin{tikzpicture}
+        \node[inner sep=0,anchor=north west] (img) at (0,0) {%
+          \includegraphics[width=\linewidth,height=0.78\textheight,
+                           keepaspectratio]{env_snapshot.png}%
+        };
+        % UAV label — computed target: (4.29cm, -0.49cm) from NW
+        % Label placed above-right, arrow points down-left to orange cluster
+        \node[fill=manpurple,text=white,font=\bfseries\scriptsize,
+              inner sep=2.5pt,rounded corners=2pt,anchor=south west]
+          (uavlbl) at ($(img.north west)+(5.1cm,-0.10cm)$) {UAV};
+        \draw[-{Stealth[length=5pt]},manpurple,line width=1pt]
+          (uavlbl.south west) -- ($(img.north west)+(4.35cm,-0.49cm)$);
+        % Sensor label — computed target: (3.23cm, -0.83cm) from NW
+        % Label placed below-left, arrow points up-right to S2
+        \node[fill=manpurple!80!black,text=white,font=\bfseries\scriptsize,
+              inner sep=2.5pt,rounded corners=2pt,anchor=north east]
+          (snslbl) at ($(img.north west)+(2.4cm,-1.45cm)$) {LoRa Sensor};
+        \draw[-{Stealth[length=5pt]},manpurple!80!black,line width=1pt]
+          (snslbl.north east) -- ($(img.north west)+(3.20cm,-0.83cm)$);
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.37\textwidth}
+      \footnotesize
+      \textbf{Environment at a glance}\\[0.3em]
+      \begin{itemize}\setlength\itemsep{0.25em}
+        \item \emp{Grid}: 200$\times$200\,m, UAV at 100\,m altitude
+        \item \emp{LoRa sensors (S0--S19)}: ring colour = buffer fill \qt{(blue = full, green = empty)}
+        \item \emp{UAV} \qt{(orange)}: collecting from S2 at SF11; dashed line = active link
+        \item \emp{Urgency rings}: AoI priority — darker $\Rightarrow$ data loss imminent
+        \item \emp{Dotted circle}: comm.\ range — 17 of 20 reachable
+        \item \emp{Episode}: 2100 steps $\approx$ 35\,min
+      \end{itemize}
+      \vspace{0.3em}
+      \begin{block}{}
+        \scriptsize
+        \emp{Built with OpenAI Gymnasium} — Two-Ray path loss, EMA-ADR, capture effect, shadowing $\mathcal{N}(0,4\,\mathrm{dB})$.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 7 --- The DQN agent  (1:15)
+% SPEAKER: "The DQN observes position, battery, and per-sensor
+% buffer fill, urgency, and link quality — stacked over four
+% timesteps. It chooses one of five actions every second. To build
+% a robust generalist, I used domain randomisation: the same policy
+% trained simultaneously on four grid sizes and four sensor counts,
+% sixteen conditions in total. One policy, no retraining."
+% ------------------------------------------------------------
+\begin{frame}[t]{The agent: DQN with domain randomisation}
+  \vspace{0.4em}
+  \centering
+  \resizebox{0.96\linewidth}{!}{\input{figures/dqn_pretty}}\\[0.4em]
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Observation (4-frame stack)}
+        \footnotesize
+        UAV position $\cdot$ battery $\cdot$ per-sensor
+        \{buffer fill, urgency, link quality\}
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Domain randomisation}
+        \footnotesize
+        4 grid sizes $\times$ 4 sensor counts
+        $= 16$ conditions simultaneously.
+        One policy, deployed everywhere.
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{5 discrete actions}
+        \footnotesize
+        N $\cdot$ S $\cdot$ E $\cdot$ W $\cdot$ Hover,
+        chosen every second.
+        Flat MLP [512,\,512,\,256], ReLU, Adam.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ============================================================
+% ACT III --- THE TWIST   (slides 7-9, ~3.5 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 6 --- At small scale: it works  (1:00)
+% SPEAKER: "I tested against three comparators. Nearest Greedy:
+% move to the closest buffered sensor, no protocol knowledge.
+% SF-Aware Greedy: adds protocol awareness, picks the highest
+% throughput sensor in range. TSP Oracle: knows every sensor
+% position in advance, plans the optimal route offline. At small
+% scale, my DQN holds its own. At 100x100 with 10 sensors, all
+% agents hit 100% NDR. At 200x200 with 20, the DQN is at 99.4%.
+% Looking good."
+% ------------------------------------------------------------
+\begin{frame}{At small scale: parity}
+  \begin{columns}[c]
+    \begin{column}{0.50\textwidth}
+      \small
+      \textbf{Three comparators:}\\[0.5em]
+      \begin{tabular}{@{}p{2.8cm} p{4.4cm}@{}}
+        \emp{Nearest Greedy}  & Move to closest buffered sensor. No protocol knowledge.\\[0.4em]
+        \emp{SF-Aware Greedy} & Adds protocol awareness; picks highest-throughput sensor.\\[0.4em]
+        \emp{TSP Oracle}      & Optimal offline route. Routing upper bound.\\
+      \end{tabular}\\[0.8em]
+      \footnotesize\qt{50 seeds per condition, 5 grid sizes
+      $(100\!\times\!100, N{=}10) \to (500\!\times\!500, N{=}50)$.
+      Welch's $t$-test.}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \vspace{0.5em}
+      \hero{$100\%$}{DQN NDR at $(100\!\times\!100,\, N{=}10)$}\\[1.2em]
+      \hero{$99.4\%$}{DQN NDR at $(200\!\times\!200,\, N{=}20)$}\\[0.8em]
+      \small\qt{All agents at parity. The DQN is working.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 7 --- The collapse  (1:30)
+% SPEAKER: "Here is what happens as I scale up. This is the
+% scalability curve. DQN in red. At 300x300 with 30 sensors,
+% the DQN drops to 52.7%. At 500x500 with 50, it reaches 13%.
+% The TSP Oracle holds at 77%. That gap I expected. What I did
+% NOT expect: the protocol-blind Nearest Greedy, which knows
+% nothing about spreading factors, beats my protocol-aware DQN
+% from N=30 onward. At the hardest scale, even the dumbest
+% baseline scores twice as well. The bottleneck is not the
+% protocol."
+% ------------------------------------------------------------
+\begin{frame}{At scale: collapse}
+  \centering
+  \includegraphics[width=0.60\linewidth,keepaspectratio]{scalability_ndr.png}
+  \vfill
+  \begin{columns}[c]
+    \begin{column}{0.48\textwidth}
+      \hero{$13.0\%$}{DQN NDR at $(500\!\times\!500,\, N{=}50)$}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \small
+      \emp{Protocol-blind Nearest Greedy: $25.9\%$.}\\[0.3em]
+      \qt{DQN $52.7\%$ vs Nearest $70.6\%$ at $(300,30)$.}\\[0.3em]
+      \qt{DQN $13.0\%$ vs Nearest $25.9\%$ at $(500,50)$.}\\[0.6em]
+      \emp{The bottleneck is not the protocol.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 8 --- What is the DQN actually doing?  (1:00)
+% SPEAKER: "So what is it actually doing? I plotted the flight
+% path of each agent on the same grid. DQN on the far left.
+% The TSP Oracle on the right traces a structured tour that
+% visits every sensor. My DQN barely leaves the corner. It is
+% physically able to move to the centre. It chooses not to.
+% Something is constraining its behaviour."
+% ------------------------------------------------------------
+\begin{frame}{What is the DQN actually doing?}
+  \centering
+  \includegraphics[height=0.72\textheight,keepaspectratio]{trajectory_single.png}
+  \vfill
+  \small
+  \qt{DQN: NDR\,=\,0\% — never leaves its column.
+  Greedy: NDR\,=\,97\% — structured sweep, reaches almost every sensor.
+  The drone is physically capable of moving. It doesn't.}
+\end{frame}
+
+
+% ============================================================
+% ACT IV --- THE INVESTIGATION   (slides 9-11, ~3.5 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 9 --- Boundary diagnosis  (1:30)
+% SPEAKER: "I instrumented the environment. I counted how often
+% the UAV occupied a cell on the boundary of the grid versus the
+% interior. Twenty deterministic evaluation episodes. Median zero
+% wall collisions — so boundary-avoidance was learned correctly.
+% But 100% of all timesteps were spent on boundary cells. The
+% drone learned to patrol the perimeter and never enter the
+% interior. This is not a reward shaping problem. The reward
+% penalises boundary hits and starvation. The agent is doing
+% something the reward does not ask for."
+% ------------------------------------------------------------
+\begin{frame}{Diagnostic: 100\% boundary-cell occupancy}
+  \begin{columns}[c]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,keepaspectratio]{dqn_boundary_heatmap.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \small
+      20 deterministic episodes, $(200\!\times\!200, N{=}20)$\\[0.8em]
+      \hero{$100\%$}{boundary-cell occupancy}\\[0.8em]
+      \qt{Median $0$ wall collisions:\\
+      boundary avoidance \emph{was} learned.}\\[0.5em]
+      \emp{But the interior is never entered.}\\[0.5em]
+      \qt{Reward penalises both boundary hits
+      and starvation. The agent still patrols
+      the perimeter.}\\[0.5em]
+      \emp{Physically capable. Architecturally constrained.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 10 --- Root cause: representational ceiling  (1:00)
+% SPEAKER: "Why? I traced it back to the network's input
+% representation. The flat MLP concatenates all sensor features
+% into a single fixed-length vector: sensor 1 at positions 1 to 5,
+% sensor 2 at positions 6 to 10, and so on. Sensor order is
+% baked into the representation. If the sensors appear in a
+% different order, the policy sees a completely different input
+% and has no way to recognise they are the same sensors.
+% At small grids, the network memorises the fixed layout.
+% At large grids with more sensors, it cannot generalise — so
+% it retreats to a safe default: the perimeter. This is not a
+% training failure. It is a representational ceiling."
+% ------------------------------------------------------------
+\begin{frame}{The cause: representational ceiling}
+  \vspace{0.4em}
+  \begin{block}{}
+    \large\centering Not reward. \quad Not training. \quad Not physics.
+  \end{block}
+  \vspace{0.8em}
+  The flat MLP consumes \(\;[\mathrm{uav},\; s_1,\; s_2,\; \ldots,\; s_N]\;\)
+  as a single concatenated vector.\\[0.7em]
+
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{The problem}
+        \small
+        Sensor order is part of the representation.\\
+        Swapping sensor 1 and sensor 2 $\Rightarrow$ the policy
+        sees a completely different input.\\[0.3em]
+        At small scales: memorise the fixed layout.\\
+        At large scales: cannot generalise.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{The consequence}
+        \small
+        Perimeter patrol is the cheapest \emph{stable}
+        trajectory the network can express under this
+        encoding.\\[0.3em]
+        \emp{The architecture cannot treat the sensor
+        set as a set.}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ============================================================
+% ACT V --- THE FIX   (slides 12-13, ~2.5 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 12 --- Architecture comparison  (1:15)
+% SPEAKER: "On the left is the DQN. The observation is one long
+% concatenated vector: sensor 1 occupies slots 1 to 5, sensor 2
+% occupies slots 6 to 10, and so on. The flat MLP processes this
+% fixed-order vector — sensor order is baked into the representation.
+% On the right is the Relational RL agent. Each sensor is processed
+% independently by the SAME shared encoder phi. The outputs are
+% summed together. Because addition is commutative, the order of
+% the sensors does not matter. The network is permutation invariant
+% by construction. Same environment, same reward, same curriculum.
+% Only the network changed. Trained with PPO."
+% ------------------------------------------------------------
+\begin{frame}{The fix: an architectural change}
+  \vspace{-0.4em}
+  \centering
+  \includegraphics[width=0.97\linewidth,keepaspectratio]{drl_system_architecture.png}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 13 --- Diagnostic resolved  (1:15)
+% SPEAKER: "Same diagnostic, run on the new agent. The boundary
+% occupancy drops from 100% to 21.5%. Wall collisions drop to
+% zero across all seeds. Left panel is the DQN: a single bright
+% dot in the corner, the drone is stuck. Right panel is Relational
+% RL: distributed coverage across the grid. The diagnostic that
+% revealed the problem also confirms the fix."
+% ------------------------------------------------------------
+\begin{frame}{Diagnostic resolved}
+  \begin{columns}[c]
+    \begin{column}{0.60\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,keepaspectratio]{boundary_heatmap_compare.png}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \small
+      \textbf{Boundary-cell occupancy}\\[0.4em]
+      \hero{$100\% \to 21.5\%$}{}\\[0.8em]
+      \textbf{Wall collisions}\\[0.4em]
+      \hero{$21.8 \to 0$}{across all 20 seeds}\\[0.8em]
+      \small
+      \qt{Left: DQN stuck in one corner.\\
+      Right: Relational RL ranges\\
+      across the grid.}\\[0.5em]
+      \emp{Root cause confirmed. Fix validated.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ============================================================
+% ACT VI --- THE RESULTS   (slides 14-15, ~2 min)
+% ============================================================
+
+% ------------------------------------------------------------
+% SLIDE 14 --- Scalability results  (1:15)
+% SPEAKER: "Here is the full scalability sweep. Both NDR on the
+% left and Jain's Fairness on the right. DQN in red collapses.
+% Relational RL in green holds up. At 500 by 500, NDR goes from
+% 13 to 56 — that is a 333% improvement. Energy efficiency is
+% 12 times higher. JFI goes from 0.08 to 0.28. Every comparison
+% is significant at p less than 0.0001, Welch's t-test, 50 seeds.
+% The architectural fix propagates all the way up the
+% scalability curve."
+% ------------------------------------------------------------
+\begin{frame}{Results: scalability restored}
+  \centering
+  \includegraphics[width=0.82\linewidth,keepaspectratio]{scalability_combined.png}
+  \vfill
+  \footnotesize
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    Metric at $(500\!\times\!500, N{=}50)$ & DQN & Relational RL \\
+    \midrule
+    NDR (\% sensors visited)         & $13.0\%$ & $\mathbf{56.4\%}$ \quad($+333\%$) \\
+    Jain's fairness index            & $0.08$  & $\mathbf{0.28}$ \\
+    Energy efficiency (B/Wh)         & $9.96$  & $\mathbf{121.9}$ \quad(${\times}12$) \\
+    \bottomrule
+  \end{tabular}\\[0.5em]
+  \qt{All differences: $p < 10^{-4}$, Welch's $t$-test, 50 seeds per condition.
+  $t = -26.4$ at $(500,50)$.}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 15 --- Relational RL vs TSP Oracle  (1:00)
+% SPEAKER: "We have seen the fix works against the DQN baseline.
+% Now the harder question: how close to optimal is Relational RL?
+% This is the TSP Oracle comparison — five metrics, three grid
+% sizes, three sensor counts, five seeds each. The Oracle has
+% omniscient knowledge of every sensor position before takeoff
+% and cannot adapt mid-flight. Two things to notice. First,
+% the throughput and efficiency gaps are modest at -14 percent —
+% most of that comes from the 600 by 600 grid, which is outside
+% the training distribution. Second, the fairness gap is not
+% what it looks like: the Oracle's high Jain's index comes from
+% a fixed round-robin tour that visits sensors uniformly by
+% construction, not by intelligence. The learned policy
+% deliberately weights toward urgent sensors, which skews
+% collection rates. That is a different objective, not a
+% worse one. The remaining gap is the roadmap."
+% ------------------------------------------------------------
+\begin{frame}{Results: how close to optimal?}
+  \vspace{-0.5em}
+  \centering
+  \includegraphics[width=0.97\linewidth,height=0.62\textheight,keepaspectratio]{relational_vs_tsp_sweep.png}\\[0.25em]
+  {\scriptsize\qt{TSP Oracle = omniscient upper bound (pre-computed tour, no mid-flight adaptation).
+  \quad 5 seeds $\times$ 3 grid sizes $\times$ 3 sensor counts. Error bars = std.}}\\[0.35em]
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Throughput \& efficiency}
+        \footnotesize
+        $-14\%$ overall; gap narrows at\\
+        trained-scale grids (200$\times$200).
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Coverage}
+        \footnotesize
+        73\% vs 94\% NDR — driven by\\
+        600$\times$600 OOD degradation.
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Fairness}
+        \footnotesize
+        Oracle's uniform tour $\neq$ smarter.\\
+        Rel.\ RL weights \emp{urgent} sensors.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ------------------------------------------------------------
+% SLIDE 16 --- Contributions and future work  (0:45)
+% SPEAKER: "Five contributions. The simulator, the training
+% recipe, the benchmark, the diagnostic, and the fix. The
+% principal claim is the diagnostic-and-fix pairing: I found
+% the representational ceiling, proved it was architectural,
+% and fixed it. What comes next: attention-based aggregation
+% to close the remaining gap to the TSP Oracle, multi-UAV
+% coordination, and hardware-in-the-loop validation. Thank you."
+% ------------------------------------------------------------
+\begin{frame}{Contributions and what's next}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \small
+      \textbf{Contributions}
+      \begin{enumerate}
+        \item Open Gymnasium env: Two-Ray + ADR + Capture
+          Effect + shadowing, all coupled
+        \item Domain-randomised competence-gated curriculum
+        \item 50-seed benchmark against Greedy and TSP Oracle
+        \item \emp{Architectural diagnostic:} flat-MLP perimeter
+          heuristic as a representational ceiling
+        \item \emp{Permutation-invariant fix:} pathology resolved,
+          scalability curve shifted by $+333\%$ NDR
+      \end{enumerate}
+      \vspace{0.4em}
+      \centering
+      \qt{The diagnostic-and-fix pairing is the principal claim.}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      \textbf{Future directions}
+      \begin{itemize}
+        \item \emp{Attention pooling} over sensor set\\
+          \qt{(close the 20-point gap to TSP Oracle)}
+        \item \emp{Multi-UAV} coordination (QMIX, MAPPO)\\
+          \qt{(beyond single-drone battery envelope)}
+        \item \emp{Hardware-in-the-loop} validation\\
+          \qt{(sim-to-real robustness already tested)}
+      \end{itemize}
+      \vfill
+      \centering
+      {\LARGE\emp{Thank you.}}\\[0.4em]
+      \small\qt{Questions?}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+% ============================================================
+% BACKUP SLIDES   (not shown unless asked in Q&A)
+% ============================================================
+
+\appendix
+
+% ------------------------------------------------------------
+% BACKUP A --- Ablation study
+% ------------------------------------------------------------
+\begin{frame}{Backup: ablation study}
+  \small
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    Metric & Full mean & Ablation mean & Cohen's $d$ & $p$ \\
+    \midrule
+    Cumulative reward (${\times}10^5$) & $8.24$ & $2.88$ & $+1.43$ & $0.00012$ \\
+    NDR                               & $0.186$ & $0.138$ & $+0.54$ & $0.098$ \\
+    Jain's fairness                   & $0.288$ & $0.177$ & $+1.23$ & $0.00052$ \\
+    Gini (lower is better)            & $0.730$ & $0.833$ & $-1.32$ & $0.00023$ \\
+    Energy efficiency (B/Wh)          & $51.4$  & $35.8$  & $+0.63$ & $0.055$ \\
+    \bottomrule
+  \end{tabular}
+  \vfill
+  \footnotesize\qt{Ablation = no domain randomisation (A4). 20 seeds, Welch's $t$-test.
+  Every large-effect component ($|d|{>}0.8$) reaches $p{<}0.001$.}
+\end{frame}
+
+% ------------------------------------------------------------
+% BACKUP B --- Sim-to-real robustness
+% ------------------------------------------------------------
+\begin{frame}{Backup: sim-to-real robustness}
+  \centering
+  \includegraphics[width=0.85\linewidth,keepaspectratio]{robustness_summary.png}
+  \vfill
+  \footnotesize\qt{Three perturbation axes: GPS noise, shadowing variance, wind drift.
+  Agent degrades gracefully. Path-loss axis is a no-op (hardcoded Two-Ray slopes).}
+\end{frame}
+
+% ------------------------------------------------------------
+% BACKUP C --- Forest plot (head-to-head DQN vs Relational RL)
+% ------------------------------------------------------------
+\begin{frame}{Backup: head-to-head forest plot}
+  \centering
+  \includegraphics[width=0.75\linewidth,keepaspectratio]{forest_plot_dqn_vs_relational.png}
+  \vfill
+  \footnotesize\qt{Seed-matched deltas (Relational RL $-$ DQN) across three
+  diagnostic metrics, 95\% bootstrap CIs ($n{=}10{,}000$).
+  All intervals exclude zero.}
+\end{frame}
+
+% ------------------------------------------------------------
+% BACKUP D --- Statistical evidence across all seeds
+% ------------------------------------------------------------
+\begin{frame}{Backup: probability of improvement (50 seeds)}
+  \centering
+  \includegraphics[width=0.82\linewidth,keepaspectratio]{sweep_prob_improvement.png}
+  \vfill
+  \footnotesize\qt{For any randomly sampled run, how likely is Relational RL to beat DQN?
+  Consistently above 0.5 at every scale and metric.
+  Gap widens as grid size increases.}
+\end{frame}
+
+% ------------------------------------------------------------
+% BACKUP E --- Relational architecture detail (Deep Sets diagram)
+% ------------------------------------------------------------
+\begin{frame}{Backup: Relational RL network detail}
+  \centering
+  \includegraphics[width=0.88\linewidth,keepaspectratio]{relational_architecture.png}
+  \vfill
+  \small
+  \(z = \rho\!\left(\displaystyle\sum_{i=1}^{n_{\max}} m_i\,\phi(s_i)\right)\)
+  \quad\qt{$\phi$: shared MLP per sensor \quad $\Sigma$: masked sum-pool \quad $\rho$: post-pool MLP}
+\end{frame}
+
+\end{document}

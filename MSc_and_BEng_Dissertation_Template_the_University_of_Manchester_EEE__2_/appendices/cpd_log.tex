@@ -1,0 +1,129 @@
+\subsection{Continuing Professional Development (CPD) Log}
+\label{app:cpd}
+
+This log records self-directed learning and skills development activities undertaken during the project, following the CPD framework introduced in Lecture 2 (Semester 1, Week 2).
+
+\subsection*{Current and Recent CPD Activity}
+
+\begin{table}[H]
+\centering
+\caption{Current and recent CPD activities.}
+\label{tab:cpd_current}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm} X p{2.0cm} p{1.5cm}}
+\toprule
+\textbf{CPD Activity Title} & \textbf{Description} & \textbf{Dates} & \textbf{CPD Hours} \\
+\midrule
+LoRaWAN specification study & Studied LoRaWAN 1.0.4 spec (LoRa Alliance): ADR algorithm, duty cycle enforcement, MAC-layer confirmation. Informed EMA-ADR implementation. & S1 W2--W3 & 8 \\
+\midrule
+RF propagation modelling & Studied Two-Ray Ground Reflection model (Rappaport). Derived breakpoint formula; implemented piecewise path loss; calibrated $\sigma=4$\,dB from UAV field data. & S1 W4 & 6 \\
+\midrule
+DQN and Deep RL study & Studied Mnih et al.\ (2015) DQN paper and Sutton \& Barto Ch.\ 6, 9--10. Understood experience replay, target network, and temporal-difference learning. & S1 W1--W2 & 10 \\
+\midrule
+Domain Randomisation literature & Read Tobin et al.\ (2017) and Andrychowicz et al.\ (2020). Applied sensor position and count randomisation to reduce Sim-to-Real gap. & S1 W10--W11 & 5 \\
+\midrule
+Statistical analysis (Welch's $t$-test) & Self-study of two-sample unequal-variance $t$-test and effect size analysis. Applied to 20-seed multi-condition evaluation. & S2 W6 & 4 \\
+\midrule
+Academic Malpractice Awareness training & Completed Short Course, Driving Test, Self Declaration Form, and Tutorial Questions on CANVAS as required by Handbook Section~4. & S1 W12 & 2 \\
+\midrule
+LaTeX and mathematical writing & Attended Lecture 2 (S1 W2). Set up LuaLaTeX pipeline; learnt correct mathematical notation for MDP and reward function formulations. & S1 W2 & 2 \\
+\midrule
+Git version control & Maintained version-controlled repository throughout the project with separate branches for environment, training, and evaluation. & S1--S2 & 6 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Planned and Future CPD Activity}
+
+\begin{table}[H]
+\centering
+\caption{Planned and future CPD activities.}
+\label{tab:cpd_planned}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm} X p{2.8cm} p{2.0cm}}
+\toprule
+\textbf{CPD Activity Title} & \textbf{Description} & \textbf{Skills addressed} & \textbf{Dates} \\
+\midrule
+Multi-agent RL study & Study multi-agent extensions of DQN (QMIX, MADDPG) to support planned future work on cooperative multi-UAV data collection. & Advanced RL algorithms; cooperative decision-making & May--Jun 2026 \\
+\midrule
+Hardware-in-the-Loop validation & Learn to interface Python simulation with ROS2 and a physical UAV (ArduPilot). Addresses the Sim-to-Real gap identified in this project. & Embedded systems; robotics middleware & Jun--Aug 2026 \\
+\midrule
+Academic paper writing & Write and submit a conference paper based on this project's results to IEEE WCNC or similar venue. & Scientific writing; peer-review process & Jul 2026 \\
+\midrule
+GNN for UAV path planning & Study Graph Neural Networks for modelling sensor graph topology, as identified in the future work section of this dissertation. & Deep learning; graph-structured data & May--Jun 2026 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent The following sections provide more detailed records of CPD activities grouped by technical domain.
+
+\subsection*{Domain 1: LoRaWAN Protocol and RF Propagation}
+
+\begin{table}[H]
+\centering
+\caption{CPD activities: LoRaWAN and RF propagation.}
+\label{tab:cpd_lorawan}
+\begin{tabularx}{\textwidth}{p{3.5cm} p{2cm} X}
+\toprule
+\textbf{Activity} & \textbf{Period} & \textbf{Learning Outcome} \\
+\midrule
+Study of LoRaWAN 1.0.4 specification (LoRa Alliance) & S1 W2--W3 & Understood ADR algorithm, duty cycle enforcement, and the MAC-layer confirmation mechanism; informed correct EMA-ADR implementation. \\
+\midrule
+Reading: Zorbas et al.\ (2025), ``Revisiting LoRaWAN scalability'' & S1 W3 & Identified the SF Monoculture failure mode as the primary motivation; clarified the distinction between intra-SF and inter-SF collisions. \\
+\midrule
+Study of Two-Ray Ground Reflection model (Rappaport, \textit{Wireless Communications}) & S1 W4 & Derived the breakpoint distance formula and implemented the piecewise path loss model; verified against published numerical examples. \\
+\midrule
+Reading: Nakamura et al.\ (2022), LoRa UAV gateway measurements & S1 W4 & Calibrated log-normal shadowing standard deviation ($\sigma = 4$\,dB) against field measurement data; confirmed Two-Ray model suitability for UAV-to-ground links. \\
+\midrule
+Study of LoRa Capture Effect (Croce et al.) & S1 W6 & Understood the 6\,dB SIR threshold for successful frame capture; implemented Capture Effect resolver as a post-collision arbitration step within the Gymnasium \texttt{step()} function. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Domain 2: Deep Reinforcement Learning and Implementation}
+
+\begin{table}[H]
+\centering
+\caption{CPD activities: Deep Reinforcement Learning.}
+\label{tab:cpd_drl}
+\begin{tabularx}{\textwidth}{p{3.5cm} p{2cm} X}
+\toprule
+\textbf{Activity} & \textbf{Period} & \textbf{Learning Outcome} \\
+\midrule
+Study of Sutton \& Barto, \textit{Reinforcement Learning: An Introduction} (Ch.\ 6, 9--10) & S1 W1--W2 & Established theoretical foundations: temporal-difference learning, Q-learning convergence, function approximation with neural networks. \\
+\midrule
+Study of DQN paper (Mnih et al., 2015) and Double DQN (van Hasselt et al., 2016) & S1 W2 & Understood experience replay, target network stabilisation, and the overestimation bias corrected by Double DQN; selected Double DQN for implementation. \\
+\midrule
+Study of Stable-Baselines3 DQN source code (GitHub) & S1 W5 & Identified target network update schedule, replay buffer implementation, and exploration schedule; enabled correct hyperparameter configuration for curriculum training. \\
+\midrule
+Reading: Domain Randomisation literature (Tobin et al., 2017; Andrychowicz et al., 2020) & S1 W10--W11 & Understood the theoretical basis for randomising simulation parameters to reduce Sim-to-Real gap; applied to sensor position and count randomisation during training. \\
+\midrule
+Reading: Curriculum Learning survey (Narvekar et al., 2020) & S1 W11 & Designed the three-stage curriculum (grid sizes 100--500--1000; sensor counts 10--20--40) based on task difficulty ordering principles. \\
+\midrule
+Study of Welch's $t$-test and effect size analysis & S2 W6 & Applied two-sample unequal-variance $t$-test for significance testing across five random seeds; understood conditions under which the test is applicable. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Domain 3: Academic Writing and Professional Skills}
+
+\begin{table}[H]
+\centering
+\caption{CPD activities: academic writing and professional skills.}
+\label{tab:cpd_writing}
+\begin{tabularx}{\textwidth}{p{3.5cm} p{2cm} X}
+\toprule
+\textbf{Activity} & \textbf{Period} & \textbf{Learning Outcome} \\
+\midrule
+Attendance: Lecture 2, Introduction to LaTex and mathematical writing & S1 W2 & Set up LuaLaTeX compilation pipeline; learnt correct mathematical notation for MDP and reward function formulations. \\
+\midrule
+Attendance: Lecture 3, Writing the Draft Introduction and Methodology & S1 W7 & Structured the introduction to follow the ``funnel'' pattern (broad context $\to$ specific gap $\to$ objectives); applied to the Draft Introduction submission. \\
+\midrule
+Attendance: Lecture 4, Writing the Draft/Final Report & S2 W1 & Learnt how to frame quantitative results with appropriate hedging language and statistical context; applied to the Results chapter. \\
+\midrule
+Completion of Academic Malpractice Awareness training (CANVAS) & S1 W12 & Completed Short Course, Driving Test, Self Declaration Form, and Tutorial Questions as required by Handbook Section~4. \\
+\midrule
+Version control with Git (branching, commit discipline) & S1--S2 & Maintained a version-controlled repository throughout the project; separate branches for environment development, training experiments, and evaluation. \\
+\bottomrule
+\end{tabularx}
+\end{table}

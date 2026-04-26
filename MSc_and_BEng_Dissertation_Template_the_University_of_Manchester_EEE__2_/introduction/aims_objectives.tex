@@ -1,0 +1,48 @@
+\subsection{Aims and objectives}
+\label{sec:aims}
+
+This project develops a protocol-aware reinforcement-learning framework
+for UAV-assisted LoRaWAN data collection and uses it to diagnose
+and resolve a specific architectural limit of flat-policy learners.
+The central claim is that, once the simulation models the full
+causal chain from UAV position to packet delivery, the remaining
+bottleneck to policy quality is the inductive bias of the policy
+network, and that a permutation-invariant sensor-set policy
+measurably resolves that bottleneck. The project objectives are:
+
+\begin{itemize}
+    \item Develop a high-fidelity Gymnasium environment coupling the
+    Two-Ray Ground Reflection model, log-normal shadowing,
+    asynchronous duty cycles, EMA-based ADR, and the LoRa Capture
+    Effect into a single per-step causal chain, and formulate the
+    task as a POMDP approximated as an MDP via frame stacking
+    ($k{=}4$) with a multi-objective reward balancing energy, AoI
+    freshness, and collection volume.
+    \item Train a DQN agent under domain randomisation across 16
+    $(\text{grid}, N)$ conditions and a three-stage competence-gated
+    curriculum, producing a single policy deployable across the
+    envelope without retraining.
+    \item Evaluate the trained DQN against Nearest-Sensor Greedy,
+    SF-Aware Max-Throughput Greedy, a Nearest-Neighbour + 2-opt TSP
+    Oracle, and a 5-seed Lawnmower benchmark, using 50 independent
+    seeds per condition with Welch's $t$-test and Cohen's $d$.
+    \item Conduct a four-condition ablation study (Capture Effect,
+    EMA-ADR smoothing, AoI observation, domain randomisation)
+    quantifying each component's contribution.
+    \item Diagnose the representational limits of the flat-MLP policy
+    by instrumenting the environment for boundary-cell occupancy and
+    wall-collision frequency across 20 seeds, and interpret the
+    observed behaviour as a consequence of the flat-MLP inductive
+    bias rather than a training failure.
+    \item Implement and evaluate a permutation-invariant Relational-RL
+    policy (per-sensor encoder with masked sum-pooling, trained under
+    PPO on the same environment and curriculum), reporting its effect
+    on the diagnostic metrics, the multi-seed benchmarks, and the
+    TSP-Oracle gap.
+\end{itemize}
+
+The guiding hypothesis is that once protocol physics, reward shaping,
+and the domain-randomisation curriculum are fixed, an explicit
+permutation-invariant inductive bias over the sensor set closes a
+measurable fraction of the gap between a flat-MLP DQN and a
+routing-optimal ceiling.

@@ -1,0 +1,36 @@
+\subsection{Future Work}
+\label{sec:future_work}
+
+Five extensions are motivated directly by the findings.
+(1)~\textbf{Attention over the sensor set.} The Relational-RL policy
+adopts the simplest permutation-invariant aggregation, masked
+sum-pooling. A natural next step is a multi-head attention
+pool~\cite{kool2018attention} that replaces the sum with a learned
+weighted aggregation, providing a richer representation of
+inter-sensor routing cost while preserving permutation invariance;
+the TSP-Oracle ceiling is the concrete optimisation target.
+(2)~\textbf{Multi-UAV coordination.} Even the TSP Oracle reaches
+only $76.8\%$ NDR at $(500{\times}500, N{=}50)$ because the
+traversable distance is capped by the episode energy budget. A
+QMIX~\cite{rashid2018qmix} or MAPPO extension would partition
+coverage across a fleet and directly address this physical scaling
+ceiling; the highest-priority extension.
+(3)~\textbf{3D trajectory and continuous actions.} The present
+action space is 2D and discrete. Incorporating altitude with SAC or
+TD3 would let the agent exploit the radial dimension that maximises
+the Capture Effect power differential.
+(4)~\textbf{Parametric log-distance channel model.} The Two-Ray
+implementation in \texttt{iot\_sensors.py:\allowbreak calculate\_rssi()}
+uses hardcoded slope constants (20 and 40\,dB/decade); the
+\texttt{path\_loss\_exponent} attribute is therefore inert and the
+path-loss panel of the sim-to-real sweep is a no-op. Replacing the
+Two-Ray block with a parametric log-distance model
+$\mathrm{PL}(d) = \mathrm{PL}(d_0) + 10\,n\log_{10}(d/d_0)$ would
+expose $n$ as a genuine perturbation knob; a high-priority
+implementation fix before any further sim-to-real study.
+(5)~\textbf{Sim-to-real validation.} Joint-effect characterisation
+under a real LoRaWAN
+testbed~\cite{tobin2017domain,zhao2021sim2real}. The Relational-RL
+policy, being permutation invariant, is expected to transfer more
+robustly than the flat-MLP DQN to real sensor placements, itself a
+hardware-in-the-loop hypothesis to test.

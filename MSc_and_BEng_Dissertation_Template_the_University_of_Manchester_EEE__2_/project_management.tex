@@ -1,0 +1,10 @@
+\section{Project Management}
+\label{sec:project_management}
+
+The project followed a six-milestone Gantt-based plan (Appendix~\ref{app:gantt}), front-loading environment design and DQN training into Semester~1 to surface modelling issues before committing compute time to evaluation. Weekly meetings with Dr.~Zahra Mobini served as checkpoints, with the plan updated at each semester boundary.
+
+\noindent\textbf{Deviations.} Two occurred. A three-seed pilot (S2~W5) revealed high variance ($\sigma\approx4\times10^5$, 7\% of mean), requiring expansion to twenty seeds per condition (thirty at $N=40$); this caused the two-week evaluation delay recorded in Appendix~\ref{app:gantt} (Table~\ref{tab:gantt}, rows~5--6) and restricted the grid-size sweep to $N=20$. A novel SF-Aware Greedy baseline was added in S2~W4 to isolate long-horizon planning gain from protocol awareness, producing Contribution~4.
+
+\noindent\textbf{Risks.} Training divergence on large grids (reward collapse, unbounded TD loss) was resolved by gradient clipping (max~10) and reducing the learning rate to $3\times10^{-4}$, costing $\sim$1 week. This corresponds directly to Risk~R3 in Appendix~\ref{app:risk} (Table~\ref{tab:risk}), where the mitigation strategy of hyperparameter adjustment was pre-identified; the contingency budget was sufficient to absorb the overrun without impacting final submission. Evaluation time overrun was mitigated by restricting the grid-size sweep, consistent with Risk~R4. The remaining risks did not materialise.
+
+\noindent\textbf{CPD and Reflection.} CPD covered LoRaWAN/RF physics, DRL theory, and professional skills (Lectures~2--4; malpractice training S1~W12); full entries in Appendix~\ref{app:cpd}. Key lessons: pilot variance estimation before committing to a full evaluation design avoids reactive scope changes; baseline design warrants the same scrutiny as the primary method. All six objectives were met, with two additional contributions emerging from evaluation.

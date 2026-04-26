@@ -1,0 +1,39 @@
+\subsection{Multi-Seed Scalability Results}
+\label{sec:multi_condition}
+\label{sec:multi_seed}
+\label{sec:dqn_results}
+\label{sec:scalability}
+
+This section aggregates the five-condition scalability sweep
+(50 seeds per condition, 250 episodes per agent). Full per-condition
+numbers and $p$-values are in Table~\ref{tab:scalability_ndr}
+(Section~\ref{sec:relational_headtohead}); the figure is
+Figure~\ref{fig:scalability_combined}. Regime-by-regime breakdowns
+for each $(grid, N)$ condition are in
+Appendix~\ref{app:scalability_extended}. Discussion here concentrates
+on the DQN relative to the heuristic baselines and the TSP Oracle.
+
+Two coverage regimes emerge from the sweep. At the trivial condition $(100{\times}100, N{=}10)$, all five agents
+reach $100\%$ NDR. From $(200{\times}200, N{=}20)$ upward the
+coverage numbers separate sharply: the DQN drops from $99.4\%$ NDR
+at $N{=}20$ to $52.7\%$ at $N{=}30$, $27.5\%$ at $N{=}40$, and
+$13.0\%$ at $N{=}50$, roughly halving per step, while the TSP Oracle
+remains at $92.2\%$ at $N{=}40$ and $76.8\%$ at $N{=}50$. The
+coverage gap between the DQN and the Oracle widens from $0$ to $63.8$
+percentage points across the sweep, showing that the DQN's
+performance is limited by routing quality, not the physical envelope.
+
+More telling still, the greedy baselines beat the DQN from $N \ge 30$. SF-Aware Greedy outperforms the DQN on NDR from $N{=}30$ onward:
+$84.3\%$ vs $52.7\%$ at $N{=}30$ (Welch's $t = -10.0$,
+$p < 10^{-4}$), $57.0\%$ vs $27.5\%$ at $N{=}40$, and $39.4\%$ vs
+$13.0\%$ at $N{=}50$. Even the protocol-blind Nearest-Sensor Greedy
+beats the DQN from $N{=}30$ upward ($70.6\%$ vs $52.7\%$). That a
+method with no spreading-factor awareness outperforms the DQN
+strongly implicates routing representation, not protocol adaptation,
+as the bottleneck. This is the empirical setup for the architectural
+diagnostic of Section~\ref{sec:diagnostic}, which localises the
+finding to the flat-MLP encoder's inability to represent the sensor
+set as an unordered collection.
+
+The Relational-RL results and full agent ordering are in
+Section~\ref{sec:relational_headtohead} and Table~\ref{tab:scalability_ndr}.

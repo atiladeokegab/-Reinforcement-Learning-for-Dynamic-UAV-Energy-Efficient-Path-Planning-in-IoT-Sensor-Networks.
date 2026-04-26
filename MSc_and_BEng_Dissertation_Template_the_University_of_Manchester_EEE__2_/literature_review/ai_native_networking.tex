@@ -1,0 +1,44 @@
+\subsection{DRL and UAV Path Planning}
+
+Nguyen et al.~\cite{nguyen20226g} outline the 6G vision of AI-native
+networks where DRL manages massive heterogeneous IoT connectivity in
+real time, conditions under which hand-crafted optimisation policies
+cannot scale. The Deep Q-Network~\cite{mnih2015humanlevel} stabilises
+Q-learning with experience replay and a periodically frozen target
+network; replay breaks the temporal correlation of consecutive UAV
+observations and the target network prevents the Q-value feedback
+loop that causes divergence. Luong et al.~\cite{luong2019drl} survey
+DRL in communications and observe that reward shaping and state
+design are critical, directly motivating the frame-stacking and
+urgency-proxy design choices in Section~\ref{sec:method}.
+
+No prior work applies DRL specifically to UAV path planning in
+LoRaWAN networks with explicit ADR and Capture Effect modelling. The
+closest precedents, Challita et al.~\cite{challita2018interference}
+and Nemer et al.~\cite{nemer2022energyefficient}, operate in the
+cellular domain where the interference field is determined solely by
+geometry and can be estimated from a single observation. In LoRaWAN
+the SF assignment of each sensor depends on its RSSI history
+filtered through the EMA-ADR loop: the same geometric configuration
+can yield entirely different SF distributions depending on the UAV's
+prior trajectory. This history-dependence violates the Markov
+property and forces the agent to infer latent protocol state from
+temporal sequences rather than instantaneous observations, a
+qualitatively harder learning problem than the stationary
+interference settings in prior work. The architectural-selection
+argument for MLP over attention or graph neural networks on this
+specific training distribution is summarised in
+Appendix~\ref{app:extended_methodology}.
+
+On information freshness and domain generalisation, Kaul et al.~\cite{kaul2012realtime} show that the throughput-optimal
+update frequency is not the freshness-optimal frequency, motivating
+the explicit AoI term in the reward. Abd-Elmagid et
+al.~\cite{abdelmagid2019aoi} demonstrate a fundamental AoI--throughput
+trade-off in IoT networks, supporting the multi-term weighted reward.
+Tobin et al.~\cite{tobin2017domain} introduce domain randomisation
+to bridge the sim-to-real gap (subsequently validated at scale in
+robotic manipulation~\cite{openai2019dexterous}), and Bengio et
+al.~\cite{bengio2009curriculum} show curriculum learning accelerates
+convergence and improves generalisation; both techniques are combined
+in this work to produce a single policy deployable across a
+$100\times$ variation in operational area without retraining.

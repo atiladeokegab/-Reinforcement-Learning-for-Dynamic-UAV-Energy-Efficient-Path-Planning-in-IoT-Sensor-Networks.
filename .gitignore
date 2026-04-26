@@ -8,3 +8,8 @@ wheels/
 *.egg-info
 .venv # Virtual environments
 
+# Trained model checkpoints
+*.zip
+models/
+logs/
+

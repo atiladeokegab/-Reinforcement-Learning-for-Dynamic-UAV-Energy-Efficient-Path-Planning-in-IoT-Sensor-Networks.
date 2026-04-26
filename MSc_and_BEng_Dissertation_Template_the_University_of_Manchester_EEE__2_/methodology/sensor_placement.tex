@@ -1,0 +1,49 @@
+\subsection{Sensor Placement and Reward}
+
+Figure~\ref{fig:system_model} illustrates the complete system model
+for the $500\times 500$ evaluation condition. Sensor coordinates are
+sampled from $\mathcal{U}(0, L)\times\mathcal{U}(0, W)$, modelling an
+unstructured ad-hoc topology. This ensures the agent learns a
+generalisable policy rather than memorising a fixed map, and
+naturally creates density clusters that induce the SF monoculture.
+
+\begin{figure}[htbp]
+    \centering
+    \resizebox{0.95\linewidth}{!}{\input{figures/system_model_tikz}}
+    \caption{System model. UAV gateway at $h_u = 100$\,m over an
+    IoT sensor field; RSSI obeys Two-Ray plus Gaussian shadowing
+    $\mathcal{N}(0, 4\,\mathrm{dB})$. Per-sensor SF evolves via
+    EMA-ADR ($\lambda = 0.1$). Same-SF collisions resolve via the
+    Capture Effect with margin threshold
+    $\tau_{\mathrm{cap}} = 6$\,dB. The dark sensor has a full buffer
+    $b_i = b_{\max}$ driving urgency into the reward.}
+    \label{fig:system_model}
+\end{figure}
+
+\subsubsection{Multi-objective reward}
+\label{sec:reward}
+
+A dense reward avoids the vanishing-gradient problem of sparse
+mission-success objectives. The total reward at step $t$ is
+\begin{equation}
+    R_t = w_{\mathrm{coll}}\,R_{\mathrm{coll}}
+        - w_{\mathrm{energy}}\,C_{\mathrm{energy}}
+        - w_{\mathrm{AoI}}\,C_{\mathrm{AoI}}
+        - w_{\mathrm{hover}}\,C_{\mathrm{hover}}
+    \label{eq:reward}
+\end{equation}
+with four components: (i)~$R_{\mathrm{coll}}$ grants a positive
+reward for every successfully decoded packet, encouraging
+positioning that exploits Capture Effect and orthogonal-SF concurrent
+reception; (ii)~$C_{\mathrm{energy}} = P(a_t)\,\Delta t$ penalises
+power draw, discouraging meandering trajectories;
+(iii)~$C_{\mathrm{AoI}} = \frac{1}{N}\sum_i \mathrm{AoI}_{i,t}$
+penalises mean Age of Information~\cite{kaul2012realtime,abdelmagid2019aoi},
+preventing information starvation of any sensor; and
+(iv)~$C_{\mathrm{hover}}$ applies a small fixed cost to prevent the
+agent from idling indefinitely over one high-rate sensor (a failure
+mode observed in earlier reward formulations). Component magnitudes
+are calibrated so that visiting all sensors is strictly preferable
+to revisiting a single node and no component exceeds 15\% of the
+total episode reward; full per-term weights are in
+Appendix~\ref{app:reward_scale}.
