@@ -9,7 +9,7 @@
 
 This repository contains the simulation framework and trained models for a final-year engineering project at the University of Manchester. A Deep Q-Network (DQN) agent learns to navigate a UAV over a 2D grid to collect data from LoRa IoT sensors, optimising jointly for data throughput, energy efficiency, and fairness across sensors.
 
-The key contribution is a Gymnasium-compatible simulation that models the complete causal chain from UAV position through received signal strength (RSSI), EMA-based Adaptive Data Rate (ADR) convergence latency, and the LoRa Capture Effect to packet delivery — all within a single environment step. This end-to-end fidelity enables the DQN agent to learn to exploit protocol-level dynamics (e.g., repositioning to accelerate ADR convergence to lower Spreading Factors) in ways that simple greedy heuristics cannot.
+The main contribution is a Gymnasium-compatible simulation that models the full causal chain from UAV position through RSSI, EMA-based ADR convergence latency, and the LoRa Capture Effect to packet delivery, all within a single environment step. Because the simulation is physics-grounded, the DQN can learn to exploit protocol-level dynamics (e.g., repositioning to speed up ADR convergence to lower spreading factors) in ways that greedy heuristics cannot.
 
 ---
 
@@ -224,7 +224,7 @@ A permutation-invariant PPO policy trained via Ray RLlib. Applies a shared per-s
 | Shadowing | Gaussian N(0, 4 dB) |
 | Capture Effect | 6 dB threshold; closest same-SF transmitter wins |
 
-Hover costs more power than movement — this is intentional rotary-wing aerodynamics (P_hover > P_flight).
+Hover costs more power than movement. This is intentional rotary-wing aerodynamics (P_hover > P_flight).
 
 ### Reward Function
 
@@ -262,7 +262,7 @@ Hover costs more power than movement — this is intentional rotary-wing aerodyn
 | Relational RL | 4,131,223 | 100% | 59,485 B | 221.5 | 1,736 |
 | Lawnmower | 3,614,612 | 98% | 66,122 B | 246.1 | 1,411 |
 
-The DQN achieves comparable throughput to greedy baselines while the reward shaping incentivises fairness-aware collection patterns. The TSP Oracle serves as a theoretical ceiling (offline optimal routing).
+The DQN matches greedy baseline throughput, with reward shaping that pushes toward fairer collection patterns over the episode. The TSP Oracle is a theoretical ceiling (offline optimal routing).
 
 ### Scalability
 
@@ -308,18 +308,18 @@ The custom Gymnasium environment (`uav_env.py`, `iot_sensors.py`, `uav.py`), rew
 
 ## Known Limitations and Future Work
 
-**Current limitations:**
+Known limitations:
 
-- The flat-MLP DQN learns spatial heuristics (perimeter-adjacent flight) rather than topology-aware reasoning — an architectural property of the fixed-size observation encoding, not a training failure. The UAVAttentionExtractor (`gnn_extractor.py`) addresses this via cross-attention over padded sensor slots.
-- The simulation assumes a flat, obstacle-free environment. Real deployments require 3D terrain and dynamic interference modelling.
-- The Two-Ray ground-reflection model is a simplified path-loss approximation. Urban LoRa channels require ray-tracing or empirical models.
-- Battery model uses constant power; real rotary-wing power varies with payload, wind, and manoeuvring.
-- Observation space is zero-padded to 50 sensors; performance above N=40 has not been benchmarked.
+- The flat-MLP DQN learns spatial heuristics (perimeter-adjacent flight) rather than topology-aware routing. This is an architectural consequence of the fixed-size observation encoding, not a training failure. `UAVAttentionExtractor` in `gnn_extractor.py` addresses this with cross-attention over padded sensor slots.
+- The simulation assumes a flat, obstacle-free environment. Real deployments would need 3D terrain and dynamic interference modelling.
+- The Two-Ray path-loss model works in open fields but breaks down in urban LoRa deployments, which need ray-tracing or empirical channel models.
+- Battery power is modelled as constant; real rotary-wing UAVs vary with payload, wind, and manoeuvring.
+- The observation space is padded to 50 sensors. Performance above N=40 has not been benchmarked.
 
-**Future directions:**
+Possible extensions:
 
-- Multi-UAV cooperative collection via QMIX or MAPPO.
-- Hardware-in-the-loop validation with Raspberry Pi + LoRa HAT.
-- Continuous action spaces (SAC, TD3) for smoother trajectory optimisation.
-- Dynamic sensor arrival/departure and 3D flight (variable altitude).
-- Higher-fidelity channel model via ray-tracing for improved sim-to-real transfer.
+- Multi-UAV cooperative collection via QMIX or MAPPO
+- Hardware-in-the-loop testing with a Raspberry Pi + LoRa HAT
+- Continuous action spaces (SAC, TD3) for smoother trajectory optimisation
+- 3D flight with variable altitude and dynamic sensor arrival/departure
+- Higher-fidelity channel modelling via ray-tracing for better sim-to-real transfer
