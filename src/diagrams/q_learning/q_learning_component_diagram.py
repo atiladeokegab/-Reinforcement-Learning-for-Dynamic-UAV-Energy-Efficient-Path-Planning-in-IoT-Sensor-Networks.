@@ -5,122 +5,119 @@ from diagrams.programming.language import Python
 
 logger = logging.getLogger(__name__)
 
-CURRENT_DIR = Path(__file__).parent.parent.parent.parent
+CURRENT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 
 def create_diagram():
-    logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV DQN Component diagram...")
-
-    # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_file = output_dir / "dqn_component_diagram"
-
-    logger.debug(f"Output file: {output_file}.png")
+    output_file = output_dir / "q_learning_component_diagram"
 
     graph_attr = {"splines": "spline", "pad": "0.5", "nodesep": "0.8", "ranksep": "1.0"}
 
-    try:
-        with Diagram(
-            "Component Diagram - DQN UAV Simulation (Stable-Baselines3)",
-            direction="TB",
-            graph_attr=graph_attr,
-            show=False,
-            filename=str(output_file),
-            outformat="png",
-        ):
-            with Cluster("DQN Agent Component (Stable-Baselines3)"):
-                mlp_policy = Python("MlpPolicy\n[512, 512, 256]\n(PyTorch)")
-                exploration = Python("Exploration\n(Epsilon-Greedy)")
-                action_selector = Python("Action Selector\n(5 discrete actions:\nN/S/E/W/Hover)")
-                dqn_updater = Python("DQN Update\n(Huber Loss + Adam)\nTarget Network")
-                replay_buffer = Python("Replay Buffer\n(Experience Replay)")
+    with Diagram(
+        "Component Diagram — DQN UAV IoT Data Collection",
+        direction="TB",
+        graph_attr=graph_attr,
+        show=False,
+        filename=str(output_file),
+        outformat="png",
+    ):
+        with Cluster("DQN Agent (Stable-Baselines3)"):
+            policy = Python(
+                "Policy Network\n"
+                "MlpPolicy [512, 512, 256] ReLU\n"
+                "OR UAVAttentionExtractor\n"
+                "(cross-attention, 50 sensor slots,\n"
+                " embed_dim=64, 4 heads)"
+            )
+            exploration = Python("Exploration\n(ε-greedy, ε: 1.0→0.03\nover 25% of timesteps)")
+            action_sel = Python("Action Selector\n5 discrete: N / S / E / W / Hover")
+            dqn_update = Python(
+                "DQN Update\nHuber loss + Adam (lr=3e-4)\nTarget net (sync every 5k steps)\nBatch=256, γ=0.99"
+            )
+            replay = Python("Replay Buffer\n150k transitions\n(~0.7 GB, 612-dim obs)")
 
-                exploration >> Edge(label="selects action") >> action_selector
-                action_selector >> Edge(label="stores transition") >> replay_buffer
-                replay_buffer >> Edge(label="mini-batch") >> dqn_updater
-                dqn_updater >> Edge(label="updates weights") >> mlp_policy
+            exploration >> Edge(label="selects") >> action_sel
+            action_sel >> Edge(label="stores transition") >> replay
+            replay >> Edge(label="mini-batch (256)") >> dqn_update
+            dqn_update >> Edge(label="updates weights") >> policy
 
-            with Cluster("Environment Component (Gymnasium)"):
-                state_manager = Python("State Manager\n(UAVEnvironment)")
-                grid_world = Python("Grid World\n(100–1000 unit grid\n~10m per unit)")
-                domain_rand = Python("Domain Randomiser\n(4 grids × 4 sensor counts\n= 16 conditions)")
-                curriculum = Python("Curriculum Scheduler\n(Stage 0→1→2\nover 2M timesteps)")
+        with Cluster("Domain-Randomised Environment (Gymnasium)"):
+            state_mgr = Python("State Manager\n(UAVEnvironment + DomainRandEnv)")
+            grid = Python("Grid World\n100–500 unit grids\n(~10 m per unit)")
+            domain_rand = Python(
+                "Domain Randomiser\n"
+                "4 grids × 4 sensor counts = 16 conditions\n"
+                "Layout: uniform random each episode"
+            )
+            curriculum = Python(
+                "Competence-Based Curriculum\n"
+                "5 stages (100→500 units)\n"
+                "Greedy benchmark gate:\n"
+                "NDR ≥ greedy+5%, Jain≥greedy+0.05"
+            )
+            frame_stack = Python("VecFrameStack\nk=4, 4 parallel workers\n(DummyVecEnv)")
 
-                domain_rand >> Edge(label="samples") >> grid_world
-                curriculum >> Edge(label="unlocks stages") >> domain_rand
-                state_manager >> Edge(label="manages") >> grid_world
+            domain_rand >> Edge(label="samples grid") >> grid
+            curriculum >> Edge(label="unlocks stages") >> domain_rand
+            state_mgr >> Edge(label="manages") >> grid
+            frame_stack >> Edge(label="stacks obs") >> state_mgr
 
-            with Cluster("Simulated UAV Component"):
-                uav_model = Python("UAV (uav.py)\nTB60: 274 Wh, 100m alt\nspeed=10 m/s")
-                position_tracker = Python("Position Tracker\n(x, y) in grid")
-                battery_model = Python("Battery Model\nmove=500W, hover=700W")
+        with Cluster("UAV Physics Model"):
+            uav = Python("UAV (uav.py)\n100m altitude, 10 m/s\n274 Wh (DJI TB60-inspired)")
+            pos = Python("Position (x, y)\nnormalised to [0,1]")
+            battery = Python("Battery Model\nMove: 500 W → 0.139 Wh/step\nHover: 700 W → 0.194 Wh/step")
 
-                uav_model >> Edge(label="updates") >> position_tracker
-                uav_model >> Edge(label="consumes") >> battery_model
+            uav >> Edge(label="updates") >> pos
+            uav >> Edge(label="drains") >> battery
 
-            with Cluster("Simulated IoT Network Component"):
-                sensor_model = Python("IoTSensor (iot_sensors.py)\nSF7–SF12, 1000-byte buffer\n1% duty cycle (EU)")
-                adr_model = Python("EMA-ADR (λ=0.1)\nRSSI → SF update")
-                path_loss = Python("Two-Ray Path Loss\n+ Gaussian Shadowing\nN(0, 4 dB)")
+        with Cluster("LoRa IoT Sensor Network"):
+            sensor = Python(
+                "IoTSensor (iot_sensors.py)\n"
+                "SF7–SF12, 1000-byte buffer\n"
+                "10% effective tx probability\n"
+                "(duty cycle × link success)"
+            )
+            adr = Python("EMA-ADR (λ=0.1)\nRSSI → SF mapping\n(4-threshold RSSI bands)")
+            path_loss = Python(
+                "Two-Ray Path Loss\n"
+                "+ Gaussian Shadowing N(0, 4 dB)\n"
+                "Capture Effect: 6 dB threshold"
+            )
 
-                sensor_model >> Edge(label="uses") >> adr_model
-                adr_model >> Edge(label="computes") >> path_loss
+            sensor >> Edge(label="uses") >> adr
+            adr >> Edge(label="computes") >> path_loss
 
-            with Cluster("Reward Component"):
-                reward_function = Python("RewardFunction\n(reward_function.py)")
-                data_reward = Python("Data Reward\n+100/byte collected\n+5000 new sensor")
-                fairness_reward = Python("Fairness / Urgency\n+1000 urgency reduced\n-500 starvation")
-                penalty = Python("Penalties\n-2 revisit, -50 boundary\n-2000 unvisited end")
+        with Cluster("Reward Function"):
+            rf = Python("RewardFunction\n(reward_function.py)")
+            data_r = Python("+100/byte × urgency\n+5000 new sensor\n+1000 urgency reduced")
+            fair_r = Python("Fairness\n−1000 × buffer variance\n−1000 per sensor CR<20%")
+            penalty = Python("Penalties\n−2 revisit, −50 boundary\n−5000 unvisited at end\n−0.5 step, −5 hover")
 
-                reward_function >> Edge(label="computes") >> data_reward
-                reward_function >> Edge(label="computes") >> fairness_reward
-                reward_function >> Edge(label="applies") >> penalty
+            rf >> Edge(label="computes") >> data_r
+            rf >> Edge(label="computes") >> fair_r
+            rf >> Edge(label="applies") >> penalty
 
-            with Cluster("Parallel Training Component"):
-                vec_env = Python("DummyVecEnv\n(4 parallel envs)")
-                checkpoint = Python("CheckpointCallback\nSaves .zip files")
-                eval_cb = Python("EvalCallback\n(500×500, N=20)")
+        with Cluster("Evaluation Suite"):
+            compare = Python("compare_agents.py\nDQN vs NearestSensor\nvs MaxThroughput\nvs Relational RL\nvs TSP Oracle")
+            ablation = Python("ablation_study.py\nA1: no capture effect\nA2: instant ADR (λ=1)\nA3: no AoI obs\nA4: no domain rand")
+            sweep = Python("sweep_eval.py / sf_sweep_analysis.py\nfairness sweep, SF distribution\nacross all 16 conditions")
 
-                vec_env >> Edge(label="feeds") >> replay_buffer
-                dqn_updater >> Edge(label="triggers") >> checkpoint
+        # Cross-component
+        action_sel >> Edge(label="action (0–4)", style="bold") >> uav
+        state_mgr >> Edge(label="obs vector (612-dim stacked)", style="bold") >> policy
+        rf >> Edge(label="reward signal", style="bold") >> dqn_update
+        battery >> Edge(label="battery %") >> state_mgr
+        path_loss >> Edge(label="RSSI → SF") >> sensor
+        sensor >> Edge(label="buffer / urgency obs") >> state_mgr
 
-            # Cross-component interactions
-            action_selector >> Edge(label="action (0–4)", style="bold") >> uav_model
-            state_manager >> Edge(label="obs vector", style="bold") >> mlp_policy
-            reward_function >> Edge(label="reward signal", style="bold") >> dqn_updater
-            battery_model >> Edge(label="battery %") >> state_manager
-            path_loss >> Edge(label="RSSI → SF") >> sensor_model
-            sensor_model >> Edge(label="AoI / urgency obs") >> state_manager
+        compare >> Edge(label="evaluates") >> state_mgr
+        ablation >> Edge(label="A1–A4 variants") >> state_mgr
 
-            logger.info("✓ Diagram components created")
-
-        # Verify file was created
-        png_file = output_file.with_suffix(".png")
-        if png_file.exists():
-            file_size = png_file.stat().st_size
-            logger.info(f"✓ Diagram saved: {png_file}")
-            logger.info(f"  File size: {file_size:,} bytes")
-        else:
-            logger.warning("⚠ Output file not found")
-
-    except Exception as e:
-        logger.error(f"✗ Error creating diagram: {e}")
-        import traceback
-
-        logger.error(traceback.format_exc())
-        raise
-
-    logger.info("DQN component diagram creation complete!")
+    logger.info("Component diagram saved: %s.png", output_file)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
-    logger.info("Running DQN component diagram script...")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s — %(message)s")
     create_diagram()
-    logger.info("Script finished!")

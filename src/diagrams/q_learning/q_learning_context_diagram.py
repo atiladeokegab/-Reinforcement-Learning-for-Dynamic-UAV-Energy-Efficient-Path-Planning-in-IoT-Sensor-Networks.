@@ -5,138 +5,93 @@ from diagrams.c4 import Person, System, SystemBoundary, Relationship
 
 logger = logging.getLogger(__name__)
 
-CURRENT_DIR = Path(__file__).parent.parent.parent.parent
+CURRENT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 
 def create_diagram():
-    logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV DQN Simulation Context diagram...")
-
-    # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
     output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "q_learning_system_context"
 
-    output_file = output_dir / "dqn_system_context"
+    graph_attr = {"splines": "spline"}
 
-    logger.debug(f"Output file: {output_file}.png")
+    with Diagram(
+        "System Context — UAV DQN IoT Data Collection",
+        direction="TB",
+        graph_attr=graph_attr,
+        show=False,
+        filename=str(output_file),
+        outformat="png",
+    ):
+        researcher = Person(
+            name="Researcher",
+            description="Configures DQN hyperparameters, curriculum stages, "
+            "and domain-randomisation conditions. Runs training and evaluation scripts.",
+        )
 
-    graph_attr = {
-        "splines": "spline",
-    }
+        gpu = System(
+            name="GPU Compute",
+            description="CUDA 12.1, PyTorch 2.5.1+cu121. "
+            "Accelerates DQN policy-network updates on RTX-class GPU.",
+            external=True,
+        )
 
-    try:
-        with Diagram(
-            "System Context - UAV DQN Simulation (Stable-Baselines3)",
-            direction="TB",
-            graph_attr=graph_attr,
-            show=False,
-            filename=str(output_file),
-            outformat="png",
-        ):
-            # External Actors
-            researcher = Person(
-                name="Researcher",
-                description="Configures simulation parameters, DQN hyperparameters "
-                "(learning_rate, gamma, batch_size, buffer_size), and analyzes results",
+        viz = System(
+            name="Visualisation & Analysis",
+            description="Matplotlib + Seaborn — generates trajectory plots, "
+            "fairness sweeps, ablation bar charts, and scalability figures in "
+            "dqn_evaluation_results/baseline_results/.",
+            external=True,
+        )
+
+        storage = System(
+            name="Model & Results Storage",
+            description="models/dqn_v3/dqn_final.zip (SB3 format), "
+            "training_config.json, condition_summary.json, graduation_log.json. "
+            "Evaluation PNGs in dqn_evaluation_results/baseline_results/.",
+            external=True,
+        )
+
+        with SystemBoundary("UAV DQN Training & Evaluation System"):
+            system = System(
+                name="DQN UAV Simulation",
+                description="SB3 DQN trained across 16 domain-randomised conditions "
+                "(4 grid sizes × 4 sensor counts) with competence-based curriculum "
+                "(5 stages, greedy benchmark gate). 4 parallel workers, 3M timesteps. "
+                "Optional UAVAttentionExtractor (cross-attention over 50 sensor slots).",
             )
 
-            # External Systems (for data export/visualization)
-            visualization_tools = System(
-                name="Visualization & Analysis Tools",
-                description="Matplotlib, Seaborn, Pandas for plotting trajectories, "
-                "rewards, fairness curves, ablation bars",
-                external=True,
-            )
+        researcher >> Relationship(
+            "Sets: grid sizes 100–500 units, sensor counts 10–40, "
+            "DQN hyperparams (lr=3e-4, γ=0.99, buffer=150k, batch=256)"
+        ) >> system
 
-            results_storage = System(
-                name="Results Repository",
-                description="models/dqn_domain_rand/dqn_final.zip (SB3 format), "
-                "dqn_evaluation_results/ PNG figures",
-                external=True,
-            )
+        researcher >> Relationship(
+            "Monitors: NDR, Jain's fairness index, B/Wh efficiency, "
+            "curriculum stage, greedy benchmark gap"
+        ) >> system
 
-            # Main System
-            with SystemBoundary("UAV DQN Training & Evaluation System"):
-                simulation_system = System(
-                    name="DQN UAV Simulation",
-                    description="Trains SB3 DQN (MlpPolicy [512,512,256]) across "
-                    "16 domain-randomised conditions (4 grids × 4 sensor counts) "
-                    "with curriculum learning. 4 parallel envs, 2M timesteps.",
-                )
+        system >> Relationship(
+            "Exports: dqn_final.zip, checkpoint .zip files every 25k steps"
+        ) >> storage
 
-            # Relationships
-            (
-                researcher
-                >> Relationship(
-                    "Configures: grid sizes (100–1000), sensor counts (10–40), "
-                    "DQN hyperparameters, curriculum thresholds"
-                )
-                >> simulation_system
-            )
-            (
-                researcher
-                >> Relationship(
-                    "Monitors: episode rewards, Jain's fairness index, coverage, convergence"
-                )
-                >> simulation_system
-            )
+        system >> Relationship(
+            "Sends: trajectory data, reward curves, ablation results (A1–A4), "
+            "SF sweep analysis, sim-to-real robustness figures"
+        ) >> viz
 
-            (
-                simulation_system
-                >> Relationship(
-                    "Exports: dqn_final.zip (trained model), checkpoint .zip files"
-                )
-                >> results_storage
-            )
-            (
-                simulation_system
-                >> Relationship(
-                    "Sends: trajectory data, reward curves, ablation results, "
-                    "fairness sweep PNGs"
-                )
-                >> visualization_tools
-            )
+        gpu >> Relationship("Accelerates Q-network forward/backward passes") >> system
 
-            (
-                researcher
-                >> Relationship(
-                    "Analyzes: DQN vs greedy baselines, ablation study (A1–A4), "
-                    "cross-layout generalization"
-                )
-                >> visualization_tools
-            )
-            (
-                researcher
-                >> Relationship("Reviews: saved .zip models, evaluation PNGs")
-                >> results_storage
-            )
+        researcher >> Relationship(
+            "Analyses: DQN vs Relational RL vs TSP Oracle vs greedy baselines; "
+            "ablation conditions A1–A4; cross-layout generalisation"
+        ) >> viz
 
-            logger.info("✓ Diagram components created")
+        researcher >> Relationship("Loads: saved .zip models for evaluation") >> storage
 
-        # Verify file was created
-        png_file = output_file.with_suffix(".png")
-        if png_file.exists():
-            file_size = png_file.stat().st_size
-            logger.info(f"✓ Diagram saved: {png_file}")
-            logger.info(f"  File size: {file_size:,} bytes")
-        else:
-            logger.warning("⚠ Output file not found")
-
-    except Exception as e:
-        logger.error(f"✗ Error creating diagram: {e}")
-        import traceback
-
-        logger.error(traceback.format_exc())
-        raise
-
-    logger.info("DQN context diagram creation complete!")
+    logger.info("System context diagram saved: %s.png", output_file)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
-    logger.info("Running DQN simulation context diagram script...")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s — %(message)s")
     create_diagram()
-    logger.info("Script finished!")

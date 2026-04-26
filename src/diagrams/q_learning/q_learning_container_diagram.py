@@ -2,212 +2,161 @@ from pathlib import Path
 import logging
 from diagrams import Diagram
 from diagrams.c4 import (
-    Person,
-    Container,
-    Database,
-    System,
-    SystemBoundary,
-    Relationship,
+    Person, Container, Database, System, SystemBoundary, Relationship,
 )
 
 logger = logging.getLogger(__name__)
 
-CURRENT_DIR = Path(__file__).parent.parent.parent.parent
+CURRENT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 
 def create_diagram():
-    logger.info(f"CURRENT_DIR: {CURRENT_DIR}")
-    logger.info("Creating UAV DQN Container diagram...")
-
-    # Set output directory
-    output_dir = CURRENT_DIR / "asset" / "diagrams" / "dqn"
+    output_dir = CURRENT_DIR / "asset" / "diagrams" / "q_learning"
     output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "q_learning_container_diagram"
 
-    output_file = output_dir / "dqn_container_diagram"
+    graph_attr = {"splines": "spline"}
 
-    logger.debug(f"Output file: {output_file}.png")
+    with Diagram(
+        "Container Diagram — UAV DQN Training & Evaluation System",
+        direction="TB",
+        graph_attr=graph_attr,
+        show=False,
+        filename=str(output_file),
+        outformat="png",
+    ):
+        researcher = Person(
+            name="Researcher / Student",
+            description="Runs dqn.py training, ablation_study.py, compare_agents.py, "
+            "sweep_eval.py, sf_sweep_analysis.py, relational_vs_tsp_sweep.py.",
+        )
 
-    graph_attr = {
-        "splines": "spline",
-    }
+        viz = System(
+            name="Visualisation Tools",
+            description="Matplotlib + Seaborn + Pandas — produces PNG/PDF figures "
+            "in dqn_evaluation_results/baseline_results/.",
+            external=True,
+        )
 
-    try:
-        with Diagram(
-            "Container Diagram - UAV DQN Training & Evaluation System",
-            direction="TB",
-            graph_attr=graph_attr,
-            show=False,
-            filename=str(output_file),
-            outformat="png",
-        ):
-            # External Actors
-            researcher = Person(
-                name="Researcher / Student",
-                description="Runs dqn.py training, evaluate_dqn.py, "
-                "ablation_study.py, compare_agents.py, fairness_sweep.py",
+        gpu = System(
+            name="GPU Compute",
+            description="CUDA 12.1, PyTorch 2.5.1+cu121 — "
+            "accelerates DQN Q-network and optional attention extractor.",
+            external=True,
+        )
+
+        with SystemBoundary("UAV DQN Training & Evaluation System"):
+            training = Container(
+                name="Training Script (dqn.py)",
+                technology="Python, Stable-Baselines3",
+                description="Domain randomisation (4 grids × 4 sensor counts). "
+                "Competence-based curriculum (5 stages, greedy benchmark gate). "
+                "4 parallel workers via DummyVecEnv + VecFrameStack(k=4). "
+                "3M timesteps. Output: models/dqn_v3/dqn_final.zip.",
             )
 
-            # External Systems
-            visualization = System(
-                name="Visualization Tools",
-                description="Matplotlib, Seaborn — produces PNG figures "
-                "in dqn_evaluation_results/",
-                external=True,
+            dqn = Container(
+                name="DQN Agent (SB3)",
+                technology="Python, PyTorch, Stable-Baselines3",
+                description="MlpPolicy [512, 512, 256] ReLU, Huber loss, Adam (lr=3e-4). "
+                "Replay buffer 150k, batch 256, γ=0.99. "
+                "Optional: UAVAttentionExtractor (gnn_extractor.py) — "
+                "cross-attention over 50 padded sensor slots.",
             )
 
-            gpu_system = System(
-                name="GPU Compute",
-                description="CUDA 12.1, PyTorch 2.5.1+cu121 — "
-                "accelerates DQN policy network training",
-                external=True,
+            env = Container(
+                name="UAVEnvironment (uav_env.py + DomainRandEnv)",
+                technology="Python, Gymnasium",
+                description="2D grid (100–500 units, ~10 m/unit). "
+                "5 discrete actions: N/S/E/W/Hover. "
+                "2100 timesteps per episode (~7 min flight). "
+                "Zero-padded observation for up to 50 sensors. "
+                "Navigation fix: rejection-sampled distant start.",
             )
 
-            # Main System Containers
-            with SystemBoundary("UAV DQN Training & Evaluation System"):
-                # Training entry point
-                training_script = Container(
-                    name="Training Script (dqn.py)",
-                    technology="Python, Stable-Baselines3",
-                    description="Domain randomisation + curriculum learning. "
-                    "4 parallel envs (DummyVecEnv). "
-                    "2M timesteps. Output: dqn_final.zip",
-                )
+            uav = Container(
+                name="UAV (uav.py)",
+                technology="Python",
+                description="DJI TB60-inspired: 274 Wh, 100 m altitude, 10 m/s speed. "
+                "Move: 500 W (0.139 Wh/step). Hover: 700 W (0.194 Wh/step). "
+                "Hover costs MORE than movement (rotary-wing aerodynamics).",
+            )
 
-                # DQN Agent
-                dqn_agent = Container(
-                    name="DQN Agent (SB3)",
-                    technology="Python, PyTorch, Stable-Baselines3",
-                    description="MlpPolicy [512, 512, 256], Huber loss, "
-                    "Adam optimiser, target network soft-update, "
-                    "epsilon-greedy exploration",
-                )
+            sensors = Container(
+                name="IoT Sensors (iot_sensors.py)",
+                technology="Python",
+                description="LoRa SF7–SF12, 1000-byte buffer, "
+                "10% effective tx probability (duty cycle × link success). "
+                "EMA-ADR (λ=0.1), Two-Ray path loss + N(0, 4 dB) shadowing. "
+                "Capture effect: 6 dB threshold resolves same-SF collisions.",
+            )
 
-                # Environment
-                environment = Container(
-                    name="UAVEnvironment (uav_env.py)",
-                    technology="Python, Gymnasium",
-                    description="2D grid (100–1000 units, ~10m/unit), "
-                    "5 discrete actions (N/S/E/W/Hover), "
-                    "2100 timesteps per episode (~7 min flight). "
-                    "Zero-padded obs for up to 50 sensors.",
-                )
+            reward = Container(
+                name="RewardFunction (reward_function.py)",
+                technology="Python",
+                description="+100/byte × urgency, +5000 new sensor, "
+                "+1000 urgency reduction. "
+                "−1000 × buffer variance (starvation), −1000 per sensor CR<20%, "
+                "−2 revisit, −50 boundary, −5000 unvisited at end.",
+            )
 
-                # UAV model
-                uav_container = Container(
-                    name="UAV (uav.py)",
-                    technology="Python",
-                    description="DJI TB60-inspired: 274 Wh, 100m altitude, "
-                    "10 m/s speed, 500W move / 700W hover power",
-                )
+            eval_suite = Container(
+                name="Evaluation Suite",
+                technology="Python",
+                description="compare_agents.py: DQN vs NearestSensor vs MaxThroughput "
+                "vs Relational RL vs TSP Oracle. "
+                "ablation_study.py: A1–A4 conditions, n=20 seeds, Welch's t-test. "
+                "sweep_eval.py / sf_sweep_analysis.py: SF distribution & fairness sweep. "
+                "relational_vs_tsp_sweep.py: scalability benchmark.",
+            )
 
-                # IoT sensors
-                iot_container = Container(
-                    name="IoT Sensors (iot_sensors.py)",
-                    technology="Python",
-                    description="LoRa SF7–SF12, 1000-byte buffer, "
-                    "1% EU duty cycle, EMA-ADR (λ=0.1), "
-                    "Two-Ray path loss + N(0, 4dB) shadowing",
-                )
+            relational = Container(
+                name="Relational RL Policy (experiments/relational_policy/)",
+                technology="Python, RLlib / SB3",
+                description="Permutation-invariant sensor attention. "
+                "Comparison baseline for DQN generalisation analysis. "
+                "Checkpoints: models/relational_rl/.",
+            )
 
-                # Reward
-                reward_container = Container(
-                    name="RewardFunction (reward_function.py)",
-                    technology="Python",
-                    description="+100/byte, +5000 new sensor, +200 multi-sensor, "
-                    "+1000 urgency reduction, -2 revisit, "
-                    "-50 boundary, -500 starvation, -2000 unvisited",
-                )
+            model_db = Database(
+                name="Model Storage",
+                technology=".zip (SB3 format)",
+                description="models/dqn_v3/dqn_final.zip — main trained model. "
+                "models/dqn_v3/best_model/ — EvalCallback best. "
+                "models/relational_rl/ — relational RL checkpoints.",
+            )
 
-                # Evaluation scripts
-                evaluation = Container(
-                    name="Evaluation Suite",
-                    technology="Python",
-                    description="evaluate_dqn.py (single-seed), "
-                    "ablation_study.py (A1–A4), "
-                    "compare_agents.py (DQN vs greedy baselines), "
-                    "fairness_sweep.py (multi-condition Jain's index)",
-                )
+        # External
+        researcher >> Relationship("Runs training (3M timesteps)") >> training
+        researcher >> Relationship("Runs eval, ablation, sweep scripts") >> eval_suite
+        researcher >> Relationship("Views result PNGs") >> viz
+        gpu >> Relationship("Accelerates Q-network updates") >> dqn
 
-                # Greedy baselines
-                greedy_baselines = Container(
-                    name="Greedy Baselines (greedy_agents.py)",
-                    technology="Python",
-                    description="NearestSensorGreedy: moves to nearest sensor "
-                    "with data. MaxThroughputGreedy: SF-aware, "
-                    "prioritises lowest SF (highest data rate).",
-                )
+        # Training flow
+        training >> Relationship("Creates & wraps (DummyVecEnv × 4 + FrameStack)") >> env
+        training >> Relationship("Configures & trains") >> dqn
+        training >> Relationship("Saves checkpoints + final model") >> model_db
 
-                # Ablation control model
-                ablation_control = Container(
-                    name="Ablation Control (train_ablation_a4.py)",
-                    technology="Python, Stable-Baselines3",
-                    description="Fixed env: 500×500, N=20, no domain randomisation. "
-                    "Output: models/dqn_no_dr/",
-                )
+        # DQN ↔ env
+        dqn >> Relationship("Observes 612-dim stacked state") >> env
+        dqn >> Relationship("Selects action (0–4)") >> uav
+        dqn >> Relationship("Receives reward signal") >> reward
 
-                # Model storage
-                model_storage = Database(
-                    name="Model Storage",
-                    technology=".zip (SB3 format)",
-                    description="models/dqn_domain_rand/dqn_final.zip — "
-                    "main trained model. "
-                    "models/dqn_no_dr/ — ablation A4 control model.",
-                )
+        # Env internals
+        env >> Relationship("Contains") >> uav
+        env >> Relationship("Contains 10–40 sensors") >> sensors
+        env >> Relationship("Calls per step") >> reward
+        uav >> Relationship("Moves / hovers / collects") >> sensors
 
-            # External Relationships
-            researcher >> Relationship("Runs training") >> training_script
-            researcher >> Relationship("Runs evaluation & ablation scripts") >> evaluation
-            researcher >> Relationship("Views result PNGs") >> visualization
+        # Eval
+        eval_suite >> Relationship("Loads model") >> model_db
+        eval_suite >> Relationship("Benchmarks DQN against") >> relational
+        eval_suite >> Relationship("Exports figures") >> viz
+        relational >> Relationship("Loads checkpoint") >> model_db
 
-            gpu_system >> Relationship("Accelerates policy network updates") >> dqn_agent
-
-            # Internal relationships
-            training_script >> Relationship("Creates and wraps (DummyVecEnv × 4)") >> environment
-            training_script >> Relationship("Configures & trains") >> dqn_agent
-            training_script >> Relationship("Saves checkpoints + final model") >> model_storage
-
-            dqn_agent >> Relationship("Observes state vector") >> environment
-            dqn_agent >> Relationship("Selects action (0–4)") >> uav_container
-            dqn_agent >> Relationship("Receives reward + next state") >> reward_container
-
-            environment >> Relationship("Contains") >> uav_container
-            environment >> Relationship("Contains (10–40 sensors)") >> iot_container
-            environment >> Relationship("Calls") >> reward_container
-
-            uav_container >> Relationship("Moves, hovers, collects") >> iot_container
-
-            evaluation >> Relationship("Loads model") >> model_storage
-            evaluation >> Relationship("Benchmarks against") >> greedy_baselines
-            evaluation >> Relationship("Exports PNGs") >> visualization
-
-            ablation_control >> Relationship("Trains no-DR model") >> model_storage
-
-            logger.info("✓ Diagram components created")
-
-        # Verify file was created
-        png_file = output_file.with_suffix(".png")
-        if png_file.exists():
-            file_size = png_file.stat().st_size
-            logger.info(f"✓ Diagram saved: {png_file}")
-            logger.info(f"  File size: {file_size:,} bytes")
-        else:
-            logger.warning("⚠ Output file not found")
-
-    except Exception as e:
-        logger.error(f"✗ Error creating diagram: {e}")
-        import traceback
-
-        logger.error(traceback.format_exc())
-        raise
-
-    logger.info("DQN container diagram creation complete!")
+    logger.info("Container diagram saved: %s.png", output_file)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
-    logger.info("Running DQN container diagram script...")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s — %(message)s")
     create_diagram()
-    logger.info("Script finished!")
