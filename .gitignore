@@ -1,4 +1,4 @@
-# Python-generated files
+# Python
 __pycache__/
 *.py[oc]
 build/
@@ -6,10 +6,31 @@ dist/
 model/
 wheels/
 *.egg-info
-.venv # Virtual environments
+.venv
+.coverage
+*.egg
 
-# Trained model checkpoints
+# Models / logs
 *.zip
 models/
 logs/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.run.xml
+*.toc
+*.xmpdata
+texput.log
+pdfa.xmpi
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
 
