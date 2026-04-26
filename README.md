@@ -3,6 +3,8 @@
 **Student**: Atilade Gabriel Oke | **University**: University of Manchester (EEE)
 **Module**: EEEN30033 Final Year Project | **Supervisor**: Dr. Zahra Mobini
 
+> Claude (Anthropic) was used to assist with bug fixes and graph generation in this project.
+
 ---
 
 ## Introduction
