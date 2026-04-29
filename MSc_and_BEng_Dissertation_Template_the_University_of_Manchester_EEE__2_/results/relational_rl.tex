@@ -69,7 +69,7 @@ horizon.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_vs_relational.png}
-\caption{UAV trajectories for one representative episode at $400{\times}400$, $N{=}30$ (seed 9). Both agents face the identical sensor layout. Green circles are sensors from which data was collected; red circles were not reached. The DQN collects only sensors within LoRa range of the start corner (NDR $= 33\%$). The relational policy navigates through the grid interior, reaching 28 of 30 sensors (NDR $= 93\%$). Aggregate statistics across 50 seeds are in Table~\ref{tab:scalability_ndr}.}
+\caption{Single episode, $400{\times}400$ grid, $N{=}30$, seed 9. Both agents use the same sensor layout. Green circles were collected; red circles were not. The DQN stays near its start corner and collects 10 of 30 sensors (NDR $= 33\%$). The relational policy moves through the grid and collects 28 of 30 (NDR $= 93\%$). Means across 50 seeds are in Table~\ref{tab:scalability_ndr}.}
 \label{fig:trajectory_compare}
 \end{figure}
 
@@ -134,7 +134,7 @@ $500{\times}500$, $N{=}50$ & 13.0\,/\,0.08  & $24.7{\pm}0.6$\,/\,$0.156{\pm}0.00
 \end{table}
 
 \paragraph{Energy efficiency.}
-Table~\ref{tab:energy_efficiency} adds a third metric to the comparison: bytes collected per watt-hour of battery consumed. At $N{=}10$ the spread is small. At $N{=}20$ the DQN leads PPO+Flat-MLP ($129$ vs $103$\,B/Wh) because the perimeter is a reasonable route when sensors are dense enough to be boundary-adjacent. Beyond $N{=}30$ that ceases to hold. The DQN's efficiency collapses to $10.0$\,B/Wh at $N{=}50$: it burns almost its full battery on perimeter flight and collects almost nothing. PPO+Flat-MLP fares better at $60.1$\,B/Wh but still covers less than a third of sensors at that condition. The relational encoder reaches $136.6$\,B/Wh, $2.3{\times}$ ahead of PPO+Flat-MLP and $13.7{\times}$ ahead of the DQN. The same inductive bias that improves coverage also improves how efficiently the UAV converts flight energy into collected data.
+Table~\ref{tab:energy_efficiency} adds a third metric to the comparison: bytes collected per watt-hour of battery consumed. At $N{=}10$ the spread is small. At $N{=}20$ the DQN leads PPO+Flat-MLP ($129$ vs $103$\,B/Wh) because the perimeter is a reasonable route when sensors are dense enough to be boundary-adjacent. Beyond $N{=}30$ that ceases to hold. The DQN's efficiency collapses to $10.0$\,B/Wh at $N{=}50$: it burns almost its full battery on perimeter flight and collects almost nothing. PPO+Flat-MLP fares better at $60.1$\,B/Wh but still covers less than a third of sensors at that condition. The relational encoder reaches $136.6$\,B/Wh, $2.3{\times}$ ahead of PPO+Flat-MLP and $13.7{\times}$ ahead of the DQN. Both gains trace back to the same source: the encoder that learns to navigate further also wastes less battery getting there.
 
 \begin{table}[H]
 \centering
