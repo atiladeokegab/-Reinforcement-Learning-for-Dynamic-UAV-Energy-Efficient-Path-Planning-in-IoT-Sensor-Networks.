@@ -36,9 +36,9 @@ from relational_rl_runner import InferenceRelationalUAVEnv, load_relational_rl_m
 from ray.rllib.core.columns import Columns
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SEED       = 3
-GRID_SIZE  = (500, 500)
-N_SENSORS  = 50
+SEED       = 1
+GRID_SIZE  = (300, 300)
+N_SENSORS  = 20
 MAX_STEPS  = 2100
 MAX_BATTERY = 274.0
 N_MAX      = 50
@@ -132,7 +132,7 @@ def run_dqn(seed):
 
 # ── Run Relational episode ────────────────────────────────────────────────────
 
-def run_relational(seed):
+def run_relational(seed, fixed_sensor_positions=None):
     module = load_relational_rl_module(REL_CKPT_DIR)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cuda":
@@ -140,9 +140,11 @@ def run_relational(seed):
     module.eval()
 
     env = InferenceRelationalUAVEnv(
-        n_max=N_MAX, grid_size=GRID_SIZE, num_sensors=N_SENSORS, **ENV_BASE)
+        n_max=N_MAX, grid_size=GRID_SIZE, num_sensors=N_SENSORS,
+        sensor_positions=fixed_sensor_positions, **ENV_BASE)
 
-    obs, _ = env.reset(seed=seed)
+    import random; random.seed(seed); np.random.seed(seed)
+    obs, _ = env.reset()
     positions = [(float(env.uav.position[0]), float(env.uav.position[1]))]
     done = False
     while not done:
@@ -230,8 +232,11 @@ if __name__ == "__main__":
     dqn_data = run_dqn(SEED)
     print(f"  NDR = {dqn_data[3]:.1f}%")
 
-    print(f"Running Relational on seed {SEED}...")
-    rel_data = run_relational(SEED)
+    # Pass the DQN's sensor positions to the relational env so both agents
+    # operate on the identical sensor layout.
+    fixed_positions = [(float(s.position[0]), float(s.position[1])) for s in dqn_data[1]]
+    print(f"Running Relational on seed {SEED} (same sensor layout)...")
+    rel_data = run_relational(SEED, fixed_sensor_positions=fixed_positions)
     print(f"  NDR = {rel_data[3]:.1f}%")
 
     plot(dqn_data, rel_data)
