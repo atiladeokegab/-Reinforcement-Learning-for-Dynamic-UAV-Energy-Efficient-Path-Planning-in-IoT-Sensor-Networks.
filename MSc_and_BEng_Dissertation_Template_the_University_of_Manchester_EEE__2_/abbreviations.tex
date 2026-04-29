@@ -1,37 +1,110 @@
-\section*{Terms and Abbreviations}
-\addcontentsline{toc}{section}{Terms and Abbreviations}
+\section*{List of Abbreviations}
+\addcontentsline{toc}{section}{List of Abbreviations}
 
-\begin{center}
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Acronym} & \textbf{Definition} \\
-        \midrule
-        UAV     & Unmanned Aerial Vehicle \\
-        IoT     & Internet of Things \\
-        RL      & Reinforcement Learning \\
-        DRL     & Deep Reinforcement Learning \\
-        DQN     & Deep Q-Network \\
-        PPO     & Proximal Policy Optimization \\
-        MDP     & Markov Decision Process \\
-        POMDP   & Partially Observable Markov Decision Process \\
-        LoRa    & Long Range \\
-        LoRaWAN & Long Range Wide Area Network \\
-        SF      & Spreading Factor \\
-        ADR     & Adaptive Data Rate \\
-        RSSI    & Received Signal Strength Indicator \\
-        SNR     & Signal-to-Noise Ratio \\
-        PHY     & Physical Layer \\
-        MAC     & Medium Access Control \\
-        AoI     & Age of Information \\
-        DR      & Domain Randomization \\
-        GPS     & Global Positioning System \\
-        ToA     & Time on Air \\
-        GtA     & Ground-to-Air \\
-        LoS     & Line-of-Sight \\
-        NLOS    & Non-Line-of-Sight \\
-        2D      & Two-Dimensional \\
-        3D      & Three-Dimensional \\
-        \bottomrule
-    \end{tabular}
-\end{center}
+\begin{longtable}{ll}
+    \toprule
+    \textbf{Acronym} & \textbf{Definition} \\
+    \midrule
+    \endfirsthead
+    \toprule
+    \textbf{Acronym} & \textbf{Definition} \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+    2D      & Two-Dimensional \\
+    3D      & Three-Dimensional \\
+    ADR     & Adaptive Data Rate \\
+    AoI     & Age of Information \\
+    BER     & Bit Error Rate \\
+    DQN     & Deep Q-Network \\
+    DR      & Domain Randomisation \\
+    DRL     & Deep Reinforcement Learning \\
+    EMA     & Exponential Moving Average \\
+    GAE     & Generalised Advantage Estimation \\
+    GPS     & Global Positioning System \\
+    GtA     & Ground-to-Air \\
+    HHI     & Herfindahl--Hirschman Index \\
+    IoT     & Internet of Things \\
+    JFI     & Jain's Fairness Index \\
+    LoRa    & Long Range \\
+    LoRaWAN & Long Range Wide Area Network \\
+    LoS     & Line-of-Sight \\
+    MAC     & Medium Access Control \\
+    MDP     & Markov Decision Process \\
+    MLP     & Multi-Layer Perceptron \\
+    MILP    & Mixed-Integer Linear Programming \\
+    NDR     & Network Data Recovery \\
+    NLOS    & Non-Line-of-Sight \\
+    PHY     & Physical Layer \\
+    POMDP   & Partially Observable Markov Decision Process \\
+    PPO     & Proximal Policy Optimisation \\
+    RL      & Reinforcement Learning \\
+    RSSI    & Received Signal Strength Indicator \\
+    SF      & Spreading Factor \\
+    SNR     & Signal-to-Noise Ratio \\
+    ToA     & Time on Air \\
+    TSP     & Travelling Salesman Problem \\
+    UAV     & Unmanned Aerial Vehicle \\
+\end{longtable}
+
+\clearpage
+
+\section*{List of Symbols}
+\addcontentsline{toc}{section}{List of Symbols}
+
+\begin{longtable}{ll}
+    \toprule
+    \textbf{Symbol} & \textbf{Definition} \\
+    \midrule
+    \endfirsthead
+    \toprule
+    \textbf{Symbol} & \textbf{Definition} \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+    $\mathcal{N}$           & Set of IoT sensors, $\{1, \ldots, N\}$ \\
+    $N$                     & Number of sensors in an episode \\
+    $\mathcal{W}$           & Rectangular region of interest \\
+    $L,\,W$                 & Grid side lengths (grid units) \\
+    $T$                     & Episode horizon (timesteps) \\
+    $T_{\mathrm{left}}$     & Steps remaining in the current episode \\
+    $\tau$                  & Episode trajectory (sequence of states and actions) \\
+    $\Delta t$              & Timestep duration \\
+    $\mathcal{A}$           & Discrete action set (5 actions) \\
+    $\mathcal{S}$           & Set of Spreading Factors $\{7, 9, 11, 12\}$ \\
+    $h_u$                   & UAV altitude (m) \\
+    $p_t = (x_t, y_t)$     & UAV horizontal position at timestep $t$ \\
+    $E_k$                   & Remaining battery energy at step $k$ \\
+    $E_{\mathrm{eff}}$      & Effective energy budget (Wh) \\
+    $P_{\mathrm{hover}}$    & UAV hover power (W) \\
+    $P_{\mathrm{flight}}$   & UAV forward-flight power (W) \\
+    $\delta_d$              & Step displacement in cardinal direction $d$ \\
+    $P_r$                   & Received signal power \\
+    $P_t$                   & Transmitted signal power \\
+    $G_t,\,G_r$             & Transmitter and receiver antenna gains \\
+    $d$                     & Horizontal distance between sensor and UAV \\
+    $X_\sigma$              & Log-normal shadowing term, $\mathcal{N}(0,\,4^2\,\mathrm{dB})$ \\
+    $\lambda$               & EMA smoothing factor for ADR ($\lambda = 0.1$) \\
+    $\tau_{\mathrm{cap}}$   & Capture Effect SINR threshold (6\,dB) \\
+    $B_{\max}$              & Sensor buffer capacity (bytes) \\
+    $b_i$                   & Current buffer occupancy of sensor $i$ \\
+    $x_i$                   & Cumulative bytes collected from sensor $i$ (Jain's fairness) \\
+    $u_i$                   & Urgency score of sensor $i$ \\
+    $R_t$                   & Reward at timestep $t$ \\
+    $\gamma$                & Discount factor ($\gamma = 0.99$) \\
+    $\theta$                & Policy network weights \\
+    $\theta^-$              & Target network weights \\
+    $\varepsilon$           & Exploration rate ($\varepsilon$-greedy) \\
+    $J$                     & Jain's Fairness Index \\
+    $\phi,\,\rho$           & Shared encoder MLPs (Deep-Sets) \\
+    $z$                     & Pooled sensor representation \\
+    $n_{\max}$              & Maximum sensor slot count ($n_{\max} = 50$) \\
+    $m_i$                   & Binary mask (real vs.\ padding slot) \\
+    $\Phi(s)$               & Potential function for reward shaping \\
+    $f(s_i)$                & SF-Aware Greedy scoring function for sensor $i$ \\
+    $w_{\mathrm{SF}},\,w_{\mathrm{buf}},\,w_{\mathrm{duty}},\,w_d$ & SF-Aware Greedy base weights (SF priority, buffer fill, duty cycle, distance) \\
+\end{longtable}
+
 \clearpage

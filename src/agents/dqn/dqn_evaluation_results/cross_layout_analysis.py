@@ -69,10 +69,9 @@ OUTPUT_DIR = script_dir / "cross_layout_results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 _MODEL_CANDIDATES = [
-    script_dir.parent / "models" / "dqn_domain_rand"  / "dqn_clustered.zip",   # fine-tuned (layout-diversified)
-    script_dir.parent / "models" / "dqn_domain_rand"  / "dqn_final.zip",       # original fallback
-    script_dir.parent / "models" / "dqn_fairness_framestack" / "dqn_final.zip",
-    script_dir.parent / "models" / "dqn_fairness"            / "dqn_final.zip",
+    script_dir.parent / "models" / "dqn_v3_retrain"          / "dqn_final.zip",
+    script_dir.parent / "models" / "dqn_fairness_framestack"  / "dqn_final.zip",
+    script_dir.parent / "models" / "dqn_fairness"             / "dqn_final.zip",
 ]
 
 AGENTS = {

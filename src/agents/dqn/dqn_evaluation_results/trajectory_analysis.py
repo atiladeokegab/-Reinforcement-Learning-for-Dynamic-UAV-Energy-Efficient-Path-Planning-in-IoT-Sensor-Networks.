@@ -69,9 +69,8 @@ AGENT_STYLES = {
 SF_COLORS = ieee_style.SF_COLORS
 
 _MAIN_MODEL_CANDIDATES = [
-    script_dir.parent.parent.parent.parent / "models" / "dqn_domain_rand" / "best_model" / "best_model.zip",
-    script_dir.parent.parent.parent.parent / "models" / "dqn_domain_rand" / "dqn_final.zip",
-    script_dir.parent / "models" / "dqn_domain_rand"  / "dqn_final.zip",
+    script_dir.parent / "models" / "dqn_v3_retrain" / "dqn_final.zip",
+    script_dir.parent.parent.parent.parent / "models" / "dqn_v3_retrain" / "dqn_final.zip",
 ]
 
 # ==================== HELPERS ====================

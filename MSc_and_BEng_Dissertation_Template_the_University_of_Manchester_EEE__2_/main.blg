@@ -1,15 +1,17 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
 [0] Config.pm:331> INFO - Logfile is 'main.blg'
-[365] biber-MSWIN64:342> INFO - === 
-[508] Biber.pm:421> INFO - Reading 'main.bcf'
-[895] Biber.pm:1002> INFO - Found 36 citekeys in bib section 0
-[928] Biber.pm:4487> INFO - Processing section 0
-[956] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
-[1161] bibtex.pm:1713> INFO - LaTeX decoding ...
-[1330] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
-[2258] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[2258] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[2258] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
-[2258] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
-[2336] bbl.pm:676> INFO - Writing 'main.bbl' with encoding 'UTF-8'
-[2449] bbl.pm:779> INFO - Output to main.bbl
+[159] biber-MSWIN64:342> INFO - === 
+[219] Biber.pm:421> INFO - Reading 'main.bcf'
+[387] Biber.pm:1002> INFO - Found 38 citekeys in bib section 0
+[417] Biber.pm:4487> INFO - Processing section 0
+[436] Biber.pm:4678> INFO - Looking for bibtex file 'my_library.bib' for section 0
+[535] bibtex.pm:1713> INFO - LaTeX decoding ...
+[656] bibtex.pm:1519> INFO - Found BibTeX data source 'my_library.bib'
+[1697] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1698] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1698] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[1698] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[1789] bbl.pm:676> INFO - Writing 'main.bbl' with encoding 'UTF-8'
+[1918] bbl.pm:779> INFO - Output to main.bbl
+[1920] Biber.pm:132> WARN - ISBN '978-1-4673-0775-8 978-1-4673-0773-4 978-1-4673-0774-1' in entry 'kaul2012realtime' is invalid - run biber with '--validate_datamodel' for details.
+[1920] Biber.pm:134> INFO - WARNINGS: 1

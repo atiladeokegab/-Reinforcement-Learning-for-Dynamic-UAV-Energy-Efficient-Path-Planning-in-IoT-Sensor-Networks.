@@ -1,3 +1,4 @@
+\clearpage
 \subsection{Hyperparameters}
 \label{app:hyperparams}
 
@@ -9,16 +10,16 @@
         \toprule
         \textbf{Parameter}               & \textbf{Value}             \\
         \midrule
-        Total Timesteps                  & $2 \times 10^6$            \\
+        Total Timesteps                  & $5 \times 10^6$            \\
         Learning Rate ($\alpha$)         & $3 \times 10^{-4}$         \\
         Discount Factor ($\gamma$)       & $0.99$                     \\
         Replay Buffer Size               & 150{,}000 transitions      \\
-        Batch Size                       & 128                        \\
-        Target Network Update ($C$)      & every 1{,}000 steps        \\
+        Batch Size                       & 256                        \\
+        Target Network Update ($C$)      & every 5{,}000 steps        \\
         Gradient Clip (max norm)         & 10                         \\
         Exploration Strategy             & $\epsilon$-greedy          \\
         Initial $\epsilon$               & 1.0                        \\
-        Final $\epsilon$                 & 0.05                       \\
+        Final $\epsilon$                 & 0.03                       \\
         Exploration Fraction             & 25\% of total timesteps    \\
         Policy Network Architecture      & MLP [512, 512, 256]        \\
         Activation Function              & ReLU                       \\
@@ -29,10 +30,10 @@
     \end{tabular}
 \end{table}
 
-\noindent Gradient clipping (max norm~10) was introduced after observing reward
-collapse during early curriculum training on large grids ($N=40$) without it.
+\noindent Gradient clipping (max norm~10) was introduced after reward collapse
+during early curriculum training on large grids ($N=40$).
 The learning rate was reduced from $10^{-3}$ to $3 \times 10^{-4}$ in the same corrective
-iteration, as discussed in Section~\ref{sec:project_management}.
+iteration; see Section~\ref{sec:project_management}.
 
 \subsection*{Training Algorithm}
 
@@ -129,6 +130,7 @@ iteration, as discussed in Section~\ref{sec:project_management}.
 \Statex\textbf{Instantiations.} Nearest-Sensor Greedy:
        $f(s) = -\|s.\text{pos} - \text{uav}.\text{pos}\|$. SF-Aware
        Max-Throughput Greedy:
-       $f(s) = (1 - \text{BER}(s.\text{SF}))\cdot \text{payload}/T_{\text{air}}(s.\text{SF})$.
+       $f(s) = w_{\mathrm{SF}}\cdot\text{sf\_score}(s) + w_{\mathrm{buf}}\cdot\text{buffer\_fill}(s) + w_{\mathrm{duty}}\cdot\text{duty\_score}(s) - w_d \cdot d(s)$,
+       where weights $w_{\mathrm{SF}}, w_{\mathrm{buf}}, w_{\mathrm{duty}}, w_d$ are battery-adaptive.
 \end{algorithmic}
 \end{algorithm}

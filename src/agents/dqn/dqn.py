@@ -568,7 +568,7 @@ class UAVAttentionExtractor(BaseFeaturesExtractor):
     UAV_FEATURES    = 3
     SENSOR_FEATURES = 3
     N_SENSORS       = 50
-    N_STACK         = 10
+    N_STACK         = 4
     FRAME_SIZE      = UAV_FEATURES + N_SENSORS * SENSOR_FEATURES  # 153
 
     def __init__(
@@ -1094,7 +1094,7 @@ HYPERPARAMS = {
 }
 
 TRAINING_CONFIG = {
-    "total_timesteps": 3_000_000,
+    "total_timesteps": 5_000_000,
     "save_freq":       25_000,
     "n_stack":         4,
 }

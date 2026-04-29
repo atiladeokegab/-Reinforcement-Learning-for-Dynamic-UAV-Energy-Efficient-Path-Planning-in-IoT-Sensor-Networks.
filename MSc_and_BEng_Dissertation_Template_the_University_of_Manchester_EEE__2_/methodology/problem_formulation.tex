@@ -13,10 +13,16 @@ energy, kinematic, and protocol constraints:
     & \mathrm{RSSI}_{i,t}(p_t) \geq \mathrm{RSSI}_{\min}(\mathrm{SF}_{i,t})
         \quad \forall i \label{eq:p1_c1} \\
     & E_{t+1} = E_t - P(a_t)\,\Delta t \geq 0 \quad \forall t \label{eq:p1_c2} \\
-    & \sum_{i\in\mathcal{N}} \mathbb{I}(\mathrm{SF}_{i,t} = k) \leq 1
+    & \sum_{i:\,\mathrm{SF}_{i,t}=k} \mathbb{I}(D_{i,t}>0) \leq 1
         \quad \forall k \in \mathcal{S} \label{eq:p1_c3}
 \end{align}
 where $D_{i,t}$ is the data collected from sensor $i$ at step $t$.
+Constraint~(\ref{eq:p1_c3}) limits decoded throughput, not SF
+assignment: the gateway decodes at most one transmission per SF group
+per timestep, however many sensors share that SF. ADR may place
+several sensors on the same SF; the Capture Effect then decides which
+transmission (if any) gets through.
+
 (P1) is non-convex: $p_t$ and $\mathrm{SF}_{i,t}$ are coupled through
 the EMA-ADR filter ($\lambda = 0.1$), violating the Markov property.
 Classical methods (MILP, convex MPC) cannot tractably encode this

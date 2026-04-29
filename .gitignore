@@ -27,6 +27,11 @@ logs/
 texput.log
 pdfa.xmpi
 
+# Claude Code
+.claude/
+CLAUDE.md
+skills-lock.json
+
 # IDE
 .idea/
 .vscode/

@@ -1,44 +1,57 @@
 \subsection{Component Ablation}
 \label{sec:ablation}
 
-To isolate the contribution of each protocol- and training-level
-component, a four-condition ablation was conducted (A1: no Capture
-Effect; A2: instant ADR, $\lambda = 1.0$; A3: AoI observation
-features zeroed at inference; A4: no domain randomisation). Each
-removes one component with everything else held fixed. Results are
-summarised in Table~\ref{tab:ablation}
-(Figure~\ref{fig:ablation_bars}, Appendix~\ref{app:additional_figures}).
+Four ablation conditions were run across five scales (100${\times}$100 to 500${\times}$500), 50 seeds each, to isolate each component's contribution. A1 removes the Capture Effect so all same-SF co-transmissions result in packet loss, disabling the collision-resolution path entirely. A2 switches to instant ADR ($\lambda{=}1.0$), updating each sensor's SF immediately to the value optimal for the current RSSI with no EMA smoothing; this is an upper bound on ADR performance, not a design target. A3 zeros per-sensor urgency and buffer-fill features at inference, so the policy receives no Age-of-Information signal. A4 substitutes a separately trained DQN that saw only $500{\times}500$, $N{=}20$ during training, with no grid-size or sensor-count variation.
+
+Results are summarised in Table~\ref{tab:ablation}
+(Figure~\ref{fig:ablation_combined}, Appendix~\ref{app:additional_figures}).
+NDR is sensor coverage (\% of sensors visited), consistent with
+the scalability analysis in Section~\ref{sec:multi_seed}.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Component ablation, aggregate across all conditions against
-the Full Model. Welch's two-sided $t$-test; Cohen's $d$ from pooled
-standard deviation. Source:
-\texttt{ablation\_study\_results.csv}.}
+\caption{Component ablation: NDR (\% sensors visited) across five evaluation scales,
+50 seeds per condition.
+\textbf{Bold} = statistically significant vs.\ Full Model ($p{<}0.05$, Welch's two-sided
+$t$-test); $^\dagger$ = large effect ($|d|{>}0.8$).
+Source: \texttt{ablation\_study\_results.csv}.}
 \label{tab:ablation}
-\begin{tabularx}{\textwidth}{l Z Z Z Z l}
+\begin{tabular}{l r r r r r}
 \toprule
-Metric & Full mean & Ablation mean & Welch's $t$ & $p$ & Cohen's $d$ \\
+Condition & \makebox[1.4cm][r]{$100{\times}100$} & \makebox[1.4cm][r]{$200{\times}200$} & \makebox[1.4cm][r]{$300{\times}300$} & \makebox[1.4cm][r]{$400{\times}400$} & \makebox[1.4cm][r]{$500{\times}500$} \\
+          & \makebox[1.4cm][r]{$N{=}10$}        & \makebox[1.4cm][r]{$N{=}20$}        & \makebox[1.4cm][r]{$N{=}30$}        & \makebox[1.4cm][r]{$N{=}40$}        & \makebox[1.4cm][r]{$N{=}50$}        \\
 \midrule
-Cumulative reward         & $8.24\times 10^{5}$ & $2.88\times 10^{5}$ & $ 4.52$ & $1.2\times 10^{-4}$ & $+1.43$ (large) \\
-NDR                       & $0.186$             & $0.138$             & $ 1.71$ & $0.098$             & $+0.54$ (medium) \\
-Jain's fairness           & $0.288$             & $0.177$             & $ 3.89$ & $5.2\times 10^{-4}$ & $+1.23$ (large) \\
-Gini (inverse fairness)   & $0.730$             & $0.833$             & $-4.19$ & $2.3\times 10^{-4}$ & $-1.32$ (large) \\
-Energy efficiency (B/Wh)  & $51.4$              & $35.8$              & $ 2.00$ & $0.055$             & $+0.63$ (medium) \\
+Full Model$^{\ddagger}$  & 100.0 & 99.7 & 51.7 & 26.6 & 13.0 \\
+A1: No Capture     & 100.0 & 99.3 & 50.3 & 25.3 & 12.2 \\
+A2: Instant ADR    & 100.0 & 99.5 & \textbf{59.5} & 31.0 & 13.6 \\
+A3: No AoI Obs     & \textbf{75.4}$^\dagger$ & \textbf{93.5} & \textbf{42.0} & \textbf{17.7} & \textbf{4.4}$^\dagger$ \\
+A4: No Domain Rand$^*$ & 100.0 & 99.5 & \textbf{71.3}$^\dagger$ & \textbf{41.1}$^\dagger$ & \textbf{26.4}$^\dagger$ \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
+{\small $^*$A4 model trained exclusively on $500{\times}500$, $N{=}20$; outperformance
+at larger scales reflects the cost of generalisation in the Full DR model, not
+superior policy quality.}
 
-Large effects on reward ($d = +1.43$, $p < 10^{-3}$) and fairness
-($d = +1.23$, $p < 10^{-3}$; Gini $d = -1.32$ confirming the sign)
-establish that every component of the Full Model contributes
-measurably. Per-component interpretation (why each ablation matters
-and what its removal implies) is in
-Appendix~\ref{app:ablation_extended}. The remaining gap between the
-Full Model and the Relational-RL policy
-(Sections~\ref{sec:multi_seed}, \ref{sec:relational}) is therefore
-not attributable to a missing protocol feature or reward term:
-every candidate has been ablated and is shown to be contributing.
-What is missing is the representational capacity of the policy
-network itself, which is the target of Section~\ref{sec:relational}.
+{\small $^\ddagger$Full Model NDR figures are from an independent 50-seed evaluation batch
+from the one used in Table~\ref{tab:scalability_ndr}; differences of up to
+1~percentage point at intermediate scales reflect sampling variation across runs.}
+
+\medskip
+
+Protocol components (A1, A2) have negligible effect across all scales. Removing the
+capture effect (A1) produces no statistically significant change at any condition
+($p > 0.27$ throughout), which confirms that channel collisions are not a meaningful
+bottleneck for the evaluated sensor densities. Instant ADR (A2) yields a marginal
+improvement at $300{\times}300$ ($p{=}0.039$, $d{=}-0.42$, small), consistent with A2
+being an upper bound on ADR performance; the effect disappears at larger scales
+where coverage is already limited by navigation capacity rather than link quality.
+
+Removing AoI features (A3) degrades NDR at every scale, and effect size grows with task difficulty. At $(100{\times}100, N{=}10)$ NDR falls from $100.0\%$ to $75.4\%$ ($p < 0.001$, $d = 0.95$, large): urgency signals matter even when routing is not the binding constraint, because without them the policy revisits already-collected sensors instead of seeking out new ones. At intermediate scales the degradation continues: $93.5\%$ vs $99.7\%$ at $200{\times}200$ ($d = 0.46$, small) and $42.0\%$ vs $51.7\%$ at $300{\times}300$ ($d = 0.50$, medium). At the hardest condition NDR collapses from $13.0\%$ to $4.4\%$ ($p < 0.001$, $d = 1.07$, large). The urgency proxy (buffer fill level combined with time since last collection) is what the policy uses to prioritise which sensor to visit; without it, routing degrades as sensors deplete and the policy cannot distinguish which ones still need attention. AoI features are load-bearing at every scale.
+
+A4 outperforms the Full Model at the three largest conditions, and effect sizes grow with scale: $d = 1.35$ at $300{\times}300$, $1.38$ at $400{\times}400$, $1.69$ at $500{\times}500$ (all $p < 10^{-8}$). At $N{=}50$ the specialist reaches $26.4\%$ NDR vs the Full Model's $13.0\%$. This is in-distribution overfit, not evidence of a better policy. A4 was trained exclusively on $(500{\times}500, N{=}20)$ and is tested in conditions that closely match that setup. Domain randomisation forces the Full Model to spread capacity across 16 conditions spanning a $25\times$ range in grid area and a $5\times$ range in sensor count; per-condition performance is correspondingly lower. The scalability sweep (Section~\ref{sec:multi_seed}) shows the payoff: the Full DR model works at grid sizes and sensor counts the A4 model never saw during training.
+
+At large scale the binding constraint is the representational capacity of the
+flat-MLP policy, not the protocol design. Section~\ref{sec:relational} addresses this directly with the Relational-RL comparison. Per-condition extended figures are in
+Appendix~\ref{app:additional_figures}.

@@ -143,6 +143,8 @@
 \def\course#1{\gdef\@course{#1}}
 \def\studentid#1{\gdef\@studentid{#1}}
 \def\submitdate#1{\gdef\@submitdate{#1}}
+\def\supervisorname#1{\gdef\@supervisorname{#1}}
+\def\@supervisorname{}
 \newcommand{\titletext}[1]
 {
   \ifthenelse{\equal{#1}{msc}}{A dissertation submitted to The University of Manchester for the degree of\ \linebreak \textbf{Master of Science in \@course}\ \linebreak in the Faculty of \@faculty}{}
@@ -173,6 +175,7 @@
       \vskip 2cm
       \authortext
       \vskip 2cm
+      \ifthenelse{\equal{\@supervisorname}{}}{}{\textbf{Supervisor}\ \linebreak \@supervisorname \vskip 2cm}
       \@school
       \vspace*{\fill}
     \end{center}
@@ -188,9 +191,9 @@
 
 %% Abstract
 \renewenvironment{abstract}{%
-  \clearpage\phantomsection\section*{Abstract}
+  \phantomsection\section*{Abstract}
 }
-{\addcontentsline{toc}{section}{\abstractname}\endquotation\vfil\null\clearpage}
+{\addcontentsline{toc}{section}{\abstractname}\vfil\null\clearpage}
 
 
 
@@ -240,18 +243,20 @@
 \newcommand{\uomoriginalitydeclaration}{I hereby confirm that no portion of the work referred to in the thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning.
 }
 
-\newenvironment{uomoriginality}{
-  \phantomsection\addcontentsline{toc}{section}{Declaration of originality}
-  \section*{Declaration of originality}
+\newenvironment{uomoriginality}{%
+  \clearpage
+  \phantomsection\addcontentsline{toc}{section}{Declaration of originality}%
+  \section*{Declaration of originality}%
 }
-{\clearpage}
+{\par\bigskip}
 
   
 
 %% Copyright statement
-\newcommand{\uomcopyrightstatement}{
+\newcommand{\uomcopyrightstatement}{%
+  \clearpage
   \phantomsection\addcontentsline{toc}{section}{Copyright statement}
-  \section*{Copyright statement} 
+  \section*{Copyright statement}
   \begin{enumerate}[label=\roman*]
     \item The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the ``Copyright'') and s/he has given The University of Manchester certain rights to use such Copyright, including for administrative purposes.
     \item Copies of this thesis, either in full or in extracts and whether in hard or electronic copy, may be made \emph{only} in accordance with the Copyright, Designs and Patents Act 1988 (as amended) and regulations issued under it or, where appropriate, in accordance with licensing agreements which the University has from time to time. This page must form part of any such copies made.

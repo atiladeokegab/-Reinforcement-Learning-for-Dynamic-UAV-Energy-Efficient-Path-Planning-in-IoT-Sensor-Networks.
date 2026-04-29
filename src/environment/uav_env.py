@@ -251,14 +251,14 @@ class UAVEnvironment(gym.Env):
         Discrete(5): [UP, DOWN, LEFT, RIGHT, COLLECT]
 
     Reward Structure (Fairness-Constrained):
-        +0.1 per byte  : Data collection
-        +10.0          : New sensor collected
-        +20.0 per unit : Urgency reduction
-        -500.0 per byte: Data loss (MASSIVE PENALTY - applies to ALL actions)
-        -2.0           : Attempted collection from empty sensor
-        -5.0           : Boundary collision
-        -0.1 per Wh    : Battery drain
-        -0.05          : Step penalty
+        +100 × urgency per byte : Data collection (urgency-weighted)
+        +5000                   : New sensor first visit
+        +1000 × reduction       : Urgency reduction
+        -2                      : Revisit empty sensor
+        -50                     : Boundary hit
+        -1000 × variance        : Starvation fairness penalty
+        -1000 per sensor        : Terminal starvation (CR < 20%)
+        -5000 per sensor        : Unvisited sensors at episode end
     """
 
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
@@ -280,7 +280,7 @@ class UAVEnvironment(gym.Env):
         max_steps: int = 2100,
         render_mode: Optional[str] = None,
         penalty_data_loss: float = -1.0,
-        reward_urgency_reduction: float = 20.0,
+        reward_urgency_reduction: float = 1000.0,
         penalty_battery: float = -0.5,
         reward_movement: float = 10.0,
         include_sensor_positions: bool = False,
@@ -911,7 +911,6 @@ if __name__ == "__main__":
         max_steps=2100,
         sensor_duty_cycle=10.0,
         penalty_data_loss=-1.0,
-        reward_urgency_reduction=20.0,
         render_mode="human",
     )
 

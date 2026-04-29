@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  26 APR 2026 16:28
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  28 APR 2026 23:20
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -1274,15 +1274,34 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@lastruleclass=\count377
 \@thisrulewidth=\dimen320
 )
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/tools/longtable.sty
+Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
+\LTleft=\skip116
+\LTright=\skip117
+\LTpre=\skip118
+\LTpost=\skip119
+\LTchunksize=\count378
+\LTcapwidth=\dimen321
+\LT@head=\box76
+\LT@firsthead=\box77
+\LT@foot=\box78
+\LT@lastfoot=\box79
+\LT@gbox=\box80
+\LT@cols=\count379
+\LT@rows=\count380
+\c@LT@tables=\count381
+\c@LT@chunks=\count382
+\LT@p@ftn=\toks51
+)
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/lipsum/lipsum.sty
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/l3packages/l3keys2e/l3k
 eys2e.sty
 Package: l3keys2e 2025-10-09 LaTeX2e option processing using LaTeX3 keys
 )
 Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
-\g__lipsum_par_int=\count378
-\l__lipsum_a_int=\count379
-\l__lipsum_b_int=\count380
+\g__lipsum_par_int=\count383
+\l__lipsum_a_int=\count384
+\l__lipsum_b_int=\count385
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/lipsum/lipsum.ltd.tex)) (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/babel/babel.sty
 Package: babel 2025/10/22 v25.14 The multilingual framework for LuaLaTeX, pdfLa
@@ -1377,51 +1396,51 @@ Package babel Info: Non-standard hyphenation setup on input line 118.
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/caption/subcaption.sty
 Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
 Package caption Info: New subtype `subfigure' on input line 238.
-\c@subfigure=\count381
+\c@subfigure=\count386
 Package caption Info: New subtype `subtable' on input line 238.
-\c@subtable=\count382
+\c@subtable=\count387
 ) (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/siunitx/siunitx.sty
 Package: siunitx 2025-07-09 v3.4.14 A comprehensive (SI) units package
-\l__siunitx_number_uncert_offset_int=\count383
-\l__siunitx_number_exponent_fixed_int=\count384
-\l__siunitx_number_min_decimal_int=\count385
-\l__siunitx_number_min_integer_int=\count386
-\l__siunitx_number_round_precision_int=\count387
-\l__siunitx_number_lower_threshold_int=\count388
-\l__siunitx_number_upper_threshold_int=\count389
-\l__siunitx_number_group_first_int=\count390
-\l__siunitx_number_group_size_int=\count391
-\l__siunitx_number_group_minimum_int=\count392
-\l__siunitx_angle_tmp_dim=\dimen321
-\l__siunitx_angle_marker_box=\box76
-\l__siunitx_angle_unit_box=\box77
-\l__siunitx_compound_count_int=\count393
+\l__siunitx_number_uncert_offset_int=\count388
+\l__siunitx_number_exponent_fixed_int=\count389
+\l__siunitx_number_min_decimal_int=\count390
+\l__siunitx_number_min_integer_int=\count391
+\l__siunitx_number_round_precision_int=\count392
+\l__siunitx_number_lower_threshold_int=\count393
+\l__siunitx_number_upper_threshold_int=\count394
+\l__siunitx_number_group_first_int=\count395
+\l__siunitx_number_group_size_int=\count396
+\l__siunitx_number_group_minimum_int=\count397
+\l__siunitx_angle_tmp_dim=\dimen322
+\l__siunitx_angle_marker_box=\box81
+\l__siunitx_angle_unit_box=\box82
+\l__siunitx_compound_count_int=\count398
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/translations/translatio
 ns.sty
 Package: translations 2022/02/05 v1.12 internationalization of LaTeX2e packages
  (CN)
 )
-\l__siunitx_table_tmp_box=\box78
-\l__siunitx_table_tmp_dim=\dimen322
-\l__siunitx_table_column_width_dim=\dimen323
-\l__siunitx_table_integer_box=\box79
-\l__siunitx_table_decimal_box=\box80
-\l__siunitx_table_uncert_box=\box81
-\l__siunitx_table_before_box=\box82
-\l__siunitx_table_after_box=\box83
-\l__siunitx_table_before_dim=\dimen324
-\l__siunitx_table_carry_dim=\dimen325
-\l__siunitx_unit_tmp_int=\count394
-\l__siunitx_unit_position_int=\count395
-\l__siunitx_unit_total_int=\count396
+\l__siunitx_table_tmp_box=\box83
+\l__siunitx_table_tmp_dim=\dimen323
+\l__siunitx_table_column_width_dim=\dimen324
+\l__siunitx_table_integer_box=\box84
+\l__siunitx_table_decimal_box=\box85
+\l__siunitx_table_uncert_box=\box86
+\l__siunitx_table_before_box=\box87
+\l__siunitx_table_after_box=\box88
+\l__siunitx_table_before_dim=\dimen325
+\l__siunitx_table_carry_dim=\dimen326
+\l__siunitx_unit_tmp_int=\count399
+\l__siunitx_unit_position_int=\count400
+\l__siunitx_unit_total_int=\count401
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/algorithms/algorithm.st
 y
 Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
 nment
-\@float@every@algorithm=\toks51
-\c@algorithm=\count397
+\@float@every@algorithm=\toks52
+\c@algorithm=\count402
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/algorithmicx/algpseudoc
 ode.sty
@@ -1432,26 +1451,26 @@ cx.sty
 Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
 
 Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
-\c@ALG@line=\count398
-\c@ALG@rem=\count399
-\c@ALG@nested=\count400
-\ALG@tlm=\skip116
-\ALG@thistlm=\skip117
-\c@ALG@Lnr=\count401
-\c@ALG@blocknr=\count402
-\c@ALG@storecount=\count403
-\c@ALG@tmpcounter=\count404
-\ALG@tmplength=\skip118
+\c@ALG@line=\count403
+\c@ALG@rem=\count404
+\c@ALG@nested=\count405
+\ALG@tlm=\skip120
+\ALG@thistlm=\skip121
+\c@ALG@Lnr=\count406
+\c@ALG@blocknr=\count407
+\c@ALG@storecount=\count408
+\c@ALG@tmpcounter=\count409
+\ALG@tmplength=\skip122
 )
 Document Style - pseudocode environments for use with the `algorithmicx' style
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/pgflibr
 aryarrows.meta.code.tex
 File: pgflibraryarrows.meta.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowinset=\dimen326
-\pgfarrowlength=\dimen327
-\pgfarrowwidth=\dimen328
-\pgfarrowlinewidth=\dimen329
+\pgfarrowinset=\dimen327
+\pgfarrowlength=\dimen328
+\pgfarrowwidth=\dimen329
+\pgfarrowlinewidth=\dimen330
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/tik
 z/libraries/tikzlibraryshapes.geometric.code.tex
@@ -1471,16 +1490,16 @@ z/libraries/tikzlibrarydecorations.markings.code.tex
 z/libraries/tikzlibrarydecorations.code.tex
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/modules/pgfmodule
 decorations.code.tex
-\pgfdecoratedcompleteddistance=\dimen330
-\pgfdecoratedremainingdistance=\dimen331
-\pgfdecoratedinputsegmentcompleteddistance=\dimen332
-\pgfdecoratedinputsegmentremainingdistance=\dimen333
-\pgf@decorate@distancetomove=\dimen334
-\pgf@decorate@repeatstate=\count405
-\pgfdecorationsegmentamplitude=\dimen335
-\pgfdecorationsegmentlength=\dimen336
+\pgfdecoratedcompleteddistance=\dimen331
+\pgfdecoratedremainingdistance=\dimen332
+\pgfdecoratedinputsegmentcompleteddistance=\dimen333
+\pgfdecoratedinputsegmentremainingdistance=\dimen334
+\pgf@decorate@distancetomove=\dimen335
+\pgf@decorate@repeatstate=\count410
+\pgfdecorationsegmentamplitude=\dimen336
+\pgfdecorationsegmentlength=\dimen337
 )
-\tikz@lib@dec@box=\box84
+\tikz@lib@dec@box=\box89
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/decorat
 ions/pgflibrarydecorations.markings.code.tex))
@@ -1491,8 +1510,8 @@ ions/pgflibrarydecorations.pathmorphing.code.tex))
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/tik
 z/libraries/tikzlibrarybackgrounds.code.tex
 File: tikzlibrarybackgrounds.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@layerbox@background=\box85
-\pgf@layerboxsaved@background=\box86
+\pgf@layerbox@background=\box90
+\pgf@layerboxsaved@background=\box91
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/tik
 z/libraries/tikzlibraryfit.code.tex
@@ -1540,68 +1559,68 @@ Package: biblatex 2025/07/10 v3.21 programmable bibliographies (PK/MW)
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count406
+\lrq@indent=\count411
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 ))
-\c@tabx@nest=\count407
-\c@listtotal=\count408
-\c@listcount=\count409
-\c@liststart=\count410
-\c@liststop=\count411
-\c@citecount=\count412
-\c@citetotal=\count413
-\c@multicitecount=\count414
-\c@multicitetotal=\count415
-\c@instcount=\count416
-\c@maxnames=\count417
-\c@minnames=\count418
-\c@maxitems=\count419
-\c@minitems=\count420
-\c@citecounter=\count421
-\c@maxcitecounter=\count422
-\c@savedcitecounter=\count423
-\c@uniquelist=\count424
-\c@uniquename=\count425
-\c@refsection=\count426
-\c@refsegment=\count427
-\c@maxextratitle=\count428
-\c@maxextratitleyear=\count429
-\c@maxextraname=\count430
-\c@maxextradate=\count431
-\c@maxextraalpha=\count432
-\c@abbrvpenalty=\count433
-\c@highnamepenalty=\count434
-\c@lownamepenalty=\count435
-\c@maxparens=\count436
-\c@parenlevel=\count437
-\blx@tempcnta=\count438
-\blx@tempcntb=\count439
-\blx@tempcntc=\count440
-\c@blx@maxsection=\count441
-\blx@maxsegment@0=\count442
-\blx@notetype=\count443
-\blx@parenlevel@text=\count444
-\blx@parenlevel@foot=\count445
-\blx@sectionciteorder@0=\count446
-\blx@sectionciteorderinternal@0=\count447
-\blx@entrysetcounter=\count448
-\blx@biblioinstance=\count449
-\labelnumberwidth=\skip119
-\labelalphawidth=\skip120
-\biblabelsep=\skip121
-\bibitemsep=\skip122
-\bibnamesep=\skip123
-\bibinitsep=\skip124
-\bibparsep=\skip125
-\bibhang=\skip126
+\c@tabx@nest=\count412
+\c@listtotal=\count413
+\c@listcount=\count414
+\c@liststart=\count415
+\c@liststop=\count416
+\c@citecount=\count417
+\c@citetotal=\count418
+\c@multicitecount=\count419
+\c@multicitetotal=\count420
+\c@instcount=\count421
+\c@maxnames=\count422
+\c@minnames=\count423
+\c@maxitems=\count424
+\c@minitems=\count425
+\c@citecounter=\count426
+\c@maxcitecounter=\count427
+\c@savedcitecounter=\count428
+\c@uniquelist=\count429
+\c@uniquename=\count430
+\c@refsection=\count431
+\c@refsegment=\count432
+\c@maxextratitle=\count433
+\c@maxextratitleyear=\count434
+\c@maxextraname=\count435
+\c@maxextradate=\count436
+\c@maxextraalpha=\count437
+\c@abbrvpenalty=\count438
+\c@highnamepenalty=\count439
+\c@lownamepenalty=\count440
+\c@maxparens=\count441
+\c@parenlevel=\count442
+\blx@tempcnta=\count443
+\blx@tempcntb=\count444
+\blx@tempcntc=\count445
+\c@blx@maxsection=\count446
+\blx@maxsegment@0=\count447
+\blx@notetype=\count448
+\blx@parenlevel@text=\count449
+\blx@parenlevel@foot=\count450
+\blx@sectionciteorder@0=\count451
+\blx@sectionciteorderinternal@0=\count452
+\blx@entrysetcounter=\count453
+\blx@biblioinstance=\count454
+\labelnumberwidth=\skip123
+\labelalphawidth=\skip124
+\biblabelsep=\skip125
+\bibitemsep=\skip126
+\bibnamesep=\skip127
+\bibinitsep=\skip128
+\bibparsep=\skip129
+\bibhang=\skip130
 \blx@bcfin=\read6
 \blx@bcfout=\write5
 \blx@langwohyphens=\language79
-\c@mincomprange=\count450
-\c@maxcomprange=\count451
-\c@mincompwidth=\count452
+\c@mincomprange=\count455
+\c@maxcomprange=\count456
+\c@mincompwidth=\count457
 Package biblatex Info: Trying to load biblatex default data model...
 Package biblatex Info: ... file 'blx-dm.def' found.
 
@@ -1612,88 +1631,88 @@ Package biblatex Info: Trying to load biblatex style data model...
 Package biblatex Info: ... file 'ieee.dbx' not found.
 Package biblatex Info: Trying to load biblatex custom data model...
 Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count453
-\c@savedafterword=\count454
-\c@annotator=\count455
-\c@savedannotator=\count456
-\c@author=\count457
-\c@savedauthor=\count458
-\c@bookauthor=\count459
-\c@savedbookauthor=\count460
-\c@commentator=\count461
-\c@savedcommentator=\count462
-\c@editor=\count463
-\c@savededitor=\count464
-\c@editora=\count465
-\c@savededitora=\count466
-\c@editorb=\count467
-\c@savededitorb=\count468
-\c@editorc=\count469
-\c@savededitorc=\count470
-\c@foreword=\count471
-\c@savedforeword=\count472
-\c@holder=\count473
-\c@savedholder=\count474
-\c@introduction=\count475
-\c@savedintroduction=\count476
-\c@namea=\count477
-\c@savednamea=\count478
-\c@nameb=\count479
-\c@savednameb=\count480
-\c@namec=\count481
-\c@savednamec=\count482
-\c@translator=\count483
-\c@savedtranslator=\count484
-\c@shortauthor=\count485
-\c@savedshortauthor=\count486
-\c@shorteditor=\count487
-\c@savedshorteditor=\count488
-\c@labelname=\count489
-\c@savedlabelname=\count490
-\c@institution=\count491
-\c@savedinstitution=\count492
-\c@lista=\count493
-\c@savedlista=\count494
-\c@listb=\count495
-\c@savedlistb=\count496
-\c@listc=\count497
-\c@savedlistc=\count498
-\c@listd=\count499
-\c@savedlistd=\count500
-\c@liste=\count501
-\c@savedliste=\count502
-\c@listf=\count503
-\c@savedlistf=\count504
-\c@location=\count505
-\c@savedlocation=\count506
-\c@organization=\count507
-\c@savedorganization=\count508
-\c@origlocation=\count509
-\c@savedoriglocation=\count510
-\c@origpublisher=\count511
-\c@savedorigpublisher=\count512
-\c@publisher=\count513
-\c@savedpublisher=\count514
-\c@language=\count515
-\c@savedlanguage=\count516
-\c@origlanguage=\count517
-\c@savedoriglanguage=\count518
-\c@pageref=\count519
-\c@savedpageref=\count520
-\shorthandwidth=\skip127
-\shortjournalwidth=\skip128
-\shortserieswidth=\skip129
-\shorttitlewidth=\skip130
-\shortauthorwidth=\skip131
-\shorteditorwidth=\skip132
-\locallabelnumberwidth=\skip133
-\locallabelalphawidth=\skip134
-\localshorthandwidth=\skip135
-\localshortjournalwidth=\skip136
-\localshortserieswidth=\skip137
-\localshorttitlewidth=\skip138
-\localshortauthorwidth=\skip139
-\localshorteditorwidth=\skip140
+\c@afterword=\count458
+\c@savedafterword=\count459
+\c@annotator=\count460
+\c@savedannotator=\count461
+\c@author=\count462
+\c@savedauthor=\count463
+\c@bookauthor=\count464
+\c@savedbookauthor=\count465
+\c@commentator=\count466
+\c@savedcommentator=\count467
+\c@editor=\count468
+\c@savededitor=\count469
+\c@editora=\count470
+\c@savededitora=\count471
+\c@editorb=\count472
+\c@savededitorb=\count473
+\c@editorc=\count474
+\c@savededitorc=\count475
+\c@foreword=\count476
+\c@savedforeword=\count477
+\c@holder=\count478
+\c@savedholder=\count479
+\c@introduction=\count480
+\c@savedintroduction=\count481
+\c@namea=\count482
+\c@savednamea=\count483
+\c@nameb=\count484
+\c@savednameb=\count485
+\c@namec=\count486
+\c@savednamec=\count487
+\c@translator=\count488
+\c@savedtranslator=\count489
+\c@shortauthor=\count490
+\c@savedshortauthor=\count491
+\c@shorteditor=\count492
+\c@savedshorteditor=\count493
+\c@labelname=\count494
+\c@savedlabelname=\count495
+\c@institution=\count496
+\c@savedinstitution=\count497
+\c@lista=\count498
+\c@savedlista=\count499
+\c@listb=\count500
+\c@savedlistb=\count501
+\c@listc=\count502
+\c@savedlistc=\count503
+\c@listd=\count504
+\c@savedlistd=\count505
+\c@liste=\count506
+\c@savedliste=\count507
+\c@listf=\count508
+\c@savedlistf=\count509
+\c@location=\count510
+\c@savedlocation=\count511
+\c@organization=\count512
+\c@savedorganization=\count513
+\c@origlocation=\count514
+\c@savedoriglocation=\count515
+\c@origpublisher=\count516
+\c@savedorigpublisher=\count517
+\c@publisher=\count518
+\c@savedpublisher=\count519
+\c@language=\count520
+\c@savedlanguage=\count521
+\c@origlanguage=\count522
+\c@savedoriglanguage=\count523
+\c@pageref=\count524
+\c@savedpageref=\count525
+\shorthandwidth=\skip131
+\shortjournalwidth=\skip132
+\shortserieswidth=\skip133
+\shorttitlewidth=\skip134
+\shortauthorwidth=\skip135
+\shorteditorwidth=\skip136
+\locallabelnumberwidth=\skip137
+\locallabelalphawidth=\skip138
+\localshorthandwidth=\skip139
+\localshortjournalwidth=\skip140
+\localshortserieswidth=\skip141
+\localshorttitlewidth=\skip142
+\localshortauthorwidth=\skip143
+\localshorteditorwidth=\skip144
 Package biblatex Info: Trying to load enhanced support for Unicode engines...
 Package biblatex Info: ... file 'blx-unicode.def' found.
 
@@ -1709,19 +1728,19 @@ Package biblatex Info: Trying to load generic definitions...
 Package biblatex Info: ... file 'biblatex.def' found.
  (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/biblatex/biblatex.def
 File: biblatex.def 2025/07/10 v3.21 biblatex compatibility (PK/MW)
-\c@textcitecount=\count521
-\c@textcitetotal=\count522
-\c@textcitemaxnames=\count523
-\c@biburlbigbreakpenalty=\count524
-\c@biburlbreakpenalty=\count525
-\c@biburlnumpenalty=\count526
-\c@biburlucpenalty=\count527
-\c@biburllcpenalty=\count528
+\c@textcitecount=\count526
+\c@textcitetotal=\count527
+\c@textcitemaxnames=\count528
+\c@biburlbigbreakpenalty=\count529
+\c@biburlbreakpenalty=\count530
+\c@biburlnumpenalty=\count531
+\c@biburlucpenalty=\count532
+\c@biburllcpenalty=\count533
 \biburlbigskip=\muskip19
 \biburlnumskip=\muskip20
 \biburlucskip=\muskip21
 \biburllcskip=\muskip22
-\c@smartand=\count529
+\c@smartand=\count534
 )
 Package biblatex Info: Trying to load bibliography style 'ieee'...
 Package biblatex Info: ... file 'ieee.bbx' found.
@@ -1746,8 +1765,8 @@ Package biblatex Info: ... file 'standard.bbx' found.
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/biblatex/bbx/standard.b
 bx
 File: standard.bbx 2025/07/10 v3.21 biblatex bibliography style (PK/MW)
-\c@bbx:relatedcount=\count530
-\c@bbx:relatedtotal=\count531
+\c@bbx:relatedcount=\count535
+\c@bbx:relatedtotal=\count536
 ))))
 Package biblatex Info: Trying to load citation style 'ieee'...
 Package biblatex Info: ... file 'ieee.cbx' found.
@@ -1792,45 +1811,45 @@ Package: blx-case-expl3 2025/07/10 v3.21 expl3 case changing code for biblatex
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... none found.
 Package translations Info: No language package found. I am going to use `englis
-h' as default language. on input line 145.
+h' as default language. on input line 146.
  (./main.aux)
 \openout1 = main.aux
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 146.
+LaTeX Font Info:    ... okay on input line 146.
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count532
-\scratchdimen=\dimen337
-\scratchbox=\box87
-\nofMPsegments=\count533
-\nofMParguments=\count534
-\everyMPshowfont=\toks52
-\MPscratchCnt=\count535
-\MPscratchDim=\dimen338
-\MPnumerator=\count536
-\makeMPintoPDFobject=\count537
-\everyMPtoPDFconversion=\toks53
+\scratchcounter=\count537
+\scratchdimen=\dimen338
+\scratchbox=\box92
+\nofMPsegments=\count538
+\nofMParguments=\count539
+\everyMPshowfont=\toks53
+\MPscratchCnt=\count540
+\MPscratchDim=\dimen339
+\MPnumerator=\count541
+\makeMPintoPDFobject=\count542
+\everyMPtoPDFconversion=\toks54
 )
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/epstopdf-pkg/epstopdf-b
 ase.sty
@@ -1842,7 +1861,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 145.
+Package hyperref Info: Link coloring OFF on input line 146.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: luatex
@@ -1878,7 +1897,7 @@ Package hyperref Info: Link coloring OFF on input line 145.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package ragged2e Info: ABD: executing \RaggedRight on input line 145.
+Package ragged2e Info: ABD: executing \RaggedRight on input line 146.
 
 Package fontspec Info: 
 (fontspec)             Adjusting the maths setup (use [no-math] to avoid
@@ -1886,66 +1905,70 @@ Package fontspec Info:
 
 \symlegacymaths=\mathgroup6
 LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 145.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 145.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 145.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 145.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 145.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 145.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 145.
-LaTeX Font Info:    Redeclaring math accent \check on input line 145.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 145.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 145.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 145.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 145.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 145.
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 146.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 146.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 146.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 146.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 146.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 146.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 146.
+LaTeX Font Info:    Redeclaring math accent \check on input line 146.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 146.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 146.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 146.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 146.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 146.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 145.
+(Font)              `operators' in the math version `normal' on input line 146.
 
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> TU/Calibri(0)/m/n on input line 145.
+(Font)                  OT1/cmr/m/n --> TU/Calibri(0)/m/n on input line 146.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 145.
+(Font)              `operators' in the math version `bold' on input line 146.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/m/n on input line 145.
+(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/m/n on input line 146.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  TU/Calibri(0)/m/n --> TU/Calibri(0)/m/n on input line 1
-45.
+46.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> TU/Calibri(0)/m/it on input line 145.
+(Font)                  OT1/cmr/m/it --> TU/Calibri(0)/m/it on input line 146.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/b/n on input line 145.
+(Font)                  OT1/cmr/bx/n --> TU/Calibri(0)/b/n on input line 146.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 145.
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 146.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 145.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 146.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  TU/Calibri(0)/m/n --> TU/Calibri(0)/b/n on input line 1
-45.
+46.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> TU/Calibri(0)/b/it on input line 145.
+(Font)                  OT1/cmr/bx/it --> TU/Calibri(0)/b/it on input line 146.
 
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 145.
+(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 146.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 145.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 146.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: listings package is loaded.
+Package caption Info: longtable package is loaded.
+(C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/caption/ltcaption.sty
+Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
+)
 Package caption Info: rotating package is loaded.
 Package caption Info: End \AtBeginDocument code.
-\c@lstlisting=\count538
+\c@lstlisting=\count543
 
 (C:/Users/okeat/AppData/Local/Programs/MiKTeX/tex/latex/translations/dicts/tran
 slations-basic-dictionary-english.trsl
@@ -1953,7 +1976,7 @@ File: translations-basic-dictionary-english.trsl (english translation file `tra
 nslations-basic-dictionary')
 )
 Package translations Info: loading dictionary `translations-basic-dictionary' f
-or `english'. on input line 145.
+or `english'. on input line 146.
 Package biblatex Info: Trying to load language 'english'...
 Package biblatex Info: ... file 'english.lbx' found.
 
@@ -1970,15 +1993,15 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 145.
-Package biblatex Info: Reference segment=0 on input line 145.
+Package biblatex Info: Reference section=0 on input line 146.
+Package biblatex Info: Reference segment=0 on input line 146.
 
 warning  (file ./images/uom_logo.pdf) (pdf inclusion): PDF inclusion: found PDF 
 version '1.5', but at most version '1.4' allowed
 <./images/uom_logo.pdf, id=9, 130.90004pt x 55.35129pt>
 File: ./images/uom_logo.pdf Graphic file (type pdf)
 <use ./images/uom_logo.pdf>
-Package luatex.def Info: ./images/uom_logo.pdf  used on input line 158.
+Package luatex.def Info: ./images/uom_logo.pdf  used on input line 161.
 (luatex.def)             Requested size: 113.82808pt x 48.1324pt.
 [1
 
@@ -1997,64 +2020,105 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \tf@toc=\write6
 
 \openout6 = main.toc
- [4] (./abstract.tex) [5
+ [4] (./main.lof
+Overfull \hbox (8.45686pt too wide) in paragraph at lines 6--6
+ \TU/Calibri(0)/m/n/12 nates the DQN and both greedy base-lines at ev-ery con-di
+-tion be-yond the triv-ial $\OT1/cmr/m/n/12 100[]100$\TU/Calibri(0)/m/n/12 , 
+ []
+
+[5
+
+])
+\tf@lof=\write7
+
+\openout7 = main.lof
+ [6] (./main.lot
+Overfull \hbox (13.0467pt too wide) in paragraph at lines 5--5
+ [][] [][]\TU/Calibri(0)/m/n/12 Boundary-occupancy di-ag-nos-tic: flat-MLP DQN 
+vs Relational-RL pol-icy, 20 seeds, $\OT1/cmr/m/n/12 200[]200$ 
+ []
 
 
-] [6
+Overfull \hbox (5.09848pt too wide) in paragraph at lines 14--14
+ [][] [][]\TU/Calibri(0)/m/n/12 Project Time-line (Semester 1: S1, Semester 2: 
+S2; weeks num-bered within each semester).[] []  
+ []
 
-] [7
+)
+\tf@lot=\write8
 
-] (./acknowledgements.tex) [8
+\openout8 = main.lot
+ [7
+
+] (./abstract.tex) [8
+
+] [9
+
+] [10
+
+] (./acknowledgements.tex) [11
 
 ]
-(./abbreviations.tex [9
+(./abbreviations.tex
+ignored error Infinite glue shrinkage found in box being split [12
 
-]) (./introduction.tex
-(./introduction/background_motivation.tex) (./introduction/aims_objectives.tex
-[10
+] [13]
+ignored error Infinite glue shrinkage found in box being split [14
 
-]) (./introduction/contributions.tex [11] [12])
-(./introduction/report_structure.tex)) (./literature_review.tex
-(./literature_review/lorawan_scalability.tex [13])
-(./literature_review/existing_approaches.tex [14])
-(./literature_review/ai_native_networking.tex [15])
-(./literature_review/permutation_invariant_policies.tex [16])
-(./literature_review/summary_positioning.tex [17])) (./preliminaries.tex
+] [15])
+(./introduction.tex (./introduction/background_motivation.tex)
+(./introduction/aims_objectives.tex [16
+
+
+]) (./introduction/contributions.tex
+[17]) (./introduction/report_structure.tex)) [18] (./literature_review.tex
+(./literature_review/lorawan_scalability.tex)
+(./literature_review/existing_approaches.tex [19
+
+])
+(./literature_review/ai_native_networking.tex [20])
+(./literature_review/permutation_invariant_policies.tex [21])
+(./literature_review/summary_positioning.tex [22])) [23] (./preliminaries.tex
 (./preliminaries/lorawan_physical_layer.tex)
-(./preliminaries/channel_propagation.tex) (./preliminaries/deep_rl.tex [18]
-(./figures/drl_architecture_tikz.tex (./figures/nn_style.tex)) [19]))
-(./methodology.tex [20] (./methodology/system_model.tex [21])
-(./methodology/problem_formulation.tex [22] [23])
+(./preliminaries/channel_propagation.tex) (./preliminaries/deep_rl.tex
+(./figures/drl_architecture_tikz.tex (./figures/nn_style.tex)))) [24
+
+] [25]
+(./methodology.tex (./methodology/system_model.tex [26
+
+])
+(./methodology/problem_formulation.tex [27] [28])
 (./methodology/sensor_placement.tex (./figures/system_model_tikz.tex
-<images/dji.png, id=463, 752.8125pt x 752.8125pt>
+<images/dji.png, id=597, 752.8125pt x 752.8125pt>
 File: images/dji.png Graphic file (type png)
 <use images/dji.png>
 Package luatex.def Info: images/dji.png  used on input line 80.
 (luatex.def)             Requested size: 79.6678pt x 79.66219pt.
-))
-(./methodology/drl_implementation.tex [24] [25<./images/dji.png>])
-(./methodology/relational_rl_policy.tex [26]
-(./figures/relational_arch_tikz.tex (./figures/nn_style.tex)))
+) [29<./images/dji.png>]) (./methodology/drl_implementation.tex [30] [31])
+(./methodology/relational_rl_policy.tex [32]
+(./figures/relational_arch_tikz.tex (./figures/nn_style.tex)) [33])
 (./methodology/architecture_interface.tex)
-(./methodology/modelling_assumptions.tex) (./methodology/summary.tex [27]))
-(./results.tex (./results/intro.tex) (./results/experimental_setup.tex [28])
-(./results/single_episode.tex [29]) (./results/multi_seed_analysis.tex [30])
-(./results/scalability.tex) (./results/architectural_diagnostic.tex
+(./methodology/modelling_assumptions.tex)) [34] (./results.tex
+(./results/intro.tex) (./results/experimental_setup.tex)
+(./results/single_episode.tex) (./results/multi_seed_analysis.tex [35
+
+])
+(./results/scalability.tex) (./results/architectural_diagnostic.tex [36]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatmap
-.png, id=562, 433.62pt x 397.485pt>
+.png, id=696, 433.62pt x 397.485pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_he
 atmap.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_hea
 tmap.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/dqn_boundary_heatmap.png  used on input line 43.
+lts/dqn_boundary_heatmap.png  used on input line 22.
 (luatex.def)             Requested size: 299.8897pt x 274.91391pt.
- [31]
-[32<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatm
-ap.png>]) (./results/ablation_study.tex [33])
-(./results/robustness_analysis.tex) (./results/relational_rl.tex [34]
+
+[37<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatm
+ap.png>]) (./results/ablation_study.tex [38] [39])
+(./results/robustness_analysis.tex) (./results/relational_rl.tex [40]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_com
-pare.png, id=609, 903.375pt x 397.485pt>
+pare.png, id=735, 903.375pt x 397.485pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatma
 p_compare.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap
@@ -2062,176 +2126,212 @@ _compare.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/boundary_heatmap_compare.png  used on input line 22.
 (luatex.def)             Requested size: 459.51054pt x 202.187pt.
- [35]
-[36<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_c
-ompare.png>]
+ [41<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_
+compare.png>]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combined
-.png, id=627, 867.24pt x 325.215pt>
+.png, id=748, 867.24pt x 325.215pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_com
 bined.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_comb
 ined.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/scalability_combined.png  used on input line 77.
+lts/scalability_combined.png  used on input line 73.
 (luatex.def)             Requested size: 483.69687pt x 181.38968pt.
- [37<../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combi
-ned.png>]) (./results/sf_analysis.tex
-<../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_monocult
-ure_entropy.png, id=637, 713.5458pt x 281.853pt>
-File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mon
-oculture_entropy.png Graphic file (type png)
-<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mono
-culture_entropy.png>
-Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/sf_sweep/sf_monoculture_entropy.png  used on input line 14.
-(luatex.def)             Requested size: 483.69687pt x 191.064pt.
- [38])
-(./results/discussion.tex [39<../src/agents/dqn/dqn_evaluation_results/baseline_
-results/sf_sweep/sf_monoculture_entropy.png>] [40])) (./conclusions.tex
-(./conclusions/conclusions_content.tex [41]) (./conclusions/future_work.tex
-[42])) (./project_management.tex [43]) [44] [45] [46] [47]
-(./appendices/project_outline.tex [48
+ [42<../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combi
+ned.png>]) (./results/sf_analysis.tex [43]) (./results/discussion.tex
+[44])) [45] (./conclusions.tex (./conclusions/conclusions_content.tex [46
 
-] [49]) (./appendices/project_plan.tex
-[50]) (./appendices/risk_register.tex
-Underfull \hbox (badness 1622) in paragraph at lines 46--46
+])
+(./conclusions/future_work.tex)) [47] (./project_management.tex) [48
+
+] [49
+
+]
+[50] [51] [52] [53] (./appendices/project_outline.tex [54
+
+] [55])
+(./appendices/project_plan.tex [56] [57
+
+]) (./appendices/risk_register.tex
+[58]
+Underfull \hbox (badness 1622) in paragraph at lines 47--47
 \TU/Calibri(0)/m/n/10.95 Baselines3 pro-vides ef-fi-cient GPU- 
  []
 
-) (./appendices/cpd_log.tex [51] [52]
-Underfull \hbox (badness 1237) in paragraph at lines 33--33
+) (./appendices/cpd_log.tex [59
+
+] [60]
+Underfull \hbox (badness 1237) in paragraph at lines 34--34
 []|\TU/Calibri(0)/m/n/10.95 S1 
  []
 
-[53] [54] [55]
-Underfull \hbox (badness 1158) in paragraph at lines 105--105
+[61
+
+] [62] [63]
+Underfull \hbox (badness 1158) in paragraph at lines 106--106
 []|\TU/Calibri(0)/m/n/12 S1 
  []
 
 
-Underfull \hbox (badness 3108) in paragraph at lines 105--105
+Underfull \hbox (badness 3108) in paragraph at lines 106--106
 []|\TU/Calibri(0)/m/n/12 De-signed the three-stage cur-ricu-lum (grid sizes 
  []
 
-[56]) (./appendices/hs_assessment.tex [57] [58]) (./appendices/gantt_chart.tex
-Underfull \hbox (badness 1024) in paragraph at lines 48--48
+[64]) (./appendices/hs_assessment.tex [65] [66]) (./appendices/gantt_chart.tex
+[67
+
+]
+Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S1 
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 48--48
+Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S1 
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 48--48
+Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S2 
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 48--48
+Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S2 
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 48--48
+Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S2 
  []
 
-) (./appendices/repository.tex [59] [60] [61] [62])
-(./appendices/hyperparams.tex [63] [64]
+) (./appendices/repository.tex [68
+
+] [69
+
+] [70]) (./appendices/hyperparams.tex
+[71] [72]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 40.
- [65] [66])
-(./appendices/sim_to_real.tex [67] [68] [69])
-(./appendices/additional_figures.tex [70]
+put line 41.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[73
+
+]
+Overfull \vbox (43.0733pt too high) has occurred while \output is active []
+
+
+[74]) (./appendices/sim_to_real.tex [75] [76] [77
+
+] [78])
+(./appendices/additional_figures.tex [79]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence
-.png, id=976, 494.8086pt x 234.51614pt>
+.png, id=1129, 494.8086pt x 234.51614pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_conver
 gence.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_converg
 ence.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/training_convergence.png  used on input line 15.
+lts/training_convergence.png  used on input line 16.
 (luatex.def)             Requested size: 232.17242pt x 110.0401pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_convergen
-ce.png, id=977, 432.1746pt x 257.40166pt>
+ce.png, id=1130, 432.1746pt x 257.40166pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conv
 ergence.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conve
 rgence.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/relational_convergence.png  used on input line 20.
+lts/relational_convergence.png  used on input line 21.
 (luatex.def)             Requested size: 232.17242pt x 138.27998pt.
-<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_comparison.
-png, id=978, 1004.0712pt x 307.3884pt>
-File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_compar
-ison.png Graphic file (type png)
-<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_compari
-son.png>
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_combine
+d.png, id=1131, 570.4512pt x 356.532pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_co
+mbined.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_com
+bined.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/ablation_comparison.png  used on input line 33.
-(luatex.def)             Requested size: 445.00023pt x 136.23158pt.
+lts/ablation_ndr_combined.png  used on input line 34.
+(luatex.def)             Requested size: 474.02086pt x 296.2642pt.
+ [80
+
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence.
+png><../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conver
+gence.png>]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.png, 
-id=979, 632.96475pt x 418.9251pt>
+id=1138, 634.65105pt x 418.9251pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.
 png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.p
 ng>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/pareto_scatter.png  used on input line 47.
-(luatex.def)             Requested size: 232.17242pt x 153.66386pt.
+lts/pareto_scatter.png  used on input line 48.
+(luatex.def)             Requested size: 232.17242pt x 153.25476pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png, id=
-980, 551.78145pt x 550.9383pt>
+1139, 551.78145pt x 550.9383pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png
  Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png>
 
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/radar_chart.png  used on input line 52.
+lts/radar_chart.png  used on input line 53.
 (luatex.def)             Requested size: 232.17242pt x 231.82124pt.
- [71<../src/agents/dqn/dqn_evaluation_results/baseline_results/training_converge
-nce.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_co
-nvergence.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/ablatio
-n_comparison.png>]
+ [81<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_comb
+ined.png>]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png
-, id=991, 2581.9662pt x 363.5181pt>
+, id=1148, 2581.9662pt x 363.5181pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatma
 p.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap
 .png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/fairness_heatmap.png  used on input line 66.
+lts/fairness_heatmap.png  used on input line 67.
 (luatex.def)             Requested size: 411.14528pt x 57.8812pt.
-)
-(./appendices/extended_methodology.tex [72<../src/agents/dqn/dqn_evaluation_resu
-lts/baseline_results/pareto_scatter.png><../src/agents/dqn/dqn_evaluation_result
-s/baseline_results/radar_chart.png><../src/agents/dqn/dqn_evaluation_results/bas
-eline_results/fairness_heatmap.png>] [73] [74] [75] [76])
-(./appendices/extended_results.tex
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_monocult
+ure_entropy.png, id=1149, 713.5458pt x 281.853pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mon
+oculture_entropy.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mono
+culture_entropy.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/sf_sweep/sf_monoculture_entropy.png  used on input line 78.
+(luatex.def)             Requested size: 483.69687pt x 191.064pt.
+ [82<../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.pn
+g><../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png><..
+/src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png>])
+(./appendices/extended_methodology.tex [83<../src/agents/dqn/dqn_evaluation_resu
+lts/baseline_results/sf_sweep/sf_monoculture_entropy.png>] [84
+
+] [85] [86]
+[87] [88] [89]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+) (./appendices/extended_results.tex [90] [91]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_vs_r
-elational.png, id=1039, 614.295pt x 252.945pt>
+elational.png, id=1234, 614.295pt x 252.945pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn
 _vs_relational.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_
 vs_relational.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/forest_plot_dqn_vs_relational.png  used on input line 10.
+lts/forest_plot_dqn_vs_relational.png  used on input line 11.
 (luatex.def)             Requested size: 411.14528pt x 169.29472pt.
- [77]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robustne
-ss_summary.png, id=1044, 786.83963pt x 542.025pt>
+ss_summary.png, id=1235, 786.83963pt x 542.025pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/rob
 ustness_summary.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robu
 stness_summary.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/sim_to_real/robustness_summary.png  used on input line 24.
+lts/sim_to_real/robustness_summary.png  used on input line 25.
 (luatex.def)             Requested size: 483.69687pt x 333.20692pt.
- [78<../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_v
-s_relational.png><../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_
-to_real/robustness_summary.png>]
-[79] [80]) [81] (./main.aux)
+ [92
+
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_vs_re
+lational.png>] [93<../src/agents/dqn/dqn_evaluation_results/baseline_results/sim
+_to_real/robustness_summary.png>] [94] [95]) [96] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-10-24>
@@ -2242,21 +2342,21 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 )
 
 Here is how much of LuaTeX's memory you used:
- 48583 strings out of 476081
+ 48823 strings out of 476081
  125165,1977958 words of node,token memory allocated
- 1049 words of node memory still in use:
-   7 hlist, 2 vlist, 2 rule, 3 glue, 4 kern, 1 glyph, 47 attribute, 126 glue_spe
-c, 47 attribute_list, 2 write, 2 pdf_action nodes
-   avail lists: 1:1,2:5104,3:2894,4:426,5:1165,6:262,7:8466,8:72,9:1506,10:22,11
-:648
- 69317 multiletter control sequences out of 65536+600000
- 111 fonts using 43547807 bytes
- 104i,15n,117p,1888b,3422s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 1303 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 3 glue, 4 kern, 1 glyph, 73 attribute, 132 glue_spe
+c, 73 attribute_list, 2 write, 22 pdf_action nodes
+   avail lists: 1:1,2:5036,3:2892,4:425,5:1160,6:238,7:7267,8:72,9:1452,10:22,11
+:566
+ 69508 multiletter control sequences out of 65536+600000
+ 120 fonts using 44107039 bytes
+ 104i,15n,117p,2153b,3465s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 warning  (pdf backend): unreferenced destination with name 'Hfootnote.1'
 <//?/c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/public/lm/lmmon
-o10-regular.otf><c:/users/okeat/appdata/local/programs/miktex/fonts/opentype/pub
-lic/lm/lmmono12-regular.otf><C:/WINDOWS/Fonts/calibrii.ttf><C:/WINDOWS/Fonts/cal
+o10-regular.otf><C:/WINDOWS/Fonts/calibrii.ttf><c:/users/okeat/appdata/local/pro
+grams/miktex/fonts/opentype/public/lm/lmmono12-regular.otf><C:/WINDOWS/Fonts/cal
 ibri.ttf><C:/WINDOWS/Fonts/calibrib.ttf><C:/Users/okeat/AppData/Local/Programs/M
 iKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/okeat/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/okeat/AppData/
@@ -2265,22 +2365,24 @@ AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users
 /okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C
 :/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8
 .pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
-m/cmr10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmr12.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/pub
-lic/amsfonts/cm/cmr6.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/typ
-e1/public/amsfonts/cm/cmr7.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fon
-ts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/okeat/AppData/Local/Progr
-ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Users/okeat/AppData/Loca
-l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/okeat/AppDa
-ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/okea
-t/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Use
-rs/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam1
-0.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
-symbols/msbm10.pfb>
-Output written on main.pdf (81 pages, 6035099 bytes).
+m/cmmib10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cmextra/cmmib8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmr10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/okeat/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/okeat/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/okeat/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/okeat/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/oke
+at/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Us
+ers/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb
+><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
+sy7.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
+s/cm/cmsy8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/
+amsfonts/symbols/msam10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (96 pages, 6109875 bytes).
 
-PDF statistics: 1385 PDF objects out of 1440 (max. 8388607)
- 265 named destinations out of 1000 (max. 131072)
- 567 words of extra memory for PDF output out of 10000 (max. 100000000)
+PDF statistics: 1591 PDF objects out of 1728 (max. 8388607)
+ 296 named destinations out of 1000 (max. 131072)
+ 575 words of extra memory for PDF output out of 10000 (max. 100000000)
 

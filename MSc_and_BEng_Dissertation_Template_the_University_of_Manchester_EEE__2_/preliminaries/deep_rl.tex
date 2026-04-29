@@ -4,35 +4,23 @@ RL formalises sequential decision-making as a Markov Decision Process
 (MDP)~\cite{luong2019drl}, a tuple $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$
 with transition kernel $P(s'\mid s,a)$, reward $R(s,a)$ and discount
 $\gamma\in[0,1]$. The optimal policy maximises expected discounted
-return,
-$\pi^* = \arg\max_\pi\, \mathbb{E}\!\left[\sum_t \gamma^t R(s_t, a_t)\right]$;
-via the Bellman optimality equation for $Q^*(s,a)$, the optimal
-policy reduces to greedy action selection
-$\pi^*(s) = \arg\max_a Q^*(s,a)$. When the state is not fully
-observed, the problem becomes a POMDP $(\mathcal{S},\mathcal{A},P,R,\Omega,\mathcal{O})$;
-the agent sees only an observation $o_t\sim\mathcal{O}(\cdot\mid s_{t-1},a_{t-1},s_t)$
-and must optimise the same return. The UAV task is a POMDP: the agent
-observes its own position and battery exactly, but sensor buffer
-states and link conditions for out-of-range nodes are hidden. Frame
-stacking (Section~\ref{sec:method}) aggregates the last $k = 4$
-observations to approximate the belief state, restoring Markovianity.
-
-\subsubsection{DQN and PPO}
-
-The Deep Q-Network~\cite{mnih2015humanlevel} approximates $Q(s,a;\theta)$
-by minimising the temporal-difference loss
+return via the Bellman optimality equation; in practice the action-value
+function $Q^*(s,a)$ is approximated by a neural network minimising the
+temporal-difference loss
 \begin{equation}
     L(\theta) = \mathbb{E}\!\left[\bigl(r + \gamma\max_{a'} Q(s',a';\theta^-) - Q(s,a;\theta)\bigr)^2\right]
     \label{eq:dqn_loss}
 \end{equation}
-using two stabilising mechanisms: experience replay breaks the
-temporal correlation of consecutive observations, and a periodically
-frozen target network $\hat{Q}(\cdot;\theta^-)$ prevents the Q-value
-feedback loop that causes divergence. Both are essential because
-EMA-ADR convergence causes the same state-action pair to yield
-different rewards at different training stages. Figure~\ref{fig:drl_architecture}
-illustrates the three core components: RL loop, DQN network, and the
-full training system.
+with two stabilising mechanisms: experience replay breaks the temporal
+correlation of consecutive observations, and a periodically frozen target
+network $\hat{Q}(\cdot;\theta^-)$ prevents the Q-value feedback loop that
+causes divergence.
+
+When the state is not fully observed, the problem becomes a partially observable MDP (POMDP). The UAV task falls into this category: the agent observes its own position and battery exactly, but sensor buffer states and link conditions for out-of-range nodes are hidden. Frame stacking
+(Section~\ref{sec:method}) aggregates the last $k = 4$ observations to approximate
+the belief state, restoring Markovianity. The Relational-RL policy uses
+PPO~\cite{schulman2017ppo} as its training algorithm; details and the clipped
+surrogate objective are in Section~\ref{sec:relational_method}.
 
 \begin{figure}[H]
     \centering
@@ -47,22 +35,3 @@ full training system.
     training stability.}
     \label{fig:drl_architecture}
 \end{figure}
-
-Proximal Policy Optimisation (PPO)~\cite{schulman2017ppo} is the
-on-policy actor-critic method used for the Relational-RL policy in
-Section~\ref{sec:relational_method}. PPO maximises the clipped
-surrogate objective
-\begin{equation}
-    L^{\mathrm{CLIP}}(\theta)
-    = \mathbb{E}_t\!\left[\min\!\bigl(r_t(\theta)\hat{A}_t,\;
-      \mathrm{clip}(r_t(\theta), 1\!-\!\varepsilon, 1\!+\!\varepsilon)\hat{A}_t\bigr)\right]
-    \label{eq:ppo}
-\end{equation}
-where $r_t(\theta) = \pi_\theta(a_t\mid s_t)/\pi_{\theta_{\mathrm{old}}}(a_t\mid s_t)$,
-$\hat{A}_t$ is the Generalised Advantage
-Estimate~\cite{schulman2015gae}, and $\varepsilon$ is a small clip
-threshold bounding per-update policy shift. PPO's on-policy nature
-pairs naturally with the per-step observation cost of a Deep-Sets
-encoder: a fresh rollout buffer avoids the stale-target pathologies
-that a replay-buffer DQN would accumulate when the network changes
-from a flat concatenation to a set-structured aggregation.

@@ -2,14 +2,14 @@
 \label{sec:drl_impl}
 \label{sec:training}
 
-The simulation is a custom environment compliant with the Gymnasium
-interface~\cite{towers2024gymnasium}, integrated with
-Stable-Baselines3~\cite{raffin2021stable}. Each \texttt{step(action)}
-call sequentially (1)~updates UAV position and decrements battery,
-(2)~recomputes RSSI via the Two-Ray model, (3)~updates AoI counters
-and generates Poisson packets while advancing EMA-ADR,
-(4)~resolves collisions via the Capture Effect, and (5)~computes
-$R_t$.
+The simulation is a custom Gymnasium environment~\cite{towers2024gymnasium} integrated with Stable-Baselines3~\cite{raffin2021stable}. Each \texttt{step()} call runs the following sequence:
+\begin{enumerate}
+    \item Update UAV position (or apply a boundary-hit penalty if the move exits the grid) and deduct movement energy.
+    \item Recompute per-sensor RSSI using the Two-Ray model (Eq.~\ref{eq:tworay}) plus a fresh log-normal shadowing draw.
+    \item Advance per-sensor AoI counters and the EMA-ADR filter, assigning updated SFs from the ring-threshold table.
+    \item Resolve Capture Effect collisions across all co-SF transmission groups (Eq.~\ref{eq:capture}) and credit collected bytes.
+    \item Compute $R_t$ from the multi-objective reward function and return the new observation vector.
+\end{enumerate}
 
 \subsubsection{DQN architecture and training}
 
@@ -20,20 +20,56 @@ to five Q-values, one per action. Weights $\theta$ are optimised by
 Adam to minimise the TD error against a periodically-updated target
 network $\hat{Q}(\cdot;\theta^-)$. Key hyperparameters: learning rate
 $3\times 10^{-4}$, discount $\gamma = 0.99$, replay buffer
-$1.5\times 10^5$ transitions, batch size 128, target update every
-$10^3$ steps, $\varepsilon$-greedy exploration decaying 1.0 to 0.05
-over the first 25\% of $3\times 10^6$ training timesteps. Full
+$1.5\times 10^5$ transitions, batch size 256, target update every
+$5\times 10^3$ steps, $\varepsilon$-greedy exploration decaying 1.0 to 0.03
+over the first 25\% of $5\times 10^6$ training timesteps. Full
 listings in Appendix~\ref{app:hyperparams}; convergence curves in
 Appendix~\ref{app:extra} (Figure~\ref{fig:training_convergence}), and
 stage-transition detail in Appendix~\ref{app:training_convergence}.
 
-The domain-randomised training wrapper applies two auxiliary shaping
-terms on top of the base reward: a proximity bonus
-$\eta\,(\hat{d}_{t-1} - \hat{d}_t)$ with $\eta = 2.0$ that rewards
-closing distance to the nearest data-bearing sensor, and a per-step
-fairness term $0.5(J - 0.5)/N$ where $J$ is the current Jain's index.
-Both are small relative to the base reward scale and serve as
-convergence aids; neither is present in the evaluation reward.
+Domain randomisation covers grid size ($L \in \{100, 200, 300, 500\}$) and sensor count ($N \in \{10, 20, 30, 40\}$); 16 training conditions are sampled uniformly per episode. Training on a rotating mix rather than a fixed $(L, N)$ pair stops the encoder from overfitting to the spatial statistics of a single grid.
+
+A competence-based curriculum controls progression to harder conditions~\cite{bengio2009curriculum}. Training starts at $(100{\times}100, N{=}10)$ and unlocks a harder condition only once NDR and Jain's index both clear their thresholds ($\ge 0.95$ and $\ge 0.85$, measured over the last 50 episodes) on every currently active condition. Easier conditions stay in the sampling pool rather than being dropped, because removing them causes reward collapse early in each new stage: the policy gets near-zero return on harder conditions and needs a stable gradient from the easier ones to update from.
+
+\subsubsection{Reward function}
+\label{sec:reward_fn}
+
+Table~\ref{tab:reward_components} lists all reward components.
+A step penalty fires every timestep; hovering adds a surcharge on top
+because a rotary-wing aircraft uses more power to hover than to fly.
+Successful moves earn a small positive reward, which pushes the agent
+toward coverage rather than staying put. Terminal penalties fire once
+at episode end and account for most of the negative signal at large
+scale.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Reward function components. Terminal components apply once at
+episode end; all others apply per timestep.}
+\label{tab:reward_components}
+\begin{tabularx}{\textwidth}{l X r}
+\toprule
+\textbf{Component} & \textbf{Condition} & \textbf{Value} \\
+\midrule
+Per-byte reward ($\times$ urgency) & Data collected from sensor & $+100$ per byte \\
+New-sensor bonus      & First visit to sensor        & $+5{,}000$ \\
+Urgency-reduction bonus & Urgency decreases at hover & $+1{,}000 \times \Delta u$ \\
+Movement reward       & Successful move action       & $+10$ \\
+Step penalty          & Every action                 & $-0.5$ \\
+Hover surcharge       & Hover action                 & $-5$ \\
+Revisit penalty       & Hover at empty sensor        & $-2$ \\
+Boundary penalty      & Move blocked by grid wall    & $-50$ \\
+Starvation-variance penalty & Hover              & $-1{,}000 \times \mathrm{Var}$ \\
+\midrule
+Completion bonus      & All sensors visited (terminal) & $+100$ \\
+Terminal starvation   & CR $< 20\%$ at episode end (per sensor) & $-1{,}000$ \\
+Unvisited penalty     & Sensor unvisited at episode end (per sensor) & $-5{,}000$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two small auxiliary terms support convergence during domain-randomised training and are removed at evaluation. A proximity bonus $\eta\,(\hat{d}_{t-1} - \hat{d}_t)$ ($\eta=2.0$) rewards the UAV for closing distance to the nearest unvisited sensor, providing a dense navigation signal before the sparse collection reward triggers regularly. A fairness nudge $0.5(J-0.5)/N$, where $J$ is the instantaneous Jain's index over collected bytes, discourages the policy from repeatedly visiting the same sensor cluster during exploration. Both terms are removed at evaluation; the reported NDR and fairness metrics reflect only the base multi-objective reward.
 
 \subsubsection{Probabilistic link-layer model}
 
@@ -51,6 +87,6 @@ transmission probability combines the link margin with the duty-cycle
 constraint, $P_{\mathrm{overall}} = P_{\mathrm{link}}\,P_{\mathrm{cycle}}$
 with $P_{\mathrm{cycle}} = 0.10$. Collection yield therefore depends
 continuously on SNR margin: sensors at the edge of the UAV footprint
-contribute probabilistically rather than being admitted or excluded
-by a hard range boundary, coupling physical positioning directly to
+contribute probabilistically rather than stepping in or out at a hard
+range boundary. Physical positioning is therefore a direct lever on
 link-layer throughput.

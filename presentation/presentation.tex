@@ -151,6 +151,61 @@
 \end{frame}
 
 
+% ------------------------------------------------------------
+% SLIDE 3b --- What prior work does and misses  (0:45)
+% SPEAKER: "Before I show you my approach, let me show you why
+% this problem has not been solved before. There are three
+% families of prior work. MILP gives optimal SF allocation but
+% becomes intractable beyond 20 sensors and assumes static
+% channels -- the moment the gateway moves, that assumption
+% breaks. FlyingLoRa plans trajectory and scheduling offline,
+% but treats each sensor's data rate as fixed, so it cannot
+% model the EMA-ADR loop or the Capture Effect. And every DRL
+% approach in the literature uses a flat MLP over a concatenated
+% sensor vector: sensor order is baked into the representation,
+% so the model must be retrained whenever the sensor count changes.
+% Two gaps: no work handles the full physical-plus-protocol chain
+% on a moving gateway, and no work has ever applied a set-structured
+% policy to this problem. Gap 2 turns out to be the dominant one."
+% ------------------------------------------------------------
+\begin{frame}{What prior work does -- and misses}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \footnotesize
+      \begin{tabular}{@{}p{2.0cm} p{4.4cm}@{}}
+        \emp{MILP}\newline\qt{Zorbas et~al.} &
+          Optimal SF allocation. Exponential in $N$; intractable $N{>}20$.
+          Assumes static channel conditions.\\[0.55em]
+        \emp{FlyingLoRa}\newline\qt{Xiong et~al.} &
+          Offline 3D trajectory + scheduling. No ADR dynamics,
+          no Capture Effect. Sensor rates treated as fixed.\\[0.55em]
+        \emp{DRL, flat MLP}\newline\qt{Liu+, Challita+} &
+          Online path learning. State $[\mathrm{uav},s_1,\ldots,s_N]$
+          bakes in sensor order. Retrain needed per~$N$.\\
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \vspace{0.4em}
+      \begin{block}{Gap 1: protocol physics}
+        \footnotesize
+        No prior work couples trajectory control with EMA-ADR,
+        Capture Effect, and duty cycles on a \emp{moving gateway}.
+      \end{block}
+      \vspace{0.5em}
+      \begin{block}{Gap 2: representation}
+        \footnotesize
+        No prior work applies a \emp{permutation-invariant}
+        set-structured policy, or measures what the flat-MLP
+        index-sensitivity costs at scale.
+      \end{block}
+      \vspace{0.5em}
+      \small\qt{Gap 2 is the dominant bottleneck.\\
+      That is the project's main discovery.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
 % ============================================================
 % ACT II --- ROADMAP + APPROACH   (slides 4-6, ~3 min)
 % ============================================================
@@ -254,12 +309,12 @@
 % 200 metre grid, 35 minutes of battery."
 % ------------------------------------------------------------
 \begin{frame}[t]{Experimental setup: the simulator}
-  \vspace{-0.6em}
+  \vspace{-0.3em}
   \begin{columns}[T]
     \begin{column}{0.61\textwidth}
       \begin{tikzpicture}
         \node[inner sep=0,anchor=north west] (img) at (0,0) {%
-          \includegraphics[width=\linewidth,height=0.78\textheight,
+          \includegraphics[width=\linewidth,height=0.66\textheight,
                            keepaspectratio]{env_snapshot.png}%
         };
         % UAV label — computed target: (4.29cm, -0.49cm) from NW
@@ -281,10 +336,10 @@
     \begin{column}{0.37\textwidth}
       \footnotesize
       \textbf{Environment at a glance}\\[0.3em]
-      \begin{itemize}\setlength\itemsep{0.25em}
+      \begin{itemize}\setlength\itemsep{0.12em}
         \item \emp{Grid}: 200$\times$200\,m, UAV at 100\,m altitude
         \item \emp{LoRa sensors (S0--S19)}: ring colour = buffer fill \qt{(blue = full, green = empty)}
-        \item \emp{UAV} \qt{(orange)}: collecting from S2 at SF11; dashed line = active link
+        \item \emp{UAV} \qt{(orange)}: SF11 link; dashed line = active link
         \item \emp{Urgency rings}: AoI priority — darker $\Rightarrow$ data loss imminent
         \item \emp{Dotted circle}: comm.\ range — 17 of 20 reachable
         \item \emp{Episode}: 2100 steps $\approx$ 35\,min
@@ -394,18 +449,27 @@
 % ------------------------------------------------------------
 \begin{frame}{At scale: collapse}
   \centering
-  \includegraphics[width=0.60\linewidth,keepaspectratio]{scalability_ndr.png}
-  \vfill
+  \includegraphics[width=0.54\linewidth,keepaspectratio]{scalability_ndr.png}
+  \vspace{0.3em}
   \begin{columns}[c]
-    \begin{column}{0.48\textwidth}
-      \hero{$13.0\%$}{DQN NDR at $(500\!\times\!500,\, N{=}50)$}
+    \begin{column}{0.44\textwidth}
+      \centering
+      {\fontsize{36pt}{42pt}\selectfont\color{manpurple}\textbf{13.0\%}}\\[2pt]
+      {\color{muted}\small DQN NDR at $(500\!\times\!500,\, N{=}50)$}
     \end{column}
-    \begin{column}{0.50\textwidth}
-      \small
-      \emp{Protocol-blind Nearest Greedy: $25.9\%$.}\\[0.3em]
-      \qt{DQN $52.7\%$ vs Nearest $70.6\%$ at $(300,30)$.}\\[0.3em]
-      \qt{DQN $13.0\%$ vs Nearest $25.9\%$ at $(500,50)$.}\\[0.6em]
-      \emp{The bottleneck is not the protocol.}
+    \begin{column}{0.54\textwidth}
+      \footnotesize
+      \begin{tabular}{@{}lcc@{}}
+        \toprule
+        Agent & $(300,30)$ & $(500,50)$ \\
+        \midrule
+        DQN                      & $52.7\%$ & $13.0\%$ \\
+        Nearest Greedy           & $70.6\%$ & $25.9\%$ \\
+        \emp{SF-Aware Greedy}    & $84.3\%$ & $39.4\%$ \\
+        \bottomrule
+      \end{tabular}\\[0.3em]
+      \emp{Both greedy baselines beat the protocol-aware DQN.}\\[0.15em]
+      \qt{The bottleneck is not the protocol. It is the representation.}
     \end{column}
   \end{columns}
 \end{frame}
@@ -556,16 +620,22 @@
       \centering
       \includegraphics[width=\linewidth,keepaspectratio]{boundary_heatmap_compare.png}
     \end{column}
-    \begin{column}{0.38\textwidth}
-      \small
-      \textbf{Boundary-cell occupancy}\\[0.4em]
-      \hero{$100\% \to 21.5\%$}{}\\[0.8em]
-      \textbf{Wall collisions}\\[0.4em]
-      \hero{$21.8 \to 0$}{across all 20 seeds}\\[0.8em]
-      \small
-      \qt{Left: DQN stuck in one corner.\\
-      Right: Relational RL ranges\\
-      across the grid.}\\[0.5em]
+    \begin{column}{0.40\textwidth}
+      \begin{block}{20 seeds, $200{\times}200$, $N{=}20$}
+        \footnotesize\centering
+        \begin{tabular}{@{}lcc@{}}
+          \toprule
+          Metric & DQN & Rel.\ RL \\
+          \midrule
+          Edge occupancy   & $100\%$  & $\mathbf{21.5\%}$ \\
+          Wall hits (mean) & $21.8$   & $\mathbf{0}$ \\
+          Full coverage    & $15/20$  & $\mathbf{20/20}$ \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+      \vspace{0.5em}
+      \small\qt{Left: DQN trapped on the perimeter.\\
+      Right: Relational RL covers the grid.}\\[0.4em]
       \emp{Root cause confirmed. Fix validated.}
     \end{column}
   \end{columns}
@@ -589,19 +659,26 @@
 % ------------------------------------------------------------
 \begin{frame}{Results: scalability restored}
   \centering
-  \includegraphics[width=0.82\linewidth,keepaspectratio]{scalability_combined.png}
-  \vfill
+  \includegraphics[width=0.72\linewidth,keepaspectratio]{scalability_combined.png}
+  \vspace{0.3em}
   \footnotesize
-  \begin{tabular}{@{}lcc@{}}
+  \begin{tabular}{@{}lccc@{}}
     \toprule
-    Metric at $(500\!\times\!500, N{=}50)$ & DQN & Relational RL \\
+    Agent at $(500\!\times\!500, N{=}50)$ & NDR & Jain's & Energy (B/Wh) \\
     \midrule
-    NDR (\% sensors visited)         & $13.0\%$ & $\mathbf{56.4\%}$ \quad($+333\%$) \\
-    Jain's fairness index            & $0.08$  & $\mathbf{0.28}$ \\
-    Energy efficiency (B/Wh)         & $9.96$  & $\mathbf{121.9}$ \quad(${\times}12$) \\
+    DQN (flat MLP)           & $13.0\%$          & $0.08$          & $9.96$ \\
+    Nearest Greedy           & $25.9\%$          & $0.14$          & --- \\
+    SF-Aware Greedy          & $39.4\%$          & $0.21$          & --- \\
+    \textbf{Relational RL}   & $\mathbf{56.4\%}$ & $\mathbf{0.28}$ & $\mathbf{121.9}$ \\
+    TSP Oracle (upper bound) & $76.8\%$          & $0.46$          & --- \\
     \bottomrule
-  \end{tabular}\\[0.5em]
-  \qt{All differences: $p < 10^{-4}$, Welch's $t$-test, 50 seeds per condition.
+  \end{tabular}
+  \vspace{0.35em}
+  \small\emp{$+333\%$ NDR} vs DQN.\enspace
+  \emp{$+17$\,pp} vs best heuristic.\enspace
+  Energy: $9.96 \to \mathbf{121.9}$\,B/Wh \emp{(${\times}12$)}
+  \par\vspace{0.25em}
+  \qt{All DQN-vs-RelRL: $p < 10^{-4}$, Welch's $t$-test, 50 seeds.\enspace
   $t = -26.4$ at $(500,50)$.}
 \end{frame}
 

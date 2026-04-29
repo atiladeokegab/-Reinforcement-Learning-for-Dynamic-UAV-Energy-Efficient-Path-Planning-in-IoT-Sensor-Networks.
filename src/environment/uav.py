@@ -44,9 +44,8 @@ Example UAV:
     - Capacity: 5935mAh, 52.8V, 274W
     - Typical Range: 5 m/s - 15 m/s
     - Speed:  10m/s
-    - Flight power 600 W - 800 W (depending on speed)
-    - Hovering at a location for data collection (lower drain rate)
-    - Hover power 400 W
+    - Flight power 500 W (cruise)
+    - Hover power 700 W (hover > flight for rotary-wing; more lift required stationary)
     - Weight - 6.3 kg
 
 
@@ -101,8 +100,8 @@ class UAV:
             start_position: Initial (x, y) position in grid
             max_battery: Maximum battery capacity in Wh (default: 274 Wh for TB60)
             speed: Movement speed in m/s (default: 10 m/s cruising)
-            power_move: Power consumption during movement in Watts (default: 600W)
-            power_hover: Power consumption while hovering in Watts (default: 400W)
+            power_move: Power consumption during movement in Watts (default: 500W)
+            power_hover: Power consumption while hovering in Watts (default: 700W, hover > flight)
             altitude: Operating altitude in meters (default: 100m, constant)
 
         Example:

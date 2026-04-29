@@ -84,7 +84,7 @@ ENV_KWARGS: dict[str, Any] = {
     "sensor_duty_cycle":  10.0,
 }
 
-DQN_MODEL_PATH  = _DQN / "models" / "dqn_domain_rand" / "dqn_final.zip"
+DQN_MODEL_PATH  = _DQN / "models" / "dqn_v3_retrain" / "dqn_final.zip"
 DQN_MAX_SENSORS = 50
 
 REL_CKPT_DIR = (

@@ -1,66 +1,67 @@
 \contentsline {section}{Contents}{2}{section*.2}%
-\contentsline {section}{Abstract}{5}{section*.3}%
-\contentsline {section}{Declaration of originality}{6}{section*.4}%
-\contentsline {section}{Copyright statement}{7}{section*.5}%
-\contentsline {section}{Acknowledgments}{8}{section*.6}%
-\contentsline {section}{Terms and Abbreviations}{9}{section*.6}%
-\contentsline {section}{\numberline {1}Introduction}{10}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Background and motivation}{10}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Aims and objectives}{11}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}Contributions}{12}{subsection.1.3}%
-\contentsline {subsection}{\numberline {1.4}Report structure}{13}{subsection.1.4}%
-\contentsline {section}{\numberline {2}Literature Review}{13}{section.2}%
-\contentsline {subsection}{\numberline {2.1}LoRaWAN Scalability and the SF Monoculture}{14}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Existing Optimisation Approaches}{15}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}DRL and UAV Path Planning}{15}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Permutation-Invariant Policies for Set-Structured Inputs}{16}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Summary and Project Positioning}{17}{subsection.2.5}%
-\contentsline {section}{\numberline {3}Preliminaries}{18}{section.3}%
-\contentsline {subsection}{\numberline {3.1}LoRaWAN Physical Layer}{18}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Deep Reinforcement Learning}{19}{subsection.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.1}DQN and PPO}{19}{subsubsection.3.2.1}%
-\contentsline {section}{\numberline {4}Methodology}{21}{section.4}%
-\contentsline {subsection}{\numberline {4.1}System Model}{21}{subsection.4.1}%
-\contentsline {subsubsection}{\numberline {4.1.1}UAV kinematics and energy}{22}{subsubsection.4.1.1}%
-\contentsline {subsubsection}{\numberline {4.1.2}Channel, ADR, and Capture Effect}{22}{subsubsection.4.1.2}%
-\contentsline {subsubsection}{\numberline {4.1.3}Operational envelope}{23}{subsubsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.2}Problem Formulation}{23}{subsection.4.2}%
-\contentsline {subsubsection}{\numberline {4.2.1}State and action spaces}{23}{subsubsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.3}Sensor Placement and Reward}{24}{subsection.4.3}%
-\contentsline {subsubsection}{\numberline {4.3.1}Multi-objective reward}{24}{subsubsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.4}Deep Reinforcement Learning Implementation}{25}{subsection.4.4}%
-\contentsline {subsubsection}{\numberline {4.4.1}DQN architecture and training}{25}{subsubsection.4.4.1}%
-\contentsline {subsubsection}{\numberline {4.4.2}Probabilistic link-layer model}{26}{subsubsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.5}Relational-RL Policy (Permutation-Invariant)}{26}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}Summary}{28}{subsection.4.6}%
-\contentsline {section}{\numberline {5}Results and Discussion}{28}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Experimental Setup}{29}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Single-Episode Trajectory Analysis}{29}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Multi-Seed Scalability Results}{30}{subsection.5.3}%
-\contentsline {subsection}{\numberline {5.4}Architectural Diagnostic: Representational Limits of the Flat-MLP Policy}{31}{subsection.5.4}%
-\contentsline {subsection}{\numberline {5.5}Component Ablation}{34}{subsection.5.5}%
-\contentsline {subsection}{\numberline {5.6}Sim-to-Real Robustness}{34}{subsection.5.6}%
-\contentsline {section}{\numberline {6}Results (Arc II): A Permutation-Invariant Policy}{35}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Boundary-occupancy diagnostic}{35}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Head-to-head performance}{37}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}SF Distribution and Protocol Consequences}{38}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Discussion}{40}{subsection.6.4}%
-\contentsline {section}{\numberline {7}Conclusions and Future Work}{42}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Conclusions}{42}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Future Work}{43}{subsection.7.2}%
-\contentsline {section}{\numberline {8}Project Management}{43}{section.8}%
-\contentsline {section}{References}{44}{section.8}%
+\contentsline {section}{List of figures}{5}{section*.3}%
+\contentsline {section}{List of tables}{7}{section*.4}%
+\contentsline {section}{Abstract}{8}{section*.5}%
+\contentsline {section}{Declaration of originality}{9}{section*.6}%
+\contentsline {section}{Copyright statement}{10}{section*.7}%
+\contentsline {section}{Acknowledgments}{11}{section*.8}%
+\contentsline {section}{List of Abbreviations}{12}{section*.8}%
+\contentsline {section}{List of Symbols}{14}{table.1}%
+\contentsline {section}{\numberline {1}Introduction}{16}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Background and motivation}{16}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Aims and objectives}{17}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Contributions}{17}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Report structure}{18}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Literature Review}{19}{section.2}%
+\contentsline {subsection}{\numberline {2.1}LoRaWAN Scalability and SF Allocation}{19}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Existing Optimisation Approaches}{20}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}DRL and UAV Path Planning}{21}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Permutation-Invariant Policies for Set-Structured Inputs}{22}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Summary and Project Positioning}{22}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Preliminaries}{24}{section.3}%
+\contentsline {subsection}{\numberline {3.1}LoRaWAN Physical Layer}{24}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Deep Reinforcement Learning}{24}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Methodology}{26}{section.4}%
+\contentsline {subsection}{\numberline {4.1}System Model}{26}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}UAV kinematics and energy}{27}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}Channel, ADR, and Capture Effect}{27}{subsubsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.2}Problem Formulation}{28}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}State and action spaces}{28}{subsubsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.3}Sensor Placement and Reward}{29}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Multi-objective reward}{30}{subsubsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.4}Deep Reinforcement Learning Implementation}{30}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}DQN architecture and training}{31}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Reward function}{31}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}Probabilistic link-layer model}{32}{subsubsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.5}Relational-RL Policy (Permutation-Invariant)}{33}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Results and Discussion}{35}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Experimental Setup}{35}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Single-Episode Trajectory Analysis}{35}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Multi-Seed Scalability Results}{36}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Architectural Diagnostic: Representational Limits of the Flat-MLP Policy}{36}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Component Ablation}{38}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Sim-to-Real Robustness}{40}{subsection.5.6}%
+\contentsline {section}{\numberline {6}Results (Arc II): A Permutation-Invariant Policy}{40}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Boundary-occupancy diagnostic}{41}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Head-to-head performance}{42}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}SF Distribution and Protocol Consequences}{44}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Discussion}{44}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Conclusions and Future Work}{46}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Conclusions}{46}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Future Work}{47}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Project Management}{48}{subsection.7.3}%
+\contentsline {section}{References}{49}{subsection.7.3}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {A}Appendices}{48}{appendix.1.A}%
-\contentsline {subsection}{\numberline {A.1}Project Outline}{48}{subsection.1.A.1}%
-\contentsline {subsection}{\numberline {A.2}Initial Project Plan}{50}{subsection.1.A.2}%
-\contentsline {subsection}{\numberline {A.3}Risk Register}{51}{subsection.1.A.3}%
-\contentsline {subsection}{\numberline {A.4}Continuing Professional Development (CPD) Log}{53}{subsection.1.A.4}%
-\contentsline {subsection}{\numberline {A.5}Health \& Safety Risk Assessment}{58}{subsection.1.A.5}%
-\contentsline {subsection}{\numberline {A.6}Gantt Chart}{59}{subsection.1.A.6}%
-\contentsline {subsection}{\numberline {A.7}Source Code}{61}{subsection.1.A.7}%
-\contentsline {subsection}{\numberline {A.8}Hyperparameters}{64}{subsection.1.A.8}%
-\contentsline {subsection}{\numberline {A.9}Sim-to-Real Perturbation Results}{68}{subsection.1.A.9}%
-\contentsline {subsection}{\numberline {A.10}Additional Figures}{71}{subsection.1.A.10}%
-\contentsline {subsection}{\numberline {A.11}Extended Methodology}{73}{subsection.1.A.11}%
-\contentsline {subsection}{\numberline {A.12}Extended Results}{77}{subsection.1.A.12}%
+\contentsline {section}{\numberline {A}Appendices}{54}{appendix.1.A}%
+\contentsline {subsection}{\numberline {A.1}Project Outline}{54}{subsection.1.A.1}%
+\contentsline {subsection}{\numberline {A.2}Initial Project Plan}{57}{subsection.1.A.2}%
+\contentsline {subsection}{\numberline {A.3}Risk Register}{59}{subsection.1.A.3}%
+\contentsline {subsection}{\numberline {A.4}Continuing Professional Development (CPD) Log}{61}{subsection.1.A.4}%
+\contentsline {subsection}{\numberline {A.5}Health \& Safety Risk Assessment}{67}{subsection.1.A.5}%
+\contentsline {subsection}{\numberline {A.6}Gantt Chart}{68}{subsection.1.A.6}%
+\contentsline {subsection}{\numberline {A.7}Source Code}{69}{subsection.1.A.7}%
+\contentsline {subsection}{\numberline {A.8}Hyperparameters}{73}{subsection.1.A.8}%
+\contentsline {subsection}{\numberline {A.9}Sim-to-Real Perturbation Results}{77}{subsection.1.A.9}%
+\contentsline {subsection}{\numberline {A.10}Additional Figures}{80}{subsection.1.A.10}%
+\contentsline {subsection}{\numberline {A.11}Extended Methodology}{84}{subsection.1.A.11}%
+\contentsline {subsection}{\numberline {A.12}Extended Results}{92}{subsection.1.A.12}%

@@ -5,7 +5,7 @@ for the $500\times 500$ evaluation condition. Sensor coordinates are
 sampled from $\mathcal{U}(0, L)\times\mathcal{U}(0, W)$, modelling an
 unstructured ad-hoc topology. This ensures the agent learns a
 generalisable policy rather than memorising a fixed map, and
-naturally creates density clusters that induce the SF monoculture.
+naturally creates density clusters that induce poor SF Allocation.
 
 \begin{figure}[htbp]
     \centering
@@ -23,8 +23,7 @@ naturally creates density clusters that induce the SF monoculture.
 \subsubsection{Multi-objective reward}
 \label{sec:reward}
 
-A dense reward avoids the vanishing-gradient problem of sparse
-mission-success objectives. The total reward at step $t$ is
+A dense reward avoids the vanishing-gradient problem of sparse mission-success objectives. The total reward at step $t$ is
 \begin{equation}
     R_t = w_{\mathrm{coll}}\,R_{\mathrm{coll}}
         - w_{\mathrm{energy}}\,C_{\mathrm{energy}}
@@ -32,18 +31,4 @@ mission-success objectives. The total reward at step $t$ is
         - w_{\mathrm{hover}}\,C_{\mathrm{hover}}
     \label{eq:reward}
 \end{equation}
-with four components: (i)~$R_{\mathrm{coll}}$ grants a positive
-reward for every successfully decoded packet, encouraging
-positioning that exploits Capture Effect and orthogonal-SF concurrent
-reception; (ii)~$C_{\mathrm{energy}} = P(a_t)\,\Delta t$ penalises
-power draw, discouraging meandering trajectories;
-(iii)~$C_{\mathrm{AoI}} = \frac{1}{N}\sum_i \mathrm{AoI}_{i,t}$
-penalises mean Age of Information~\cite{kaul2012realtime,abdelmagid2019aoi},
-preventing information starvation of any sensor; and
-(iv)~$C_{\mathrm{hover}}$ applies a small fixed cost to prevent the
-agent from idling indefinitely over one high-rate sensor (a failure
-mode observed in earlier reward formulations). Component magnitudes
-are calibrated so that visiting all sensors is strictly preferable
-to revisiting a single node and no component exceeds 15\% of the
-total episode reward; full per-term weights are in
-Appendix~\ref{app:reward_scale}.
+with four components. $R_{\mathrm{coll}}$ rewards bytes collected, scaled by per-sensor urgency: a high-buffer sensor yields more reward than one recently drained. $C_{\mathrm{energy}}$ penalises each action in proportion to its power draw, which biases the policy toward efficient trajectories. $C_{\mathrm{AoI}}$ penalises mean Age of Information across the sensor field~\cite{kaul2012realtime,abdelmagid2019aoi}; without it the policy concentrates on a single high-yield cluster rather than spreading flight time. $C_{\mathrm{hover}}$ penalises hovering at a sensor whose buffer is empty, so the policy does not waste steps after collection is done. All components are listed with calibrated weights in Table~\ref{tab:reward_components}; no single component exceeds 15\% of total episode reward (Appendix~\ref{app:reward_scale}).

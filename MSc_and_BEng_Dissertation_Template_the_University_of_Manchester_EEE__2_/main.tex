@@ -13,8 +13,8 @@
 % This is where the document title and author are set. Other details for the title page are set later
 % Note that if/when you edit these you may need to 'Recompile from scratch' to get the changes to display in the PDF. (In Overleaf, select the down arrow to the right of the 'Recompile' button)
 \begin{filecontents*}{\jobname.xmpdata}
-	\Title{Energy-Efficient UAV Path Planning in IOT Networks: A
-		Deep Reinforcement Learning Aided Approach} 
+	\Title{Energy-Efficient UAV Path Planning in IoT Networks: A
+		Deep Reinforcement Learning Aided Approach}
 	\Author{11085980} % should be student number rather than name to help with annoymous marking
 	\Language{en-GB}
 	\Copyrighted{True}
@@ -54,6 +54,7 @@
 \usepackage{footnote}              % allows more control over footnote environments
 \usepackage{float}                 % allows H option on floats to force here placement
 \usepackage{booktabs}              % improve table line spacing
+\usepackage{longtable}             % multi-page tables
 \usepackage{lipsum}                % for adding dummy text here
 \usepackage[base]{babel}           % required for lisum package
 \usepackage{subcaption}            % for multiple sub-figures in a single float
@@ -127,7 +128,7 @@
 
 
 % Add more .bib files here if wanted
-\addbibresource{references.bib}
+\addbibresource{my_library.bib}
 
 
 
@@ -144,15 +145,17 @@
 % Don't edit these lines, title and author are automatically taken from the document meta-data defined above
 \begin{document}
 	\makeatletter
-	\title{Energy-Efficient UAV Path Planning in IOT Networks: A
+	\title{Energy-Efficient UAV Path Planning in IoT Networks: A
 		Deep Reinforcement Learning Aided Approach}
 	\studentid{11085980}
+	\renewcommand{\authortext}{\textbf{Student ID}\ \linebreak \@studentid}
 	\makeatother
 	
 	% Set the below yourself
 	\course{Electrical and Electronics Engineering}    % BEng course
 	\faculty{Science and Engineering}                  % "Faculty of" is added automatically
 	\school{School of Engineering}
+	\supervisorname{Dr.\ Zahra Mobini}
 	\submitdate{2026}                                  % regulations ask only for the year, not month
 	\wordcount{12537}		                   % use \wordcount{} to set the count. Can just type in a number (e.g. \wordcount{1000}	if don't want to use the automatic count.) This is automatically displayed after the table of contents.
 	\maketitle
@@ -161,14 +164,13 @@
 	
 	%%%%%%%%%%%%%%%%%% LISTS OF CONTENT %%%%%%%%%%%%%%%%%%
 	\uomtoc
-	% other lists are not required, but can include \uomlof and \uomlot if really want to
+	\uomlof
+	\uomlot
 	
 	
 	%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%
-	\begin{abstract} % put abstract here.
-        \input{abstract.tex}
-	\end{abstract}%
-	% Note: the abstract environment already issues \clearpage; no extra one needed here.
+	\phantomsection\section*{Abstract}\addcontentsline{toc}{section}{Abstract}%
+	\input{abstract.tex}%
 
 
 	%%%%%%%%%%%%%%%%%% DECLARATIONS %%%%%%%%%%%%%%%%%%
@@ -190,37 +192,47 @@
 	
 	%%%%%%%%%%%%%%%%%% Start content %%%%%%%%%%%%%%%%%%
 	\uomstartmainbody % Don't delete. used to flag to the hyperlinks in the PDF that the main content is starting
+	\setcounter{table}{0} % longtables in abbreviations/symbols increment the counter; reset so main-body tables start at 1
 
 	%%%%%%%%%%%%%%%%%% ABBREVIATIONS %%%%%%%%%%%%%%%%%%
 	\input{abbreviations}
 
 	%%%%%%%%%%%%%%%%%% INTRODUCTION %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{introduction}
 
 	%%%%%%%%%%%%%%%%%% LITERATURE REVIEW %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{literature_review}
 
 	%%%%%%%%%%%%%%%%%% PRELIMINARIES %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{preliminaries}
 
 	%%%%%%%%%%%%%%%%%% METHODOLOGY %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{methodology}
 
 	%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{results}
 
 	%%%%%%%%%%%%%%%%%% CONCLUSIONS %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{conclusions}
 
-	%%%%%%%%%%%%%%%%%% PROJECT MANAGEMENT %%%%%%%%%%%%%%%%%%
+	 %%%%%%%%%%%%%%%%%%  A.1 Project Management %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\input{project_management}
 
 	%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%
+	\clearpage
 	\printbibliography[title={References},heading=bibintoc]
 
 	%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%
 	\begin{uomappendix}
-		\input{appendices/project_outline}    % A.1 Project Outline
+		
+		\input{appendices/project_outline}    % A.2 Project Outline
 		\input{appendices/project_plan}       % A.2 Initial Project Plan
 		\input{appendices/risk_register}      % A.3 Risk Register
 		\input{appendices/cpd_log}            % A.4 CPD

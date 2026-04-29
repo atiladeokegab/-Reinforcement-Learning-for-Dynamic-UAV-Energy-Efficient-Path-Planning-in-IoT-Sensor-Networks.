@@ -1,48 +1,14 @@
 \subsection{Aims and objectives}
 \label{sec:aims}
 
-This project develops a protocol-aware reinforcement-learning framework
-for UAV-assisted LoRaWAN data collection and uses it to diagnose
-and resolve a specific architectural limit of flat-policy learners.
-The central claim is that, once the simulation models the full
-causal chain from UAV position to packet delivery, the remaining
-bottleneck to policy quality is the inductive bias of the policy
-network, and that a permutation-invariant sensor-set policy
-measurably resolves that bottleneck. The project objectives are:
+This project builds a protocol-aware RL framework for UAV-assisted LoRaWAN data collection and uses it to diagnose, then fix, a specific architectural limit of flat-policy learners. Five deliverables:
 
-\begin{itemize}
-    \item Develop a high-fidelity Gymnasium environment coupling the
-    Two-Ray Ground Reflection model, log-normal shadowing,
-    asynchronous duty cycles, EMA-based ADR, and the LoRa Capture
-    Effect into a single per-step causal chain, and formulate the
-    task as a POMDP approximated as an MDP via frame stacking
-    ($k{=}4$) with a multi-objective reward balancing energy, AoI
-    freshness, and collection volume.
-    \item Train a DQN agent under domain randomisation across 16
-    $(\text{grid}, N)$ conditions and a three-stage competence-gated
-    curriculum, producing a single policy deployable across the
-    envelope without retraining.
-    \item Evaluate the trained DQN against Nearest-Sensor Greedy,
-    SF-Aware Max-Throughput Greedy, a Nearest-Neighbour + 2-opt TSP
-    Oracle, and a 5-seed Lawnmower benchmark, using 50 independent
-    seeds per condition with Welch's $t$-test and Cohen's $d$.
-    \item Conduct a four-condition ablation study (Capture Effect,
-    EMA-ADR smoothing, AoI observation, domain randomisation)
-    quantifying each component's contribution.
-    \item Diagnose the representational limits of the flat-MLP policy
-    by instrumenting the environment for boundary-cell occupancy and
-    wall-collision frequency across 20 seeds, and interpret the
-    observed behaviour as a consequence of the flat-MLP inductive
-    bias rather than a training failure.
-    \item Implement and evaluate a permutation-invariant Relational-RL
-    policy (per-sensor encoder with masked sum-pooling, trained under
-    PPO on the same environment and curriculum), reporting its effect
-    on the diagnostic metrics, the multi-seed benchmarks, and the
-    TSP-Oracle gap.
-\end{itemize}
+\begin{enumerate}
+    \item Build a Gymnasium simulator coupling Two-Ray path loss, log-normal shadowing, EMA-based ADR ($\lambda{=}0.1$), and the LoRa Capture Effect into a single per-step causal chain. No prior open simulator includes all four.
+    \item Train a DQN agent under domain randomisation and a competence-gated curriculum across five $(\text{grid}, N)$ conditions from $100{\times}100$/$N{=}10$ to $500{\times}500$/$N{=}50$, benchmarked against Nearest-Sensor Greedy, SF-Aware Greedy, and a TSP Oracle at 50 seeds per condition.
+    \item Run a spatial diagnostic to determine whether the DQN performance ceiling at $N{\ge}30$ is a training failure or an architectural property of the flat-MLP encoder.
+    \item Design and evaluate a permutation-invariant Relational-RL policy (Deep-Sets encoder, masked sum-pooling, PPO) under matched environment and curriculum conditions, compared against the DQN at the same five scales.
+    \item Isolate which protocol and observation features are load-bearing through a four-condition ablation at 50 seeds per condition.
+\end{enumerate}
 
-The guiding hypothesis is that once protocol physics, reward shaping,
-and the domain-randomisation curriculum are fixed, an explicit
-permutation-invariant inductive bias over the sensor set closes a
-measurable fraction of the gap between a flat-MLP DQN and a
-routing-optimal ceiling.
+The results chapter answers whether permutation invariance closes a measurable fraction of the gap to the routing-optimal ceiling set by the TSP Oracle.

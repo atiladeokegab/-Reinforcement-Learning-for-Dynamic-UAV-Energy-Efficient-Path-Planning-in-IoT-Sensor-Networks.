@@ -20,49 +20,90 @@
 \refsection{0}
   \datalist[entry]{none/global//global/global/global}
     \entry{wei2022uav}{article}{}{}
-      \name{author}{4}{}{%
+      \name{author}{8}{}{%
         {{hash=6ee0cb5442539963def6024f7e195e5a}{%
            family={Wei},
            familyi={W\bibinitperiod},
            given={Zhiqing},
            giveni={Z\bibinitperiod}}}%
+        {{hash=26ded185e3f70a1ded5f4988471ef0fd}{%
+           family={Zhu},
+           familyi={Z\bibinitperiod},
+           given={Mingyue},
+           giveni={M\bibinitperiod}}}%
+        {{hash=803fb0c7ba592ff2ac5109218a4a8211}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Ning},
+           giveni={N\bibinitperiod}}}%
+        {{hash=90363e7455b37d0f07cd7e927b294868}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Lin},
+           giveni={L\bibinitperiod}}}%
+        {{hash=56e07f0d5d82ff1da56b1a679fb1db88}{%
+           family={Zou},
+           familyi={Z\bibinitperiod},
+           given={Yingying},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=6d8be204e0439646ff50843be36465f9}{%
+           family={Meng},
+           familyi={M\bibinitperiod},
+           given={Zeyang},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=2d058e50a74fcf0e9b1a777259da391a}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Huici},
+           giveni={H\bibinitperiod}}}%
         {{hash=2bc5db8b4e13d01915a394c9b61274bf}{%
            family={Feng},
            familyi={F\bibinitperiod},
            given={Zhiyong},
            giveni={Z\bibinitperiod}}}%
-        {{hash=80483fe78c1f6db7d906f71e296703f0}{%
-           family={Zhang},
-           familyi={Z\bibinitperiod},
-           given={Qixun},
-           giveni={Q\bibinitperiod}}}%
-        {{hash=be3c0460360f893f0fedf6fe53f7f109}{%
-           family={Xu},
-           familyi={X\bibinitperiod},
-           given={Weiming},
-           giveni={W\bibinitperiod}}}%
       }
       \strng{namehash}{ccd454b0d4b07a7c00f6eeb059aa81a3}
-      \strng{fullhash}{09f4ab64aec822fd6a4fac5abfefe1d3}
-      \strng{fullhashraw}{09f4ab64aec822fd6a4fac5abfefe1d3}
+      \strng{fullhash}{cf8a9672b2ec917935165a819a4cea0e}
+      \strng{fullhashraw}{cf8a9672b2ec917935165a819a4cea0e}
       \strng{bibnamehash}{ccd454b0d4b07a7c00f6eeb059aa81a3}
       \strng{authorbibnamehash}{ccd454b0d4b07a7c00f6eeb059aa81a3}
       \strng{authornamehash}{ccd454b0d4b07a7c00f6eeb059aa81a3}
-      \strng{authorfullhash}{09f4ab64aec822fd6a4fac5abfefe1d3}
-      \strng{authorfullhashraw}{09f4ab64aec822fd6a4fac5abfefe1d3}
+      \strng{authorfullhash}{cf8a9672b2ec917935165a819a4cea0e}
+      \strng{authorfullhashraw}{cf8a9672b2ec917935165a819a4cea0e}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Thanks to the advantages of flexible deployment and high mobility, unmanned aerial vehicles (UAVs) have been widely applied in the areas of disaster management, agricultural plant protection, environment monitoring and so on. With the development of UAV and sensor technologies, UAV assisted data collection for Internet of Things (IoT) has attracted increasing attentions. In this article, the scenarios and key technologies of UAV assisted data collection are comprehensively reviewed. First, we present the system model including the network model and mathematical model of UAV assisted data collection for IoT. Then, we review the key technologies including clustering of sensors, UAV data collection mode as well as joint path planning and resource allocation. Finally, the open problems are discussed from the perspectives of efficient multiple access as well as joint sensing and data collection. This article hopefully provides some guidelines and insights for researchers in the area of UAV assisted data collection for IoT.}
+      \field{day}{1}
+      \field{issn}{2327-4662, 2372-2541}
       \field{journaltitle}{IEEE Internet of Things Journal}
+      \field{langid}{english}
+      \field{month}{9}
       \field{number}{17}
-      \field{title}{{UAV}-Assisted Data Collection for Internet of Things: A Survey}
+      \field{shortjournal}{IEEE Internet Things J.}
+      \field{shorttitle}{{{UAV-Assisted Data Collection}} for {{Internet}} of {{Things}}}
+      \field{title}{{{UAV-Assisted Data Collection}} for {{Internet}} of {{Things}}: {{A Survey}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{9}
       \field{year}{2022}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{15460\bibrangedash 15483}
       \range{pages}{24}
       \verb{doi}
-      \verb 10.1109/JIOT.2021.3129901
+      \verb 10.1109/JIOT.2022.3176903
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\WGXFD7DQ\Wei et al. - 2022 - UAV-Assisted Data Collection for Internet of Things A Survey.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/9779853/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/9779853/
       \endverb
     \endentry
     \entry{mozaffari2019tutorial}{article}{}{}
@@ -104,16 +145,36 @@
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{The use of flying platforms such as unmanned aerial vehicles (UAVs), popularly known as drones, is rapidly growing in a wide range of wireless networking applications. In particular, with their inherent attributes such as mobility, flexibility, and adaptive altitude, UAVs admit several key potential applications in wireless systems. On the one hand, UAVs can be used as aerial base stations to enhance coverage, capacity, reliability, and energy efficiency of wireless networks. For instance, UAVs can be deployed to complement existing cellular systems by providing additional capacity to hotspot areas as well as to provide network coverage in emergency and public safety situations. On the other hand, UAVs can operate as flying mobile terminals within the cellular networks. Such cellular-connected UAVs can enable a wide range of key applications expanding from real-time video streaming to item delivery. Despite the several benefits and practical applications of using UAVs as aerial wireless devices, one must address many technical challenges. In this paper, a comprehensive tutorial on the potential benefits and applications of UAVs in wireless communications is presented. Moreover, the important challenges and the fundamental tradeoffs in UAV-enabled wireless networks are thoroughly investigated. In particular, the key UAV challenges such as three-dimensional (3D) deployment, performance analysis, air-to-ground channel modeling, and energy efficiency are explored along with representative results. Then, fundamental open problems and potential research directions pertaining to wireless communications and networking with UAVs are introduced. To cope with the open research problems, various analytical frameworks and mathematical tools such as optimization theory, machine learning, stochastic geometry, transport theory, and game theory are described. The use of such tools for addressing unique UAV problems is also presented. In a nutshell, this tutorial provides key guidelines on how to analyze, optimize, and design UAV-based wireless communication systems.}
+      \field{issn}{1553-877X, 2373-745X}
       \field{journaltitle}{IEEE Communications Surveys \& Tutorials}
+      \field{langid}{english}
       \field{number}{3}
-      \field{title}{A Tutorial on {UAVs} for Wireless Networks: Applications, Challenges, and Open Problems}
+      \field{shortjournal}{IEEE Commun. Surv. Tutorials}
+      \field{shorttitle}{A {{Tutorial}} on {{UAVs}} for {{Wireless Networks}}}
+      \field{title}{A {{Tutorial}} on {{UAVs}} for {{Wireless Networks}}: {{Applications}}, {{Challenges}}, and {{Open Problems}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{21}
       \field{year}{2019}
+      \field{yeardivision}{autumn}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{2334\bibrangedash 2360}
       \range{pages}{27}
       \verb{doi}
       \verb 10.1109/COMST.2019.2902862
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\2XVQ29Q5\Mozaffari et al. - 2019 - A Tutorial on UAVs for Wireless Networks Applications, Challenges, and Open Problems.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8660516/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8660516/
       \endverb
     \endentry
     \entry{zeng2016wireless}{article}{}{}
@@ -145,17 +206,43 @@
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Wireless communication systems that include unmanned aerial vehicles (UAVs) promise to provide costeffective wireless connectivity for devices without infrastructure coverage. Compared to terrestrial communications or those based on high-altitude platforms (HAPs), on-demand wireless systems with low-altitude UAVs are in general faster to deploy, more flexibly re-configured, and are likely to have better communication channels due to the presence of short-range line-of-sight (LoS) links. However, the utilization of highly mobile and energyconstrained UAVs for wireless communications also introduces many new challenges. In this article, we provide an overview of UAV-aided wireless communications, by introducing the basic networking architecture and main channel characteristics, highlighting the key design considerations as well as the new opportunities to be exploited.}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{issn}{0163-6804}
       \field{journaltitle}{IEEE Communications Magazine}
+      \field{langid}{english}
+      \field{month}{5}
       \field{number}{5}
-      \field{title}{Wireless Communications with Unmanned Aerial Vehicles: Opportunities and Challenges}
+      \field{shortjournal}{IEEE Commun. Mag.}
+      \field{shorttitle}{Wireless {{Communications}} with {{Unmanned Aerial Vehicles}}}
+      \field{title}{Wireless {{Communications}} with {{Unmanned Aerial Vehicles}}: {{Opportunities}} and {{Challenges}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{54}
       \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{36\bibrangedash 42}
       \range{pages}{7}
       \verb{doi}
       \verb 10.1109/MCOM.2016.7470933
       \endverb
+      \verb{eprint}
+      \verb 1602.03602
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\9S4UXWRR\Zeng et al. - 2016 - Wireless Communications with Unmanned Aerial Vehicles Opportunities and Challenges.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1602.03602
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1602.03602
+      \endverb
+      \keyw{Computer Science - Information Theory,Computer Science - Networking and Internet Architecture}
     \endentry
     \entry{augustin2016lora}{article}{}{}
       \name{author}{4}{}{%
@@ -174,115 +261,177 @@
            familyi={C\bibinitperiod},
            given={Thomas},
            giveni={T\bibinitperiod}}}%
-        {{hash=3f4c46d77166d495e6941e1b3ab3d1e3}{%
+        {{hash=a76ca8b13284db2b08d2d4fe92913c88}{%
            family={Townsley},
            familyi={T\bibinitperiod},
-           given={William\bibnamedelima Mark},
-           giveni={W\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+           given={William},
+           giveni={W\bibinitperiod}}}%
       }
       \strng{namehash}{b0e86b41cbd4d24b850cbaa4b036a968}
-      \strng{fullhash}{a822a93f74660aaf3df5545b63bd7fe6}
-      \strng{fullhashraw}{a822a93f74660aaf3df5545b63bd7fe6}
+      \strng{fullhash}{c4c16bee8cfcecc70fc1e831b27e2994}
+      \strng{fullhashraw}{c4c16bee8cfcecc70fc1e831b27e2994}
       \strng{bibnamehash}{b0e86b41cbd4d24b850cbaa4b036a968}
       \strng{authorbibnamehash}{b0e86b41cbd4d24b850cbaa4b036a968}
       \strng{authornamehash}{b0e86b41cbd4d24b850cbaa4b036a968}
-      \strng{authorfullhash}{a822a93f74660aaf3df5545b63bd7fe6}
-      \strng{authorfullhashraw}{a822a93f74660aaf3df5545b63bd7fe6}
+      \strng{authorfullhash}{c4c16bee8cfcecc70fc1e831b27e2994}
+      \strng{authorfullhashraw}{c4c16bee8cfcecc70fc1e831b27e2994}
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{LoRa is a long-range, low-power, low-bitrate, wireless telecommunications system, promoted as an infrastructure solution for the Internet of Things: end-devices use LoRa across a single wireless hop to communicate to gateway(s), connected to the Internet and which act as transparent bridges and relay messages between these end-devices and a central network server. This paper provides an overview of LoRa and an in-depth analysis of its functional components. The physical and data link layer performance is evaluated by field tests and simulations. Based on the analysis and evaluations, some possible solutions for performance enhancements are proposed.}
+      \field{day}{9}
+      \field{issn}{1424-8220}
       \field{journaltitle}{Sensors}
+      \field{langid}{english}
+      \field{month}{9}
       \field{number}{9}
-      \field{title}{A Study of {LoRa}: Long Range \& Low Power Networks for the {Internet of Things}}
+      \field{shortjournal}{Sensors}
+      \field{shorttitle}{A {{Study}} of {{LoRa}}}
+      \field{title}{A {{Study}} of {{LoRa}}: {{Long Range}} \& {{Low Power Networks}} for the {{Internet}} of {{Things}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{16}
       \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{1466}
       \range{pages}{1}
       \verb{doi}
       \verb 10.3390/s16091466
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\I9UN3GWZ\Augustin et al. - 2016 - A Study of LoRa Long Range & Low Power Networks for the Internet of Things.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mdpi.com/1424-8220/16/9/1466
+      \endverb
+      \verb{url}
+      \verb https://www.mdpi.com/1424-8220/16/9/1466
+      \endverb
     \endentry
     \entry{bor2016lora}{inproceedings}{}{}
       \name{author}{3}{}{%
-        {{hash=3bc8bac03bdf1260b79c7bdfa5572d21}{%
+        {{hash=2098dc33952e787c36f6b3c4d7f216ce}{%
            family={Bor},
            familyi={B\bibinitperiod},
-           given={Martin},
-           giveni={M\bibinitperiod}}}%
-        {{hash=e2b75705b22f0b09dad51456af4f8503}{%
+           given={Martin\bibnamedelima C.},
+           giveni={M\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=8b85916787200da83b58e4d9dcccef6e}{%
            family={Vidler},
            familyi={V\bibinitperiod},
-           given={John\bibnamedelima E.},
-           giveni={J\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+           given={Joe},
+           giveni={J\bibinitperiod}}}%
         {{hash=53323eadc521b4a22e3a15de664e36db}{%
            family={Roedig},
            familyi={R\bibinitperiod},
            given={Utz},
            giveni={U\bibinitperiod}}}%
       }
-      \strng{namehash}{daa143be923d0ef6e1c8472435d28d2f}
-      \strng{fullhash}{961968cebfca86981283ddc45e8130e6}
-      \strng{fullhashraw}{961968cebfca86981283ddc45e8130e6}
-      \strng{bibnamehash}{961968cebfca86981283ddc45e8130e6}
-      \strng{authorbibnamehash}{961968cebfca86981283ddc45e8130e6}
-      \strng{authornamehash}{daa143be923d0ef6e1c8472435d28d2f}
-      \strng{authorfullhash}{961968cebfca86981283ddc45e8130e6}
-      \strng{authorfullhashraw}{961968cebfca86981283ddc45e8130e6}
+      \list{location}{1}{%
+        {Graz, Austria}%
+      }
+      \list{publisher}{1}{%
+        {Junction Publishing}%
+      }
+      \strng{namehash}{441032c0dbb0204b55bc62ec986cc4b0}
+      \strng{fullhash}{7d5b40e6083a18b6fcb1d5d110349b2b}
+      \strng{fullhashraw}{7d5b40e6083a18b6fcb1d5d110349b2b}
+      \strng{bibnamehash}{7d5b40e6083a18b6fcb1d5d110349b2b}
+      \strng{authorbibnamehash}{7d5b40e6083a18b6fcb1d5d110349b2b}
+      \strng{authornamehash}{441032c0dbb0204b55bc62ec986cc4b0}
+      \strng{authorfullhash}{7d5b40e6083a18b6fcb1d5d110349b2b}
+      \strng{authorfullhashraw}{7d5b40e6083a18b6fcb1d5d110349b2b}
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Proceedings of the 2016 International Conference on Embedded Wireless Systems and Networks (EWSN)}
-      \field{title}{{LoRa} for the Internet of Things}
+      \field{langid}{english}
+      \field{month}{2}
+      \field{title}{{{LoRa}} for the {{Internet}} of {{Things}}}
       \field{year}{2016}
-      \field{pages}{361\bibrangedash 366}
-      \range{pages}{6}
+      \field{dateera}{ce}
     \endentry
     \entry{nakamura2022lora}{article}{}{}
-      \name{author}{4}{}{%
-        {{hash=b35aa797eb44ffd159a9b4b9e2af6d53}{%
+      \name{author}{7}{}{%
+        {{hash=14fa5eb21de0d9a8866a768f2e8ae851}{%
            family={Nakamura},
            familyi={N\bibinitperiod},
-           given={Kazuya},
+           given={Kiyoshy},
            giveni={K\bibinitperiod}}}%
-        {{hash=58a73ee76415f5ef423efdd5df86d225}{%
-           family={Mori},
+        {{hash=162475ddd2cf5a0610b91fbb3bdd36fa}{%
+           family={Manzoni},
            familyi={M\bibinitperiod},
-           given={Takashi},
-           giveni={T\bibinitperiod}}}%
-        {{hash=3e6bfe574dfe3e2ccd72e8c149db70c4}{%
-           family={Suganuma},
-           familyi={S\bibinitperiod},
-           given={Kanta},
-           giveni={K\bibinitperiod}}}%
-        {{hash=11cef80fce41020ed8493c337fd37f21}{%
-           family={Katayama},
-           familyi={K\bibinitperiod},
-           given={Masaaki},
+           given={Pietro},
+           giveni={P\bibinitperiod}}}%
+        {{hash=c9e005a70bdc20e5f944ea094d987d6a}{%
+           family={Redondi},
+           familyi={R\bibinitperiod},
+           given={Alessandro},
+           giveni={A\bibinitperiod}}}%
+        {{hash=4f7296620ad84fccf8b607f18ffdd99a}{%
+           family={Longo},
+           familyi={L\bibinitperiod},
+           given={Edoardo},
+           giveni={E\bibinitperiod}}}%
+        {{hash=be40462df5b62be844b9d60fd82ee253}{%
+           family={Zennaro},
+           familyi={Z\bibinitperiod},
+           given={Marco},
            giveni={M\bibinitperiod}}}%
+        {{hash=0b1eb1fb43204f1cb99559e4a60cbbbb}{%
+           family={Cano},
+           familyi={C\bibinitperiod},
+           given={Juan-Carlos},
+           giveni={J\bibinithyphendelim C\bibinitperiod}}}%
+        {{hash=7841dd43a6e05e25d7ce2d1d57be8ab6}{%
+           family={Calafate},
+           familyi={C\bibinitperiod},
+           given={Carlos\bibnamedelima T.},
+           giveni={C\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
       }
-      \strng{namehash}{763b87ec148366e63ad32c870a996825}
-      \strng{fullhash}{ecb22f7e6fec8eeef61efb8618b06d2c}
-      \strng{fullhashraw}{ecb22f7e6fec8eeef61efb8618b06d2c}
-      \strng{bibnamehash}{763b87ec148366e63ad32c870a996825}
-      \strng{authorbibnamehash}{763b87ec148366e63ad32c870a996825}
-      \strng{authornamehash}{763b87ec148366e63ad32c870a996825}
-      \strng{authorfullhash}{ecb22f7e6fec8eeef61efb8618b06d2c}
-      \strng{authorfullhashraw}{ecb22f7e6fec8eeef61efb8618b06d2c}
+      \strng{namehash}{230bae315650d6696042904f5407e288}
+      \strng{fullhash}{66b4ba712927974b93aa4fdbd6996e36}
+      \strng{fullhashraw}{66b4ba712927974b93aa4fdbd6996e36}
+      \strng{bibnamehash}{230bae315650d6696042904f5407e288}
+      \strng{authorbibnamehash}{230bae315650d6696042904f5407e288}
+      \strng{authornamehash}{230bae315650d6696042904f5407e288}
+      \strng{authorfullhash}{66b4ba712927974b93aa4fdbd6996e36}
+      \strng{authorfullhashraw}{66b4ba712927974b93aa4fdbd6996e36}
       \field{sortinit}{4}
       \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{abstract}{Data is becoming increasingly personal. Individuals regularly interact with a variety of structured data, ranging from SQLite databases on the phone to personal sensors and open government data. The “digital traces left by individuals through these interactions” are sometimes referred to as “small data”. Examples of “small data” include driving records, biometric measurements, search histories, weather forecasts and usage alerts. In this paper, we present a flexible protocol called LoRaCTP, which is based on LoRa technology that allows data “chunks” to be transferred over large distances with very low energy expenditure. LoRaCTP provides all the mechanisms necessary to make LoRa transfer reliable by introducing a lightweight connection setup and allowing the ideal sending of an as-long-as necessary data message. We designed this protocol as communication support for small-data edge-based IoT solutions, given its stability, low power usage, and the possibility to cover long distances. We evaluated our protocol using various data content sizes and communication distances to demonstrate its performance and reliability.}
+      \field{issn}{23528648}
       \field{journaltitle}{Digital Communications and Networks}
+      \field{langid}{english}
+      \field{month}{6}
       \field{number}{3}
-      \field{title}{A {LoRa}-Based Protocol for Connecting {IoT} Edge Computing Nodes to Provide Small-Data-Based Services}
+      \field{shortjournal}{Digital Communications and Networks}
+      \field{title}{A {{LoRa-based}} Protocol for Connecting {{IoT}} Edge Computing Nodes to Provide Small-Data-Based Services}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{8}
       \field{year}{2022}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{257\bibrangedash 266}
       \range{pages}{10}
       \verb{doi}
-      \verb 10.1016/j.dcan.2021.08.004
+      \verb 10.1016/j.dcan.2021.08.007
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\49ZVSX79\Nakamura et al. - 2022 - A LoRa-based protocol for connecting IoT edge computing nodes to provide small-data-based services.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/S2352864821000596
+      \endverb
+      \verb{url}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/S2352864821000596
       \endverb
     \endentry
     \entry{zorbas2025revisiting}{article}{}{}
@@ -298,8 +447,8 @@
            given={Aruzhan},
            giveni={A\bibinitperiod}}}%
         {{hash=7eb7163216a54ae6515d7935e93e7c82}{%
-           family={{Di Puglia Pugliese}},
-           familyi={D\bibinitperiod},
+           family={Di\bibnamedelima Puglia\bibnamedelima Pugliese},
+           familyi={D\bibinitperiod\bibinitdelim P\bibinitperiod\bibinitdelim P\bibinitperiod},
            given={Luigi},
            giveni={L\bibinitperiod}}}%
       }
@@ -314,53 +463,73 @@
       \field{sortinit}{5}
       \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{This paper revisits the problem of optimizing LoRa network success probability by proposing an optimized allocation strategy for Spreading Factors (SFs) under both uniform and Gaussian network deployments with a single or multiple gateways. More specifically, we solve the problem of finding the best SF allocations in dense network deployments whose EDs are first assigned with the minimum SF. Theoretical models are developed to quantify the success probability of transmissions, considering the capture effect as well as intra- and inter-SF interference. A mathematical optimization framework is introduced to determine the optimal SF distribution that maximizes the average probability of packet reception. The problem is solved using Mixed Integer Linear Programming (MILP), and then evaluated using simulations. Even though optimal SF allocation strategies have been proposed in the literature, no practical insights have been discovered and no real-world deployments have been considered. To this extent, the practical benefits of using improved or optimal SF settings are discovered in this paper. Simulation results confirm the theoretical findings while they demonstrate an up to 10 percentage points improvements in Packet Reception Ratio (PRR) in the real-world use-case.}
+      \field{issn}{01403664}
       \field{journaltitle}{Computer Communications}
-      \field{title}{Revisiting the Problem of Optimizing Spreading Factor Allocations in {LoRaWAN}: From Theory to Practice}
+      \field{langid}{english}
+      \field{month}{11}
+      \field{shortjournal}{Computer Communications}
+      \field{shorttitle}{Revisiting the Problem of Optimizing Spreading Factor Allocations in {{LoRaWAN}}}
+      \field{title}{Revisiting the Problem of Optimizing Spreading Factor Allocations in {{LoRaWAN}}: {{From}} Theory to Practice}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{243}
       \field{year}{2025}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{108321}
       \range{pages}{1}
       \verb{doi}
       \verb 10.1016/j.comcom.2025.108321
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\KQDSWWSG\Zorbas et al. - 2025 - Revisiting the problem of optimizing spreading factor allocations in LoRaWAN From theory to practic.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/S0140366425002786
+      \endverb
+      \verb{url}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/S0140366425002786
+      \endverb
     \endentry
     \entry{xiong2023flyinglora}{article}{}{}
       \name{author}{5}{}{%
-        {{hash=46367cbdea2c17c3c2153b3dc71475fb}{%
+        {{hash=b7fa7aa53255c4a98f16a144ccf56098}{%
            family={Xiong},
            familyi={X\bibinitperiod},
-           given={Runzhi},
+           given={Runqun},
            giveni={R\bibinitperiod}}}%
-        {{hash=2162571776622cf94cf0496716e0d980}{%
-           family={Gu},
-           familyi={G\bibinitperiod},
-           given={Haoran},
+        {{hash=13ec0ac623fa582cd08c4107e1e62390}{%
+           family={Liang},
+           familyi={L\bibinitperiod},
+           given={Chuan},
+           giveni={C\bibinitperiod}}}%
+        {{hash=3ac2e2429d30b7c9f37a515e09961bcc}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Huajun},
            giveni={H\bibinitperiod}}}%
-        {{hash=f4cb47e36414ad185230a9af38bd8039}{%
-           family={Ren},
-           familyi={R\bibinitperiod},
-           given={Jiarong},
+        {{hash=ca52883550b3116f67461edf67616e92}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Xiangyu},
+           giveni={X\bibinitperiod}}}%
+        {{hash=0f1e44ccbada12be99eca2ea3f83bae8}{%
+           family={Luo},
+           familyi={L\bibinitperiod},
+           given={Junzhou},
            giveni={J\bibinitperiod}}}%
-        {{hash=c8cf19241225247d6d07dbf8a516b8ed}{%
-           family={Wang},
-           familyi={W\bibinitperiod},
-           given={Hao},
-           giveni={H\bibinitperiod}}}%
-        {{hash=badee109707f34722162e82feb7e6c67}{%
-           family={He},
-           familyi={H\bibinitperiod},
-           given={Tian},
-           giveni={T\bibinitperiod}}}%
       }
-      \strng{namehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{fullhash}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{fullhashraw}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{bibnamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authorbibnamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authornamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authorfullhash}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{authorfullhashraw}{b895b91bce0af327fa8dcf7e0d1d9118}
+      \strng{namehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{fullhash}{a6adb5329a4bc91908659f276c408925}
+      \strng{fullhashraw}{a6adb5329a4bc91908659f276c408925}
+      \strng{bibnamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authorbibnamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authornamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authorfullhash}{a6adb5329a4bc91908659f276c408925}
+      \strng{authorfullhashraw}{a6adb5329a4bc91908659f276c408925}
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
@@ -407,11 +576,11 @@
            familyi={N\bibinitperiod},
            given={Dusit},
            giveni={D\bibinitperiod}}}%
-        {{hash=a0e09058678d7b6e2d342f28751066e0}{%
+        {{hash=b805451535ca04bf73402a9f26a28581}{%
            family={Dobre},
            familyi={D\bibinitperiod},
-           given={Octavia\bibnamedelima A.},
-           giveni={O\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+           given={Octavia},
+           giveni={O\bibinitperiod}}}%
         {{hash=de7b0e512fcdd087f5750837f7c7cb9f}{%
            family={Poor},
            familyi={P\bibinitperiod},
@@ -419,29 +588,50 @@
            giveni={H\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
       }
       \strng{namehash}{75ebdd0dbc8dee82e3b3c79121f04007}
-      \strng{fullhash}{642fd06b0a92a6b5a0af229252fdd89f}
-      \strng{fullhashraw}{642fd06b0a92a6b5a0af229252fdd89f}
+      \strng{fullhash}{765fff5200cc02e1fb45b9665dc9cce4}
+      \strng{fullhashraw}{765fff5200cc02e1fb45b9665dc9cce4}
       \strng{bibnamehash}{75ebdd0dbc8dee82e3b3c79121f04007}
       \strng{authorbibnamehash}{75ebdd0dbc8dee82e3b3c79121f04007}
       \strng{authornamehash}{75ebdd0dbc8dee82e3b3c79121f04007}
-      \strng{authorfullhash}{642fd06b0a92a6b5a0af229252fdd89f}
-      \strng{authorfullhashraw}{642fd06b0a92a6b5a0af229252fdd89f}
+      \strng{authorfullhash}{765fff5200cc02e1fb45b9665dc9cce4}
+      \strng{authorfullhashraw}{765fff5200cc02e1fb45b9665dc9cce4}
       \field{sortinit}{8}
       \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{The sixth generation (6G) wireless communication networks are envisioned to revolutionize customer services and applications via the Internet of Things (IoT) towards a future of fully intelligent and autonomous systems. In this article, we explore the emerging opportunities brought by 6G technologies in IoT networks and applications, by conducting a holistic survey on the convergence of 6G and IoT. We first shed light on some of the most fundamental 6G technologies that are expected to empower future IoT networks, including edge intelligence, reconfigurable intelligent surfaces, space-air-groundunderwater communications, Terahertz communications, massive ultra-reliable and low-latency communications, and blockchain. Particularly, compared to the other related survey papers, we provide an in-depth discussion of the roles of 6G in a wide range of prospective IoT applications via five key domains, namely Healthcare Internet of Things, Vehicular Internet of Things and Autonomous Driving, Unmanned Aerial Vehicles, Satellite Internet of Things, and Industrial Internet of Things. Finally, we highlight interesting research challenges and point out potential directions to spur further research in this promising area.}
+      \field{day}{1}
+      \field{issn}{2327-4662, 2372-2541}
       \field{journaltitle}{IEEE Internet of Things Journal}
+      \field{langid}{english}
+      \field{month}{1}
       \field{number}{1}
-      \field{title}{{6G} Internet of Things: A Comprehensive Survey}
+      \field{shortjournal}{IEEE Internet Things J.}
+      \field{shorttitle}{{{6G Internet}} of {{Things}}}
+      \field{title}{{{6G Internet}} of {{Things}}: {{A Comprehensive Survey}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{9}
       \field{year}{2022}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{359\bibrangedash 383}
       \range{pages}{25}
       \verb{doi}
       \verb 10.1109/JIOT.2021.3103320
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\JB9R3PXY\Nguyen et al. - 2022 - 6G Internet of Things A Comprehensive Survey.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/9509294/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/9509294/
+      \endverb
     \endentry
-    \entry{luong2019drl}{article}{}{}
+    \entry{luong2019drl}{online}{}{}
       \name{author}{7}{}{%
         {{hash=a07dc0b1c8f19f5fb435430b722236ed}{%
            family={Luong},
@@ -490,17 +680,38 @@
       \field{sortinit}{8}
       \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{IEEE Communications Surveys \& Tutorials}
-      \field{number}{4}
-      \field{title}{Applications of Deep Reinforcement Learning in Communications and Networking: A Survey}
-      \field{volume}{21}
-      \field{year}{2019}
-      \field{pages}{3133\bibrangedash 3174}
-      \range{pages}{42}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{This paper presents a comprehensive literature review on applications of deep reinforcement learning in communications and networking. Modern networks, e.g., Internet of Things (IoT) and Unmanned Aerial Vehicle (UAV) networks, become more decentralized and autonomous. In such networks, network entities need to make decisions locally to maximize the network performance under uncertainty of network environment. Reinforcement learning has been efficiently used to enable the network entities to obtain the optimal policy including, e.g., decisions or actions, given their states when the state and action spaces are small. However, in complex and large-scale networks, the state and action spaces are usually large, and the reinforcement learning may not be able to find the optimal policy in reasonable time. Therefore, deep reinforcement learning, a combination of reinforcement learning with deep learning, has been developed to overcome the shortcomings. In this survey, we first give a tutorial of deep reinforcement learning from fundamental concepts to advanced models. Then, we review deep reinforcement learning approaches proposed to address emerging issues in communications and networking. The issues include dynamic network access, data rate control, wireless caching, data offloading, network security, and connectivity preservation which are all important to next generation networks such as 5G and beyond. Furthermore, we present applications of deep reinforcement learning for traffic routing, resource sharing, and data collection. Finally, we highlight important challenges, open issues, and future research directions of applying deep reinforcement learning.}
+      \field{day}{18}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{langid}{english}
+      \field{month}{10}
+      \field{pubstate}{prepublished}
+      \field{shorttitle}{Applications of {{Deep Reinforcement Learning}} in {{Communications}} and {{Networking}}}
+      \field{title}{Applications of {{Deep Reinforcement Learning}} in {{Communications}} and {{Networking}}: {{A Survey}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2018}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \verb{doi}
-      \verb 10.1109/COMST.2019.2916583
+      \verb 10.48550/arXiv.1810.07862
       \endverb
+      \verb{eprint}
+      \verb 1810.07862
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\E7Q8QV8C\Luong et al. - 2018 - Applications of Deep Reinforcement Learning in Communications and Networking A Survey.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1810.07862
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1810.07862
+      \endverb
+      \keyw{Computer Science - Machine Learning,Computer Science - Networking and Internet Architecture}
     \endentry
     \entry{challita2018interference}{inproceedings}{}{}
       \name{author}{3}{}{%
@@ -520,6 +731,12 @@
            given={Christian},
            giveni={C\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Kansas City, MO}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
       \strng{namehash}{313cbf9662836813a9d7f17615050b64}
       \strng{fullhash}{87cfabed68e61eb0c0e537ba4bb39dfe}
       \strng{fullhashraw}{87cfabed68e61eb0c0e537ba4bb39dfe}
@@ -532,11 +749,32 @@
       \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{2018 IEEE International Conference on Communications (ICC)}
-      \field{title}{Deep Reinforcement Learning for Interference-Aware Path Planning of Cellular-Connected {UAVs}}
+      \field{abstract}{In this paper, an interference-aware path planning scheme for a network of cellular-connected unmanned aerial vehicles (UAVs) is proposed. In particular, each UAV acts as a cellular user equipment (UE) and aims at achieving a tradeoff between maximizing energy efficiency and minimizing both wireless latency and the interference caused on the ground network along its path. The problem is cast as a dynamic game among UAVs. To solve this game, a deep reinforcement learning algorithm, based on echo state network (ESN) cells, is proposed. The introduced deep ESN architecture is trained to allow each UAV to map each observation of the network state to an action, with the goal of minimizing a sequence of time-dependent utility functions. Each UAV uses ESN to learn its optimal path, transmission power, and cell association vector at different locations along its path. The proposed algorithm is shown to reach a subgame perfect Nash equilibrium upon convergence. Simulation results show that the proposed scheme achieves better wireless latency per UAV and rate per ground UE while requiring a number of steps that is comparable to a heuristic baseline that considers moving via the shortest distance towards the corresponding destinations.}
+      \field{booktitle}{2018 {{IEEE International Conference}} on {{Communications}} ({{ICC}})}
+      \field{eventtitle}{2018 {{IEEE International Conference}} on {{Communications}} ({{ICC}} 2018)}
+      \field{isbn}{978-1-5386-3180-5}
+      \field{langid}{english}
+      \field{month}{5}
+      \field{title}{Deep {{Reinforcement Learning}} for {{Interference-Aware Path Planning}} of {{Cellular-Connected UAVs}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2018}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{1\bibrangedash 7}
+      \range{pages}{7}
       \verb{doi}
-      \verb 10.1109/ICC.2018.8422554
+      \verb 10.1109/ICC.2018.8422706
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\FPY3PKM6\Challita et al. - 2018 - Deep Reinforcement Learning for Interference-Aware Path Planning of Cellular-Connected UAVs.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8422706/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8422706/
       \endverb
     \endentry
     \entry{reynders2016range}{inproceedings}{}{}
@@ -557,6 +795,12 @@
            given={Sofie},
            giveni={S\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Thessaloniki, Greece}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
       \strng{namehash}{a0d2486b2bdcbccf1a6cb657992eb4c1}
       \strng{fullhash}{b46c725133e0ad6a63a4eec4a4573994}
       \strng{fullhashraw}{b46c725133e0ad6a63a4eec4a4573994}
@@ -569,11 +813,32 @@
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{2016 23rd International Conference on Telecommunications (ICT)}
+      \field{abstract}{A broad range of emerging applications require very low power, very long range yet low throughput communication. Different standards are being proposed to meet these novel requirements. In this paper, the technical differences between a wideband spread spectrum (LoRa-like) and an ultra narrowband (Sigfox-like) network will be explained and evaluated. On the physical layer, simulation results show that an ultra narrowband network has a larger coverage, while wideband spread spectrum networks are less sensitive to interference. When considering the contention between nodes and interference between different networks, simulations show that adaptation of frequency and modulation is imperative for efficiently dealing with varying contention and interference in long range unlicensed networks. Depending on network load, size and distance, a device in a wideband network can send 6 times more packets to the base station when there is active rate and frequency management and an intra-technology control plane.}
+      \field{booktitle}{2016 23rd {{International Conference}} on {{Telecommunications}} ({{ICT}})}
+      \field{eventtitle}{2016 23rd {{International Conference}} on {{Telecommunications}} ({{ICT}})}
+      \field{isbn}{978-1-5090-1990-8}
+      \field{langid}{english}
+      \field{month}{5}
       \field{title}{Range and Coexistence Analysis of Long Range Unlicensed Communication}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{1\bibrangedash 6}
+      \range{pages}{6}
       \verb{doi}
       \verb 10.1109/ICT.2016.7500415
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\RJCCTFXN\Reynders et al. - 2016 - Range and coexistence analysis of long range unlicensed communication.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://ieeexplore.ieee.org/document/7500415/
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/document/7500415/
       \endverb
     \endentry
     \entry{croce2020lora}{article}{}{}
@@ -615,16 +880,35 @@
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{issn}{1536-1276, 1558-2248}
       \field{journaltitle}{IEEE Transactions on Wireless Communications}
+      \field{langid}{english}
+      \field{month}{2}
       \field{number}{2}
-      \field{title}{{LoRa} Technology Demystified: From Link Behavior to Cell-Level Performance}
+      \field{shortjournal}{IEEE Trans. Wireless Commun.}
+      \field{shorttitle}{{{LoRa Technology Demystified}}}
+      \field{title}{{{LoRa Technology Demystified}}: {{From Link Behavior}} to {{Cell-Level Performance}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{19}
       \field{year}{2020}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{822\bibrangedash 834}
       \range{pages}{13}
       \verb{doi}
       \verb 10.1109/TWC.2019.2948872
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\YX5WIJUS\Croce et al. - 2020 - LoRa Technology Demystified From Link Behavior to Cell-Level Performance.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8886735/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8886735/
       \endverb
     \endentry
     \entry{zeng2017energy}{article}{}{}
@@ -648,19 +932,38 @@
       \strng{authornamehash}{fa57656e5d8d64e798e41c2482308401}
       \strng{authorfullhash}{fa57656e5d8d64e798e41c2482308401}
       \strng{authorfullhashraw}{fa57656e5d8d64e798e41c2482308401}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{abstract}{Wireless communication with unmanned aerial vehicles (UAVs) is a promising technology for future communication systems. In this paper, assuming that the UAV flies horizontally with a fixed altitude, we study energy-efficient UAV communication with a ground terminal via optimizing the UAV’s trajectory, a new design paradigm that jointly considers both the communication throughput and the UAV’s energy consumption. To this end, we first derive a theoretical model on the propulsion energy consumption of fixed-wing UAVs as a function of the UAV’s flying speed, direction, and acceleration. Based on the derived model and by ignoring the radiation and signal processing energy consumption, the energy efficiency of UAV communication is defined as the total information bits communicated normalized by the UAV propulsion energy consumed for a finite time horizon. For the case of unconstrained trajectory optimization, we show that both the rate-maximization and energy-minimization designs lead to vanishing energy efficiency and thus are energy-inefficient in general. Next, we introduce a simple circular UAV trajectory, under which the UAV’s flight radius and speed are jointly optimized to maximize the energy efficiency. Furthermore, an efficient design is proposed for maximizing the UAV’s energy efficiency with general constraints on the trajectory, including its initial/final locations and velocities, as well as minimum/maximum speed and acceleration. Numerical results show that the proposed designs achieve significantly higher energy efficiency for UAV communication as compared with other benchmark schemes.}
+      \field{issn}{1536-1276}
       \field{journaltitle}{IEEE Transactions on Wireless Communications}
+      \field{langid}{english}
+      \field{month}{6}
       \field{number}{6}
-      \field{title}{Energy-Efficient {UAV} Communication with Trajectory Optimization}
+      \field{shortjournal}{IEEE Trans. Wireless Commun.}
+      \field{title}{Energy-{{Efficient UAV Communication With Trajectory Optimization}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{16}
       \field{year}{2017}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{3747\bibrangedash 3760}
       \range{pages}{14}
       \verb{doi}
       \verb 10.1109/TWC.2017.2688328
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\DJQ6PXDU\Zeng and Zhang - 2017 - Energy-Efficient UAV Communication With Trajectory Optimization.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://ieeexplore.ieee.org/document/7888557/
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/document/7888557/
       \endverb
     \endentry
     \entry{nemer2022energyefficient}{article}{}{}
@@ -697,16 +1000,108 @@
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Unmanned Aerial Vehicles (UAVs) are considered an important element in wireless communication networks due to their agility, mobility, and ability to be deployed as mobile base stations (BSs) in the network to improve the communication quality and coverage area. UAVs can be used to provide communication services for ground users in different scenarios, such as transportation systems, disaster situations, emergency cases, and surveillance. However, covering a specific area under a dynamic environment for a long time using UAV technology is quite challenging due to its limited energy resources, short communication range, and flying regulations and rules. Hence, a distributed solution is needed to overcome these limitations and to handle the interactions among UAVs, which leads to a large state space. In this paper, we introduced a novel distributed control solution to place a group of UAVs in the candidate area in order to improve the coverage score with minimum energy consumption and a high fairness value. The new algorithm is called the state-based game with actor–critic (SBG-AC). To simplify the complex interactions in the problem, we model SBG-AC using a state-based potential game. Then, we merge SBG-AC with an actor–critic algorithm to assure the convergence of the model, to control each UAV in a distributed way, and to have learning capabilities in case of dynamic environments. Simulation results show that the SBG-AC outperforms the distributed DRL and the DRL-EC3 in terms of fairness, coverage score, and energy consumption.}
+      \field{day}{1}
+      \field{issn}{1424-8220}
       \field{journaltitle}{Sensors}
+      \field{langid}{english}
+      \field{month}{3}
       \field{number}{5}
-      \field{title}{Energy-Efficient {UAV} Movement Control for Fair Communication Coverage: A Deep Reinforcement Learning Approach}
+      \field{shortjournal}{Sensors}
+      \field{shorttitle}{Energy-{{Efficient UAV Movement Control}} for {{Fair Communication Coverage}}}
+      \field{title}{Energy-{{Efficient UAV Movement Control}} for {{Fair Communication Coverage}}: {{A Deep Reinforcement Learning Approach}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{22}
       \field{year}{2022}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{1919}
       \range{pages}{1}
       \verb{doi}
       \verb 10.3390/s22051919
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\DST55Q4B\Nemer et al. - 2022 - Energy-Efficient UAV Movement Control for Fair Communication Coverage A Deep Reinforcement Learning.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mdpi.com/1424-8220/22/5/1919
+      \endverb
+      \verb{url}
+      \verb https://www.mdpi.com/1424-8220/22/5/1919
+      \endverb
+    \endentry
+    \entry{liu2019uav}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=06848e7ffdf5805ba7ae3a5849bd7afe}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Chi\bibnamedelima Harold},
+           giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=fcf093c33a281b1ab5089560a38d9a39}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Zheyu},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=541194db9dac70af45a28c067d289c8d}{%
+           family={Tang},
+           familyi={T\bibinitperiod},
+           given={Jian},
+           giveni={J\bibinitperiod}}}%
+        {{hash=ffd0b0c3743e938ccac63525d574f0a0}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Jie},
+           giveni={J\bibinitperiod}}}%
+        {{hash=9cd443b101dcc7914922d246c91b9ea3}{%
+           family={Piao},
+           familyi={P\bibinitperiod},
+           given={Chengzhe},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{fullhash}{3c9a4ae0f5a4a6b702d099408412d47d}
+      \strng{fullhashraw}{3c9a4ae0f5a4a6b702d099408412d47d}
+      \strng{bibnamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authorbibnamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authornamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authorfullhash}{3c9a4ae0f5a4a6b702d099408412d47d}
+      \strng{authorfullhashraw}{3c9a4ae0f5a4a6b702d099408412d47d}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Unmanned aerial vehicles (UAVs) can be used to serve as aerial base stations to enhance both the coverage and performance of communication networks in various scenarios, such as emergency communications and network access for remote areas. Mobile UAVs can establish communication links for ground users to deliver packets. However, UAVs have limited communication ranges and energy resources. Particularly, for a large region, they cannot cover the entire area all the time or keep flying for a long time. It is thus challenging to control a group of UAVs to achieve certain communication coverage in a long run, while preserving their connectivity and minimizing their energy consumption. Toward this end, we propose to leverage emerging deep reinforcement learning (DRL) for UAV control and present a novel and highly energyefficient DRL-based method, which we call DRL-based energyefficient control for coverage and connectivity (DRL-EC3). The proposed method 1) maximizes a novel energy efficiency function with joint consideration for communications coverage, fairness, energy consumption and connectivity; 2) learns the environment and its dynamics; and 3) makes decisions under the guidance of two powerful deep neural networks. We conduct extensive simulations for performance evaluation. Simulation results have shown that DRL-EC3 significantly and consistently outperform two commonly used baseline methods in terms of coverage, fairness, and energy consumption.}
+      \field{issn}{1558-0008, 0733-8716}
+      \field{journaltitle}{IEEE Journal on Selected Areas in Communications}
+      \field{langid}{english}
+      \field{month}{9}
+      \field{number}{9}
+      \field{shortjournal}{IEEE J. Sel. Areas Commun.}
+      \field{shorttitle}{Energy-{{Efficient UAV Control}} for {{Effective}} and {{Fair Communication Coverage}}}
+      \field{title}{Energy-{{Efficient UAV Control}} for {{Effective}} and {{Fair Communication Coverage}}: {{A Deep Reinforcement Learning Approach}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{36}
+      \field{year}{2018}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{2059\bibrangedash 2070}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1109/JSAC.2018.2864373
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\XUGQFRZZ\Liu et al. - 2018 - Energy-Efficient UAV Control for Effective and Fair Communication Coverage A Deep Reinforcement Lea.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8432464/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8432464/
       \endverb
     \endentry
     \entry{mnih2015humanlevel}{article}{}{}
@@ -819,15 +1214,34 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{day}{26}
+      \field{issn}{0028-0836, 1476-4687}
       \field{journaltitle}{Nature}
+      \field{langid}{english}
+      \field{month}{2}
       \field{number}{7540}
-      \field{title}{Human-level control through deep reinforcement learning}
+      \field{shortjournal}{Nature}
+      \field{title}{Human-Level Control through Deep Reinforcement Learning}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{518}
       \field{year}{2015}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{529\bibrangedash 533}
       \range{pages}{5}
       \verb{doi}
       \verb 10.1038/nature14236
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\DJB2JNK5\Mnih et al. - 2015 - Human-level control through deep reinforcement learning.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://www.nature.com/articles/nature14236
+      \endverb
+      \verb{url}
+      \verb https://www.nature.com/articles/nature14236
       \endverb
     \endentry
     \entry{kaul2012realtime}{inproceedings}{}{}
@@ -848,6 +1262,12 @@
            given={Marco},
            giveni={M\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Orlando, FL, USA}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
       \strng{namehash}{3cf0b42b7696f0551b81070e68eb3609}
       \strng{fullhash}{5638347d63a8a572bc4721dde7749e99}
       \strng{fullhashraw}{5638347d63a8a572bc4721dde7749e99}
@@ -859,58 +1279,37 @@
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of IEEE INFOCOM 2012}
-      \field{title}{Real-Time Status: How Often Should One Update?}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Increasingly ubiquitous communication networks and connectivity via portable devices have engendered a host of applications in which sources, for example people and environmental sensors, send updates of their status to interested recipients. These applications desire status updates at the recipients to be as timely as possible; however, this is typically constrained by limited network resources. In this paper, we employ a timeaverage age metric for the performance evaluation of status update systems. We derive general methods for calculating the age metric that can be applied to a broad class of service systems. We apply these methods to queue-theoretic system abstractions consisting of a source, a service facility and monitors, with the model of the service facility (physical constraints) a given. The queue discipline of first-come-first-served (FCFS) is explored. We show the existence of an optimal rate at which a source must generate its information to keep its status as timely as possible at all its monitors. This rate differs from those that maximize utilization (throughput) or minimize status packet delivery delay. While our abstractions are simpler than their real-world counterparts, the insights obtained, we believe, are a useful starting point in understanding and designing systems that support real time status updates.}
+      \field{booktitle}{2012 {{Proceedings IEEE INFOCOM}}}
+      \field{eventtitle}{{{IEEE INFOCOM}} 2012 - {{IEEE Conference}} on {{Computer Communications}}}
+      \field{isbn}{978-1-4673-0775-8 978-1-4673-0773-4 978-1-4673-0774-1}
+      \field{langid}{english}
+      \field{month}{3}
+      \field{shorttitle}{Real-Time Status}
+      \field{title}{Real-Time Status: {{How}} Often Should One Update?}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2012}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{2731\bibrangedash 2735}
       \range{pages}{5}
       \verb{doi}
       \verb 10.1109/INFCOM.2012.6195689
       \endverb
-    \endentry
-    \entry{abdelmagid2019aoi}{article}{}{}
-      \name{author}{3}{}{%
-        {{hash=378a72616d7b3f2f316d1907363b2e4f}{%
-           family={Abd-Elmagid},
-           familyi={A\bibinithyphendelim E\bibinitperiod},
-           given={Mohamed\bibnamedelima A.},
-           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
-        {{hash=a564348d39ffa53de9748372fc872142}{%
-           family={Pappas},
-           familyi={P\bibinitperiod},
-           given={Nikolaos},
-           giveni={N\bibinitperiod}}}%
-        {{hash=a6f0642afd2eb634ec858c309f597cfa}{%
-           family={Dhillon},
-           familyi={D\bibinitperiod},
-           given={Harpreet\bibnamedelima S.},
-           giveni={H\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
-      }
-      \strng{namehash}{97e47a564910a8bd8e3c01a88e6d713d}
-      \strng{fullhash}{6565191c12107650a0979904a051bd28}
-      \strng{fullhashraw}{6565191c12107650a0979904a051bd28}
-      \strng{bibnamehash}{6565191c12107650a0979904a051bd28}
-      \strng{authorbibnamehash}{6565191c12107650a0979904a051bd28}
-      \strng{authornamehash}{97e47a564910a8bd8e3c01a88e6d713d}
-      \strng{authorfullhash}{6565191c12107650a0979904a051bd28}
-      \strng{authorfullhashraw}{6565191c12107650a0979904a051bd28}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{IEEE Communications Magazine}
-      \field{number}{12}
-      \field{title}{On the Role of {Age of Information} in the {Internet of Things}}
-      \field{volume}{57}
-      \field{year}{2019}
-      \field{pages}{72\bibrangedash 77}
-      \range{pages}{6}
-      \verb{doi}
-      \verb 10.1109/MCOM.001.1900041
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\NUV3JRZV\Kaul et al. - 2012 - Real-time status How often should one update.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://ieeexplore.ieee.org/document/6195689/
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/document/6195689/
       \endverb
     \endentry
-    \entry{tobin2017domain}{inproceedings}{}{}
+    \entry{tobin2017domain}{online}{}{}
       \name{author}{6}{}{%
         {{hash=e6a2e03971ee3e138dbe64b3a4c5a95a}{%
            family={Tobin},
@@ -951,127 +1350,40 @@
       \strng{authornamehash}{2c42dddd45e1ea280a64e08c9a87d720}
       \strng{authorfullhash}{59127397f3045b880071f52e5e66fdf5}
       \strng{authorfullhashraw}{59127397f3045b880071f52e5e66fdf5}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}
-      \field{title}{Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World}
+      \field{abstract}{Bridging the ‘reality gap’ that separates simulated robotics from experiments on hardware could accelerate robotic research through improved data availability. This paper explores domain randomization, a simple technique for training models on simulated images that transfer to real images by randomizing rendering in the simulator. With enough variability in the simulator, the real world may appear to the model as just another variation. We focus on the task of object localization, which is a stepping stone to general robotic manipulation skills. We find that it is possible to train a real-world object detector that is accurate to 1.5 cm and robust to distractors and partial occlusions using only data from a simulator with non-realistic random textures. To demonstrate the capabilities of our detectors, we show they can be used to perform grasping in a cluttered environment. To our knowledge, this is the first successful transfer of a deep neural network trained only on simulated RGB images (without pre-training on real images) to the real world for the purpose of robotic control.}
+      \field{day}{20}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{langid}{english}
+      \field{month}{3}
+      \field{pubstate}{prepublished}
+      \field{title}{Domain {{Randomization}} for {{Transferring Deep Neural Networks}} from {{Simulation}} to the {{Real World}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2017}
-      \field{pages}{23\bibrangedash 30}
-      \range{pages}{8}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \verb{doi}
-      \verb 10.1109/IROS.2017.8202133
+      \verb 10.48550/arXiv.1703.06907
       \endverb
-    \endentry
-    \entry{openai2019dexterous}{article}{}{}
-      \name{author}{17}{}{%
-        {{hash=0523b13262b12c215d8009938f5c14f1}{%
-           family={{OpenAI}},
-           familyi={O\bibinitperiod}}}%
-        {{hash=0d8b72cabbd1b548097b4a7b81a0f335}{%
-           family={Andrychowicz},
-           familyi={A\bibinitperiod},
-           given={Marcin},
-           giveni={M\bibinitperiod}}}%
-        {{hash=779704e9a9d50c2ced00816ca81c4bda}{%
-           family={Baker},
-           familyi={B\bibinitperiod},
-           given={Bowen},
-           giveni={B\bibinitperiod}}}%
-        {{hash=db785ba8e6356e7dd7e0f860f4f2f473}{%
-           family={Chociej},
-           familyi={C\bibinitperiod},
-           given={Maciek},
-           giveni={M\bibinitperiod}}}%
-        {{hash=40dc14e2ac2aad48b8e759011a60d340}{%
-           family={Józefowicz},
-           familyi={J\bibinitperiod},
-           given={Rafa{ł}},
-           giveni={R\bibinitperiod}}}%
-        {{hash=6da1a977c02cecc78ec16c61217dcc42}{%
-           family={McGrew},
-           familyi={M\bibinitperiod},
-           given={Bob},
-           giveni={B\bibinitperiod}}}%
-        {{hash=27d3d977b77156237cdeb5a7b7eaa560}{%
-           family={Pachocki},
-           familyi={P\bibinitperiod},
-           given={Jakub},
-           giveni={J\bibinitperiod}}}%
-        {{hash=0d79ff0263ade6eee20336810b23e5d8}{%
-           family={Petron},
-           familyi={P\bibinitperiod},
-           given={Arthur},
-           giveni={A\bibinitperiod}}}%
-        {{hash=599240d5bfe42aeb65a0c26dae77cd31}{%
-           family={Plappert},
-           familyi={P\bibinitperiod},
-           given={Matthias},
-           giveni={M\bibinitperiod}}}%
-        {{hash=34d0d7625e65761eaef54be0603bbf12}{%
-           family={Powell},
-           familyi={P\bibinitperiod},
-           given={Glenn},
-           giveni={G\bibinitperiod}}}%
-        {{hash=143fa59d90387ae4a6aa650dcf1c7ceb}{%
-           family={Ray},
-           familyi={R\bibinitperiod},
-           given={Alex},
-           giveni={A\bibinitperiod}}}%
-        {{hash=5167ef9d0b77bf68557730648baac9b7}{%
-           family={Schneider},
-           familyi={S\bibinitperiod},
-           given={Jonas},
-           giveni={J\bibinitperiod}}}%
-        {{hash=6657859de18e844e4b1b815e03694c71}{%
-           family={Sidor},
-           familyi={S\bibinitperiod},
-           given={Szymon},
-           giveni={S\bibinitperiod}}}%
-        {{hash=e6a2e03971ee3e138dbe64b3a4c5a95a}{%
-           family={Tobin},
-           familyi={T\bibinitperiod},
-           given={Josh},
-           giveni={J\bibinitperiod}}}%
-        {{hash=462853f8544f0acfb7014fe747f84922}{%
-           family={Welinder},
-           familyi={W\bibinitperiod},
-           given={Peter},
-           giveni={P\bibinitperiod}}}%
-        {{hash=49d03d499031db786a0e61119024cf5a}{%
-           family={Weng},
-           familyi={W\bibinitperiod},
-           given={Lilian},
-           giveni={L\bibinitperiod}}}%
-        {{hash=e9fec85bbce1b087a6ebefe26e73f7bf}{%
-           family={Zaremba},
-           familyi={Z\bibinitperiod},
-           given={Wojciech},
-           giveni={W\bibinitperiod}}}%
-      }
-      \strng{namehash}{388e7feddf6d4d7336d2c895e55fa4b6}
-      \strng{fullhash}{96b1e04da8f7923703ffcd33d2ad51c1}
-      \strng{fullhashraw}{96b1e04da8f7923703ffcd33d2ad51c1}
-      \strng{bibnamehash}{388e7feddf6d4d7336d2c895e55fa4b6}
-      \strng{authorbibnamehash}{388e7feddf6d4d7336d2c895e55fa4b6}
-      \strng{authornamehash}{388e7feddf6d4d7336d2c895e55fa4b6}
-      \strng{authorfullhash}{96b1e04da8f7923703ffcd33d2ad51c1}
-      \strng{authorfullhashraw}{96b1e04da8f7923703ffcd33d2ad51c1}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{The International Journal of Robotics Research}
-      \field{number}{1}
-      \field{title}{Learning Dexterous In-Hand Manipulation}
-      \field{volume}{39}
-      \field{year}{2020}
-      \field{pages}{3\bibrangedash 20}
-      \range{pages}{18}
-      \verb{doi}
-      \verb 10.1177/0278364919887447
+      \verb{eprint}
+      \verb 1703.06907
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\HFPH6YGW\Tobin et al. - 2017 - Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1703.06907
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1703.06907
+      \endverb
+      \keyw{Computer Science - Machine Learning,Computer Science - Robotics}
     \endentry
     \entry{bengio2009curriculum}{inproceedings}{}{}
       \name{author}{4}{}{%
@@ -1096,6 +1408,12 @@
            given={Jason},
            giveni={J\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Montreal Quebec Canada}%
+      }
+      \list{publisher}{1}{%
+        {ACM}%
+      }
       \strng{namehash}{058f6aa7282521dda725a309bd2d3fea}
       \strng{fullhash}{9ba3fef12dbb2a31c664e09902e90cdf}
       \strng{fullhashraw}{9ba3fef12dbb2a31c664e09902e90cdf}
@@ -1108,13 +1426,33 @@
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of the 26th Annual International Conference on Machine Learning (ICML)}
+      \field{abstract}{Humans and animals learn much better when the examples are not randomly presented but organized in a meaningful order which illustrates gradually more concepts, and gradually more complex ones. Here, we formalize such training strategies in the context of machine learning, and call them “curriculum learning”. In the context of recent research studying the difficulty of training in the presence of non-convex training criteria (for deep deterministic and stochastic neural networks), we explore curriculum learning in various set-ups. The experiments show that significant improvements in generalization can be achieved. We hypothesize that curriculum learning has both an effect on the speed of convergence of the training process to a minimum and, in the case of non-convex criteria, on the quality of the local minima obtained: curriculum learning can be seen as a particular form of continuation method (a general strategy for global optimization of non-convex functions).}
+      \field{booktitle}{Proceedings of the 26th {{Annual International Conference}} on {{Machine Learning}}}
+      \field{day}{14}
+      \field{eventtitle}{{{ICML}} '09: {{The}} 26th {{Annual International Conference}} on {{Machine Learning}} Held in Conjunction with the 2007 {{International Conference}} on {{Inductive Logic Programming}}}
+      \field{isbn}{978-1-60558-516-1}
+      \field{langid}{english}
+      \field{month}{6}
       \field{title}{Curriculum Learning}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2009}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{41\bibrangedash 48}
       \range{pages}{8}
       \verb{doi}
       \verb 10.1145/1553374.1553380
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\GZ7WT82Z\Bengio et al. - 2009 - Curriculum learning.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://dl.acm.org/doi/10.1145/1553374.1553380
+      \endverb
+      \verb{url}
+      \verb https://dl.acm.org/doi/10.1145/1553374.1553380
       \endverb
     \endentry
     \entry{zaheer2017deepsets}{inproceedings}{}{}
@@ -1203,7 +1541,7 @@
       \field{title}{Attention, Learn to Solve Routing Problems!}
       \field{year}{2019}
     \endentry
-    \entry{cappart2023combinatorial}{article}{}{}
+    \entry{cappart2023combinatorial}{inproceedings}{}{}
       \name{author}{6}{}{%
         {{hash=73855e83a134985c23d20a96da855a96}{%
            family={Cappart},
@@ -1236,6 +1574,12 @@
            given={Petar},
            giveni={P\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Montreal, Canada}%
+      }
+      \list{publisher}{1}{%
+        {International Joint Conferences on Artificial Intelligence Organization}%
+      }
       \strng{namehash}{3f9fcb81ca57a30507641485a0b8eea8}
       \strng{fullhash}{e345301efc7ad0429400199885015813}
       \strng{fullhashraw}{e345301efc7ad0429400199885015813}
@@ -1248,15 +1592,35 @@
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Machine Learning Research}
-      \field{number}{130}
-      \field{title}{Combinatorial Optimization and Reasoning with Graph Neural Networks}
-      \field{volume}{24}
-      \field{year}{2023}
-      \field{pages}{1\bibrangedash 61}
-      \range{pages}{61}
+      \field{abstract}{Combinatorial optimization is a well-established area in operations research and computer science. Until recently, its methods have focused on solving problem instances in isolation, ignoring that they often stem from related data distributions in practice. However, recent years have seen a surge of interest in using machine learning, especially graph neural networks (GNNs), as a key building block for combinatorial tasks, either directly as solvers or by enhancing exact solvers. The inductive bias of GNNs effectively encodes combinatorial and relational input due to their invariance to permutations and awareness of input sparsity. This paper presents a conceptual review of recent key advancements in this emerging field, aiming at optimization and machine learning researchers.}
+      \field{booktitle}{Proceedings of the {{Thirtieth International Joint Conference}} on {{Artificial Intelligence}}}
+      \field{eventtitle}{Thirtieth {{International Joint Conference}} on {{Artificial Intelligence}} \{{{IJCAI-21}}\}}
+      \field{isbn}{978-0-9992411-9-6}
+      \field{langid}{english}
+      \field{month}{8}
+      \field{title}{Combinatorial {{Optimization}} and {{Reasoning}} with {{Graph Neural Networks}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{4348\bibrangedash 4355}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.24963/ijcai.2021/595
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\EPD3Y7RD\Cappart et al. - 2021 - Combinatorial Optimization and Reasoning with Graph Neural Networks.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://www.ijcai.org/proceedings/2021/595
+      \endverb
+      \verb{url}
+      \verb https://www.ijcai.org/proceedings/2021/595
+      \endverb
     \endentry
-    \entry{schulman2017ppo}{article}{}{}
+    \entry{schulman2017ppo}{online}{}{}
       \name{author}{5}{}{%
         {{hash=3e09bd2a25d237ebdaed560a07c0451e}{%
            family={Schulman},
@@ -1293,58 +1657,40 @@
       \strng{authorfullhash}{a6c6ed5a5aeb74e536f16291276ae392}
       \strng{authorfullhashraw}{a6c6ed5a5aeb74e536f16291276ae392}
       \field{extraname}{1}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{arXiv preprint arXiv:1707.06347}
-      \field{title}{Proximal Policy Optimization Algorithms}
+      \field{abstract}{We propose a new family of policy gradient methods for reinforcement learning, which alternate between sampling data through interaction with the environment, and optimizing a “surrogate” objective function using stochastic gradient ascent. Whereas standard policy gradient methods perform one gradient update per data sample, we propose a novel objective function that enables multiple epochs of minibatch updates. The new methods, which we call proximal policy optimization (PPO), have some of the benefits of trust region policy optimization (TRPO), but they are much simpler to implement, more general, and have better sample complexity (empirically). Our experiments test PPO on a collection of benchmark tasks, including simulated robotic locomotion and Atari game playing, and we show that PPO outperforms other online policy gradient methods, and overall strikes a favorable balance between sample complexity, simplicity, and wall-time.}
+      \field{day}{28}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{langid}{english}
+      \field{month}{8}
+      \field{pubstate}{prepublished}
+      \field{title}{Proximal {{Policy Optimization Algorithms}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2017}
-    \endentry
-    \entry{schulman2015gae}{inproceedings}{}{}
-      \name{author}{5}{}{%
-        {{hash=3e09bd2a25d237ebdaed560a07c0451e}{%
-           family={Schulman},
-           familyi={S\bibinitperiod},
-           given={John},
-           giveni={J\bibinitperiod}}}%
-        {{hash=a901fd78fe1108cfa7d11129644967c7}{%
-           family={Moritz},
-           familyi={M\bibinitperiod},
-           given={Philipp},
-           giveni={P\bibinitperiod}}}%
-        {{hash=c9545da54b33744da25943cdf66eadac}{%
-           family={Levine},
-           familyi={L\bibinitperiod},
-           given={Sergey},
-           giveni={S\bibinitperiod}}}%
-        {{hash=5010abb47d34a51acdafb266a811dc5f}{%
-           family={Jordan},
-           familyi={J\bibinitperiod},
-           given={Michael},
-           giveni={M\bibinitperiod}}}%
-        {{hash=e28d4ee199593959d8c29980a64f1974}{%
-           family={Abbeel},
-           familyi={A\bibinitperiod},
-           given={Pieter},
-           giveni={P\bibinitperiod}}}%
-      }
-      \strng{namehash}{8d6613ae59595910252a86a61babf6c8}
-      \strng{fullhash}{824be54bbf358cb68164f9e82cccbd21}
-      \strng{fullhashraw}{824be54bbf358cb68164f9e82cccbd21}
-      \strng{bibnamehash}{8d6613ae59595910252a86a61babf6c8}
-      \strng{authorbibnamehash}{8d6613ae59595910252a86a61babf6c8}
-      \strng{authornamehash}{8d6613ae59595910252a86a61babf6c8}
-      \strng{authorfullhash}{824be54bbf358cb68164f9e82cccbd21}
-      \strng{authorfullhashraw}{824be54bbf358cb68164f9e82cccbd21}
-      \field{extraname}{2}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{International Conference on Learning Representations (ICLR)}
-      \field{title}{High-Dimensional Continuous Control Using Generalized Advantage Estimation}
-      \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.48550/arXiv.1707.06347
+      \endverb
+      \verb{eprint}
+      \verb 1707.06347
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\YKEYAPRP\Schulman et al. - 2017 - Proximal Policy Optimization Algorithms.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1707.06347
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1707.06347
+      \endverb
+      \keyw{Computer Science - Machine Learning}
     \endentry
     \entry{rappaport2002wireless}{book}{}{}
       \name{author}{1}{}{%
@@ -1354,8 +1700,11 @@
            given={Theodore\bibnamedelima S.},
            giveni={T\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Upper Saddle River, N.J}%
+      }
       \list{publisher}{1}{%
-        {Prentice Hall}%
+        {Prentice Hall PTR}%
       }
       \strng{namehash}{80e9f8fd303858ab30a541b6816ddfe8}
       \strng{fullhash}{80e9f8fd303858ab30a541b6816ddfe8}
@@ -1368,11 +1717,16 @@
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{edition}{2nd}
-      \field{isbn}{0-13-042232-0}
+      \field{labeltitlesource}{shorttitle}
+      \field{edition}{2nd ed}
+      \field{isbn}{978-0-13-042232-3}
+      \field{pagetotal}{707}
+      \field{series}{Prentice {{Hall}} Communications Engineering and Emerging Technologies Series}
+      \field{shorttitle}{Wireless Communications}
       \field{title}{Wireless Communications: Principles and Practice}
       \field{year}{2002}
+      \field{dateera}{ce}
+      \keyw{Mobile communication systems,Telecommunication systems,Wireless communication systems}
     \endentry
     \entry{slabicki2018adaptive}{inproceedings}{}{}
       \name{author}{3}{}{%
@@ -1392,6 +1746,12 @@
            given={Mario},
            giveni={M\bibinitperiod}}}%
       }
+      \list{location}{1}{%
+        {Taipei, Taiwan}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
       \strng{namehash}{4f0355f3f86b9fa8827a1b300190e7ab}
       \strng{fullhash}{da0d9ffcd53df052797613ff7cbf2ac6}
       \strng{fullhashraw}{da0d9ffcd53df052797613ff7cbf2ac6}
@@ -1404,17 +1764,96 @@
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{NOMS 2018 - 2018 IEEE/IFIP Network Operations and Management Symposium}
-      \field{title}{Adaptive Configuration of {LoRa} Networks for Dense {IoT} Deployments}
+      \field{abstract}{Large-scale Internet of Things (IoT) deployments demand long-range wireless communications, especially in urban and metropolitan areas. LoRa is one of the most promising technologies in this context due to its simplicity and flexibility. Indeed, deploying LoRa networks in dense IoT scenarios must achieve two main goals: efficient communications among a large number of devices and resilience against dynamic channel conditions due to demanding environmental settings (e.g., the presence of many buildings). This work investigates adaptive mechanisms to configure the communication parameters of LoRa networks in dense IoT scenarios. To this end, we develop FLoRa, an open-source framework for end-to-end LoRa simulations in OMNeT++. We then implement and evaluate the Adaptive Data Rate (ADR) mechanism built into LoRa to dynamically manage link parameters for scalable and efficient network operations. Extensive simulations show that ADR is effective in increasing the network delivery ratio under stable channel conditions, while keeping the energy consumption low. Our results also show that the performance of ADR is severely affected by a highly-varying wireless channel. We thereby propose an improved version of the original ADR mechanism to cope with variable channel conditions. Our proposed solution significantly increases both the reliability and the energy efficiency of communications over a noisy channel, almost irrespective of the network size. Finally, we show that the delivery ratio of very dense networks can be further improved by using a network-aware approach, wherein the link parameters are configured based on the global knowledge of the network.}
+      \field{booktitle}{{{NOMS}} 2018 - 2018 {{IEEE}}/{{IFIP Network Operations}} and {{Management Symposium}}}
+      \field{eventtitle}{{{NOMS}} 2018 - 2018 {{IEEE}}/{{IFIP Network Operations}} and {{Management Symposium}}}
+      \field{isbn}{978-1-5386-3416-5}
+      \field{langid}{english}
+      \field{month}{4}
+      \field{title}{Adaptive Configuration of Lora Networks for Dense {{IoT}} Deployments}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{year}{2018}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{1\bibrangedash 9}
       \range{pages}{9}
       \verb{doi}
       \verb 10.1109/NOMS.2018.8406255
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\DLXTQDJM\Slabicki et al. - 2018 - Adaptive configuration of lora networks for dense IoT deployments.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8406255/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8406255/
+      \endverb
     \endentry
-    \entry{towers2024gymnasium}{misc}{}{}
-      \name{author}{19}{}{%
+    \entry{abdelmagid2019aoi}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=378a72616d7b3f2f316d1907363b2e4f}{%
+           family={Abd-Elmagid},
+           familyi={A\bibinithyphendelim E\bibinitperiod},
+           given={Mohamed\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=a564348d39ffa53de9748372fc872142}{%
+           family={Pappas},
+           familyi={P\bibinitperiod},
+           given={Nikolaos},
+           giveni={N\bibinitperiod}}}%
+        {{hash=a6f0642afd2eb634ec858c309f597cfa}{%
+           family={Dhillon},
+           familyi={D\bibinitperiod},
+           given={Harpreet\bibnamedelima S.},
+           giveni={H\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{97e47a564910a8bd8e3c01a88e6d713d}
+      \strng{fullhash}{6565191c12107650a0979904a051bd28}
+      \strng{fullhashraw}{6565191c12107650a0979904a051bd28}
+      \strng{bibnamehash}{6565191c12107650a0979904a051bd28}
+      \strng{authorbibnamehash}{6565191c12107650a0979904a051bd28}
+      \strng{authornamehash}{97e47a564910a8bd8e3c01a88e6d713d}
+      \strng{authorfullhash}{6565191c12107650a0979904a051bd28}
+      \strng{authorfullhashraw}{6565191c12107650a0979904a051bd28}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{In this article, we provide an accessible introduction to the emerging idea of Age of Information (AoI) that quantifies freshness of information and explore its possible role in the efficient design of freshness-aware Internet of Things (IoT). We start by summarizing the concept of AoI and its variants with emphasis on the differences between AoI and other well-known performance metrics in the literature, such as throughput and delay. Building on this, we explore freshness-aware IoT design for a network in which IoT devices sense potentially different physical processes and are supposed to frequently update the status of these processes at a destination node (such as a cellular base station). Inspired by the recent interest, we also assume that these IoT devices are powered by wireless energy transfer by the destination node. For this setting, we investigate the optimal sampling policy that jointly optimizes wireless energy transfer and scheduling of update packet transmissions from IoT devices with the goal of minimizing long-term weighted sum-AoI. Using this, we characterize the achievable AoI region. We also compare this AoI-optimal policy with the one that maximizes average throughput (throughput-optimal policy), and demonstrate the impact of system state on their structures. Several promising directions for future research are also presented.}
+      \field{issn}{0163-6804, 1558-1896}
+      \field{journaltitle}{IEEE Communications Magazine}
+      \field{langid}{english}
+      \field{month}{12}
+      \field{number}{12}
+      \field{shortjournal}{IEEE Commun. Mag.}
+      \field{title}{On the {{Role}} of {{Age}} of {{Information}} in the {{Internet}} of {{Things}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{57}
+      \field{year}{2019}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{72\bibrangedash 77}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/MCOM.001.1900041
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\Z8NJJ5FJ\Abd-Elmagid et al. - 2019 - On the Role of Age of Information in the Internet of Things.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/8930830/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/8930830/
+      \endverb
+    \endentry
+    \entry{towers2024gymnasium}{online}{}{}
+      \name{author}{16}{}{%
         {{hash=56b97afcbff5cf17ceacacabc82810be}{%
            family={Towers},
            familyi={T\bibinitperiod},
@@ -1435,11 +1874,11 @@
            familyi={B\bibinitperiod},
            given={John\bibnamedelima U.},
            giveni={J\bibinitperiod\bibinitdelim U\bibinitperiod}}}%
-        {{hash=6b3748ee9a0afd01e6281ca00192847c}{%
-           family={De\bibnamedelima Cola},
-           familyi={D\bibinitperiod\bibinitdelim C\bibinitperiod},
-           given={Gianluca},
-           giveni={G\bibinitperiod}}}%
+        {{hash=a6d4dfeaaa2a42d859eb847f047c92c6}{%
+           family={Cola},
+           familyi={C\bibinitperiod},
+           given={Gianluca\bibnamedelima De},
+           giveni={G\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
         {{hash=8a006dd742c8f7a1e71c8d5b862abaec}{%
            family={Deleu},
            familyi={D\bibinitperiod},
@@ -1460,19 +1899,14 @@
            familyi={K\bibinitperiod},
            given={Markus},
            giveni={M\bibinitperiod}}}%
-        {{hash=8529b79419ebf5bb6f2cce04eac13daa}{%
-           family={Maruyama},
-           familyi={M\bibinitperiod},
+        {{hash=b0066d33e0e2e5d916c42b4eb9342a19}{%
+           family={KG},
+           familyi={K\bibinitperiod},
            given={Arjun},
            giveni={A\bibinitperiod}}}%
-        {{hash=ff5bc02611fe16a8bf7762701da12097}{%
-           family={Moosavi},
-           familyi={M\bibinitperiod},
-           given={Ryan},
-           giveni={R\bibinitperiod}}}%
-        {{hash=0eef360e796da275ca328f5046a2f1ee}{%
-           family={Perez-Higueras},
-           familyi={P\bibinithyphendelim H\bibinitperiod},
+        {{hash=7924a9a0a06c93726bed7eed45a19aa3}{%
+           family={Perez-Vicente},
+           familyi={P\bibinithyphendelim V\bibinitperiod},
            given={Rodrigo},
            giveni={R\bibinitperiod}}}%
         {{hash=076e673542ae3086dd8a964e00192590}{%
@@ -1480,58 +1914,70 @@
            familyi={P\bibinitperiod},
            given={Andrea},
            giveni={A\bibinitperiod}}}%
-        {{hash=0af40410d697cb5483c80e2594b25cf0}{%
-           family={Shi},
+        {{hash=572b48d10d1ca3e03df3bc08618dd048}{%
+           family={Schulhoff},
            familyi={S\bibinitperiod},
-           given={Xiaoming},
-           giveni={X\bibinitperiod}}}%
-        {{hash=5f29f383e896b93d0fbf17ca2c5a2188}{%
-           family={Smith},
-           familyi={S\bibinitperiod},
-           given={Kiel},
-           giveni={K\bibinitperiod}}}%
-        {{hash=56c86427a599184c4cad2e94dc5e03d5}{%
-           family={Torres-Abad},
-           familyi={T\bibinithyphendelim A\bibinitperiod},
-           given={Paulo},
-           giveni={P\bibinitperiod}}}%
-        {{hash=d056cdb8ed6bebb55e13c2246059af79}{%
-           family={Witt},
-           familyi={W\bibinitperiod},
-           given={Christian\bibnamedelima Schroeder},
-           giveni={C\bibinitperiod\bibinitdelim S\bibinitperiod},
-           prefix={de},
-           prefixi={d\bibinitperiod}}}%
-        {{hash=a32259788d640091c59a43f6adc9adfc}{%
+           given={Sander},
+           giveni={S\bibinitperiod}}}%
+        {{hash=7b81c11069a312b5e61080419325809c}{%
+           family={Tai},
+           familyi={T\bibinitperiod},
+           given={Jun\bibnamedelima Jet},
+           giveni={J\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=0337c2df415d8e827c53f75b4e25b659}{%
+           family={Tan},
+           familyi={T\bibinitperiod},
+           given={Hannah},
+           giveni={H\bibinitperiod}}}%
+        {{hash=9a6176749241c97e002f2882448b5668}{%
            family={Younis},
            familyi={Y\bibinitperiod},
-           given={Omar},
-           giveni={O\bibinitperiod}}}%
-        {{hash=fe554f4b29d5fa24bdfdfc6f5a825003}{%
-           family={Zhang},
-           familyi={Z\bibinitperiod},
-           given={Wenjia},
-           giveni={W\bibinitperiod}}}%
+           given={Omar\bibnamedelima G.},
+           giveni={O\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
       }
       \strng{namehash}{671a5b29dade9bddb3ee8cb7bc0889d0}
-      \strng{fullhash}{ec0c7e0d3ab69a343e89c8f030262b7b}
-      \strng{fullhashraw}{ec0c7e0d3ab69a343e89c8f030262b7b}
+      \strng{fullhash}{61bf2670d424b8f0d899fb5c1e45a1fd}
+      \strng{fullhashraw}{61bf2670d424b8f0d899fb5c1e45a1fd}
       \strng{bibnamehash}{671a5b29dade9bddb3ee8cb7bc0889d0}
       \strng{authorbibnamehash}{671a5b29dade9bddb3ee8cb7bc0889d0}
       \strng{authornamehash}{671a5b29dade9bddb3ee8cb7bc0889d0}
-      \strng{authorfullhash}{ec0c7e0d3ab69a343e89c8f030262b7b}
-      \strng{authorfullhashraw}{ec0c7e0d3ab69a343e89c8f030262b7b}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \strng{authorfullhash}{61bf2670d424b8f0d899fb5c1e45a1fd}
+      \strng{authorfullhashraw}{61bf2670d424b8f0d899fb5c1e45a1fd}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.LG}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Reinforcement Learning (RL) is a continuously growing field that has the potential to revolutionize many areas of artificial intelligence. However, despite its promise, RL research is often hindered by the lack of standardization in environment and algorithm implementations. This makes it difficult for researchers to compare and build upon each other’s work, slowing down progress in the field. Gymnasium is an open-source library that provides a standard API for RL environments, aiming to tackle this issue. Gymnasium’s main feature is a set of abstractions that allow for wide interoperability between environments and training algorithms, making it easier for researchers to develop and test RL algorithms. In addition, Gymnasium provides a collection of easy-to-use environments, tools for easily customizing environments, and tools to ensure the reproducibility and robustness of RL research. Through this unified framework, Gymnasium significantly streamlines the process of developing and testing RL algorithms, enabling researchers to focus more on innovation and less on implementation details. By providing a standardized platform for RL research, Gymnasium helps to drive forward the field of reinforcement learning and unlock its full potential. Gymnasium is available online at https://github.com/Farama-Foundation/Gymnasium.}
+      \field{day}{2}
+      \field{eprintclass}{cs}
       \field{eprinttype}{arXiv}
-      \field{title}{Gymnasium: A Standard Interface for Reinforcement Learning Environments}
-      \field{year}{2024}
+      \field{langid}{english}
+      \field{month}{11}
+      \field{pubstate}{prepublished}
+      \field{shorttitle}{Gymnasium}
+      \field{title}{Gymnasium: {{A Standard Interface}} for {{Reinforcement Learning Environments}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2025}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.48550/arXiv.2407.17032
+      \endverb
       \verb{eprint}
       \verb 2407.17032
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\5BHFYX2N\Towers et al. - 2025 - Gymnasium A Standard Interface for Reinforcement Learning Environments.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/2407.17032
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/2407.17032
+      \endverb
+      \keyw{Computer Science - Digital Libraries,Computer Science - Machine Learning}
     \endentry
     \entry{raffin2021stable}{article}{}{}
       \name{author}{6}{}{%
@@ -1574,17 +2020,88 @@
       \strng{authornamehash}{5044a4768c7fc20f25fb680bb11f4aaf}
       \strng{authorfullhash}{e3c43789f8de334374c8e95d9d514552}
       \strng{authorfullhashraw}{e3c43789f8de334374c8e95d9d514552}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Stable-Baselines3 provides open-source implementations of deep reinforcement learning (RL) algorithms in Python. The implementations have been benchmarked against reference codebases, and automated unit tests cover 95\% of the code. The algorithms follow a consistent interface and are accompanied by extensive documentation, making it simple to train and compare different RL algorithms. Our documentation, examples, and source-code are available at https://github.com/DLR-RM/stable-baselines3.}
+      \field{langid}{english}
+      \field{title}{Stable-Baselines3}
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\V6SEVL8Z\Raffin et al. - Stable-baselines3.pdf
+      \endverb
+    \endentry
+    \entry{schulman2015gae}{online}{}{}
+      \name{author}{5}{}{%
+        {{hash=3e09bd2a25d237ebdaed560a07c0451e}{%
+           family={Schulman},
+           familyi={S\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod}}}%
+        {{hash=a901fd78fe1108cfa7d11129644967c7}{%
+           family={Moritz},
+           familyi={M\bibinitperiod},
+           given={Philipp},
+           giveni={P\bibinitperiod}}}%
+        {{hash=c9545da54b33744da25943cdf66eadac}{%
+           family={Levine},
+           familyi={L\bibinitperiod},
+           given={Sergey},
+           giveni={S\bibinitperiod}}}%
+        {{hash=5010abb47d34a51acdafb266a811dc5f}{%
+           family={Jordan},
+           familyi={J\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=e28d4ee199593959d8c29980a64f1974}{%
+           family={Abbeel},
+           familyi={A\bibinitperiod},
+           given={Pieter},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{8d6613ae59595910252a86a61babf6c8}
+      \strng{fullhash}{824be54bbf358cb68164f9e82cccbd21}
+      \strng{fullhashraw}{824be54bbf358cb68164f9e82cccbd21}
+      \strng{bibnamehash}{8d6613ae59595910252a86a61babf6c8}
+      \strng{authorbibnamehash}{8d6613ae59595910252a86a61babf6c8}
+      \strng{authornamehash}{8d6613ae59595910252a86a61babf6c8}
+      \strng{authorfullhash}{824be54bbf358cb68164f9e82cccbd21}
+      \strng{authorfullhashraw}{824be54bbf358cb68164f9e82cccbd21}
+      \field{extraname}{2}
       \field{sortinit}{7}
       \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Machine Learning Research}
-      \field{number}{268}
-      \field{title}{Stable-Baselines3: Reliable Reinforcement Learning Implementations}
-      \field{volume}{22}
-      \field{year}{2021}
-      \field{pages}{1\bibrangedash 8}
-      \range{pages}{8}
+      \field{abstract}{Policy gradient methods are an appealing approach in reinforcement learning because they directly optimize the cumulative reward and can straightforwardly be used with nonlinear function approximators such as neural networks. The two main challenges are the large number of samples typically required, and the difficulty of obtaining stable and steady improvement despite the nonstationarity of the incoming data. We address the first challenge by using value functions to substantially reduce the variance of policy gradient estimates at the cost of some bias, with an exponentially-weighted estimator of the advantage function that is analogous to TD(λ). We address the second challenge by using trust region optimization procedure for both the policy and the value function, which are represented by neural networks.}
+      \field{day}{20}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{langid}{english}
+      \field{month}{10}
+      \field{pubstate}{prepublished}
+      \field{title}{High-{{Dimensional Continuous Control Using Generalized Advantage Estimation}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2018}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.48550/arXiv.1506.02438
+      \endverb
+      \verb{eprint}
+      \verb 1506.02438
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\4GZNABK5\Schulman et al. - 2018 - High-Dimensional Continuous Control Using Generalized Advantage Estimation.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1506.02438
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1506.02438
+      \endverb
+      \keyw{Computer Science - Machine Learning,Computer Science - Robotics,Electrical Engineering and Systems Science - Systems and Control}
     \endentry
     \entry{ng1999shaping}{inproceedings}{}{}
       \name{author}{3}{}{%
@@ -1624,41 +2141,53 @@
     \endentry
     \entry{lin1973effective}{article}{}{}
       \name{author}{2}{}{%
-        {{hash=ee5ad1086dab61efed0851b6802d25e4}{%
+        {{hash=d3b259fe393123df658587a526efda41}{%
            family={Lin},
            familyi={L\bibinitperiod},
-           given={Shen},
+           given={S.},
            giveni={S\bibinitperiod}}}%
-        {{hash=cef3a18f3097ba31cc4cf18c95bfdfbc}{%
+        {{hash=15f0a682b83d6ef4ba8951fb74fde8b7}{%
            family={Kernighan},
            familyi={K\bibinitperiod},
-           given={Brian\bibnamedelima W.},
+           given={B.\bibnamedelimi W.},
            giveni={B\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
       }
-      \strng{namehash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{fullhash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{fullhashraw}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{bibnamehash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{authorbibnamehash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{authornamehash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{authorfullhash}{ca68ba4e55832da4e80ef54bff1e170d}
-      \strng{authorfullhashraw}{ca68ba4e55832da4e80ef54bff1e170d}
+      \strng{namehash}{472b6a67d893e7b6914437f08c822332}
+      \strng{fullhash}{472b6a67d893e7b6914437f08c822332}
+      \strng{fullhashraw}{472b6a67d893e7b6914437f08c822332}
+      \strng{bibnamehash}{472b6a67d893e7b6914437f08c822332}
+      \strng{authorbibnamehash}{472b6a67d893e7b6914437f08c822332}
+      \strng{authornamehash}{472b6a67d893e7b6914437f08c822332}
+      \strng{authorfullhash}{472b6a67d893e7b6914437f08c822332}
+      \strng{authorfullhashraw}{472b6a67d893e7b6914437f08c822332}
       \field{sortinit}{7}
       \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{eprinttype}{jstor}
       \field{journaltitle}{Operations Research}
+      \field{langid}{english}
       \field{number}{2}
-      \field{title}{An Effective Heuristic Algorithm for the Traveling-Salesman Problem}
+      \field{title}{An {{Effective Heuristic Algorithm}} for the {{Traveling-Salesman Problem}}}
       \field{volume}{21}
       \field{year}{1973}
+      \field{dateera}{ce}
       \field{pages}{498\bibrangedash 516}
       \range{pages}{19}
-      \verb{doi}
-      \verb 10.1287/opre.21.2.498
+      \verb{eprint}
+      \verb 169020
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\J6V6B8MN\Lin and Kernighan - 1973 - An Effective Heuristic Algorithm for the Traveling-Salesman Problem.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://www.jstor.org/stable/169020
+      \endverb
+      \verb{url}
+      \verb http://www.jstor.org/stable/169020
       \endverb
     \endentry
-    \entry{rashid2018qmix}{inproceedings}{}{}
+    \entry{rashid2018qmix}{article}{}{}
       \name{author}{6}{}{%
         {{hash=8eb7df23daba9c7bf22402026effdae7}{%
            family={Rashid},
@@ -1670,11 +2199,13 @@
            familyi={S\bibinitperiod},
            given={Mikayel},
            giveni={M\bibinitperiod}}}%
-        {{hash=37d87dc5b952b06e763236a42d3d9a4c}{%
-           family={Schroeder},
-           familyi={S\bibinitperiod},
-           given={Christian},
-           giveni={C\bibinitperiod}}}%
+        {{useprefix=true,hash=d056cdb8ed6bebb55e13c2246059af79}{%
+           family={Witt},
+           familyi={W\bibinitperiod},
+           given={Christian\bibnamedelima Schroeder},
+           giveni={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
         {{hash=de7fc27bb6e6105440cd3039a5c9b684}{%
            family={Farquhar},
            familyi={F\bibinitperiod},
@@ -1691,39 +2222,37 @@
            given={Shimon},
            giveni={S\bibinitperiod}}}%
       }
-      \list{publisher}{1}{%
-        {PMLR}%
-      }
       \strng{namehash}{50d98948d170d7e9f0685c5c2364a676}
-      \strng{fullhash}{f283d85b8d2619a6e41c154a0f58016e}
-      \strng{fullhashraw}{f283d85b8d2619a6e41c154a0f58016e}
+      \strng{fullhash}{d69266a177b46120cc1dbedeef7d4a43}
+      \strng{fullhashraw}{d69266a177b46120cc1dbedeef7d4a43}
       \strng{bibnamehash}{50d98948d170d7e9f0685c5c2364a676}
       \strng{authorbibnamehash}{50d98948d170d7e9f0685c5c2364a676}
       \strng{authornamehash}{50d98948d170d7e9f0685c5c2364a676}
-      \strng{authorfullhash}{f283d85b8d2619a6e41c154a0f58016e}
-      \strng{authorfullhashraw}{f283d85b8d2619a6e41c154a0f58016e}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \strng{authorfullhash}{d69266a177b46120cc1dbedeef7d4a43}
+      \strng{authorfullhashraw}{d69266a177b46120cc1dbedeef7d4a43}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of the 35th International Conference on Machine Learning (ICML)}
-      \field{title}{{QMIX}: Monotonic value function factorisation for deep multi-agent reinforcement learning}
-      \field{year}{2018}
-      \field{pages}{4295\bibrangedash 4304}
-      \range{pages}{10}
+      \field{abstract}{In many real-world settings, a team of agents must coordinate its behaviour while acting in a decentralised fashion. At the same time, it is often possible to train the agents in a centralised fashion where global state information is available and communication constraints are lifted. Learning joint action-values conditioned on extra state information is an attractive way to exploit centralised learning, but the best strategy for then extracting decentralised policies is unclear. Our solution is QMIX, a novel value-based method that can train decentralised policies in a centralised end-to-end fashion. QMIX employs a mixing network that estimates joint action-values as a monotonic combination of per-agent values. We structurally enforce that the joint-action value is monotonic in the per-agent values, through the use of non-negative weights in the mixing network, which guarantees consistency between the centralised and decentralised policies. To evaluate the performance of QMIX, we propose the StarCraft Multi-Agent Challenge (SMAC) as a new benchmark for deep multi-agent reinforcement learning. We evaluate QMIX on a challenging set of SMAC scenarios and show that it significantly outperforms existing multi-agent reinforcement learning methods.}
+      \field{langid}{english}
+      \field{title}{Monotonic {{Value Function Factorisation}} for {{Deep Multi-Agent Reinforcement Learning}}}
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\3EHGPBGP\Rashid et al. - Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning.pdf
+      \endverb
     \endentry
-    \entry{zhao2021sim2real}{article}{}{}
+    \entry{zhao2021sim2real}{inproceedings}{}{}
       \name{author}{3}{}{%
         {{hash=0d33642ca0bce16df8565111e5dd3f75}{%
            family={Zhao},
            familyi={Z\bibinitperiod},
            given={Wenshuai},
            giveni={W\bibinitperiod}}}%
-        {{hash=52eb77c3cd7d3cab12984d1d6649b00b}{%
-           family={Peña\bibnamedelima Queralta},
-           familyi={P\bibinitperiod\bibinitdelim Q\bibinitperiod},
-           given={Jorge},
-           giveni={J\bibinitperiod}}}%
+        {{hash=8695c2a8e948284d473515ae87368a8e}{%
+           family={Queralta},
+           familyi={Q\bibinitperiod},
+           given={Jorge\bibnamedelima Peña},
+           giveni={J\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
         {{hash=b75e9db8d37e84616f4c935075954062}{%
            family={Westerlund},
            familyi={W\bibinitperiod},
@@ -1731,25 +2260,50 @@
            giveni={T\bibinitperiod}}}%
       }
       \strng{namehash}{41212c8bbd78466749ea9c978871f51c}
-      \strng{fullhash}{c3091947cf2ab7973f5d5ec0702686ed}
-      \strng{fullhashraw}{c3091947cf2ab7973f5d5ec0702686ed}
-      \strng{bibnamehash}{c3091947cf2ab7973f5d5ec0702686ed}
-      \strng{authorbibnamehash}{c3091947cf2ab7973f5d5ec0702686ed}
+      \strng{fullhash}{af04416e0a6038e0c7600ae9cb3da102}
+      \strng{fullhashraw}{af04416e0a6038e0c7600ae9cb3da102}
+      \strng{bibnamehash}{af04416e0a6038e0c7600ae9cb3da102}
+      \strng{authorbibnamehash}{af04416e0a6038e0c7600ae9cb3da102}
       \strng{authornamehash}{41212c8bbd78466749ea9c978871f51c}
-      \strng{authorfullhash}{c3091947cf2ab7973f5d5ec0702686ed}
-      \strng{authorfullhashraw}{c3091947cf2ab7973f5d5ec0702686ed}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \strng{authorfullhash}{af04416e0a6038e0c7600ae9cb3da102}
+      \strng{authorfullhashraw}{af04416e0a6038e0c7600ae9cb3da102}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{eprintclass}{cs.LG}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Deep reinforcement learning has recently seen huge success across multiple areas in the robotics domain. Owing to the limitations of gathering real-world data, i.e., sample inefficiency and the cost of collecting it, simulation environments are utilized for training the different agents. This not only aids in providing a potentially infinite data source, but also alleviates safety concerns with real robots. Nonetheless, the gap between the simulated and real worlds degrades the performance of the policies once the models are transferred into real robots. Multiple research efforts are therefore now being directed towards closing this sim-toreal gap and accomplish more efficient policy transfer. Recent years have seen the emergence of multiple methods applicable to different domains, but there is a lack, to the best of our knowledge, of a comprehensive review summarizing and putting into context the different methods. In this survey paper, we cover the fundamental background behind sim-to-real transfer in deep reinforcement learning and overview the main methods being utilized at the moment: domain randomization, domain adaptation, imitation learning, meta-learning and knowledge distillation. We categorize some of the most relevant recent works, and outline the main application scenarios. Finally, we discuss the main opportunities and challenges of the different approaches and point to the most promising directions.}
+      \field{booktitle}{2020 {{IEEE Symposium Series}} on {{Computational Intelligence}} ({{SSCI}})}
+      \field{day}{1}
+      \field{eprintclass}{cs}
       \field{eprinttype}{arXiv}
-      \field{journaltitle}{arXiv preprint arXiv:2009.13303}
-      \field{title}{Sim-to-Real Transfer in Deep Reinforcement Learning for Robotics: A Survey}
-      \field{year}{2021}
+      \field{langid}{english}
+      \field{month}{12}
+      \field{shorttitle}{Sim-to-{{Real Transfer}} in {{Deep Reinforcement Learning}} for {{Robotics}}}
+      \field{title}{Sim-to-{{Real Transfer}} in {{Deep Reinforcement Learning}} for {{Robotics}}: A {{Survey}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2020}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{737\bibrangedash 744}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1109/SSCI47803.2020.9308468.
+      \endverb
       \verb{eprint}
       \verb 2009.13303
       \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\X7JE53UW\Zhao et al. - 2020 - Sim-to-Real Transfer in Deep Reinforcement Learning for Robotics a Survey.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/2009.13303
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/2009.13303
+      \endverb
+      \keyw{Computer Science - Machine Learning,Computer Science - Robotics}
     \endentry
     \entry{alhourani2014optimal}{article}{}{}
       \name{author}{3}{}{%
@@ -1777,19 +2331,38 @@
       \strng{authornamehash}{0e422e7eda07d8bf9b8f61206fab3808}
       \strng{authorfullhash}{a0091866993d30b540585e6efa2afcac}
       \strng{authorfullhashraw}{a0091866993d30b540585e6efa2afcac}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{abstract}{Low altitude aerial platforms (LAP) have recently gained a significant popularity as key enablers for rapid deployable relief networks where coverage is provided by onboard radio heads. These platforms are capable of delivering essential wireless communication for public safety agencies in remote areas or during the aftermath of natural disasters. In this paper we present an analytical approach to optimize the altitude of such platforms to provide maximum radio coverage on the ground. Our analysis shows the optimal altitude is a function of the maximum allowed pathloss and of the statistical parameters of the urban environment as defined by the International Telecommunication Union. Furthermore, we present a closed form formula for predicting the probability of geometrical line of sight between the LAP and a ground receiver.}
+      \field{issn}{2162-2337, 2162-2345}
       \field{journaltitle}{IEEE Wireless Communications Letters}
+      \field{langid}{english}
+      \field{month}{12}
       \field{number}{6}
-      \field{title}{Optimal {LAP} Altitude for Maximum Coverage}
+      \field{shortjournal}{IEEE Wireless Commun. Lett.}
+      \field{title}{Optimal {{LAP Altitude}} for {{Maximum Coverage}}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
       \field{volume}{3}
       \field{year}{2014}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
       \field{pages}{569\bibrangedash 572}
       \range{pages}{4}
       \verb{doi}
       \verb 10.1109/LWC.2014.2342736
+      \endverb
+      \verb{file}
+      \verb C:\Users\okeat\Zotero\storage\FQ7ZA8AY\Al-Hourani et al. - 2014 - Optimal LAP Altitude for Maximum Coverage.pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://ieeexplore.ieee.org/document/6863654/
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/document/6863654/
       \endverb
     \endentry
     \entry{semtech_sx1276}{report}{}{}
@@ -1809,14 +2382,80 @@
       \strng{authornamehash}{1696cc5da74cfa805cfbe6dcbfea03f8}
       \strng{authorfullhash}{1696cc5da74cfa805cfbe6dcbfea03f8}
       \strng{authorfullhashraw}{1696cc5da74cfa805cfbe6dcbfea03f8}
-      \field{sortinit}{9}
-      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{number}{Rev.~7}
       \field{title}{{SX1276/77/78/79 -- 137 MHz to 1020 MHz Low Power Long Range Transceiver Datasheet}}
       \field{type}{techreport}
       \field{year}{2020}
+    \endentry
+    \entry{jain1984quantitative}{report}{}{}
+      \name{author}{3}{}{%
+        {{hash=3322df3ccf4f2b377db993bd64be33aa}{%
+           family={Jain},
+           familyi={J\bibinitperiod},
+           given={Raj},
+           giveni={R\bibinitperiod}}}%
+        {{hash=4294dfaa15246b9be2177f3ddf1a800e}{%
+           family={Chiu},
+           familyi={C\bibinitperiod},
+           given={Dah-Ming},
+           giveni={D\bibinithyphendelim M\bibinitperiod}}}%
+        {{hash=790ef81bfc7b4bd70c6d6ce669715ff2}{%
+           family={Hawe},
+           familyi={H\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Digital Equipment Corporation}%
+      }
+      \strng{namehash}{154051113a54fef159f636abdfbb2e9d}
+      \strng{fullhash}{23daa408d11549376406ab92000bf8c2}
+      \strng{fullhashraw}{23daa408d11549376406ab92000bf8c2}
+      \strng{bibnamehash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authorbibnamehash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authornamehash}{154051113a54fef159f636abdfbb2e9d}
+      \strng{authorfullhash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authorfullhashraw}{23daa408d11549376406ab92000bf8c2}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{DEC-TR-301}
+      \field{title}{A Quantitative Measure of Fairness and Discrimination for Resource Allocation in Shared Computer Systems}
+      \field{type}{techreport}
+      \field{year}{1984}
+    \endentry
+    \entry{welch1947}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=3908055ba8c455226a4e7ecfcf22a19c}{%
+           family={Welch},
+           familyi={W\bibinitperiod},
+           given={Bernard\bibnamedelima L.},
+           giveni={B\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{fullhash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{fullhashraw}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{bibnamehash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{authorbibnamehash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{authornamehash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{authorfullhash}{3908055ba8c455226a4e7ecfcf22a19c}
+      \strng{authorfullhashraw}{3908055ba8c455226a4e7ecfcf22a19c}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrika}
+      \field{number}{1/2}
+      \field{title}{The Generalization of `{Student's}' Problem when Several Different Population Variances are Involved}
+      \field{volume}{34}
+      \field{year}{1947}
+      \field{pages}{28\bibrangedash 35}
+      \range{pages}{8}
     \endentry
   \enddatalist
 \endrefsection

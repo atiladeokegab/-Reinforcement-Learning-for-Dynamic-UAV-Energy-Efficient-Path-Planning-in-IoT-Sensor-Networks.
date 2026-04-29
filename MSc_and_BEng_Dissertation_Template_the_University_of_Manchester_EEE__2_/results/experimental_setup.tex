@@ -1,39 +1,26 @@
 \subsection{Experimental Setup}
 \label{sec:exp_setup}
 
-All agents are evaluated on the Gymnasium simulation of
-Section~\ref{sec:env}: UAV at 100\,m altitude, 10\,m per grid cell,
+All agents are evaluated on the Gymnasium simulation
+(Section~\ref{sec:env}): UAV at 100\,m altitude, 10\,m per grid cell,
 274\,Wh battery, 2100-step episode. Both learned policies use
-deterministic action selection at test time (DQN with
-$\varepsilon = 0$ and frame stacking $k{=}4$; Relational-RL with
-$\arg\max$ over $\pi_\theta$). The scalability sweep varies grid and
-sensor count jointly across five matched conditions holding sensor
-density roughly constant at one sensor per $10^4$ cells:
-$(100{\times}100, N{=}10)$, $(200{\times}200, N{=}20)$,
-$(300{\times}300, N{=}30)$, $(400{\times}400, N{=}40)$, and
-$(500{\times}500, N{=}50)$. Each condition is evaluated with
-\textbf{50 independent seeds per agent per condition}, all sharing
-identical seed-controlled sensor layouts for paired analysis.
-Per-episode metrics are cumulative reward, NDR (fraction of sensors
-visited), Jain's fairness on per-sensor collection ratios, and energy
-efficiency (bytes per Wh). Statistical significance uses Welch's
-$t$-test (two-sided, $\alpha = 0.05$) with bootstrap CIs
-($10{,}000$ resamples) on per-seed deltas. A separate 20-seed
-architectural diagnostic at $(200{\times}200, N{=}20)$ adds per-step
-boundary-cell occupancy and wall-collision counters
-(Section~\ref{sec:diagnostic}).
+deterministic action selection (DQN: $\varepsilon{=}0$, frame stack
+$k{=}4$; Relational-RL: $\arg\max$ over $\pi_\theta$). The scalability
+sweep covers five matched conditions from $(100{\times}100, N{=}10)$ to
+$(500{\times}500, N{=}50)$, holding sensor density at one per
+$10^3$ cells. Each condition uses \textbf{50 independent seeds per
+agent}, sharing identical seed-controlled layouts for paired analysis.
+A separate 20-seed architectural diagnostic at $(200{\times}200,
+N{=}20)$ adds boundary-cell occupancy and wall-collision counters
+(Section~\ref{sec:diagnostic}). Per-episode metrics are cumulative
+reward, NDR, Jain's fairness index, and energy efficiency (bytes/Wh).
+Significance uses Welch's $t$-test (two-sided, $\alpha{=}0.05$) and
+bootstrap CIs ($10{,}000$ resamples) on per-seed deltas.
 
-Four baselines are included. \textbf{Nearest-Sensor Greedy} moves to the closest buffered sensor.
-\textbf{SF-Aware Max-Throughput Greedy} scores candidates as
-$f(s) = (1 - \mathrm{BER}(s.\mathrm{SF}))\cdot\mathrm{payload}/T_{\mathrm{air}}(s.\mathrm{SF})$,
-prioritising low-SF sensors. \textbf{TSP Oracle}
-(Algorithm~\ref{alg:tsp}) computes a near-optimal visit order offline
-via Nearest-Neighbour + 2-opt local search~\cite{lin1973effective},
-with complete foreknowledge of sensor positions but no protocol
-awareness: it is therefore a routing-optimal upper bound.
-\textbf{Lawnmower} follows a precomputed boustrophedon raster,
-reported at 5 seeds as an indicative coverage-only benchmark
-(Appendix~\ref{app:lawnmower}). A random-walk agent is not
-included because all five listed baselines already achieve $\ge 99\%$
-coverage at the trivial scale; the relevant comparison is against
-competent planners, not undirected exploration.
+Four baselines are evaluated alongside the two learned policies:
+Nearest-Sensor Greedy (nearest buffered sensor); SF-Aware
+Max-Throughput Greedy (battery-adaptive scoring over SF quality, buffer
+fill, and distance); TSP Oracle via Nearest-Neighbour~$+$~2-opt
+(Algorithm~\ref{alg:tsp},~\cite{lin1973effective}) as a routing-optimal
+upper bound; and Lawnmower at 5 seeds as an indicative coverage
+reference (Appendix~\ref{app:lawnmower}).

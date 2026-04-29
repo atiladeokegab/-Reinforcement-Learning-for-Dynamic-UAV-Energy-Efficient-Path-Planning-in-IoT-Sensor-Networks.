@@ -30,15 +30,6 @@ argument for MLP over attention or graph neural networks on this
 specific training distribution is summarised in
 Appendix~\ref{app:extended_methodology}.
 
-On information freshness and domain generalisation, Kaul et al.~\cite{kaul2012realtime} show that the throughput-optimal
-update frequency is not the freshness-optimal frequency, motivating
-the explicit AoI term in the reward. Abd-Elmagid et
-al.~\cite{abdelmagid2019aoi} demonstrate a fundamental AoI--throughput
-trade-off in IoT networks, supporting the multi-term weighted reward.
-Tobin et al.~\cite{tobin2017domain} introduce domain randomisation
-to bridge the sim-to-real gap (subsequently validated at scale in
-robotic manipulation~\cite{openai2019dexterous}), and Bengio et
-al.~\cite{bengio2009curriculum} show curriculum learning accelerates
-convergence and improves generalisation; both techniques are combined
-in this work to produce a single policy deployable across a
-$100\times$ variation in operational area without retraining.
+Kaul et al.~\cite{kaul2012realtime} show that the throughput-optimal update frequency for a status process differs from the freshness-optimal one: maximising packet delivery rate does not minimise Average Age of Information. That distinction motivates the AoI penalty in the reward (Section~\ref{sec:reward}). Without it, a policy rewarded only for bytes collected tends to hover on the highest-buffer sensor, leaving the rest to age; the AoI term pushes it to spread collection across the field instead.
+
+Tobin et al.~\cite{tobin2017domain} show that domain randomisation (varying simulation parameters across training episodes) closes the sim-to-real gap by stopping the policy from overfitting to simulation-specific artefacts. Bengio et al.~\cite{bengio2009curriculum} show that curriculum learning, which increases task difficulty as competence grows, speeds convergence without hurting asymptotic performance. Both are applied here: domain randomisation over grid size and sensor count stops the policy memorising a fixed deployment, and the competence-gated curriculum avoids wasting training steps at difficulty levels the policy cannot yet handle. The combination yields a single policy that works across a $100\times$ range in operational area without retraining.
