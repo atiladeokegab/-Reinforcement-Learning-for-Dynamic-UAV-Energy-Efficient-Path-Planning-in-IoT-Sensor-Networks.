@@ -69,7 +69,7 @@ horizon.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_vs_relational.png}
-\caption{UAV trajectories for one representative episode at $300{\times}300$, $N{=}20$ (seed 1). Both agents face the identical sensor layout. Green circles are sensors from which data was collected; red circles were not reached. The DQN collects only the sensors within LoRa range of its start position, leaving 9 of 20 sensors unvisited. The relational policy navigates through the grid and visits all 20 sensors. Aggregate statistics across 50 seeds are in Table~\ref{tab:scalability_ndr}.}
+\caption{UAV trajectories for one representative episode at $400{\times}400$, $N{=}30$ (seed 9). Both agents face the identical sensor layout. Green circles are sensors from which data was collected; red circles were not reached. The DQN collects only sensors within LoRa range of the start corner (NDR $= 33\%$). The relational policy navigates through the grid interior, reaching 28 of 30 sensors (NDR $= 93\%$). Aggregate statistics across 50 seeds are in Table~\ref{tab:scalability_ndr}.}
 \label{fig:trajectory_compare}
 \end{figure}
 

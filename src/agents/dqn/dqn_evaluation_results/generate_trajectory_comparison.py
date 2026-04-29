@@ -36,9 +36,9 @@ from relational_rl_runner import InferenceRelationalUAVEnv, load_relational_rl_m
 from ray.rllib.core.columns import Columns
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SEED       = 1
-GRID_SIZE  = (300, 300)
-N_SENSORS  = 20
+SEED       = 9
+GRID_SIZE  = (400, 400)
+N_SENSORS  = 30
 MAX_STEPS  = 2100
 MAX_BATTERY = 274.0
 N_MAX      = 50
@@ -186,8 +186,8 @@ def plot(dqn_data, rel_data):
         # Trajectory with alpha fade (recent = darker)
         n = len(xs)
         for i in range(n - 1):
-            alpha = 0.15 + 0.7 * (i / max(n - 1, 1))
-            ax.plot(xs[i:i+2], ys[i:i+2], color="#2166ac", lw=0.6, alpha=alpha)
+            alpha = 0.25 + 0.65 * (i / max(n - 1, 1))
+            ax.plot(xs[i:i+2], ys[i:i+2], color="#2166ac", lw=1.0, alpha=alpha)
 
         # Start / end markers
         ax.plot(xs[0],  ys[0],  marker="s", ms=6, color="green",  zorder=5, label="Start")
