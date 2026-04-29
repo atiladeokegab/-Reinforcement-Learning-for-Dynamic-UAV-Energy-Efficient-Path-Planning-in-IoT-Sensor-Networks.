@@ -486,12 +486,13 @@
 % ------------------------------------------------------------
 \begin{frame}{What is the DQN actually doing?}
   \centering
-  \includegraphics[height=0.72\textheight,keepaspectratio]{trajectory_single.png}
+  \includegraphics[width=0.97\linewidth,keepaspectratio]{trajectory_dqn_vs_relational.png}
   \vfill
   \small
-  \qt{DQN: NDR\,=\,0\% — never leaves its column.
-  Greedy: NDR\,=\,97\% — structured sweep, reaches almost every sensor.
-  The drone is physically capable of moving. It doesn't.}
+  \emp{Same 30 sensors. Same starting position.}\\[0.3em]
+  \qt{DQN: NDR\,=\,33\% — collects only sensors within LoRa range of the corner.
+  Relational RL: NDR\,=\,93\% — navigates the grid and reaches sensors everywhere.
+  The drone is physically capable of moving. The flat MLP chooses not to.}
 \end{frame}
 
 
@@ -642,6 +643,58 @@
 \end{frame}
 
 
+% ------------------------------------------------------------
+% SLIDE 13b --- Algorithm vs Architecture  (0:45)
+% SPEAKER: "Before I show you the full results, one more question
+% needs answering. Is the gain architectural — or did I just
+% switch to a better training algorithm? PPO instead of DQN.
+% I ran a controlled experiment. Same environment. Same
+% curriculum. Three conditions: DQN with flat MLP, PPO with
+% flat MLP, PPO with the relational encoder. Swapping the
+% algorithm alone — DQN to PPO, flat MLP unchanged — gains
+% 6 to 15 percentage points at scale. Swapping the encoder
+% alone — flat MLP to relational, PPO unchanged — gains 34
+% to 40 percentage points. Three times as much. The gain is
+% architectural."
+% ------------------------------------------------------------
+\begin{frame}{Is it the architecture or the algorithm?}
+  \vspace{0.3em}
+  \begin{block}{}
+    \centering\small
+    Controlled experiment: swap one factor at a time.
+  \end{block}
+  \vspace{0.6em}
+  \footnotesize
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    & \textbf{DQN (flat MLP)} & \textbf{PPO (flat MLP)} & \textbf{PPO (relational)} \\
+    \midrule
+    $300{\times}300$, $N{=}30$ & $52.7\%$ & $58.9\%$ & $\mathbf{96.6\%}$ \\
+    $400{\times}400$, $N{=}40$ & $27.5\%$ & $42.5\%$ & $\mathbf{82.2\%}$ \\
+    $500{\times}500$, $N{=}50$ & $13.0\%$ & $24.7\%$ & $\mathbf{58.4\%}$ \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.8em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Algorithm effect (DQN $\to$ PPO)}
+        \footnotesize\centering
+        $+6$ to $+15$ pp NDR at $N{\ge}30$
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Architecture effect (flat $\to$ relational)}
+        \footnotesize\centering
+        $+34$ to $+40$ pp NDR at $N{\ge}30$
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \centering\emp{Architecture effect is $3\times$ the algorithm effect.
+  The gain is in the encoder, not the training recipe.}
+\end{frame}
+
+
 % ============================================================
 % ACT VI --- THE RESULTS   (slides 14-15, ~2 min)
 % ============================================================
@@ -676,7 +729,7 @@
   \vspace{0.35em}
   \small\emp{$+333\%$ NDR} vs DQN.\enspace
   \emp{$+17$\,pp} vs best heuristic.\enspace
-  Energy: $9.96 \to \mathbf{121.9}$\,B/Wh \emp{(${\times}12$)}
+  Energy: $10.0 \to \mathbf{121.9}$\,B/Wh \emp{(${\times}12$ vs DQN,\ ${\times}2.3$ vs PPO+FlatMLP)}
   \par\vspace{0.25em}
   \qt{All DQN-vs-RelRL: $p < 10^{-4}$, Welch's $t$-test, 50 seeds.\enspace
   $t = -26.4$ at $(500,50)$.}

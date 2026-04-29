@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  28 APR 2026 23:20
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.11.16)  29 APR 2026 09:04
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -2021,7 +2021,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 \openout6 = main.toc
  [4] (./main.lof
-Overfull \hbox (8.45686pt too wide) in paragraph at lines 6--6
+Overfull \hbox (8.45686pt too wide) in paragraph at lines 7--7
  \TU/Calibri(0)/m/n/12 nates the DQN and both greedy base-lines at ev-ery con-di
 -tion be-yond the triv-ial $\OT1/cmr/m/n/12 100[]100$\TU/Calibri(0)/m/n/12 , 
  []
@@ -2039,73 +2039,73 @@ vs Relational-RL pol-icy, 20 seeds, $\OT1/cmr/m/n/12 200[]200$
  []
 
 
-Overfull \hbox (5.09848pt too wide) in paragraph at lines 14--14
+Overfull \hbox (5.09848pt too wide) in paragraph at lines 16--16
  [][] [][]\TU/Calibri(0)/m/n/12 Project Time-line (Semester 1: S1, Semester 2: 
 S2; weeks num-bered within each semester).[] []  
  []
 
-)
+[7
+
+])
 \tf@lot=\write8
 
 \openout8 = main.lot
- [7
-
-] (./abstract.tex) [8
-
-] [9
+ [8] (./abstract.tex) [9
 
 ] [10
 
-] (./acknowledgements.tex) [11
+] [11
+
+] (./acknowledgements.tex) [12
 
 ]
 (./abbreviations.tex
-ignored error Infinite glue shrinkage found in box being split [12
+ignored error Infinite glue shrinkage found in box being split [13
 
-] [13]
-ignored error Infinite glue shrinkage found in box being split [14
+] [14]
+ignored error Infinite glue shrinkage found in box being split [15
 
-] [15])
+] [16])
 (./introduction.tex (./introduction/background_motivation.tex)
-(./introduction/aims_objectives.tex [16
+(./introduction/aims_objectives.tex [17
 
 
 ]) (./introduction/contributions.tex
-[17]) (./introduction/report_structure.tex)) [18] (./literature_review.tex
+[18]) (./introduction/report_structure.tex)) [19] (./literature_review.tex
 (./literature_review/lorawan_scalability.tex)
-(./literature_review/existing_approaches.tex [19
+(./literature_review/existing_approaches.tex [20
 
 ])
-(./literature_review/ai_native_networking.tex [20])
-(./literature_review/permutation_invariant_policies.tex [21])
-(./literature_review/summary_positioning.tex [22])) [23] (./preliminaries.tex
+(./literature_review/ai_native_networking.tex [21])
+(./literature_review/permutation_invariant_policies.tex [22])
+(./literature_review/summary_positioning.tex [23])) [24] (./preliminaries.tex
 (./preliminaries/lorawan_physical_layer.tex)
 (./preliminaries/channel_propagation.tex) (./preliminaries/deep_rl.tex
-(./figures/drl_architecture_tikz.tex (./figures/nn_style.tex)))) [24
+(./figures/drl_architecture_tikz.tex (./figures/nn_style.tex)))) [25
 
-] [25]
-(./methodology.tex (./methodology/system_model.tex [26
+] [26]
+(./methodology.tex (./methodology/system_model.tex [27
 
 ])
-(./methodology/problem_formulation.tex [27] [28])
+(./methodology/problem_formulation.tex [28] [29])
 (./methodology/sensor_placement.tex (./figures/system_model_tikz.tex
-<images/dji.png, id=597, 752.8125pt x 752.8125pt>
+<images/dji.png, id=615, 752.8125pt x 752.8125pt>
 File: images/dji.png Graphic file (type png)
 <use images/dji.png>
 Package luatex.def Info: images/dji.png  used on input line 80.
 (luatex.def)             Requested size: 79.6678pt x 79.66219pt.
-) [29<./images/dji.png>]) (./methodology/drl_implementation.tex [30] [31])
-(./methodology/relational_rl_policy.tex [32]
-(./figures/relational_arch_tikz.tex (./figures/nn_style.tex)) [33])
+) [30<./images/dji.png>]) (./methodology/drl_implementation.tex [31] [32])
+(./methodology/relational_rl_policy.tex [33]
+(./figures/relational_arch_tikz.tex (./figures/nn_style.tex)) [34])
 (./methodology/architecture_interface.tex)
-(./methodology/modelling_assumptions.tex)) [34] (./results.tex
+(./methodology/modelling_assumptions.tex)) [35] (./results.tex
 (./results/intro.tex) (./results/experimental_setup.tex)
-(./results/single_episode.tex) (./results/multi_seed_analysis.tex [35
+(./results/single_episode.tex) (./results/multi_seed_analysis.tex [36
 
 ])
-(./results/scalability.tex) (./results/architectural_diagnostic.tex [36]
+(./results/scalability.tex) (./results/architectural_diagnostic.tex [37]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatmap
-.png, id=696, 433.62pt x 397.485pt>
+.png, id=714, 433.62pt x 397.485pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_he
 atmap.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_hea
@@ -2114,11 +2114,11 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/dqn_boundary_heatmap.png  used on input line 22.
 (luatex.def)             Requested size: 299.8897pt x 274.91391pt.
 
-[37<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatm
-ap.png>]) (./results/ablation_study.tex [38] [39])
-(./results/robustness_analysis.tex) (./results/relational_rl.tex [40]
+[38<../src/agents/dqn/dqn_evaluation_results/baseline_results/dqn_boundary_heatm
+ap.png>]) (./results/ablation_study.tex [39] [40])
+(./results/robustness_analysis.tex) (./results/relational_rl.tex [41]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_com
-pare.png, id=735, 903.375pt x 397.485pt>
+pare.png, id=754, 903.375pt x 397.485pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatma
 p_compare.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap
@@ -2126,48 +2126,58 @@ _compare.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/boundary_heatmap_compare.png  used on input line 22.
 (luatex.def)             Requested size: 459.51054pt x 202.187pt.
- [41<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_
+ [42<../src/agents/dqn/dqn_evaluation_results/baseline_results/boundary_heatmap_
 compare.png>]
+<../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_vs_re
+lational.png, id=762, 628.749pt x 328.8285pt>
+File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_
+vs_relational.png Graphic file (type png)
+<use ../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_v
+s_relational.png>
+Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
+lts/trajectory_dqn_vs_relational.png  used on input line 71.
+(luatex.def)             Requested size: 483.69687pt x 252.97795pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combined
-.png, id=748, 867.24pt x 325.215pt>
+.png, id=769, 867.24pt x 325.215pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_com
 bined.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_comb
 ined.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
-lts/scalability_combined.png  used on input line 73.
+lts/scalability_combined.png  used on input line 80.
 (luatex.def)             Requested size: 483.69687pt x 181.38968pt.
- [42<../src/agents/dqn/dqn_evaluation_results/baseline_results/scalability_combi
-ned.png>]) (./results/sf_analysis.tex [43]) (./results/discussion.tex
-[44])) [45] (./conclusions.tex (./conclusions/conclusions_content.tex [46
+ [43<../src/agents/dqn/dqn_evaluation_results/baseline_results/trajectory_dqn_vs
+_relational.png>] [44<../src/agents/dqn/dqn_evaluation_results/baseline_results/
+scalability_combined.png>] [45]) (./results/sf_analysis.tex)
+(./results/discussion.tex [46])) [47] (./conclusions.tex
+(./conclusions/conclusions_content.tex [48
 
-])
-(./conclusions/future_work.tex)) [47] (./project_management.tex) [48
+]) (./conclusions/future_work.tex
+[49])) [50] (./project_management.tex) [51
 
-] [49
+] [52
 
-]
-[50] [51] [52] [53] (./appendices/project_outline.tex [54
+] [53] [54] [55] [56]
+(./appendices/project_outline.tex [57
 
-] [55])
-(./appendices/project_plan.tex [56] [57
+] [58]) (./appendices/project_plan.tex
+[59] [60
 
-]) (./appendices/risk_register.tex
-[58]
+]) (./appendices/risk_register.tex [61]
 Underfull \hbox (badness 1622) in paragraph at lines 47--47
 \TU/Calibri(0)/m/n/10.95 Baselines3 pro-vides ef-fi-cient GPU- 
  []
 
-) (./appendices/cpd_log.tex [59
+) (./appendices/cpd_log.tex [62
 
-] [60]
+] [63]
 Underfull \hbox (badness 1237) in paragraph at lines 34--34
 []|\TU/Calibri(0)/m/n/10.95 S1 
  []
 
-[61
+[64
 
-] [62] [63]
+] [65] [66]
 Underfull \hbox (badness 1158) in paragraph at lines 106--106
 []|\TU/Calibri(0)/m/n/12 S1 
  []
@@ -2177,8 +2187,8 @@ Underfull \hbox (badness 3108) in paragraph at lines 106--106
 []|\TU/Calibri(0)/m/n/12 De-signed the three-stage cur-ricu-lum (grid sizes 
  []
 
-[64]) (./appendices/hs_assessment.tex [65] [66]) (./appendices/gantt_chart.tex
-[67
+[67]) (./appendices/hs_assessment.tex [68] [69]) (./appendices/gantt_chart.tex
+[70
 
 ]
 Underfull \hbox (badness 1024) in paragraph at lines 50--50
@@ -2205,30 +2215,30 @@ Underfull \hbox (badness 1024) in paragraph at lines 50--50
 []|\TU/Calibri(0)/m/n/10.95 S2 
  []
 
-) (./appendices/repository.tex [68
+) (./appendices/repository.tex [71
 
-] [69
+] [72
 
-] [70]) (./appendices/hyperparams.tex
-[71] [72]
+] [73]) (./appendices/hyperparams.tex
+[74] [75]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
 put line 41.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[73
+[76
 
 ]
 Overfull \vbox (43.0733pt too high) has occurred while \output is active []
 
 
-[74]) (./appendices/sim_to_real.tex [75] [76] [77
+[77]) (./appendices/sim_to_real.tex [78] [79] [80
 
-] [78])
-(./appendices/additional_figures.tex [79]
+] [81])
+(./appendices/additional_figures.tex [82]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence
-.png, id=1129, 494.8086pt x 234.51614pt>
+.png, id=1164, 494.8086pt x 234.51614pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_conver
 gence.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/training_converg
@@ -2237,7 +2247,7 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/training_convergence.png  used on input line 16.
 (luatex.def)             Requested size: 232.17242pt x 110.0401pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_convergen
-ce.png, id=1130, 432.1746pt x 257.40166pt>
+ce.png, id=1165, 432.1746pt x 257.40166pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conv
 ergence.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conve
@@ -2246,7 +2256,7 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/relational_convergence.png  used on input line 21.
 (luatex.def)             Requested size: 232.17242pt x 138.27998pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_combine
-d.png, id=1131, 570.4512pt x 356.532pt>
+d.png, id=1166, 570.4512pt x 356.532pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_co
 mbined.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_com
@@ -2254,13 +2264,13 @@ bined.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/ablation_ndr_combined.png  used on input line 34.
 (luatex.def)             Requested size: 474.02086pt x 296.2642pt.
- [80
+ [83
 
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/training_convergence.
 png><../src/agents/dqn/dqn_evaluation_results/baseline_results/relational_conver
 gence.png>]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.png, 
-id=1138, 634.65105pt x 418.9251pt>
+id=1173, 634.65105pt x 418.9251pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.
 png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.p
@@ -2269,7 +2279,7 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/pareto_scatter.png  used on input line 48.
 (luatex.def)             Requested size: 232.17242pt x 153.25476pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png, id=
-1139, 551.78145pt x 550.9383pt>
+1174, 551.78145pt x 550.9383pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png
  Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png>
@@ -2277,10 +2287,10 @@ File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/radar_chart.png  used on input line 53.
 (luatex.def)             Requested size: 232.17242pt x 231.82124pt.
- [81<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_comb
+ [84<../src/agents/dqn/dqn_evaluation_results/baseline_results/ablation_ndr_comb
 ined.png>]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png
-, id=1148, 2581.9662pt x 363.5181pt>
+, id=1182, 2581.9662pt x 363.5181pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatma
 p.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap
@@ -2289,7 +2299,7 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/fairness_heatmap.png  used on input line 67.
 (luatex.def)             Requested size: 411.14528pt x 57.8812pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_monocult
-ure_entropy.png, id=1149, 713.5458pt x 281.853pt>
+ure_entropy.png, id=1183, 713.5458pt x 281.853pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mon
 oculture_entropy.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sf_sweep/sf_mono
@@ -2297,20 +2307,20 @@ culture_entropy.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/sf_sweep/sf_monoculture_entropy.png  used on input line 78.
 (luatex.def)             Requested size: 483.69687pt x 191.064pt.
- [82<../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.pn
+ [85<../src/agents/dqn/dqn_evaluation_results/baseline_results/pareto_scatter.pn
 g><../src/agents/dqn/dqn_evaluation_results/baseline_results/radar_chart.png><..
 /src/agents/dqn/dqn_evaluation_results/baseline_results/fairness_heatmap.png>])
-(./appendices/extended_methodology.tex [83<../src/agents/dqn/dqn_evaluation_resu
-lts/baseline_results/sf_sweep/sf_monoculture_entropy.png>] [84
+(./appendices/extended_methodology.tex [86<../src/agents/dqn/dqn_evaluation_resu
+lts/baseline_results/sf_sweep/sf_monoculture_entropy.png>] [87
 
-] [85] [86]
-[87] [88] [89]
+] [88] [89]
+[90] [91] [92]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-) (./appendices/extended_results.tex [90] [91]
+) (./appendices/extended_results.tex [93] [94]
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_vs_r
-elational.png, id=1234, 614.295pt x 252.945pt>
+elational.png, id=1268, 614.295pt x 252.945pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn
 _vs_relational.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_
@@ -2319,7 +2329,7 @@ Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/forest_plot_dqn_vs_relational.png  used on input line 11.
 (luatex.def)             Requested size: 411.14528pt x 169.29472pt.
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robustne
-ss_summary.png, id=1235, 786.83963pt x 542.025pt>
+ss_summary.png, id=1269, 786.83963pt x 542.025pt>
 File: ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/rob
 ustness_summary.png Graphic file (type png)
 <use ../src/agents/dqn/dqn_evaluation_results/baseline_results/sim_to_real/robu
@@ -2327,11 +2337,11 @@ stness_summary.png>
 Package luatex.def Info: ../src/agents/dqn/dqn_evaluation_results/baseline_resu
 lts/sim_to_real/robustness_summary.png  used on input line 25.
 (luatex.def)             Requested size: 483.69687pt x 333.20692pt.
- [92
+ [95
 
 <../src/agents/dqn/dqn_evaluation_results/baseline_results/forest_plot_dqn_vs_re
-lational.png>] [93<../src/agents/dqn/dqn_evaluation_results/baseline_results/sim
-_to_real/robustness_summary.png>] [94] [95]) [96] (./main.aux)
+lational.png>] [96<../src/agents/dqn/dqn_evaluation_results/baseline_results/sim
+_to_real/robustness_summary.png>] [97] [98]) [99] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-10-24>
@@ -2342,14 +2352,14 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 )
 
 Here is how much of LuaTeX's memory you used:
- 48823 strings out of 476081
+ 48844 strings out of 476081
  125165,1977958 words of node,token memory allocated
- 1303 words of node memory still in use:
-   7 hlist, 2 vlist, 2 rule, 3 glue, 4 kern, 1 glyph, 73 attribute, 132 glue_spe
-c, 73 attribute_list, 2 write, 22 pdf_action nodes
+ 1333 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 3 glue, 4 kern, 1 glyph, 76 attribute, 132 glue_spe
+c, 76 attribute_list, 2 write, 25 pdf_action nodes
    avail lists: 1:1,2:5036,3:2892,4:425,5:1160,6:238,7:7267,8:72,9:1452,10:22,11
 :566
- 69508 multiletter control sequences out of 65536+600000
+ 69520 multiletter control sequences out of 65536+600000
  120 fonts using 44107039 bytes
  104i,15n,117p,2153b,3465s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
@@ -2380,9 +2390,9 @@ sy7.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
 s/cm/cmsy8.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/type1/public/
 amsfonts/symbols/msam10.pfb><C:/Users/okeat/AppData/Local/Programs/MiKTeX/fonts/
 type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (96 pages, 6109875 bytes).
+Output written on main.pdf (99 pages, 6179683 bytes).
 
-PDF statistics: 1591 PDF objects out of 1728 (max. 8388607)
- 296 named destinations out of 1000 (max. 131072)
+PDF statistics: 1625 PDF objects out of 1728 (max. 8388607)
+ 302 named destinations out of 1000 (max. 131072)
  575 words of extra memory for PDF output out of 10000 (max. 100000000)
 
