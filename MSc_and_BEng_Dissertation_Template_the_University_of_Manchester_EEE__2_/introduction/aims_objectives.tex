@@ -35,9 +35,10 @@ measurably resolves that bottleneck. The project objectives are:
     observed behaviour as a consequence of the flat-MLP inductive
     bias rather than a training failure.
     \item Implement and evaluate a permutation-invariant Relational-RL
-    policy (per-sensor encoder with masked sum-pooling, trained under
-    PPO on the same environment and curriculum), reporting its effect
-    on the diagnostic metrics, the multi-seed benchmarks, and the
+    policy (cross-attention encoder with UAV embedding as query over
+    the sensor set, trained under PPO on the same environment physics
+    and competence-gated curriculum), reporting its effect on the
+    diagnostic metrics, the multi-seed benchmarks, and the
     TSP-Oracle gap.
 \end{itemize}
 

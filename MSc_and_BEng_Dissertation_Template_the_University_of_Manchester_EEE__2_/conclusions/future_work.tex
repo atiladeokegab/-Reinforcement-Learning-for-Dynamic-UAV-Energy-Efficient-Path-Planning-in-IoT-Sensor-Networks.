@@ -2,13 +2,15 @@
 \label{sec:future_work}
 
 Five extensions are motivated directly by the findings.
-(1)~\textbf{Attention over the sensor set.} The Relational-RL policy
-adopts the simplest permutation-invariant aggregation, masked
-sum-pooling. A natural next step is a multi-head attention
-pool~\cite{kool2018attention} that replaces the sum with a learned
-weighted aggregation, providing a richer representation of
-inter-sensor routing cost while preserving permutation invariance;
-the TSP-Oracle ceiling is the concrete optimisation target.
+(1)~\textbf{Richer attention over the sensor set.} The Relational-RL
+policy uses a single fixed UAV query in the cross-attention layer,
+which weights sensors by their relevance to the current UAV state but
+does not model pairwise inter-sensor relationships. A natural next
+step is a multi-query or graph-attention
+pool~\cite{kool2018attention} that introduces learned per-sensor query
+embeddings, providing a richer representation of inter-sensor routing
+cost while preserving permutation invariance; the TSP-Oracle ceiling
+is the concrete optimisation target.
 (2)~\textbf{Multi-UAV coordination.} Even the TSP Oracle reaches
 only $76.8\%$ NDR at $(500{\times}500, N{=}50)$ because the
 traversable distance is capped by the episode energy budget. A

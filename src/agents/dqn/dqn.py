@@ -5,7 +5,6 @@ conditions by sampling a new grid from the current curriculum stage every episod
 Sensor count is fixed per worker; diversity is achieved via N_ENVS parallel workers.
 
 Author: ATILADE GABRIEL OKE
-"""
 
 import sys
 from pathlib import Path

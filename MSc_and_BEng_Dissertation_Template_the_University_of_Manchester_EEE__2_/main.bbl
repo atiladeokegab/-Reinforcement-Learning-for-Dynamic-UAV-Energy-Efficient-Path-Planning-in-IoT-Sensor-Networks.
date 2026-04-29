@@ -327,40 +327,40 @@
     \endentry
     \entry{xiong2023flyinglora}{article}{}{}
       \name{author}{5}{}{%
-        {{hash=46367cbdea2c17c3c2153b3dc71475fb}{%
+        {{hash=b7fa7aa53255c4a98f16a144ccf56098}{%
            family={Xiong},
            familyi={X\bibinitperiod},
-           given={Runzhi},
+           given={Runqun},
            giveni={R\bibinitperiod}}}%
-        {{hash=2162571776622cf94cf0496716e0d980}{%
-           family={Gu},
-           familyi={G\bibinitperiod},
-           given={Haoran},
+        {{hash=13ec0ac623fa582cd08c4107e1e62390}{%
+           family={Liang},
+           familyi={L\bibinitperiod},
+           given={Chuan},
+           giveni={C\bibinitperiod}}}%
+        {{hash=3ac2e2429d30b7c9f37a515e09961bcc}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Huajun},
            giveni={H\bibinitperiod}}}%
-        {{hash=f4cb47e36414ad185230a9af38bd8039}{%
-           family={Ren},
-           familyi={R\bibinitperiod},
-           given={Jiarong},
+        {{hash=ca52883550b3116f67461edf67616e92}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Xiangyu},
+           giveni={X\bibinitperiod}}}%
+        {{hash=0f1e44ccbada12be99eca2ea3f83bae8}{%
+           family={Luo},
+           familyi={L\bibinitperiod},
+           given={Junzhou},
            giveni={J\bibinitperiod}}}%
-        {{hash=c8cf19241225247d6d07dbf8a516b8ed}{%
-           family={Wang},
-           familyi={W\bibinitperiod},
-           given={Hao},
-           giveni={H\bibinitperiod}}}%
-        {{hash=badee109707f34722162e82feb7e6c67}{%
-           family={He},
-           familyi={H\bibinitperiod},
-           given={Tian},
-           giveni={T\bibinitperiod}}}%
       }
-      \strng{namehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{fullhash}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{fullhashraw}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{bibnamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authorbibnamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authornamehash}{75c99d4262149262b90169e672c13a3d}
-      \strng{authorfullhash}{b895b91bce0af327fa8dcf7e0d1d9118}
-      \strng{authorfullhashraw}{b895b91bce0af327fa8dcf7e0d1d9118}
+      \strng{namehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{fullhash}{a6adb5329a4bc91908659f276c408925}
+      \strng{fullhashraw}{a6adb5329a4bc91908659f276c408925}
+      \strng{bibnamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authorbibnamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authornamehash}{ef10788020f660d4e0a777eadf2edd60}
+      \strng{authorfullhash}{a6adb5329a4bc91908659f276c408925}
+      \strng{authorfullhashraw}{a6adb5329a4bc91908659f276c408925}
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
@@ -1256,6 +1256,57 @@
       \field{pages}{1\bibrangedash 61}
       \range{pages}{61}
     \endentry
+    \entry{liu2019uav}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=06848e7ffdf5805ba7ae3a5849bd7afe}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Chi\bibnamedelima Harold},
+           giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=5c069394326941cace3c2b60358b9423}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Zhi},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=541194db9dac70af45a28c067d289c8d}{%
+           family={Tang},
+           familyi={T\bibinitperiod},
+           given={Jian},
+           giveni={J\bibinitperiod}}}%
+        {{hash=ffd0b0c3743e938ccac63525d574f0a0}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Jie},
+           giveni={J\bibinitperiod}}}%
+        {{hash=9cd443b101dcc7914922d246c91b9ea3}{%
+           family={Piao},
+           familyi={P\bibinitperiod},
+           given={Chengzhe},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{fullhash}{ccd57d4295bf3e44148d6257e39e2910}
+      \strng{fullhashraw}{ccd57d4295bf3e44148d6257e39e2910}
+      \strng{bibnamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authorbibnamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authornamehash}{8217b8c8ac913ef5ac0d166885b3197a}
+      \strng{authorfullhash}{ccd57d4295bf3e44148d6257e39e2910}
+      \strng{authorfullhashraw}{ccd57d4295bf3e44148d6257e39e2910}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Journal on Selected Areas in Communications}
+      \field{number}{9}
+      \field{title}{Energy-Efficient {UAV} Control for Effective and Fair Communication Coverage: A Deep Reinforcement Learning Approach}
+      \field{volume}{36}
+      \field{year}{2018}
+      \field{pages}{2059\bibrangedash 2070}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1109/JSAC.2018.2864418
+      \endverb
+    \endentry
     \entry{schulman2017ppo}{article}{}{}
       \name{author}{5}{}{%
         {{hash=3e09bd2a25d237ebdaed560a07c0451e}{%
@@ -1818,7 +1869,46 @@
       \field{type}{techreport}
       \field{year}{2020}
     \endentry
+    \entry{jain1984quantitative}{report}{}{}
+      \name{author}{3}{}{%
+        {{hash=3322df3ccf4f2b377db993bd64be33aa}{%
+           family={Jain},
+           familyi={J\bibinitperiod},
+           given={Raj},
+           giveni={R\bibinitperiod}}}%
+        {{hash=4294dfaa15246b9be2177f3ddf1a800e}{%
+           family={Chiu},
+           familyi={C\bibinitperiod},
+           given={Dah-Ming},
+           giveni={D\bibinithyphendelim M\bibinitperiod}}}%
+        {{hash=790ef81bfc7b4bd70c6d6ce669715ff2}{%
+           family={Hawe},
+           familyi={H\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Digital Equipment Corporation}%
+      }
+      \strng{namehash}{154051113a54fef159f636abdfbb2e9d}
+      \strng{fullhash}{23daa408d11549376406ab92000bf8c2}
+      \strng{fullhashraw}{23daa408d11549376406ab92000bf8c2}
+      \strng{bibnamehash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authorbibnamehash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authornamehash}{154051113a54fef159f636abdfbb2e9d}
+      \strng{authorfullhash}{23daa408d11549376406ab92000bf8c2}
+      \strng{authorfullhashraw}{23daa408d11549376406ab92000bf8c2}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{DEC-TR-301}
+      \field{title}{A Quantitative Measure of Fairness and Discrimination for Resource Allocation in Shared Computer Systems}
+      \field{type}{techreport}
+      \field{year}{1984}
+    \endentry
   \enddatalist
+  \missing{welch1947}
 \endrefsection
 \endinput
 
