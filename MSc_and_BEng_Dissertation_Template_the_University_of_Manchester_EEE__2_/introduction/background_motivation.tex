@@ -34,7 +34,7 @@ depends on inter-sensor geometry, and whose protocol state evolves
 independently per sensor. A flat multilayer-perceptron policy,
 consuming the concatenation of the UAV state and sensor feature
 vectors, has no explicit mechanism for representing this set
-structure. The architectural ceiling of the flat-MLP policy, not the training recipe, reward function, or physics fidelity, is what limits how well a learned policy exploits the protocol opportunity the simulation exposes.
+structure. The flat-MLP policy has a hard architectural ceiling. Better training will not raise it. The problem is the observation encoding.
 The empirical evidence takes the form of a representational
 diagnostic (Section~\ref{sec:diagnostic}): the trained DQN spends
 $100\%$ of flight time on boundary-adjacent cells despite the

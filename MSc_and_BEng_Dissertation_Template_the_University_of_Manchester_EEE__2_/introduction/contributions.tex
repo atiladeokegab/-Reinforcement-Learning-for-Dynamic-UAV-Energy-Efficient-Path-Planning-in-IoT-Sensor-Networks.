@@ -1,0 +1,10 @@
+\subsection{Contributions}
+\label{sec:contributions}
+
+Everything rests on the simulator. The Gymnasium environment in Section~\ref{sec:env} couples Two-Ray path loss, log-normal shadowing, EMA-based ADR, and the LoRa Capture Effect into a single per-step causal chain; no prior open simulator includes all four effects.
+
+A competence-gated five-stage curriculum with domain randomisation then trained a single DQN policy spanning the full $(\text{grid}, N)$ operational envelope without retraining (Section~\ref{sec:training}). A four-condition ablation across five scales (50 seeds each) confirmed AoI features are load-bearing at every tested density and exposed a negative-transfer effect: a single-environment specialist outperforms the DR generalist at $500{\times}500$/$N{=}50$ ($d{=}-1.69$).
+
+The DQN was benchmarked against Nearest-Sensor Greedy, SF-Aware Greedy, and a TSP Oracle at 50 seeds per condition using Welch's $t$-test and bootstrap CIs (Section~\ref{sec:multi_seed}). The benchmarks set the operational envelope and routing-optimal ceiling, but they also raised a question the statistics alone could not answer: why does $100.0\%$ boundary-adjacent cell occupancy persist across 20 deterministic seeds despite an explicit boundary penalty? The spatial diagnostic (Section~\ref{sec:diagnostic}) showed this was architectural: $21.8$ mean wall collisions (median zero) combined with total perimeter confinement is the signature of a representational ceiling in the flat-MLP encoder, not a training failure.
+
+Replacing the trunk with a Deep-Sets encoder (masked sum-pooling, PPO, same environment and curriculum) eliminates the pathology (Section~\ref{sec:relational}). Edge-cell occupancy drops from $100.0\%$ to $21.5\%$; wall collisions from $21.8$ to $0$ across 20 seeds. At $(300{\times}300, N{=}30)$ NDR rises from $52.7\%$ to $97.7\%$, Jain's from $0.275$ to $0.564$, efficiency from $51.8$ to $152.6$\,B/Wh; at $(500{\times}500, N{=}50)$ from $13.0\%$ to $56.4\%$, $0.083$ to $0.279$, $10.0$ to $121.9$\,B/Wh (all $p < 10^{-4}$, Welch's $t$-test).
